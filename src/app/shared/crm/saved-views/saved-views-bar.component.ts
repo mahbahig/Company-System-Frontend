@@ -1,0 +1,165 @@
+import { CdkMenu, CdkMenuItem, CdkMenuTrigger } from '@angular/cdk/menu';
+import { Component, computed, inject, input, signal } from '@angular/core';
+import { rxResource, toSignal } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, Router } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
+
+import { ApiService } from '../../../core/api/api.service';
+import { AuthService } from '../../../core/auth/auth.service';
+import { I18nService } from '../../../core/i18n/i18n.service';
+import { TranslatePipe } from '../../../core/i18n/translate.pipe';
+import { ButtonDirective } from '../../ui/button/button.directive';
+
+interface SavedView {
+  id: string;
+  name: string;
+  filters: Record<string, string | number | boolean | string[] | null>;
+  visibility: 'private' | 'team' | 'all';
+  isDefault?: boolean;
+  ownerId?: string | { id: string };
+}
+
+/**
+ * LIST-03 saved views: store the current filters of a list under a name
+ * (private, team or company-wide), re-apply them in one click, and — with
+ * `exportReport` — export the filtered list (RPT-03, audited).
+ */
+@Component({
+  selector: 'app-saved-views-bar',
+  imports: [CdkMenuTrigger, CdkMenu, CdkMenuItem, TranslatePipe, ButtonDirective],
+  template: `
+    <div class="flex flex-wrap items-center gap-2">
+      <button type="button" appButton variant="outline" size="sm" [cdkMenuTriggerFor]="menu">{{ 'savedViews.views' | t }}</button>
+      <ng-template #menu>
+        <div cdkMenu class="z-50 min-w-60 rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-md">
+          @for (view of views.value() ?? []; track view.id) {
+            <div class="flex items-center justify-between gap-2">
+              <button type="button" cdkMenuItem class="flex-1 rounded-sm px-3 py-2 text-start text-sm hover:bg-secondary focus:bg-secondary" (cdkMenuItemTriggered)="apply(view)">
+                {{ view.name }}
+                @if (view.visibility !== 'private') {
+                  <span class="ms-1 text-xs text-muted-foreground">({{ 'savedViews.visibility.' + view.visibility | t }})</span>
+                }
+              </button>
+              @if (mine(view)) {
+                <button type="button" cdkMenuItem class="rounded-sm px-2 py-1 text-xs text-destructive hover:bg-destructive/10" [attr.aria-label]="('crm.common.delete' | t) + ' ' + view.name" (cdkMenuItemTriggered)="remove(view)">✕</button>
+              }
+            </div>
+          } @empty {
+            <p class="px-3 py-2 text-sm text-muted-foreground">{{ 'savedViews.none' | t }}</p>
+          }
+          <div role="separator" class="my-1 h-px bg-border"></div>
+          <button type="button" cdkMenuItem class="w-full rounded-sm px-3 py-2 text-start text-sm hover:bg-secondary focus:bg-secondary" (cdkMenuItemTriggered)="saving.set(true)">{{ 'savedViews.saveCurrent' | t }}</button>
+        </div>
+      </ng-template>
+      @if (saving()) {
+        <form class="flex flex-wrap items-center gap-2" (submit)="save($event)">
+          <input class="h-9 rounded-md border border-input bg-background px-2 text-sm" [attr.aria-label]="'savedViews.name' | t" [placeholder]="'savedViews.name' | t" [value]="name()" (input)="name.set($any($event.target).value)" />
+          <select class="h-9 rounded-md border border-input bg-background px-2 text-sm" [attr.aria-label]="'savedViews.share' | t" [value]="visibility()" (change)="visibility.set($any($event.target).value)">
+            <option value="private">{{ 'savedViews.visibility.private' | t }}</option>
+            @if (canShare()) {
+              <option value="team">{{ 'savedViews.visibility.team' | t }}</option>
+              <option value="all">{{ 'savedViews.visibility.all' | t }}</option>
+            }
+          </select>
+          <button type="submit" appButton size="sm" [disabled]="busy() || !name().trim()">{{ 'crm.common.save' | t }}</button>
+          <button type="button" appButton variant="ghost" size="sm" (click)="saving.set(false)">{{ 'crm.common.cancel' | t }}</button>
+        </form>
+      }
+      @if (exportReport() && auth.can('data.export')) {
+        <button type="button" appButton variant="outline" size="sm" [disabled]="busy()" (click)="export('xlsx')">{{ 'savedViews.exportExcel' | t }}</button>
+        <button type="button" appButton variant="ghost" size="sm" [disabled]="busy()" (click)="export('csv')">CSV</button>
+      }
+      @if (message(); as text) {
+        <span class="text-xs text-muted-foreground" role="status">{{ text }}</span>
+      }
+    </div>
+  `,
+})
+export class SavedViewsBarComponent {
+  private readonly api = inject(ApiService);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+  protected readonly auth = inject(AuthService);
+  private readonly i18n = inject(I18nService);
+
+  /** Backend list code (`lead_bank`, `leads`, `customers`, …). */
+  readonly list = input.required<string>();
+  /** Report code to export the filtered list with, e.g. `leads`. */
+  readonly exportReport = input<string>();
+
+  private readonly params = toSignal(this.route.queryParamMap, { requireSync: true });
+  protected readonly views = rxResource({ params: () => this.list(), stream: ({ params }) => this.api.get<SavedView[]>('saved-views', { list: params }) });
+  protected readonly saving = signal(false);
+  protected readonly name = signal('');
+  protected readonly visibility = signal<'private' | 'team' | 'all'>('private');
+  protected readonly busy = signal(false);
+  protected readonly message = signal<string | null>(null);
+  protected readonly canShare = computed(() => this.auth.canAny(['dashboards.view_team', 'leads.distribute', 'settings.manage']));
+
+  private currentFilters(): Record<string, string> {
+    const map = this.params();
+    const filters: Record<string, string> = {};
+    for (const key of map.keys) if (key !== 'page') filters[key] = map.get(key) ?? '';
+    return filters;
+  }
+
+  protected mine(view: SavedView): boolean {
+    const owner = typeof view.ownerId === 'object' ? view.ownerId?.id : view.ownerId;
+    return !owner || owner === this.auth.user()?.id;
+  }
+
+  protected apply(view: SavedView): void {
+    const queryParams: Record<string, string | string[]> = {};
+    for (const [key, value] of Object.entries(view.filters ?? {})) {
+      if (value === null || value === '') continue;
+      queryParams[key] = Array.isArray(value) ? value : String(value);
+    }
+    void this.router.navigate([], { relativeTo: this.route, queryParams });
+  }
+
+  protected async save(event: Event): Promise<void> {
+    event.preventDefault();
+    this.busy.set(true);
+    try {
+      await firstValueFrom(this.api.post('saved-views', { list: this.list(), name: this.name().trim(), filters: this.currentFilters(), visibility: this.visibility() }));
+      this.saving.set(false);
+      this.name.set('');
+      this.message.set(this.i18n.t('savedViews.saved'));
+      this.views.reload();
+    } catch (error) {
+      this.message.set(this.i18n.errorText(error));
+    } finally {
+      this.busy.set(false);
+    }
+  }
+
+  protected async remove(view: SavedView): Promise<void> {
+    try {
+      await firstValueFrom(this.api.delete(`saved-views/${view.id}`));
+      this.views.reload();
+    } catch (error) {
+      this.message.set(this.i18n.errorText(error));
+    }
+  }
+
+  protected async export(format: 'xlsx' | 'csv'): Promise<void> {
+    const report = this.exportReport();
+    if (!report) return;
+    this.busy.set(true);
+    this.message.set(null);
+    try {
+      await firstValueFrom(this.api.download(`reports/${report}/export`, { ...reportFilters(this.currentFilters()), format, locale: this.i18n.locale() }, `${report}.${format}`));
+    } catch (error) {
+      this.message.set(this.i18n.errorText(error));
+    } finally {
+      this.busy.set(false);
+    }
+  }
+}
+
+/** List filter names → report filter names, so an export matches the list on screen. */
+const REPORT_FILTER_NAMES: Record<string, string> = { governorate: 'governorateCode', source: 'sourceCode', campaign: 'campaignCode', solutionType: 'solutionTypeCode', owner: 'ownerId', team: 'teamId', stage: 'status' };
+
+function reportFilters(filters: Record<string, string>): Record<string, string> {
+  return Object.fromEntries(Object.entries(filters).map(([key, value]) => [REPORT_FILTER_NAMES[key] ?? key, value]));
+}

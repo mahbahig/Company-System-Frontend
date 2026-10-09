@@ -1,0 +1,42 @@
+<section appCard aria-labelledby="timeline-heading">
+  <div appCardHeader class="flex flex-row flex-wrap items-center justify-between gap-3">
+    <h2 appCardTitle id="timeline-heading">{{ 'timeline.title' | t }}</h2>
+    <div class="w-48">
+      <app-select>
+        <select appSelect [formField]="filterForm.type" [attr.aria-label]="'timeline.filters.type' | t">
+          <option value="">{{ 'crm.filters.any' | t }}</option>
+          @for (group of typeGroups; track group) {
+            <option [value]="group">{{ 'timeline.groups.' + group | t }}</option>
+          }
+        </select>
+      </app-select>
+    </div>
+  </div>
+  <div appCardContent [attr.aria-busy]="result.isLoading()">
+    @if (result.error()) {
+      <p class="text-sm text-destructive">{{ 'errors.db.unexpected' | t }}</p>
+    } @else if (events().length === 0) {
+      <p class="text-sm text-muted-foreground">{{ (result.isLoading() ? 'common.labels.loading' : 'timeline.empty') | t }}</p>
+    } @else {
+      <ol class="flex flex-col gap-4">
+        @for (event of events(); track event.id) {
+          <li class="relative border-s-2 border-border ps-4">
+            <span aria-hidden="true" class="absolute -start-[5px] top-1 size-2 rounded-full bg-primary"></span>
+            <p class="text-sm">{{ summarize(event) }}</p>
+            <p class="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+              <span>{{ actorName(event) }}</span>
+              <span aria-hidden="true">·</span>
+              <span class="tabular">{{ i18n.formatDate(event.occurredAt, true) }}</span>
+              @if (opportunityLink(event); as link) {
+                <span aria-hidden="true">·</span>
+                <a [routerLink]="link" class="text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                  {{ event.opportunityLabel }}
+                </a>
+              }
+            </p>
+          </li>
+        }
+      </ol>
+    }
+  </div>
+</section>
