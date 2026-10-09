@@ -280,6 +280,63 @@
   }
 }
 
+/* Thin, unobtrusive scrollbars for the shell panes that scroll independently
+   (the sidebar nav and the main content). The thumb is a translucent tint of
+   the surrounding foreground so it reads correctly in both themes and only
+   draws attention on hover. Firefox gets the standard-property fallback. */
+@utility scroll-area {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--muted-foreground) / 0.3) transparent;
+
+  &::-webkit-scrollbar {
+    width: 0.625rem;
+    height: 0.625rem;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    border-radius: 9999px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+    background-color: hsl(var(--muted-foreground) / 0.3);
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(var(--muted-foreground) / 0.5);
+  }
+  /* No persistent arrows/corner — keeps the gutter clean. */
+  &::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+}
+
+/* Sidebar variant: the sidebar surface is dark in both themes, so the thumb
+   tints the light sidebar foreground instead. */
+@utility scroll-area-sidebar {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--sidebar-foreground) / 0.25) transparent;
+
+  &::-webkit-scrollbar {
+    width: 0.625rem;
+    height: 0.625rem;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    border-radius: 9999px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+    background-color: hsl(var(--sidebar-foreground) / 0.22);
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(var(--sidebar-foreground) / 0.4);
+  }
+  &::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
