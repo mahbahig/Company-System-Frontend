@@ -1,0 +1,90 @@
+import { Component, computed, inject, input, linkedSignal, numberAttribute } from '@angular/core';
+import { rxResource } from '@angular/core/rxjs-interop';
+import { FormField, form } from '@angular/forms/signals';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { Check, CheckCheck } from 'lucide';
+
+import { I18nService } from '../../core/i18n/i18n.service';
+import { TranslatePipe } from '../../core/i18n/translate.pipe';
+import { NotificationsService } from '../../core/notifications/notifications.service';
+import { PaginationComponent } from '../../shared/crm/pagination/pagination.component';
+import { AlertComponent } from '../../shared/ui/alert/alert.component';
+import { BadgeComponent } from '../../shared/ui/badge/badge.component';
+import { ButtonDirective } from '../../shared/ui/button/button.directive';
+import { IconComponent } from '../../shared/ui/icon/icon.component';
+import { PageHeaderComponent } from '../../shared/ui/page-header/page-header.component';
+
+const flag = (value: string | undefined) => value === '1';
+
+/**
+ * `/notifications` — the full inbox behind the shell's notification bell:
+ * paginated, filterable (unread only), mark-read / mark-all-read, deep
+ * links into the referenced record. Shares `NotificationsService` with the
+ * bell so both stay in sync (marking read here updates the bell's badge).
+ *
+ * No free-text search: the backend inbox endpoint does not filter on `q`
+ * (see `NotificationsRepository.inbox`), so a search box here would be a
+ * control that silently does nothing — omitted rather than faked.
+ */
+@Component({
+  selector: 'app-notifications-list-page',
+  imports: [RouterLink, FormField, TranslatePipe, PageHeaderComponent, PaginationComponent, AlertComponent, BadgeComponent, ButtonDirective, IconComponent],
+  templateUrl: './notifications-list.page.html',
+  host: { class: 'flex flex-col gap-6' },
+})
+export class NotificationsListPage {
+  private readonly notifications = inject(NotificationsService);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+  protected readonly i18n = inject(I18nService);
+
+  readonly unread = input<string>();
+  readonly page = input(1, { transform: (value: unknown) => numberAttribute(value, 1) });
+
+  protected readonly checkIcon = Check;
+  protected readonly checkAllIcon = CheckCheck;
+  protected readonly unreadOnly = computed(() => flag(this.unread()));
+  protected readonly hasUnread = computed(() => this.notifications.unreadCount() > 0);
+
+  protected readonly result = rxResource({
+    params: () => ({ unread: this.unreadOnly() || undefined, page: this.page(), pageSize: 25 }),
+    stream: ({ params }) => this.notifications.list(params),
+  });
+
+  protected readonly rows = computed(() => (this.result.hasValue() ? this.result.value().rows : []));
+
+  protected readonly toggleModel = linkedSignal(() => ({ unreadOnly: this.unreadOnly() }));
+  protected readonly toggleForm = form(this.toggleModel);
+
+  protected onToggleUnreadOnly(): void {
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { unread: this.toggleModel().unreadOnly ? '1' : null, page: null },
+      queryParamsHandling: 'merge',
+    });
+  }
+
+  protected async markAllRead(): Promise<void> {
+    await this.notifications.markAllRead();
+    this.result.reload();
+  }
+
+  protected async markRead(id: string, event: Event): Promise<void> {
+    event.preventDefault();
+    event.stopPropagation();
+    await this.notifications.markRead([id]);
+    this.result.reload();
+  }
+
+  /** Opening a notification marks it read without blocking navigation. */
+  protected onOpen(id: string, readAt: string | null): void {
+    if (readAt) return;
+    void this.notifications.markRead([id]).then(() => this.result.reload());
+  }
+
+  protected link(actionUrl: string | undefined): string[] | null {
+    if (!actionUrl) return null;
+    const path = actionUrl.startsWith('/') ? actionUrl : `/${actionUrl}`;
+    return [`/${this.i18n.locale()}${path}`];
+  }
+}
