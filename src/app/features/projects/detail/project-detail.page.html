@@ -1,0 +1,355 @@
+@if (data.error()) {
+  <app-alert variant="destructive">{{ i18n.errorText(data.error()) }}</app-alert>
+}
+@if (data.value(); as d) {
+  @let p = d.project;
+  @let perms = d.permissions;
+  <app-page-header [eyebrow]="p.projectNo" [heading]="p.name" [subtitle]="customerName()">
+    <app-status-badge enum="projectStatus" [value]="p.status" />
+    @if (p.isDelayed) {
+      <app-badge tone="danger">{{ 'projects.delayed' | t }}</app-badge>
+    }
+    @if (ref(p.contractId, 'id')) {
+      <a appButton variant="outline" [routerLink]="['/', i18n.locale(), 'contracts', ref(p.contractId, 'id')]">{{ 'contracts.title' | t }}</a>
+    }
+  </app-page-header>
+
+  @if (actions.message(); as text) {
+    <app-alert>{{ text }}</app-alert>
+  }
+  @if (actions.error(); as text) {
+    <app-alert variant="destructive">{{ text }}</app-alert>
+  }
+
+  <ol class="grid gap-2 sm:grid-cols-5" [attr.aria-label]="'projects.phases' | t">
+    @for (phase of phases; track phase) {
+      <li class="rounded-md border border-border p-3 text-sm" [class.border-primary]="p.status === phase">
+        <p class="font-medium">{{ phase | enum: 'projectStatus' }}</p>
+        <app-status-badge enum="milestoneStatus" [value]="phaseStatus(phase)" />
+      </li>
+    }
+  </ol>
+
+  <app-tabs [tabs]="tabs()" [active]="active()" (activeChange)="selectTab($event)" [label]="p.name" />
+
+  @switch (active()) {
+    @case ('overview') {
+      <div class="grid gap-6 lg:grid-cols-3">
+        <section appCard class="lg:col-span-2" aria-labelledby="pj-inherited">
+          <div appCardHeader><h2 appCardTitle id="pj-inherited">{{ 'projects.inherited' | t }}</h2></div>
+          <dl appCardContent class="grid gap-4 sm:grid-cols-3">
+            <div appDetailItem [label]="'prop.fields.kwp' | t"><span class="tabular">{{ i18n.formatNumber(p.kwp) }}</span></div>
+            <div appDetailItem [label]="'prop.fields.storageKwh' | t"><span class="tabular">{{ p.storageKwh ?? '—' }}</span></div>
+            @if (p.contractValue !== undefined) {
+              <div appDetailItem [label]="'contracts.columns.value' | t"><span class="tabular">{{ i18n.formatMoney(p.contractValue) }}</span></div>
+            }
+            <div appDetailItem [label]="'projects.columns.pm' | t">{{ name(p.pmId) }}</div>
+            <div appDetailItem [label]="'handoffs.engineer' | t">{{ name(p.engineerId) }}</div>
+            <div appDetailItem [label]="'projects.salesRep' | t">{{ name(p.salesRepId) }}</div>
+            <div appDetailItem [label]="'prop.columns.author' | t">{{ name(p.proposalTeam.technicalAuthorId) }}</div>
+            <div appDetailItem [label]="'prop.columns.preparer' | t">{{ name(p.proposalTeam.financialPreparerId) }}</div>
+            <div appDetailItem [label]="'prop.columns.opportunity' | t">
+              @if (ref(p.opportunityId, 'id')) {
+                <a class="text-primary hover:underline" [routerLink]="['/', i18n.locale(), 'opportunities', ref(p.opportunityId, 'id')]">{{ ref(p.opportunityId, 'opportunityNo') }}</a>
+              }
+            </div>
+            @if (p.scope) {
+              <div appDetailItem class="sm:col-span-3" [label]="'prop.fields.scope' | t"><p class="whitespace-pre-line">{{ p.scope }}</p></div>
+            }
+          </dl>
+        </section>
+        <div class="flex flex-col gap-6">
+          @if (perms.canExecute && d.nextStatuses.length) {
+            <section appCard aria-labelledby="pj-status">
+              <div appCardHeader><h2 appCardTitle id="pj-status">{{ 'projects.changeStatus' | t }}</h2></div>
+              <div appCardContent class="flex flex-col gap-3">
+                <app-select>
+                  <select appSelect [attr.aria-label]="'projects.columns.status' | t" [value]="statusForm().status" (change)="patch(statusForm, 'status', $any($event.target).value)">
+                    <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
+                    @for (s of d.nextStatuses; track s) {
+                      <option [value]="s">{{ s | enum: 'projectStatus' }}</option>
+                    }
+                  </select>
+                </app-select>
+                <input appInput [attr.aria-label]="'handoffs.reason' | t" [placeholder]="'handoffs.reason' | t" [value]="statusForm().reason" (input)="patch(statusForm, 'reason', $any($event.target).value)" />
+                <button type="button" appButton [disabled]="actions.busy() || !statusForm().status" (click)="changeStatus()">{{ 'crm.common.save' | t }}</button>
+              </div>
+            </section>
+          }
+          <app-completeness-panel [result]="d.completeness" entityType="project" [entityId]="id()" />
+        </div>
+      </div>
+    }
+
+    @case ('plan') {
+      <section appCard aria-labelledby="pj-plan">
+        <div appCardHeader><h2 appCardTitle id="pj-plan">{{ 'projects.tabs.plan' | t }}</h2></div>
+        <fieldset appCardContent class="grid gap-4 sm:grid-cols-4" [disabled]="!perms.canManage && !perms.canExecute">
+          <div>
+            <label appLabel for="pj-start">{{ 'projects.startDate' | t }}</label>
+            <input appInput id="pj-start" type="date" dir="ltr" [value]="plan().startDate" (change)="patch(plan, 'startDate', $any($event.target).value)" />
+          </div>
+          <div>
+            <label appLabel for="pj-end">{{ 'projects.columns.targetEnd' | t }}</label>
+            <input appInput id="pj-end" type="date" dir="ltr" [value]="plan().targetEndDate" (change)="patch(plan, 'targetEndDate', $any($event.target).value)" />
+          </div>
+          <div>
+            <label appLabel for="pj-progress">{{ 'projects.columns.progress' | t }}</label>
+            <input appInput id="pj-progress" type="number" min="0" max="100" dir="ltr" [value]="plan().progress" (input)="patch(plan, 'progress', +$any($event.target).value)" />
+          </div>
+          <button type="button" appButton class="self-end" [disabled]="actions.busy()" (click)="savePlan()">{{ 'crm.common.save' | t }}</button>
+        </fieldset>
+      </section>
+
+      <app-table-wrapper [label]="'projects.milestones' | t">
+        <table appTable>
+          <thead appTableHeader>
+            <tr appTableRow>
+              <th appTableHead>{{ 'projects.milestone' | t }}</th>
+              <th appTableHead>{{ 'projects.phase' | t }}</th>
+              <th appTableHead>{{ 'approvals.columns.due' | t }}</th>
+              <th appTableHead>{{ 'projects.columns.status' | t }}</th>
+            </tr>
+          </thead>
+          <tbody appTableBody>
+            @for (m of p.milestones; track $index) {
+              <tr appTableRow>
+                <td appTableCell>{{ m.title }}</td>
+                <td appTableCell>{{ m.phaseCode ? (m.phaseCode | enum: 'projectStatus') : '—' }}</td>
+                <td appTableCell class="tabular whitespace-nowrap">{{ i18n.formatDate(m.dueAt) || '—' }}</td>
+                <td appTableCell>
+                  @if (perms.canExecute) {
+                    <select class="h-9 rounded-md border border-input bg-background px-2 text-sm" [attr.aria-label]="'projects.columns.status' | t" [value]="m.status" (change)="setMilestoneStatus(sub(m), m.title, $any($event.target).value)">
+                      @for (s of ['pending', 'in_progress', 'done', 'delayed']; track s) {
+                        <option [value]="s">{{ s | enum: 'milestoneStatus' }}</option>
+                      }
+                    </select>
+                  } @else {
+                    <app-status-badge enum="milestoneStatus" [value]="m.status" />
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </app-table-wrapper>
+      @if (perms.canManage) {
+        <div class="grid gap-3 rounded-md border border-border p-4 sm:grid-cols-4">
+          <input appInput [attr.aria-label]="'projects.milestone' | t" [placeholder]="'projects.milestone' | t" [value]="milestone().title" (input)="patch(milestone, 'title', $any($event.target).value)" />
+          <select class="h-10 rounded-md border border-input bg-background px-2 text-sm" [attr.aria-label]="'projects.phase' | t" [value]="milestone().phaseCode" (change)="patch(milestone, 'phaseCode', $any($event.target).value)">
+            @for (phase of phases; track phase) {
+              <option [value]="phase">{{ phase | enum: 'projectStatus' }}</option>
+            }
+          </select>
+          <input appInput type="date" dir="ltr" [attr.aria-label]="'approvals.columns.due' | t" [value]="milestone().dueAt" (change)="patch(milestone, 'dueAt', $any($event.target).value)" />
+          <button type="button" appButton variant="outline" [disabled]="actions.busy() || !milestone().title.trim()" (click)="addMilestone()">{{ 'projects.addMilestone' | t }}</button>
+        </div>
+      }
+
+      <section class="flex flex-col gap-3" aria-labelledby="pj-delays">
+        <h2 id="pj-delays" class="text-lg font-semibold">{{ 'projects.delays' | t }}</h2>
+        <ul class="flex flex-col gap-2 text-sm">
+          @for (delayRow of p.delays; track $index) {
+            <li class="rounded-md border border-destructive/40 p-2"><span class="tabular">{{ i18n.formatDate(delayRow.at) }}</span> · {{ 'projects.delayDays' | t: { days: delayRow.days } }} · {{ delayRow.reason }}</li>
+          } @empty {
+            <li class="text-muted-foreground">{{ 'projects.noDelays' | t }}</li>
+          }
+        </ul>
+        @if (perms.canExecute) {
+          <div class="grid gap-3 sm:grid-cols-4">
+            <input appInput class="sm:col-span-2" [attr.aria-label]="'handoffs.reason' | t" [placeholder]="'handoffs.reason' | t" [value]="delay().reason" (input)="patch(delay, 'reason', $any($event.target).value)" />
+            <input appInput type="number" min="1" dir="ltr" [attr.aria-label]="'projects.days' | t" [value]="delay().days" (input)="patch(delay, 'days', +$any($event.target).value)" />
+            <button type="button" appButton variant="outline" [disabled]="actions.busy() || !delay().reason.trim()" (click)="addDelay()">{{ 'projects.recordDelay' | t }}</button>
+          </div>
+        }
+      </section>
+    }
+
+    @case ('procurement') {
+      <app-table-wrapper [label]="'projects.tabs.procurement' | t">
+        <table appTable>
+          <thead appTableHeader>
+            <tr appTableRow>
+              <th appTableHead>{{ 'prop.costs.description' | t }}</th>
+              <th appTableHead>{{ 'prop.costs.quantity' | t }}</th>
+              <th appTableHead>{{ 'projects.supplier' | t }}</th>
+              <th appTableHead>{{ 'projects.poNumber' | t }}</th>
+              <th appTableHead>{{ 'projects.expected' | t }}</th>
+              <th appTableHead>{{ 'projects.columns.status' | t }}</th>
+            </tr>
+          </thead>
+          <tbody appTableBody>
+            @for (item of p.procurement; track $index) {
+              <tr appTableRow>
+                <td appTableCell>{{ item.description }} @if (item.model) {<span class="block text-xs text-muted-foreground">{{ item.model }}</span>}</td>
+                <td appTableCell class="tabular">{{ item.quantity }}</td>
+                <td appTableCell>{{ item.supplier || '—' }}</td>
+                <td appTableCell class="tabular" dir="ltr">{{ item.poNumber || '—' }}</td>
+                <td appTableCell class="tabular whitespace-nowrap">{{ i18n.formatDate(item.expectedAt) || '—' }}</td>
+                <td appTableCell>
+                  @if (perms.canExecute) {
+                    <select class="h-9 rounded-md border border-input bg-background px-2 text-sm" [attr.aria-label]="'projects.columns.status' | t" [value]="item.status" (change)="setProcurementStatus(sub(item), item.description, item.quantity, $any($event.target).value)">
+                      @for (s of ['pending', 'ordered', 'shipped', 'received', 'cancelled']; track s) {
+                        <option [value]="s">{{ s | enum: 'procurementStatus' }}</option>
+                      }
+                    </select>
+                  } @else {
+                    <app-status-badge enum="procurementStatus" [value]="item.status" />
+                  }
+                </td>
+              </tr>
+            } @empty {
+              <tr app-table-empty [colSpan]="6">—</tr>
+            }
+          </tbody>
+        </table>
+      </app-table-wrapper>
+      @if (perms.canExecute) {
+        <div class="grid gap-3 rounded-md border border-border p-4 sm:grid-cols-3 lg:grid-cols-6">
+          <input appInput class="lg:col-span-2" [attr.aria-label]="'prop.costs.description' | t" [placeholder]="'prop.costs.description' | t" [value]="procurement().description" (input)="patch(procurement, 'description', $any($event.target).value)" />
+          <input appInput type="number" min="0" dir="ltr" [attr.aria-label]="'prop.costs.quantity' | t" [value]="procurement().quantity" (input)="patch(procurement, 'quantity', +$any($event.target).value)" />
+          <input appInput [attr.aria-label]="'projects.supplier' | t" [placeholder]="'projects.supplier' | t" [value]="procurement().supplier" (input)="patch(procurement, 'supplier', $any($event.target).value)" />
+          <input appInput type="date" dir="ltr" [attr.aria-label]="'projects.expected' | t" [value]="procurement().expectedAt" (change)="patch(procurement, 'expectedAt', $any($event.target).value)" />
+          <button type="button" appButton variant="outline" [disabled]="actions.busy() || !procurement().description.trim()" (click)="addProcurement()">{{ 'projects.addItem' | t }}</button>
+        </div>
+      }
+    }
+
+    @case ('payments') {
+      <app-table-wrapper [label]="'projects.tabs.payments' | t">
+        <table appTable>
+          <thead appTableHeader>
+            <tr appTableRow>
+              <th appTableHead>{{ 'prop.milestones.name' | t }}</th>
+              <th appTableHead>%</th>
+              <th appTableHead>{{ 'analytics.finance.due' | t }}</th>
+              <th appTableHead>{{ 'approvals.columns.due' | t }}</th>
+              <th appTableHead>{{ 'projects.columns.status' | t }}</th>
+            </tr>
+          </thead>
+          <tbody appTableBody>
+            @for (pay of p.payments; track $index) {
+              <tr appTableRow>
+                <td appTableCell>{{ pay.name }}</td>
+                <td appTableCell class="tabular">{{ pay.pct }}%</td>
+                <td appTableCell class="tabular whitespace-nowrap">{{ i18n.formatMoney(pay.amount) }}</td>
+                <td appTableCell class="tabular whitespace-nowrap">{{ i18n.formatDate(pay.dueAt) || '—' }}</td>
+                <td appTableCell>
+                  @if (perms.canUpdatePayments) {
+                    <select class="h-9 rounded-md border border-input bg-background px-2 text-sm" [attr.aria-label]="'projects.columns.status' | t" [value]="pay.status" (change)="setPaymentStatus(sub(pay), $any($event.target).value)">
+                      @for (s of ['pending', 'invoiced', 'paid', 'overdue']; track s) {
+                        <option [value]="s">{{ s | enum: 'paymentMilestoneStatus' }}</option>
+                      }
+                    </select>
+                  } @else {
+                    <app-status-badge enum="paymentMilestoneStatus" [value]="pay.status" />
+                  }
+                </td>
+              </tr>
+            } @empty {
+              <tr app-table-empty [colSpan]="5">—</tr>
+            }
+          </tbody>
+        </table>
+      </app-table-wrapper>
+    }
+
+    @case ('commissioning') {
+      <section appCard aria-labelledby="pj-comm">
+        <div appCardHeader><h2 appCardTitle id="pj-comm">{{ 'projects.tabs.commissioning' | t }}</h2></div>
+        <fieldset appCardContent class="flex flex-col gap-4" [disabled]="!perms.canExecute">
+          @for (t of tests(); track $index; let index = $index) {
+            <div class="grid gap-2 sm:grid-cols-4">
+              <input appInput [attr.aria-label]="'projects.test' | t" [placeholder]="'projects.test' | t" [value]="t.test" (input)="setTest(index, 'test', $any($event.target).value)" />
+              <input appInput [attr.aria-label]="'projects.result' | t" [placeholder]="'projects.result' | t" [value]="t.result" (input)="setTest(index, 'result', $any($event.target).value)" />
+              <label class="flex items-center gap-2 text-sm"><input type="checkbox" [checked]="t.passed" (change)="setTest(index, 'passed', $any($event.target).checked)" /> {{ 'projects.passed' | t }}</label>
+              <input appInput [attr.aria-label]="'prop.notes' | t" [placeholder]="'prop.notes' | t" [value]="t.notes ?? ''" (input)="setTest(index, 'notes', $any($event.target).value)" />
+            </div>
+          }
+          <button type="button" appButton variant="ghost" size="sm" class="self-start" (click)="tests.update((rows) => [...rows, { test: '', result: '', passed: false }])">{{ 'projects.addTest' | t }}</button>
+          <div class="grid gap-3 sm:grid-cols-3">
+            <div>
+              <label appLabel for="pj-comm-at">{{ 'projects.commissionedAt' | t }}</label>
+              <input appInput id="pj-comm-at" type="date" dir="ltr" [value]="commission().commissionedAt" (change)="patch(commission, 'commissionedAt', $any($event.target).value)" />
+            </div>
+            <div>
+              <label appLabel for="pj-utility">{{ 'projects.utilityConnection' | t }}</label>
+              <select id="pj-utility" class="h-10 w-full rounded-md border border-input bg-background px-2 text-sm" [value]="commission().utilityConnectionStatus" (change)="patch(commission, 'utilityConnectionStatus', $any($event.target).value)">
+                @for (s of ['not_applied', 'applied', 'approved', 'connected']; track s) {
+                  <option [value]="s">{{ 'projects.utility.' + s | t }}</option>
+                }
+              </select>
+            </div>
+            <div>
+              <label appLabel for="pj-net">{{ 'projects.netMetering' | t }}</label>
+              <select id="pj-net" class="h-10 w-full rounded-md border border-input bg-background px-2 text-sm" [value]="commission().netMeteringStatus" (change)="patch(commission, 'netMeteringStatus', $any($event.target).value)">
+                @for (s of ['not_applicable', 'applied', 'approved', 'installed']; track s) {
+                  <option [value]="s">{{ 'projects.net.' + s | t }}</option>
+                }
+              </select>
+            </div>
+          </div>
+          <button type="button" appButton class="self-start" [disabled]="actions.busy()" (click)="saveCommissioning()">{{ 'crm.common.save' | t }}</button>
+        </fieldset>
+      </section>
+    }
+
+    @case ('handover') {
+      <section appCard aria-labelledby="pj-handover">
+        <div appCardHeader><h2 appCardTitle id="pj-handover">{{ 'projects.tabs.handover' | t }}</h2></div>
+        <fieldset appCardContent class="flex flex-col gap-4" [disabled]="!perms.canExecute">
+          <h3 class="text-sm font-semibold">{{ 'projects.warranties' | t }}</h3>
+          @for (w of warranties(); track $index; let index = $index) {
+            <div class="grid gap-2 sm:grid-cols-3">
+              <input appInput [attr.aria-label]="'projects.warrantyItem' | t" [value]="w.item" (input)="setWarranty(index, 'item', $any($event.target).value)" />
+              <input appInput [attr.aria-label]="'projects.provider' | t" [placeholder]="'projects.provider' | t" [value]="w.provider ?? ''" (input)="setWarranty(index, 'provider', $any($event.target).value)" />
+              <input appInput type="number" min="0" dir="ltr" [attr.aria-label]="'projects.years' | t" [value]="w.years" (input)="setWarranty(index, 'years', +$any($event.target).value)" />
+            </div>
+          }
+          <button type="button" appButton variant="ghost" size="sm" class="self-start" (click)="warranties.update((rows) => [...rows, { item: '', years: 1 }])">{{ 'projects.addWarranty' | t }}</button>
+          <div class="grid gap-3 sm:grid-cols-2">
+            <div>
+              <label appLabel for="pj-accepted-at">{{ 'projects.acceptedAt' | t }}</label>
+              <input appInput id="pj-accepted-at" type="date" dir="ltr" [value]="handoverForm().customerAcceptedAt" (change)="patch(handoverForm, 'customerAcceptedAt', $any($event.target).value)" />
+            </div>
+            <div>
+              <label appLabel for="pj-accepted-by">{{ 'projects.acceptedBy' | t }}</label>
+              <input appInput id="pj-accepted-by" [value]="handoverForm().acceptedByName" (input)="patch(handoverForm, 'acceptedByName', $any($event.target).value)" />
+            </div>
+          </div>
+          <button type="button" appButton class="self-start" [disabled]="actions.busy()" (click)="saveHandover()">{{ 'crm.common.save' | t }}</button>
+        </fieldset>
+      </section>
+    }
+
+    @case ('updates') {
+      <section class="flex flex-col gap-3" aria-labelledby="pj-updates">
+        <h2 id="pj-updates" class="text-lg font-semibold">{{ 'projects.tabs.updates' | t }}</h2>
+        @if (perms.canExecute) {
+          <div class="grid gap-3 sm:grid-cols-4">
+            <select class="h-10 rounded-md border border-input bg-background px-2 text-sm" [attr.aria-label]="'prop.deliverChannel' | t" [value]="update().channel" (change)="patch(update, 'channel', $any($event.target).value)">
+              @for (c of ['call', 'whatsapp', 'email', 'meeting', 'site']; track c) {
+                <option [value]="c">{{ 'projects.channels.' + c | t }}</option>
+              }
+            </select>
+            <input appInput class="sm:col-span-2" [attr.aria-label]="'prop.message' | t" [placeholder]="'prop.message' | t" [value]="update().message" (input)="patch(update, 'message', $any($event.target).value)" />
+            <button type="button" appButton variant="outline" [disabled]="actions.busy() || !update().message.trim()" (click)="addUpdate()">{{ 'projects.logUpdate' | t }}</button>
+          </div>
+        }
+        <ul class="flex flex-col gap-2 text-sm">
+          @for (u of p.customerUpdates; track $index) {
+            <li class="rounded-md bg-muted p-2"><span class="tabular">{{ i18n.formatDate(u.at, true) }}</span> · {{ 'projects.channels.' + u.channel | t }} · {{ u.message }} <span class="text-xs text-muted-foreground">— {{ name(u.by) }}</span></li>
+          } @empty {
+            <li class="text-muted-foreground">—</li>
+          }
+        </ul>
+      </section>
+    }
+
+    @case ('documents') {
+      <app-documents-panel entityType="project" [entityId]="id()" />
+    }
+  }
+} @else if (data.isLoading()) {
+  <p class="text-sm text-muted-foreground">{{ 'common.labels.loading' | t }}</p>
+}
