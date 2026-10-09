@@ -1,0 +1,152 @@
+<app-page-header [heading]="'crm.contacts.new' | t" />
+
+<section appCard class="max-w-3xl">
+  <div appCardContent>
+    <form class="space-y-5" novalidate (submit)="onSubmit($event)">
+      @if (errorKey(); as key) {
+        <app-alert variant="destructive">{{ key | t }}</app-alert>
+      }
+
+      <div class="grid gap-5 sm:grid-cols-2">
+        <div class="space-y-2">
+          <label appLabel for="fullName" required>{{ 'crm.contacts.fields.fullName' | t }}</label>
+          <input
+            appInput
+            id="fullName"
+            [formField]="contactForm.fullName"
+            [attr.aria-invalid]="error('fullName') ? true : null"
+            [attr.aria-describedby]="error('fullName') ? 'fullName-error' : null"
+          />
+          @if (error('fullName'); as key) {
+            <p id="fullName-error" class="text-sm text-destructive">{{ key | t }}</p>
+          }
+        </div>
+
+        <div class="space-y-2">
+          <label appLabel for="jobTitle">{{ 'crm.contacts.fields.jobTitle' | t }}</label>
+          <input appInput id="jobTitle" [formField]="contactForm.jobTitle" />
+        </div>
+
+        <div class="space-y-2">
+          <label appLabel for="department">{{ 'crm.contacts.fields.department' | t }}</label>
+          <input appInput id="department" [formField]="contactForm.department" />
+        </div>
+
+        <div class="space-y-2">
+          <label appLabel for="roleCode" required>{{ 'crm.contacts.fields.decisionRoleCode' | t }}</label>
+          <app-select>
+            <select
+              appSelect
+              id="roleCode"
+              [formField]="contactForm.roleCode"
+              [attr.aria-invalid]="error('roleCode') ? true : null"
+              [attr.aria-describedby]="error('roleCode') ? 'roleCode-error' : null"
+            >
+              <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
+              @for (option of reference.options('contact_role'); track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+          </app-select>
+          @if (error('roleCode'); as key) {
+            <p id="roleCode-error" class="text-sm text-destructive">{{ key | t }}</p>
+          }
+        </div>
+
+        <div class="space-y-2">
+          <label appLabel for="mobile" required>{{ 'crm.contacts.fields.mobile' | t }}</label>
+          <input
+            appInput
+            id="mobile"
+            dir="ltr"
+            inputmode="tel"
+            [formField]="contactForm.mobile"
+            [attr.aria-invalid]="error('mobile') ? true : null"
+            [attr.aria-describedby]="error('mobile') ? 'mobile-error' : null"
+          />
+          @if (error('mobile'); as key) {
+            <p id="mobile-error" class="text-sm text-destructive">{{ key | t }}</p>
+          }
+        </div>
+
+        <div class="space-y-2">
+          <label appLabel for="altPhone">{{ 'crm.contacts.fields.altPhone' | t }}</label>
+          <input appInput id="altPhone" dir="ltr" inputmode="tel" [formField]="contactForm.altPhone" />
+        </div>
+
+        <div class="space-y-2">
+          <label appLabel for="email">{{ 'crm.contacts.fields.email' | t }}</label>
+          <input
+            appInput
+            id="email"
+            type="email"
+            dir="ltr"
+            [formField]="contactForm.email"
+            [attr.aria-invalid]="error('email') ? true : null"
+            [attr.aria-describedby]="error('email') ? 'email-error' : null"
+          />
+          @if (error('email'); as key) {
+            <p id="email-error" class="text-sm text-destructive">{{ key | t }}</p>
+          }
+        </div>
+
+        <div class="space-y-2">
+          <label appLabel for="preferredChannel">{{ 'crm.contacts.fields.preferredChannel' | t }}</label>
+          <app-select>
+            <select appSelect id="preferredChannel" [formField]="contactForm.preferredChannel">
+              <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
+              @for (channel of channels; track channel) {
+                <option [value]="channel">{{ 'crm.contacts.channels.' + channel | t }}</option>
+              }
+            </select>
+          </app-select>
+        </div>
+
+        <div class="space-y-2">
+          <label appLabel for="decisionAuthority">{{ 'crm.contacts.fields.decisionAuthority' | t }}</label>
+          <app-select>
+            <select appSelect id="decisionAuthority" [formField]="contactForm.decisionAuthority">
+              <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
+              @for (authority of authorities; track authority) {
+                <option [value]="authority">{{ 'crm.contacts.decisionAuthority.' + authority | t }}</option>
+              }
+            </select>
+          </app-select>
+        </div>
+
+        <div class="space-y-2">
+          <label appLabel for="influenceLevel">{{ 'crm.contacts.fields.influenceLevel' | t }}</label>
+          <input appInput id="influenceLevel" type="number" dir="ltr" [formField]="contactForm.influenceLevel" />
+        </div>
+      </div>
+
+      <div class="flex flex-wrap gap-6">
+        <label class="flex cursor-pointer items-center gap-2 text-sm">
+          <input type="checkbox" [formField]="contactForm.isPrimary" class="size-4 rounded border-input accent-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" />
+          {{ 'crm.contacts.fields.isPrimary' | t }}
+        </label>
+        <label class="flex cursor-pointer items-center gap-2 text-sm">
+          <input type="checkbox" [formField]="contactForm.hasWhatsapp" class="size-4 rounded border-input accent-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" />
+          {{ 'crm.contacts.fields.hasWhatsapp' | t }}
+        </label>
+      </div>
+
+      <div class="space-y-2">
+        <label appLabel for="notes">{{ 'crm.contacts.fields.notes' | t }}</label>
+        <textarea appTextarea id="notes" rows="3" [formField]="contactForm.notes"></textarea>
+      </div>
+
+      <div class="flex justify-end gap-2">
+        <a appButton variant="outline" [routerLink]="['/customers', customerId()]">{{ 'crm.common.cancel' | t }}</a>
+        <button type="submit" appButton [disabled]="contactForm().submitting()" [attr.aria-busy]="contactForm().submitting()">
+          @if (contactForm().submitting()) {
+            <app-icon [icon]="spinnerIcon" svgClass="size-4 animate-spin" />
+            {{ 'crm.common.saving' | t }}
+          } @else {
+            {{ 'crm.common.save' | t }}
+          }
+        </button>
+      </div>
+    </form>
+  </div>
+</section>

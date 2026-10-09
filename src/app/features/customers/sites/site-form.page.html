@@ -1,0 +1,249 @@
+<app-page-header [heading]="(isEdit() ? 'crm.sites.editTitle' : 'crm.sites.newTitle') | t" />
+
+<section appCard class="max-w-3xl">
+  <div appCardContent>
+    <form class="space-y-5" novalidate (submit)="onSubmit($event)">
+      @if (errorKey(); as key) {
+        <app-alert variant="destructive">{{ key | t }}</app-alert>
+      }
+
+      <div class="grid gap-5 sm:grid-cols-2">
+        <div class="space-y-2 sm:col-span-2">
+          <label appLabel for="name" required>{{ 'crm.sites.fields.name' | t }}</label>
+          <input
+            appInput
+            id="name"
+            [formField]="siteForm.name"
+            [attr.aria-invalid]="error('name') ? true : null"
+            [attr.aria-describedby]="error('name') ? 'name-error' : null"
+          />
+          @if (error('name'); as key) {
+            <p id="name-error" class="text-sm text-destructive">{{ key | t }}</p>
+          }
+        </div>
+
+        <div class="space-y-2">
+          <label appLabel for="governorateCode" required>{{ 'crm.sites.fields.governorateCode' | t }}</label>
+          <app-select>
+            <select
+              appSelect
+              id="governorateCode"
+              [formField]="siteForm.governorateCode"
+              [attr.aria-invalid]="error('governorateCode') ? true : null"
+              [attr.aria-describedby]="error('governorateCode') ? 'governorateCode-error' : null"
+            >
+              <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
+              @for (option of reference.options('governorate'); track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+          </app-select>
+          @if (error('governorateCode'); as key) {
+            <p id="governorateCode-error" class="text-sm text-destructive">{{ key | t }}</p>
+          }
+        </div>
+
+        <div class="space-y-2">
+          <label appLabel for="cityCode">{{ 'crm.sites.fields.cityCode' | t }}</label>
+          <app-select>
+            <select appSelect id="cityCode" [formField]="siteForm.cityCode">
+              <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
+              @for (option of reference.options('city'); track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+          </app-select>
+        </div>
+
+        <div class="space-y-2 sm:col-span-2">
+          <label appLabel for="addressLine">{{ 'crm.sites.fields.addressLine' | t }}</label>
+          <input appInput id="addressLine" [formField]="siteForm.addressLine" />
+        </div>
+
+        <div class="space-y-2">
+          <label appLabel for="latitude">{{ 'crm.sites.fields.latitude' | t }}</label>
+          <input appInput id="latitude" type="number" step="any" dir="ltr" [formField]="siteForm.latitude" />
+        </div>
+
+        <div class="space-y-2">
+          <label appLabel for="longitude">{{ 'crm.sites.fields.longitude' | t }}</label>
+          <input appInput id="longitude" type="number" step="any" dir="ltr" [formField]="siteForm.longitude" />
+        </div>
+
+        @if (siteForm.latitude().value() && siteForm.longitude().value()) {
+          <div class="sm:col-span-2">
+            <a
+              appButton
+              variant="outline"
+              size="sm"
+              target="_blank"
+              rel="noopener noreferrer"
+              [href]="'https://maps.google.com/?q=' + siteForm.latitude().value() + ',' + siteForm.longitude().value()"
+            >
+              <app-icon [icon]="mapPinIcon" />
+              {{ 'crm.common.openInMaps' | t }}
+            </a>
+          </div>
+        }
+
+        <div class="space-y-2">
+          <label appLabel for="siteTypeCode">{{ 'crm.sites.fields.siteTypeCode' | t }}</label>
+          <app-select>
+            <select appSelect id="siteTypeCode" [formField]="siteForm.siteTypeCode">
+              <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
+              @for (option of reference.options('site_type'); track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+          </app-select>
+        </div>
+
+        <div class="space-y-2">
+          <label appLabel for="availableAreaM2">{{ 'crm.sites.fields.availableAreaM2' | t }}</label>
+          <input appInput id="availableAreaM2" type="number" step="any" dir="ltr" [formField]="siteForm.availableAreaM2" />
+        </div>
+
+        <div class="space-y-2">
+          <label appLabel for="roofTypeCode">{{ 'crm.sites.fields.roofTypeCode' | t }}</label>
+          <app-select>
+            <select appSelect id="roofTypeCode" [formField]="siteForm.roofTypeCode">
+              <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
+              @for (option of reference.options('roof_type'); track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+          </app-select>
+        </div>
+
+        <div class="space-y-2">
+          <label appLabel for="roofCondition">{{ 'crm.sites.fields.roofCondition' | t }}</label>
+          <app-select>
+            <select appSelect id="roofCondition" [formField]="siteForm.roofCondition">
+              <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
+              @for (condition of roofConditions; track condition) {
+                <option [value]="condition">{{ 'crm.sites.roofCondition.' + condition | t }}</option>
+              }
+            </select>
+          </app-select>
+        </div>
+
+        <div class="space-y-2">
+          <label appLabel for="roofAgeYears">{{ 'crm.sites.fields.roofAgeYears' | t }}</label>
+          <input appInput id="roofAgeYears" type="number" dir="ltr" [formField]="siteForm.roofAgeYears" />
+        </div>
+
+        <div class="space-y-2">
+          <label appLabel for="orientation">{{ 'crm.sites.fields.orientation' | t }}</label>
+          <app-select>
+            <select appSelect id="orientation" [formField]="siteForm.orientation">
+              <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
+              @for (dir of orientations; track dir) {
+                <option [value]="dir">{{ 'crm.sites.orientation.' + dir | t }}</option>
+              }
+            </select>
+          </app-select>
+        </div>
+
+        <div class="space-y-2">
+          <label appLabel for="shading">{{ 'crm.sites.fields.shading' | t }}</label>
+          <app-select>
+            <select appSelect id="shading" [formField]="siteForm.shading">
+              <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
+              @for (level of shadingLevels; track level) {
+                <option [value]="level">{{ 'crm.sites.shading.' + level | t }}</option>
+              }
+            </select>
+          </app-select>
+        </div>
+
+        <div class="space-y-2">
+          <label appLabel for="utilityProviderCode">{{ 'crm.sites.fields.utilityProviderCode' | t }}</label>
+          <app-select>
+            <select appSelect id="utilityProviderCode" [formField]="siteForm.utilityProviderCode">
+              <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
+              @for (option of reference.options('utility_provider'); track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+          </app-select>
+        </div>
+
+        <div class="space-y-2">
+          <label appLabel for="meterNumber">{{ 'crm.sites.fields.meterNumber' | t }}</label>
+          <input appInput id="meterNumber" dir="ltr" [formField]="siteForm.meterNumber" />
+        </div>
+
+        <div class="space-y-2">
+          <label appLabel for="meterType">{{ 'crm.sites.fields.meterType' | t }}</label>
+          <app-select>
+            <select appSelect id="meterType" [formField]="siteForm.meterType">
+              <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
+              @for (option of meterTypes; track option) {
+                <option [value]="option">{{ 'crm.sites.meterTypes.' + option | t }}</option>
+              }
+            </select>
+          </app-select>
+        </div>
+
+        <div class="space-y-2">
+          <label appLabel for="voltageLevel">{{ 'crm.sites.fields.voltageLevel' | t }}</label>
+          <app-select>
+            <select appSelect id="voltageLevel" [formField]="siteForm.voltageLevel">
+              <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
+              @for (option of voltageLevels; track option) {
+                <option [value]="option">{{ 'crm.sites.voltageLevels.' + option | t }}</option>
+              }
+            </select>
+          </app-select>
+        </div>
+
+        <div class="space-y-2">
+          <label appLabel for="contractedLoadKw">{{ 'crm.sites.fields.contractedLoadKw' | t }}</label>
+          <input appInput id="contractedLoadKw" type="number" dir="ltr" [formField]="siteForm.contractedLoadKw" />
+        </div>
+
+        <div class="space-y-2">
+          <label appLabel for="transformerKva">{{ 'crm.sites.fields.transformerKva' | t }}</label>
+          <input appInput id="transformerKva" type="number" dir="ltr" [formField]="siteForm.transformerKva" />
+        </div>
+
+        <div class="space-y-2">
+          <label appLabel for="tariffCategory">{{ 'crm.sites.fields.tariffCategory' | t }}</label>
+          <input appInput id="tariffCategory" [formField]="siteForm.tariffCategory" />
+        </div>
+
+        <div class="space-y-2">
+          <label appLabel for="avgMonthlyConsumptionKwh">{{ 'crm.sites.fields.avgMonthlyConsumptionKwh' | t }}</label>
+          <input appInput id="avgMonthlyConsumptionKwh" type="number" dir="ltr" [formField]="siteForm.avgMonthlyConsumptionKwh" />
+        </div>
+
+        <div class="space-y-2">
+          <label appLabel for="avgMonthlyBillEgp">{{ 'crm.sites.fields.avgMonthlyBillEgp' | t }}</label>
+          <input appInput id="avgMonthlyBillEgp" type="number" dir="ltr" [formField]="siteForm.avgMonthlyBillEgp" />
+        </div>
+      </div>
+
+      <div class="space-y-2">
+        <label appLabel for="infrastructureNotes">{{ 'crm.sites.fields.infrastructureNotes' | t }}</label>
+        <textarea appTextarea id="infrastructureNotes" rows="2" [formField]="siteForm.infrastructureNotes"></textarea>
+      </div>
+
+      <div class="space-y-2">
+        <label appLabel for="notes">{{ 'crm.sites.fields.notes' | t }}</label>
+        <textarea appTextarea id="notes" rows="3" [formField]="siteForm.notes"></textarea>
+      </div>
+
+      <div class="flex justify-end gap-2">
+        <a appButton variant="outline" [routerLink]="['/customers', customerId()]">{{ 'crm.common.cancel' | t }}</a>
+        <button type="submit" appButton [disabled]="siteForm().submitting()" [attr.aria-busy]="siteForm().submitting()">
+          @if (siteForm().submitting()) {
+            <app-icon [icon]="spinnerIcon" svgClass="size-4 animate-spin" />
+            {{ 'crm.common.saving' | t }}
+          } @else {
+            {{ 'crm.common.save' | t }}
+          }
+        </button>
+      </div>
+    </form>
+  </div>
+</section>

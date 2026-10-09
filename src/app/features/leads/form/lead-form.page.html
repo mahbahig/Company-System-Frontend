@@ -1,0 +1,272 @@
+<app-page-header
+  [heading]="(isEdit() ? 'crm.leads.editTitle' : 'crm.leads.newTitle') | t"
+  [subtitle]="existing.value()?.lead?.leadNo ?? ''"
+  class="!mb-0"
+/>
+
+@if (readOnly()) {
+  <app-alert variant="destructive">{{ 'crm.leads.close.readOnlyNotice' | t }}</app-alert>
+} @else {
+  <form class="flex flex-col gap-6" novalidate (submit)="onSubmit($event)">
+    @if (errorKey(); as key) {
+      <app-alert variant="destructive">{{ key | t }}</app-alert>
+    }
+
+    <section appCard aria-labelledby="identity-heading">
+      <div appCardHeader><h2 appCardTitle id="identity-heading">{{ 'crm.leads.sections.identity' | t }}</h2></div>
+      <div appCardContent class="grid gap-5 sm:grid-cols-2">
+        <div>
+          <label appLabel for="lf-name" class="mb-1.5 block" required>{{ 'crm.leads.fields.personOrCompanyName' | t }}</label>
+          <input appInput id="lf-name" [formField]="leadForm.name" [attr.aria-invalid]="fieldError('name') ? true : null" />
+          @if (fieldError('name'); as key) {
+            <p class="mt-1 text-sm text-destructive">{{ key | t }}</p>
+          }
+        </div>
+        <div>
+          <label appLabel for="lf-company" class="mb-1.5 block">{{ 'completeness.items.company' | t }}</label>
+          <input appInput id="lf-company" [formField]="leadForm.companyName" />
+        </div>
+        <div>
+          <label appLabel for="lf-contact" class="mb-1.5 block">{{ 'crm.leads.fields.contactPersonName' | t }}</label>
+          <input appInput id="lf-contact" [formField]="leadForm.contactPerson" />
+        </div>
+        <div>
+          <label appLabel for="lf-category" class="mb-1.5 block">{{ 'crm.leads.fields.categoryCode' | t }}</label>
+          <app-select>
+            <select appSelect id="lf-category" [formField]="leadForm.categoryCode">
+              <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
+              @for (option of reference.options('customer_category'); track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+          </app-select>
+        </div>
+        <div>
+          <label appLabel for="lf-sector" class="mb-1.5 block">{{ 'crm.leads.fields.sectorCode' | t }}</label>
+          <app-select>
+            <select appSelect id="lf-sector" [formField]="leadForm.sectorCode">
+              <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
+              @for (option of reference.options('sector'); track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+          </app-select>
+        </div>
+      </div>
+    </section>
+
+    <section appCard aria-labelledby="contact-heading">
+      <div appCardHeader><h2 appCardTitle id="contact-heading">{{ 'crm.leads.sections.contact' | t }}</h2></div>
+      <div appCardContent class="grid gap-5 sm:grid-cols-2">
+        <div>
+          <label appLabel for="lf-phone" class="mb-1.5 block" required>{{ 'crm.leads.fields.phone' | t }}</label>
+          <input appInput id="lf-phone" dir="ltr" [formField]="leadForm.phone" [attr.aria-invalid]="fieldError('phone') ? true : null" />
+          @if (fieldError('phone'); as key) {
+            <p class="mt-1 text-sm text-destructive">{{ key | t }}</p>
+          }
+        </div>
+        <div>
+          <label appLabel for="lf-altphone" class="mb-1.5 block">{{ 'crm.leads.fields.altPhone' | t }}</label>
+          <input appInput id="lf-altphone" dir="ltr" [formField]="leadForm.altPhone" />
+        </div>
+        <div>
+          <label appLabel for="lf-email" class="mb-1.5 block">{{ 'crm.leads.fields.email' | t }}</label>
+          <input appInput id="lf-email" type="email" dir="ltr" [formField]="leadForm.email" />
+        </div>
+      </div>
+    </section>
+
+    <section appCard aria-labelledby="location-heading">
+      <div appCardHeader><h2 appCardTitle id="location-heading">{{ 'crm.leads.sections.location' | t }}</h2></div>
+      <div appCardContent class="grid gap-5 sm:grid-cols-2">
+        <div>
+          <label appLabel for="lf-gov" class="mb-1.5 block">{{ 'crm.leads.fields.governorateCode' | t }}</label>
+          <app-select>
+            <select appSelect id="lf-gov" [formField]="leadForm.governorateCode">
+              <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
+              @for (option of reference.options('governorate'); track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+          </app-select>
+        </div>
+        <div>
+          <label appLabel for="lf-city" class="mb-1.5 block">{{ 'crm.leads.fields.cityCode' | t }}</label>
+          <app-select>
+            <select appSelect id="lf-city" [formField]="leadForm.cityCode">
+              <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
+              @for (option of reference.options('city'); track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+          </app-select>
+        </div>
+        <div class="sm:col-span-2">
+          <label appLabel for="lf-address" class="mb-1.5 block">{{ 'crm.leads.fields.addressLine' | t }}</label>
+          <input appInput id="lf-address" [formField]="leadForm.addressLine" />
+        </div>
+      </div>
+    </section>
+
+    <section appCard aria-labelledby="requirement-heading">
+      <div appCardHeader><h2 appCardTitle id="requirement-heading">{{ 'crm.leads.sections.requirement' | t }}</h2></div>
+      <div appCardContent class="grid gap-5 sm:grid-cols-2">
+        <div>
+          <label appLabel for="lf-service" class="mb-1.5 block">{{ 'crm.leads.fields.requestedServiceCode' | t }}</label>
+          <app-select>
+            <select appSelect id="lf-service" [formField]="leadForm.requestedServiceCode">
+              <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
+              @for (option of reference.options('service_type'); track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+          </app-select>
+        </div>
+        <div>
+          <label appLabel for="lf-solution" class="mb-1.5 block">{{ 'crm.leads.fields.solutionTypeCode' | t }}</label>
+          <app-select>
+            <select appSelect id="lf-solution" [formField]="leadForm.solutionTypeCode">
+              <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
+              @for (option of reference.options('solution_type'); track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+          </app-select>
+        </div>
+        <div>
+          <label appLabel for="lf-value" class="mb-1.5 block">{{ 'crm.leads.fields.estimatedValue' | t }}</label>
+          <input appInput id="lf-value" type="number" dir="ltr" [formField]="leadForm.estimatedValue" />
+        </div>
+      </div>
+    </section>
+
+    <section appCard aria-labelledby="qualification-heading">
+      <div appCardHeader>
+        <h2 appCardTitle id="qualification-heading">{{ 'crm.leads.sections.qualification' | t }}</h2>
+        <p class="text-sm text-muted-foreground">{{ 'crm.leads.qualification.hint' | t }}</p>
+      </div>
+      <div appCardContent class="grid gap-5 sm:grid-cols-2">
+        <div>
+          <label appLabel for="lq-consumption" class="mb-1.5 block">{{ 'crm.leads.qualification.avgMonthlyConsumptionKwh' | t }}</label>
+          <input appInput id="lq-consumption" type="number" dir="ltr" [formField]="leadForm.q.avgMonthlyConsumptionKwh" />
+        </div>
+        <div>
+          <label appLabel for="lq-bill" class="mb-1.5 block">{{ 'crm.leads.qualification.avgMonthlyBill' | t }}</label>
+          <input appInput id="lq-bill" type="number" dir="ltr" [formField]="leadForm.q.avgMonthlyBill" />
+        </div>
+        <div>
+          <label appLabel for="lq-size" class="mb-1.5 block">{{ 'crm.leads.qualification.estimatedSizeKwp' | t }}</label>
+          <input appInput id="lq-size" type="number" dir="ltr" [formField]="leadForm.q.estimatedSizeKwp" />
+        </div>
+        <div>
+          <label appLabel for="lq-budget" class="mb-1.5 block">{{ 'crm.leads.qualification.budget' | t }}</label>
+          <input appInput id="lq-budget" type="number" dir="ltr" [formField]="leadForm.q.budget" />
+        </div>
+        <div>
+          <label appLabel for="lq-timeline" class="mb-1.5 block">{{ 'crm.leads.qualification.timeline' | t }}</label>
+          <app-select>
+            <select appSelect id="lq-timeline" [formField]="leadForm.q.timeline">
+              <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
+              @for (option of timelines; track option) {
+                <option [value]="option">{{ 'crm.leads.qualification.timelines.' + option | t }}</option>
+              }
+            </select>
+          </app-select>
+        </div>
+        <div>
+          <label appLabel for="lq-interest" class="mb-1.5 block">{{ 'crm.leads.qualification.interestLevel' | t }}</label>
+          <input appInput id="lq-interest" type="number" dir="ltr" [formField]="leadForm.q.interestLevel" />
+        </div>
+        <div>
+          <label appLabel for="lq-dm" class="mb-1.5 block">{{ 'crm.leads.qualification.decisionMakerName' | t }}</label>
+          <input appInput id="lq-dm" [formField]="leadForm.q.decisionMakerName" />
+        </div>
+        <div>
+          <label appLabel for="lq-dmrole" class="mb-1.5 block">{{ 'crm.leads.qualification.decisionMakerRole' | t }}</label>
+          <input appInput id="lq-dmrole" [formField]="leadForm.q.decisionMakerRole" />
+        </div>
+        <div>
+          <label appLabel for="lq-site" class="mb-1.5 block">{{ 'crm.leads.qualification.siteAvailability' | t }}</label>
+          <input appInput id="lq-site" [formField]="leadForm.q.siteAvailability" />
+        </div>
+        <div class="flex items-center gap-2 sm:pt-7">
+          <input type="checkbox" id="lq-financing" class="size-4 rounded border-input accent-primary" [formField]="leadForm.q.financingInterest" />
+          <label appLabel for="lq-financing">{{ 'crm.leads.qualification.financingInterest' | t }}</label>
+        </div>
+        <div class="sm:col-span-2">
+          <label appLabel for="lq-req" class="mb-1.5 block">{{ 'crm.leads.qualification.requirements' | t }}</label>
+          <textarea appTextarea id="lq-req" rows="3" [formField]="leadForm.q.requirements"></textarea>
+        </div>
+      </div>
+    </section>
+
+    <section appCard aria-labelledby="source-heading">
+      <div appCardHeader><h2 appCardTitle id="source-heading">{{ 'crm.leads.sections.source' | t }}</h2></div>
+      <div appCardContent class="grid gap-5 sm:grid-cols-2">
+        <div>
+          <label appLabel for="lf-source" class="mb-1.5 block" required>{{ 'crm.leads.fields.sourceCode' | t }}</label>
+          <app-select>
+            <select appSelect id="lf-source" [formField]="leadForm.sourceCode" [attr.aria-invalid]="fieldError('sourceCode') ? true : null">
+              <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
+              @for (option of reference.options('lead_source'); track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+          </app-select>
+          @if (fieldError('sourceCode'); as key) {
+            <p class="mt-1 text-sm text-destructive">{{ key | t }}</p>
+          }
+        </div>
+        <div>
+          <label appLabel for="lf-campaign" class="mb-1.5 block">{{ 'crm.leads.fields.campaign' | t }}</label>
+          <app-select>
+            <select appSelect id="lf-campaign" [formField]="leadForm.campaignCode">
+              <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
+              @for (option of reference.options('campaign'); track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+          </app-select>
+        </div>
+      </div>
+    </section>
+
+    <section appCard aria-labelledby="assignment-heading">
+      <div appCardHeader><h2 appCardTitle id="assignment-heading">{{ 'crm.leads.sections.assignment' | t }}</h2></div>
+      <div appCardContent class="grid gap-5 sm:grid-cols-2">
+        <div>
+          <label appLabel for="lf-priority" class="mb-1.5 block">{{ 'crm.leads.fields.urgency' | t }}</label>
+          <app-select>
+            <select appSelect id="lf-priority" [formField]="leadForm.priority">
+              <option value="low">{{ 'crm.leads.urgency.low' | t }}</option>
+              <option value="normal">{{ 'crm.leads.urgency.normal' | t }}</option>
+              <option value="high">{{ 'crm.leads.urgency.high' | t }}</option>
+              <option value="urgent">{{ 'crm.leads.urgency.urgent' | t }}</option>
+            </select>
+          </app-select>
+        </div>
+        <div>
+          <label appLabel for="lf-followup" class="mb-1.5 block">{{ 'crm.leads.fields.nextFollowUpAt' | t }}</label>
+          <input appInput id="lf-followup" type="date" dir="ltr" [formField]="leadForm.nextFollowUpAt" />
+        </div>
+        <div class="sm:col-span-2">
+          <label appLabel for="lf-nextaction" class="mb-1.5 block">{{ 'crm.leads.fields.nextAction' | t }}</label>
+          <input appInput id="lf-nextaction" [formField]="leadForm.nextAction" />
+        </div>
+      </div>
+    </section>
+
+    <section appCard aria-labelledby="notes-heading">
+      <div appCardHeader><h2 appCardTitle id="notes-heading">{{ 'crm.leads.sections.notes' | t }}</h2></div>
+      <div appCardContent>
+        <textarea appTextarea rows="4" [formField]="leadForm.notes"></textarea>
+      </div>
+    </section>
+
+    <div>
+      <button type="submit" appButton [disabled]="leadForm().submitting()">
+        {{ (leadForm().submitting() ? 'crm.common.saving' : 'crm.common.save') | t }}
+      </button>
+    </div>
+  </form>
+}

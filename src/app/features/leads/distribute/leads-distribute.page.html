@@ -1,0 +1,114 @@
+<app-page-header [heading]="'crm.leads.distribute.title' | t" [subtitle]="'crm.leads.distribute.subtitle' | t" class="!mb-0" />
+
+<p class="text-sm text-muted-foreground">{{ 'crm.leads.distribute.unassignedCount' | t: { count: unassignedCount() } }}</p>
+
+<section appCard aria-labelledby="manual-heading">
+  <div appCardHeader><h2 appCardTitle id="manual-heading">{{ 'crm.leads.distribute.manualTitle' | t }}</h2></div>
+  <div appCardContent class="flex flex-col gap-4">
+    @if (assignError(); as key) {
+      <app-alert variant="destructive">{{ key | t }}</app-alert>
+    }
+    @if (assignDone()) {
+      <app-alert variant="default">{{ 'crm.leads.distribute.assigned' | t }}</app-alert>
+    }
+
+    <app-table-wrapper [label]="'crm.leads.distribute.manualTitle' | t" [attr.aria-busy]="unassigned.isLoading()">
+      <table appTable>
+        <thead appTableHeader>
+          <tr appTableRow>
+            <th appTableHead class="!w-10"><span class="sr-only">{{ 'crm.leads.columns.select' | t }}</span></th>
+            <th appTableHead>{{ 'crm.leads.distribute.columns.leadNo' | t }}</th>
+            <th appTableHead>{{ 'crm.leads.distribute.columns.leadName' | t }}</th>
+            <th appTableHead>{{ 'crm.leads.columns.urgency' | t }}</th>
+            <th appTableHead>{{ 'crm.leads.columns.governorate' | t }}</th>
+          </tr>
+        </thead>
+        <tbody appTableBody>
+          @for (row of unassigned.value()?.rows ?? []; track row.id) {
+            <tr appTableRow>
+              <td appTableCell>
+                <input
+                  type="checkbox"
+                  class="size-4 rounded border-input accent-primary"
+                  [checked]="isSelected(row.id)"
+                  (change)="toggleSelected(row.id, $any($event.target).checked)"
+                  [attr.aria-label]="row.leadNo"
+                />
+              </td>
+              <td appTableCell class="tabular whitespace-nowrap" dir="ltr">{{ row.leadNo }}</td>
+              <td appTableCell>{{ row.name }}</td>
+              <td appTableCell>{{ 'crm.leads.urgency.' + row.priority | t }}</td>
+              <td appTableCell class="whitespace-nowrap">{{ reference.label('governorate', row.governorateCode) }}</td>
+            </tr>
+          } @empty {
+            <tr app-table-empty [colSpan]="5">{{ (unassigned.isLoading() ? 'common.labels.loading' : 'crm.leads.empty') | t }}</tr>
+          }
+        </tbody>
+      </table>
+    </app-table-wrapper>
+
+    <form class="flex flex-wrap items-end gap-3" novalidate (submit)="onAssignSubmit($event)">
+      <div>
+        <label appLabel for="dm-owner" class="mb-1.5 block" required>{{ 'crm.leads.distribute.manualOwner' | t }}</label>
+        <input appInput id="dm-owner" dir="ltr" class="w-48" [formField]="assignForm.ownerId" />
+      </div>
+      <div>
+        <label appLabel for="dm-reason" class="mb-1.5 block" required>{{ 'crm.leads.distribute.manualReason' | t }}</label>
+        <input appInput id="dm-reason" class="w-64" [formField]="assignForm.reason" />
+      </div>
+      <button type="submit" appButton [disabled]="selected().size === 0 || assignForm().submitting()">
+        {{ (assignForm().submitting() ? 'crm.leads.distribute.assigning' : 'crm.leads.distribute.assign') | t }}
+      </button>
+    </form>
+  </div>
+</section>
+
+<section appCard aria-labelledby="batch-heading">
+  <div appCardHeader><h2 appCardTitle id="batch-heading">{{ 'crm.leads.distribute.title' | t }}</h2></div>
+  <div appCardContent class="flex flex-col gap-4">
+    @if (distributeError(); as key) {
+      <app-alert variant="destructive">{{ key | t }}</app-alert>
+    }
+    @if (distributedCount(); as count) {
+      <app-alert variant="default">{{ 'crm.leads.distribute.distributed' | t: { count } }}</app-alert>
+    }
+
+    <div class="flex gap-2">
+      <button type="button" appButton variant="outline" [disabled]="previewing()" (click)="preview()">
+        {{ (previewing() ? 'crm.leads.distribute.previewing' : 'crm.leads.distribute.previewAction') | t }}
+      </button>
+      @if (proposals()) {
+        <button type="button" appButton [disabled]="confirming()" (click)="confirmDistribution()">
+          {{ (confirming() ? 'crm.leads.distribute.confirming' : 'crm.leads.distribute.confirmAction') | t }}
+        </button>
+      }
+    </div>
+
+    @if (proposals(); as rows) {
+      <app-table-wrapper [label]="'crm.leads.distribute.title' | t">
+        <table appTable>
+          <thead appTableHeader>
+            <tr appTableRow>
+              <th appTableHead>{{ 'crm.leads.distribute.columns.leadNo' | t }}</th>
+              <th appTableHead>{{ 'crm.leads.distribute.columns.leadName' | t }}</th>
+              <th appTableHead>{{ 'crm.leads.distribute.columns.proposedOwner' | t }}</th>
+              <th appTableHead>{{ 'crm.leads.distribute.columns.reason' | t }}</th>
+            </tr>
+          </thead>
+          <tbody appTableBody>
+            @for (row of rows; track row.leadId) {
+              <tr appTableRow>
+                <td appTableCell class="tabular whitespace-nowrap" dir="ltr">{{ row.leadNo }}</td>
+                <td appTableCell>{{ row.leadName }}</td>
+                <td appTableCell>{{ row.ownerId ? i18n.pick(row.ownerNameAr, row.ownerNameEn) : ('crm.leads.distribute.noCandidate' | t) }}</td>
+                <td appTableCell class="text-sm text-muted-foreground">{{ row.reason }}</td>
+              </tr>
+            } @empty {
+              <tr app-table-empty [colSpan]="4">{{ 'crm.leads.empty' | t }}</tr>
+            }
+          </tbody>
+        </table>
+      </app-table-wrapper>
+    }
+  </div>
+</section>
