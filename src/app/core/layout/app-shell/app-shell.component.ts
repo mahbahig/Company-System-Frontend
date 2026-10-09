@@ -38,7 +38,10 @@ import { UserMenuComponent } from '../user-menu/user-menu.component';
   ],
   templateUrl: './app-shell.component.html',
   host: {
-    class: 'flex min-h-dvh',
+    // h-dvh + overflow-hidden pins the shell to the viewport so the sidebar
+    // nav and the main content each scroll within their own pane instead of
+    // the whole page scrolling as one.
+    class: 'flex h-dvh overflow-hidden',
     '(document:keydown.escape)': 'closeDrawer()',
   },
 })
