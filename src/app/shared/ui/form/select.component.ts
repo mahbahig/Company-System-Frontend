@@ -1,0 +1,25 @@
+import { Component } from '@angular/core';
+
+/**
+ * Positions the decorative chevron over a native `<select appSelect>`.
+ * The native element is kept on purpose: it is fully accessible and uses the
+ * platform picker on phones (field engineers).
+ */
+@Component({
+  selector: 'app-select',
+  template: `
+    <ng-content />
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 20 20"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.6"
+      class="pointer-events-none absolute end-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+    >
+      <path d="M6 8l4 4 4-4" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+  `,
+  host: { class: 'relative block' },
+})
+export class SelectComponent {}
