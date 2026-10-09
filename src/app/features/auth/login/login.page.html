@@ -1,0 +1,183 @@
+<div class="absolute end-4 top-4 z-10 flex items-center gap-1">
+  <app-locale-switcher />
+  <app-theme-toggle />
+</div>
+
+<!-- Brand panel — desktop only; mobile stays a clean single-column form. -->
+<div class="relative hidden overflow-hidden bg-sidebar text-sidebar-foreground lg:flex lg:w-[44%] lg:flex-col lg:justify-between lg:px-12 lg:py-14 xl:w-[42%]">
+  <div
+    aria-hidden="true"
+    class="pointer-events-none absolute inset-0 [background:radial-gradient(circle_at_18%_12%,hsl(var(--sidebar-accent)/0.5),transparent_55%),radial-gradient(circle_at_88%_92%,hsl(var(--accent)/0.22),transparent_50%)]"
+  ></div>
+  <div
+    aria-hidden="true"
+    class="pointer-events-none absolute inset-0 opacity-[0.06] [background-image:linear-gradient(hsl(var(--sidebar-foreground))_1px,transparent_1px),linear-gradient(90deg,hsl(var(--sidebar-foreground))_1px,transparent_1px)] [background-size:40px_40px]"
+  ></div>
+
+  <div class="relative flex items-center gap-3">
+    <span
+      aria-hidden="true"
+      class="flex size-11 items-center justify-center rounded-xl bg-sidebar-accent text-primary-foreground shadow-lg shadow-black/20"
+    >
+      <app-icon [icon]="sunIcon" svgClass="size-6" />
+    </span>
+    <span class="text-lg font-semibold tracking-tight">{{ 'app.name' | t }}</span>
+  </div>
+
+  <div class="relative max-w-sm">
+    <h2 class="text-3xl font-semibold leading-tight tracking-tight text-balance">{{ 'auth.login.brandHeadline' | t }}</h2>
+    <p class="mt-4 text-sm leading-relaxed text-sidebar-foreground/70">{{ 'auth.login.brandSubheadline' | t }}</p>
+  </div>
+
+  <p class="relative text-xs text-sidebar-foreground/50">{{ 'app.companyName' | t }}</p>
+</div>
+
+<!-- Form panel -->
+<div
+  class="relative flex flex-1 items-center justify-center px-4 py-12 [background:radial-gradient(circle_at_50%_0%,hsl(var(--primary)/0.07),transparent_60%)]"
+>
+  <main id="main-content" class="w-full max-w-md animate-fade-in-up">
+    <!-- Makes it impossible to mistake staging for production in adjacent tabs. -->
+    @if (environmentBadge) {
+      <p class="mb-4 text-center text-xs font-medium uppercase tracking-wide text-warning-tint">
+        {{ 'app.environment.' + environmentBadge | t }}
+      </p>
+    }
+
+    <div class="mb-8 flex flex-col items-center gap-3 text-center lg:hidden">
+      <span
+        aria-hidden="true"
+        class="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-lg shadow-primary/30 ring-4 ring-primary/10"
+      >
+        <app-icon [icon]="sunIcon" svgClass="size-6" />
+      </span>
+      <div>
+        <h1 class="text-xl font-semibold tracking-tight">{{ 'auth.login.title' | t }}</h1>
+        <p class="mt-1 text-sm text-muted-foreground">{{ 'auth.login.subtitle' | t }}</p>
+      </div>
+    </div>
+
+    <div class="mb-8 hidden text-center lg:block">
+      <h1 class="text-2xl font-semibold tracking-tight">{{ 'auth.login.title' | t }}</h1>
+      <p class="mt-1 text-sm text-muted-foreground">{{ 'auth.login.subtitle' | t }}</p>
+    </div>
+
+    @if (notice(); as notice) {
+      <app-alert [variant]="notice.variant" class="mb-6">{{ notice.key | t }}</app-alert>
+    }
+
+    <div class="rounded-2xl border border-border/60 bg-card/90 p-8 shadow-2xl shadow-primary/10 backdrop-blur-xl supports-[backdrop-filter]:bg-card/75">
+      @if (mfaToken()) {
+        <form class="space-y-5" novalidate (submit)="onVerify($event)">
+          @if (errorKey(); as errorKey) {
+            <app-alert variant="destructive">{{ errorKey | t }}</app-alert>
+          }
+          <div>
+            <h2 class="text-base font-semibold">{{ 'account.mfa.verifyTitle' | t }}</h2>
+            <p class="mt-1 text-sm text-muted-foreground">{{ 'account.mfa.verifyHint' | t }}</p>
+          </div>
+          <div class="space-y-2">
+            <label appLabel for="mfa-code" required>{{ 'account.mfa.code' | t }}</label>
+            <input appInput id="mfa-code" inputmode="numeric" autocomplete="one-time-code" dir="ltr" class="tabular tracking-widest" [value]="mfaCode()" (input)="mfaCode.set($any($event.target).value)" />
+          </div>
+          <button type="submit" appButton fullWidth [disabled]="verifying() || mfaCode().trim().length < 6" [attr.aria-busy]="verifying()">{{ 'account.mfa.verify' | t }}</button>
+          <button type="button" appButton variant="ghost" fullWidth (click)="cancelMfa()">{{ 'account.mfa.back' | t }}</button>
+        </form>
+      } @else {
+        <form class="space-y-5" novalidate (submit)="onSubmit($event)">
+          @if (errorKey(); as errorKey) {
+            <app-alert variant="destructive">
+              <div class="flex items-start gap-2">
+                <app-icon [icon]="alertIcon" svgClass="mt-0.5 size-4" />
+                <p>{{ errorKey | t }}</p>
+              </div>
+            </app-alert>
+          }
+
+          <div class="space-y-2">
+            <label appLabel for="email" required>{{ 'auth.login.emailLabel' | t }}</label>
+            <div class="relative">
+              <span aria-hidden="true" class="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                <app-icon [icon]="mailIcon" svgClass="size-4" />
+              </span>
+              <input
+                appInput
+                id="email"
+                type="email"
+                inputmode="email"
+                autocomplete="username"
+                autocapitalize="none"
+                spellcheck="false"
+                dir="ltr"
+                class="ps-10"
+                [formField]="loginForm.email"
+                [placeholder]="'auth.login.emailPlaceholder' | t"
+                [attr.aria-invalid]="fieldError('email') ? true : null"
+                [attr.aria-describedby]="fieldError('email') ? 'email-error' : null"
+              />
+            </div>
+            @if (fieldError('email'); as key) {
+              <p id="email-error" class="text-sm text-destructive">{{ key | t }}</p>
+            }
+          </div>
+
+          <div class="space-y-2">
+            <label appLabel for="password" required>{{ 'auth.login.passwordLabel' | t }}</label>
+            <div class="relative">
+              <span aria-hidden="true" class="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                <app-icon [icon]="lockIcon" svgClass="size-4" />
+              </span>
+              <input
+                appInput
+                id="password"
+                [type]="showPassword() ? 'text' : 'password'"
+                autocomplete="current-password"
+                dir="ltr"
+                class="pe-10 ps-10"
+                [formField]="loginForm.password"
+                [placeholder]="'auth.login.passwordPlaceholder' | t"
+                [attr.aria-invalid]="fieldError('password') ? true : null"
+                [attr.aria-describedby]="fieldError('password') ? 'password-error' : null"
+              />
+              <button
+                type="button"
+                class="absolute end-1 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                [attr.aria-label]="(showPassword() ? 'auth.login.hidePassword' : 'auth.login.showPassword') | t"
+                [attr.aria-pressed]="showPassword()"
+                aria-controls="password"
+                (click)="showPassword.update((shown) => !shown)"
+              >
+                <app-icon [icon]="showPassword() ? eyeOffIcon : eyeIcon" svgClass="size-4" />
+              </button>
+            </div>
+            @if (fieldError('password'); as key) {
+              <p id="password-error" class="text-sm text-destructive">{{ key | t }}</p>
+            }
+          </div>
+
+          <div class="-mt-2 text-end">
+            <a class="text-sm text-primary hover:underline" [routerLink]="['/', i18n.locale(), 'forgot-password']">{{ 'account.forgot.link' | t }}</a>
+          </div>
+
+          <button
+            type="submit"
+            appButton
+            fullWidth
+            class="shadow-md shadow-primary/20 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/30 active:translate-y-0"
+            [disabled]="loginForm().submitting()"
+            [attr.aria-busy]="loginForm().submitting()"
+          >
+            @if (loginForm().submitting()) {
+              <app-icon [icon]="spinnerIcon" svgClass="size-4 animate-spin" />
+              {{ 'common.actions.signingIn' | t }}
+            } @else {
+              {{ 'auth.login.submit' | t }}
+            }
+          </button>
+        </form>
+      }
+    </div>
+
+    <p class="mt-8 text-center text-xs text-muted-foreground lg:hidden">{{ 'app.companyName' | t }}</p>
+  </main>
+</div>
