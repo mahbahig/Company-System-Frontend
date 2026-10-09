@@ -1,0 +1,292 @@
+@import 'tailwindcss';
+@import '@angular/cdk/overlay-prebuilt.css';
+
+/**
+ * EcoTech design tokens — copied verbatim from the Next.js app
+ * (src/app/globals.css + tailwind.config.ts) so both apps look identical.
+ *
+ * Every colour is an HSL triplet behind a CSS variable so that the light
+ * theme, the dark theme and any future white-labelling are changed in one
+ * place. `@theme inline` maps them onto Tailwind utilities with the same
+ * names the Next app uses (bg-primary, text-success-tint, bg-sidebar …).
+ *
+ * Palette intent: a deep teal-green primary for energy and sustainability,
+ * a warm solar amber used sparingly for emphasis only, and a neutral slate
+ * scale that keeps dense data tables readable.
+ */
+
+/* Dark mode follows the `.dark` class on <html> (set by ThemeService). */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-destructive-tint: hsl(var(--destructive-tint-foreground));
+  --color-success: hsl(var(--success));
+  --color-success-foreground: hsl(var(--success-foreground));
+  --color-success-tint: hsl(var(--success-tint-foreground));
+  --color-warning: hsl(var(--warning));
+  --color-warning-foreground: hsl(var(--warning-foreground));
+  --color-warning-tint: hsl(var(--warning-tint-foreground));
+  --color-info: hsl(var(--info));
+  --color-info-foreground: hsl(var(--info-foreground));
+  --color-info-tint: hsl(var(--info-tint-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-sidebar: hsl(var(--sidebar));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+  --color-sidebar-accent: hsl(var(--sidebar-accent));
+  --color-sidebar-border: hsl(var(--sidebar-border));
+  --color-chart-1: hsl(var(--chart-1));
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-5: hsl(var(--chart-5));
+  --color-chart-6: hsl(var(--chart-6));
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-arabic: 'Cairo', 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* Dense-but-legible scale tuned for data tables. */
+  --text-2xs: 0.6875rem;
+  --text-2xs--line-height: 1rem;
+}
+
+@utility container {
+  margin-inline: auto;
+  padding-inline: 1rem;
+  max-width: 1440px;
+}
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 215 25% 16%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 215 25% 16%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 25% 16%;
+
+    /* Deep teal — primary actions, active navigation, focus rings */
+    --primary: 178 62% 26%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 20% 96%;
+    --secondary-foreground: 215 25% 22%;
+
+    --muted: 210 20% 96%;
+    --muted-foreground: 215 14% 44%;
+
+    /* Solar amber — emphasis only, never large fills */
+    --accent: 38 92% 50%;
+    --accent-foreground: 30 60% 14%;
+
+    --destructive: 0 72% 45%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 152 60% 32%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 32 90% 44%;
+    --warning-foreground: 0 0% 100%;
+
+    --info: 205 78% 40%;
+    --info-foreground: 0 0% 100%;
+
+    /* Text colour for a tone drawn ON a 15% tint of itself (status badges);
+       each measured ≥ 4.6:1 against the tint over --card (WCAG AA). */
+    --success-tint-foreground: 152 60% 28%;
+    --warning-tint-foreground: 32 90% 32%;
+    --info-tint-foreground: 205 78% 37%;
+    --destructive-tint-foreground: 0 72% 44%;
+
+    --border: 214 20% 88%;
+    --input: 214 20% 84%;
+    --ring: 178 62% 32%;
+
+    --sidebar: 200 30% 12%;
+    --sidebar-foreground: 205 20% 88%;
+    --sidebar-accent: 178 55% 34%;
+    --sidebar-border: 200 25% 20%;
+
+    /* Categorical chart scale — distinguishable in both themes and for the
+       most common colour-vision deficiencies. */
+    --chart-1: 178 62% 32%;
+    --chart-2: 38 92% 41%;
+    --chart-3: 205 78% 45%;
+    --chart-4: 152 55% 38%;
+    --chart-5: 275 50% 50%;
+    --chart-6: 12 75% 52%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 210 28% 9%;
+    --foreground: 205 20% 92%;
+
+    --card: 210 25% 12%;
+    --card-foreground: 205 20% 92%;
+
+    --popover: 210 25% 12%;
+    --popover-foreground: 205 20% 92%;
+
+    --primary: 178 55% 42%;
+    --primary-foreground: 200 40% 8%;
+
+    --secondary: 210 20% 18%;
+    --secondary-foreground: 205 20% 92%;
+
+    --muted: 210 20% 18%;
+    --muted-foreground: 210 12% 62%;
+
+    --accent: 38 88% 56%;
+    --accent-foreground: 30 60% 12%;
+
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 152 50% 42%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 32 82% 52%;
+    --warning-foreground: 30 60% 10%;
+
+    --info: 205 70% 52%;
+    --info-foreground: 0 0% 100%;
+
+    --success-tint-foreground: 152 50% 45%;
+    --warning-tint-foreground: 32 82% 49%;
+    --info-tint-foreground: 205 70% 57%;
+    --destructive-tint-foreground: 0 62% 65%;
+
+    --border: 210 18% 22%;
+    --input: 210 18% 26%;
+    --ring: 178 55% 46%;
+
+    --sidebar: 210 30% 8%;
+    --sidebar-foreground: 205 18% 84%;
+    --sidebar-accent: 178 50% 38%;
+    --sidebar-border: 210 24% 16%;
+
+    --chart-1: 178 55% 46%;
+    --chart-2: 38 88% 58%;
+    --chart-3: 205 72% 56%;
+    --chart-4: 152 48% 48%;
+    --chart-5: 275 48% 62%;
+    --chart-6: 12 70% 60%;
+  }
+
+  *,
+  ::after,
+  ::before {
+    border-color: var(--color-border);
+  }
+
+  html {
+    /* Prevents iOS Safari from inflating text in the field-visit views. */
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-background font-sans text-foreground antialiased;
+    font-feature-settings:
+      'rlig' 1,
+      'calt' 1;
+  }
+
+  /* Arabic renders in the Arabic-optimised stack; dir/lang are set on <html>
+     before first paint by I18nService so there is no mis-directed flash. */
+  html[lang='ar'] body {
+    @apply font-arabic;
+    /* Arabic glyphs need slightly more vertical room at the same optical size. */
+    line-height: 1.75;
+  }
+
+  /* A visible focus indicator is mandatory. :focus-visible limits it to
+     keyboard interaction — never remove it. */
+  :focus-visible {
+    @apply ring-2 ring-ring ring-offset-2 ring-offset-background outline-none;
+  }
+
+  /* Tailwind 4 buttons default to cursor: default; keep the Next app's pointer. */
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
+
+  /* Numeric columns in data tables must align on the digit, not the glyph. */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Latin digits and identifiers embedded in Arabic text (record numbers,
+     capacities, emails) must not be reordered by the bidi algorithm. */
+  .ltr-inline {
+    direction: ltr;
+    unicode-bidi: isolate;
+  }
+}
+
+/* Subtle entrance for the login card; zeroed by the reduced-motion rule below. */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@utility animate-fade-in-up {
+  animation: fade-in-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Visually hidden until focused — used for the skip link. */
+@utility sr-only-focusable {
+  &:not(:focus):not(:focus-within) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

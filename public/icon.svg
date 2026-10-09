@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="EcoTech CRM">
+  <!--
+    App icon. The palette mirrors the design tokens in globals.css, and it
+    ADAPTS to the OS colour scheme: an SVG favicon is rendered by the browser
+    with the page's media context, so `prefers-color-scheme` works here. In dark
+    UI the tile takes the dark-theme primary and the accents brighten, so the
+    icon sits in a dark tab strip or launcher without glowing.
+
+    The artwork stays inside the central 80% so a maskable crop cannot clip it.
+  -->
+  <style>
+    .tile { fill: #0f766e; }   /* --primary, light  178 62% 26% */
+    .sun  { fill: #facc15; }   /* --accent          38 92% 50%  */
+    .wave { fill: #ecfeff; }
+    .rays { stroke: #99f6e4; }
+    @media (prefers-color-scheme: dark) {
+      .tile { fill: #16a394; } /* --primary, dark   178 55% 42% */
+      .sun  { fill: #fbbf24; } /* --accent, dark    38 88% 56%  */
+      .wave { fill: #f0fdfa; }
+      .rays { stroke: #5eead4; }
+    }
+  </style>
+  <rect class="tile" width="512" height="512" rx="112"/>
+  <circle class="sun" cx="350" cy="158" r="54"/>
+  <path class="wave" d="M112 358c74-116 166-176 292-176-77 29-123 82-138 158 40-26 80-41 119-46-63 61-145 94-243 98z"/>
+  <path class="rays" d="M138 284h120M168 238h115M212 196h92" stroke-width="24" stroke-linecap="round" fill="none"/>
+</svg>
