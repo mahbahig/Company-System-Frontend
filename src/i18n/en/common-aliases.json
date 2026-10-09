@@ -1,0 +1,9 @@
+{
+  "common": {
+    "actions": {
+      "edit": "Edit",
+      "delete": "Delete",
+      "saving": "Saving…"
+    }
+  }
+}

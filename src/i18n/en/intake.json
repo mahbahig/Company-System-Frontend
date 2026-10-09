@@ -1,0 +1,43 @@
+{
+  "intake": {
+    "title": "Technical intake",
+    "origin": "Data origin",
+    "history": "History ({count})",
+    "verify": "Verify",
+    "verifiedValue": "Verified value",
+    "verifyNote": "Verification note",
+    "confirmVerify": "Mark as verified",
+    "save": "Save intake",
+    "saved": "Intake saved.",
+    "verified": "Field verified; the original value is kept in its history.",
+    "unsaved": "{count} unsaved change(s)",
+    "allSaved": "All changes saved",
+    "openIntake": "Technical intake",
+    "sections": {
+      "goals": "Project goals",
+      "electricity": "Electricity & consumption",
+      "site": "Site & roof",
+      "storage": "Storage & backup",
+      "pumping": "Water pumping",
+      "constraints": "Constraints & preferences",
+      "documents": "Documents & media"
+    },
+    "options": {
+      "bill_reduction": "Reduce electricity bill",
+      "backup": "Backup power",
+      "off_grid_supply": "Off-grid supply",
+      "sustainability": "Sustainability",
+      "single_phase": "Single phase",
+      "three_phase": "Three phase",
+      "lv": "Low voltage",
+      "mv": "Medium voltage",
+      "rooftop": "Rooftop",
+      "ground": "Ground",
+      "carport": "Carport",
+      "agricultural": "Agricultural land",
+      "concrete": "Concrete",
+      "metal_sheet": "Metal sheet",
+      "other": "Other"
+    }
+  }
+}

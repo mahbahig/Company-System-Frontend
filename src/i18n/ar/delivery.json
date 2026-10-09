@@ -1,0 +1,129 @@
+{
+  "navigation": {
+    "items": {
+      "contracts": "العقود",
+      "projects": "المشروعات"
+    }
+  },
+  "contracts": {
+    "title": "العقود",
+    "subtitle": "العقود الصادرة من العروض النهائية واعتمادها وتوقيعها.",
+    "empty": "لا توجد عقود بعد.",
+    "pendingOnly": "بانتظار المراجعة أو التوقيع",
+    "fromProposal": "من العرض النهائي الإصدار {version}",
+    "openProject": "فتح المشروع",
+    "terminatedBecause": "تم إنهاء العقد: {reason}",
+    "valueExVat": "القيمة بدون ضريبة",
+    "customerSigned": "توقيع العميل",
+    "companySigned": "توقيع الشركة",
+    "terms": "شروط العقد",
+    "signatories": "الموقّعون",
+    "party": "الطرف",
+    "parties": {
+      "customer": "العميل",
+      "company": "إيكوتك"
+    },
+    "signatoryName": "اسم الموقّع",
+    "signatoryTitle": "المسمى الوظيفي",
+    "addSignatory": "إضافة موقّع",
+    "send": "إرسال للتوقيع",
+    "sent": "تم إرسال العقد للتوقيع.",
+    "recordSignature": "تسجيل التوقيع",
+    "signedAt": "تاريخ التوقيع",
+    "sign": "تسجيل التوقيع",
+    "signed": "تم تسجيل التوقيع.",
+    "terminate": "إنهاء العقد",
+    "terminated": "تم إنهاء العقد.",
+    "requiredDocuments": "المستندات المطلوبة",
+    "received": "تم الاستلام",
+    "outstanding": "لم يُستلم",
+    "fields": {
+      "scope": "نطاق العمل",
+      "specialTerms": "شروط خاصة",
+      "notes": "ملاحظات"
+    },
+    "columns": {
+      "number": "رقم العقد",
+      "status": "الحالة",
+      "value": "القيمة",
+      "date": "تاريخ العقد"
+    },
+    "proposalApprover": "اعتمد العرض"
+  },
+  "projects": {
+    "title": "المشروعات",
+    "subtitle": "مشروعات تُنشأ تلقائيًا من العقود مكتملة التوقيع.",
+    "empty": "لا توجد مشروعات بعد.",
+    "delayed": "متأخر",
+    "phases": "مراحل المشروع",
+    "inherited": "بيانات موروثة من العقد",
+    "salesRep": "مندوب المبيعات",
+    "changeStatus": "الانتقال إلى الحالة التالية",
+    "startDate": "تاريخ البدء",
+    "milestones": "المعالم الرئيسية",
+    "milestone": "المَعلم",
+    "phase": "المرحلة",
+    "addMilestone": "إضافة مَعلم",
+    "delays": "التأخيرات",
+    "noDelays": "لا توجد تأخيرات مسجلة.",
+    "delayDays": "{days} يوم",
+    "days": "الأيام",
+    "recordDelay": "تسجيل تأخير",
+    "supplier": "المورّد",
+    "poNumber": "رقم أمر الشراء",
+    "expected": "الموعد المتوقع",
+    "addItem": "إضافة بند",
+    "test": "الاختبار",
+    "result": "النتيجة",
+    "passed": "ناجح",
+    "addTest": "إضافة اختبار",
+    "commissionedAt": "تاريخ التشغيل",
+    "utilityConnection": "التوصيل بشركة الكهرباء",
+    "netMetering": "صافي القياس",
+    "utility": {
+      "not_applied": "لم يُقدَّم",
+      "applied": "تم التقديم",
+      "approved": "تمت الموافقة",
+      "connected": "تم التوصيل"
+    },
+    "net": {
+      "not_applicable": "لا ينطبق",
+      "applied": "تم التقديم",
+      "approved": "تمت الموافقة",
+      "installed": "تم تركيب العداد"
+    },
+    "warranties": "الضمانات",
+    "warrantyItem": "البند",
+    "provider": "الجهة الضامنة",
+    "years": "السنوات",
+    "addWarranty": "إضافة ضمان",
+    "acceptedAt": "تاريخ استلام العميل",
+    "acceptedBy": "المستلم من طرف العميل",
+    "logUpdate": "تسجيل تحديث",
+    "channels": {
+      "call": "مكالمة",
+      "whatsapp": "واتساب",
+      "email": "بريد إلكتروني",
+      "meeting": "اجتماع",
+      "site": "في الموقع"
+    },
+    "tabs": {
+      "overview": "نظرة عامة",
+      "plan": "الخطة والمعالم",
+      "procurement": "التوريد",
+      "payments": "الدفعات",
+      "commissioning": "الاختبار والتشغيل",
+      "handover": "التسليم",
+      "updates": "تحديثات العميل",
+      "documents": "المستندات"
+    },
+    "columns": {
+      "number": "رقم المشروع",
+      "name": "المشروع",
+      "status": "الحالة",
+      "progress": "نسبة الإنجاز",
+      "pm": "مدير المشروع",
+      "targetEnd": "تاريخ الانتهاء المستهدف"
+    }
+  }
+}

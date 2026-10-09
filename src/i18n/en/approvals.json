@@ -1,0 +1,86 @@
+{
+  "navigation": {
+    "items": {
+      "approvals": "Approvals"
+    }
+  },
+  "approvals": {
+    "title": "Approvals",
+    "subtitle": "Discounts, margins, payment terms, proposal releases, contracts, ownership and gate overrides.",
+    "empty": "No approval requests here.",
+    "escalated": "escalated ×{level}",
+    "openRecord": "Open record",
+    "request": "Request",
+    "approverRole": "Approver",
+    "reasons": "Why approval is needed",
+    "keyFigures": "Key figures",
+    "original": "Current value",
+    "requested": "Requested value",
+    "onBehalfOf": "on behalf of {name}",
+    "decidedBy": "{decision} by {name} on {date}",
+    "decide": "Your decision",
+    "decision": "Decision",
+    "reason": "Reason",
+    "submitDecision": "Submit decision",
+    "comments": "Comments",
+    "noComments": "No comments yet.",
+    "addComment": "Add a comment…",
+    "postComment": "Post comment",
+    "boxes": {
+      "inbox": "Waiting for me",
+      "requested": "Requested by me",
+      "decided": "Decided by me",
+      "all": "All"
+    },
+    "columns": {
+      "number": "No.",
+      "type": "Type",
+      "subject": "Subject",
+      "requester": "Requested by",
+      "status": "Status",
+      "due": "Due"
+    },
+    "fields": {
+      "price": "Price (ex VAT)",
+      "priceWithVat": "Price incl. VAT",
+      "discountPct": "Discount %",
+      "marginPct": "Margin %",
+      "kwp": "System size (kWp)",
+      "validityDays": "Validity (days)",
+      "downPaymentPct": "Down payment %",
+      "value": "Value",
+      "milestones": "Payment milestones",
+      "ownerName": "Current owner",
+      "requesterName": "Requested by",
+      "type": "Request",
+      "stage": "Stage",
+      "fromStage": "From stage",
+      "toStage": "To stage",
+      "reason": "Reason"
+    },
+    "reasonCodes": {
+      "discount_within_sales_manager_limit": "Discount within the Sales Manager's limit",
+      "discount_above_sales_manager_limit": "Discount above the Sales Manager's limit",
+      "discount_above_cfo_limit": "Discount above the CFO's limit",
+      "margin_below_floor": "Margin below the configured floor",
+      "payment_terms_deviation": "Down payment below the standard terms",
+      "value_above_ceo_threshold": "Value above the CEO approval threshold",
+      "value_above_finance_validation": "Value above the finance validation threshold",
+      "special_terms": "Special commercial terms",
+      "release_authorisation": "Release to Sales requires authorisation",
+      "contract_financial_terms": "Contract financial terms review",
+      "cross_team_ownership": "Cross-team ownership change",
+      "team_ownership": "Ownership change within the team"
+    },
+    "delegations": {
+      "title": "Approval delegation",
+      "subtitle": "While you are away, approvals assigned to you can be decided by a delegate.",
+      "delegate": "Delegate",
+      "from": "From",
+      "to": "To",
+      "add": "Add delegation",
+      "none": "No active delegations.",
+      "saved": "Delegations saved."
+    }
+  }
+}

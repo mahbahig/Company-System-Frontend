@@ -1,0 +1,13 @@
+{
+  "publicProposal": {
+    "title": "Your solar proposal",
+    "unavailable": "This proposal link has expired or is no longer available. Please contact your sales representative.",
+    "number": "Proposal no.",
+    "capacity": "System size",
+    "price": "Total (incl. VAT)",
+    "validUntil": "Valid until",
+    "expired": "This proposal's validity period has ended; prices may need to be confirmed.",
+    "download": "Download the proposal (PDF)",
+    "downloadFailed": "The download could not be started. Please try again."
+  }
+}

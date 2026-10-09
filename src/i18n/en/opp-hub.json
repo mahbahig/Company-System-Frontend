@@ -1,0 +1,22 @@
+{
+  "oppHub": {
+    "title": "Solar workflow",
+    "intake": "Technical intake",
+    "handoff": "Handoff to projects",
+    "assessment": "Site assessment",
+    "proposals": "Proposals & negotiation",
+    "contract": "Contract",
+    "project": "Project",
+    "startAssessment": "Start assessment",
+    "assessmentNeedsHandoff": "Available once the handoff has been accepted.",
+    "notStarted": "not started",
+    "newTask": "New task",
+    "contactRoles": "Contacts on this deal",
+    "contactRolesHint": "Who is involved in this opportunity and in what role; the primary contact receives proposals.",
+    "role": "Role",
+    "primary": "Primary",
+    "noContacts": "This customer has no contacts yet.",
+    "saveRoles": "Save contacts",
+    "rolesSaved": "Contacts saved."
+  }
+}

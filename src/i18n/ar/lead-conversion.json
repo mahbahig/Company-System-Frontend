@@ -1,0 +1,119 @@
+{
+  "crm": {
+    "leads": {
+      "sections": {
+        "qualification": "التأهيل"
+      },
+      "fields": {
+        "sectorCode": "النشاط التجاري"
+      },
+      "qualification": {
+        "hint": "يملؤها المندوب المسؤول. تنتقل كل هذه البيانات إلى العميل وأول فرصة عند التحويل.",
+        "avgMonthlyConsumptionKwh": "متوسط الاستهلاك الشهري (ك.و.س)",
+        "avgMonthlyBill": "متوسط الفاتورة الشهرية (جنيه)",
+        "estimatedSizeKwp": "القدرة التقديرية للنظام (ك.و ذروة)",
+        "budget": "الميزانية (جنيه)",
+        "financingInterest": "مهتم بالتمويل",
+        "timeline": "الإطار الزمني",
+        "interestLevel": "درجة الاهتمام (1–5)",
+        "decisionMakerName": "صاحب القرار",
+        "decisionMakerRole": "منصب صاحب القرار",
+        "siteAvailability": "إتاحة الموقع",
+        "requirements": "المتطلبات والملاحظات",
+        "timelines": {
+          "immediate": "فوري",
+          "1_3_months": "1–3 أشهر",
+          "3_6_months": "3–6 أشهر",
+          "6_12_months": "6–12 شهرًا",
+          "over_12_months": "أكثر من 12 شهرًا"
+        }
+      },
+      "convert": {
+        "subtitle": "يحوّل العميل المحتمل المؤهَّل إلى عميل وجهة اتصال رئيسية وأول فرصة، باستخدام البيانات المسجلة عليه.",
+        "fromLead": "مأخوذ من العميل المحتمل",
+        "fromLeadHint": "لتغيير أي من هذه البيانات، عدّل العميل المحتمل.",
+        "editLead": "تعديل العميل المحتمل",
+        "missingTitle": "أكمل بيانات العميل المحتمل قبل التحويل",
+        "missingBody": "هذه البيانات مطلوبة للتحويل وتُستكمل من صفحة العميل المحتمل:",
+        "notQualified": "لا يمكن تحويل إلا العميل المحتمل المؤهَّل. حدّده كمؤهَّل أولًا.",
+        "customerSection": "العميل",
+        "newCustomer": "إنشاء عميل جديد من هذا العميل المحتمل",
+        "linkExisting": "ربط بعميل موجود",
+        "pickCustomer": "العميل",
+        "customerKind": "نوع العميل",
+        "kinds": {
+          "individual": "فرد",
+          "company": "شركة",
+          "government": "جهة حكومية",
+          "ngo": "جمعية / منظمة"
+        },
+        "nameEn": "الاسم بالإنجليزية (اختياري)",
+        "contactSection": "جهة الاتصال الرئيسية",
+        "contactRole": "دور جهة الاتصال",
+        "contactJobTitle": "المسمى الوظيفي",
+        "siteSection": "إنشاء موقع",
+        "siteName": "اسم الموقع",
+        "siteDefaultName": "الموقع الرئيسي",
+        "siteGovernorate": "محافظة الموقع",
+        "siteAddress": "عنوان الموقع",
+        "opportunitySection": "إنشاء أول فرصة",
+        "nextAction": "الإجراء التالي",
+        "nextActionAt": "موعد الإجراء التالي",
+        "solutionTypeMissing": "لا يوجد نوع حل على العميل المحتمل؛ اختر واحدًا:",
+        "values": {
+          "name": "اسم العميل",
+          "kind": "نوع العميل",
+          "governorate": "المحافظة",
+          "address": "العنوان",
+          "category": "الفئة",
+          "sector": "النشاط التجاري",
+          "phone": "الهاتف",
+          "email": "البريد الإلكتروني",
+          "contact": "جهة الاتصال الرئيسية",
+          "solutionType": "نوع الحل",
+          "size": "القدرة التقديرية",
+          "value": "القيمة التقديرية"
+        },
+        "duplicateTitle": "قد يكون هذا العميل مسجلًا بالفعل",
+        "duplicateBody": "يوجد عميل مسجّل مشابه لهذا العميل المحتمل. اربط العميل المحتمل به، أو أنشئ عميلًا جديدًا إذا كان عميلًا مختلفًا.",
+        "linkThis": "ربط العميل المحتمل بهذا العميل",
+        "keepSeparate": "عميل مختلف — إنشاء عميل جديد",
+        "ownedBy": "المسؤول: {name}",
+        "requiredMissing": "املأ الحقول المطلوبة المميزة بعلامة *:"
+      }
+    },
+    "customers": {
+      "fields": {
+        "nameAr": "الاسم بالعربية",
+        "nameEn": "الاسم بالإنجليزية"
+      },
+      "sections": {
+        "contacts": "جهات الاتصال"
+      }
+    },
+    "sites": {
+      "fields": {
+        "meterType": "نوع العداد",
+        "voltageLevel": "مستوى الجهد",
+        "contractedLoadKw": "القدرة المتعاقد عليها (ك.و)",
+        "transformerKva": "المحول (ك.ف.أ)",
+        "tariffCategory": "فئة التعريفة",
+        "avgMonthlyConsumptionKwh": "متوسط الاستهلاك الشهري (ك.و.س)",
+        "avgMonthlyBillEgp": "متوسط الفاتورة الشهرية (جنيه)"
+      },
+      "meterTypes": {
+        "single_phase": "أحادي الطور",
+        "three_phase": "ثلاثي الأطوار"
+      },
+      "voltageLevels": {
+        "lv": "جهد منخفض",
+        "mv": "جهد متوسط"
+      }
+    }
+  },
+  "server": {
+    "validation": {
+      "mustBePositive": "أدخل رقمًا أكبر من صفر."
+    }
+  }
+}

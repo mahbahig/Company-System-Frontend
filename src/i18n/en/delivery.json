@@ -1,0 +1,129 @@
+{
+  "navigation": {
+    "items": {
+      "contracts": "Contracts",
+      "projects": "Projects"
+    }
+  },
+  "contracts": {
+    "title": "Contracts",
+    "subtitle": "Contracts generated from the final proposals, their approval and signature.",
+    "empty": "No contracts yet.",
+    "pendingOnly": "Pending review or signature",
+    "fromProposal": "From final proposal v{version}",
+    "openProject": "Open project",
+    "terminatedBecause": "Terminated: {reason}",
+    "valueExVat": "Value ex VAT",
+    "customerSigned": "Customer signed",
+    "companySigned": "Company signed",
+    "terms": "Contract terms",
+    "signatories": "Signatories",
+    "party": "Party",
+    "parties": {
+      "customer": "Customer",
+      "company": "EcoTech"
+    },
+    "signatoryName": "Signatory name",
+    "signatoryTitle": "Title",
+    "addSignatory": "Add signatory",
+    "send": "Send for signature",
+    "sent": "Contract sent for signature.",
+    "recordSignature": "Record signature",
+    "signedAt": "Signed on",
+    "sign": "Record signature",
+    "signed": "Signature recorded.",
+    "terminate": "Terminate contract",
+    "terminated": "Contract terminated.",
+    "requiredDocuments": "Required documents",
+    "received": "Received",
+    "outstanding": "Outstanding",
+    "fields": {
+      "scope": "Scope of work",
+      "specialTerms": "Special terms",
+      "notes": "Notes"
+    },
+    "columns": {
+      "number": "Contract no.",
+      "status": "Status",
+      "value": "Value",
+      "date": "Contract date"
+    },
+    "proposalApprover": "Proposal approved by"
+  },
+  "projects": {
+    "title": "Projects",
+    "subtitle": "Projects created automatically from fully signed contracts.",
+    "empty": "No projects yet.",
+    "delayed": "Delayed",
+    "phases": "Project phases",
+    "inherited": "Inherited from the contract",
+    "salesRep": "Sales representative",
+    "changeStatus": "Move to the next status",
+    "startDate": "Start date",
+    "milestones": "Milestones",
+    "milestone": "Milestone",
+    "phase": "Phase",
+    "addMilestone": "Add milestone",
+    "delays": "Delays",
+    "noDelays": "No delays recorded.",
+    "delayDays": "{days} days",
+    "days": "Days",
+    "recordDelay": "Record delay",
+    "supplier": "Supplier",
+    "poNumber": "PO number",
+    "expected": "Expected",
+    "addItem": "Add item",
+    "test": "Test",
+    "result": "Result",
+    "passed": "Passed",
+    "addTest": "Add test",
+    "commissionedAt": "Commissioned on",
+    "utilityConnection": "Utility connection",
+    "netMetering": "Net metering",
+    "utility": {
+      "not_applied": "Not applied",
+      "applied": "Applied",
+      "approved": "Approved",
+      "connected": "Connected"
+    },
+    "net": {
+      "not_applicable": "Not applicable",
+      "applied": "Applied",
+      "approved": "Approved",
+      "installed": "Meter installed"
+    },
+    "warranties": "Warranties",
+    "warrantyItem": "Item",
+    "provider": "Provider",
+    "years": "Years",
+    "addWarranty": "Add warranty",
+    "acceptedAt": "Customer accepted on",
+    "acceptedBy": "Accepted by",
+    "logUpdate": "Log update",
+    "channels": {
+      "call": "Call",
+      "whatsapp": "WhatsApp",
+      "email": "E-mail",
+      "meeting": "Meeting",
+      "site": "On site"
+    },
+    "tabs": {
+      "overview": "Overview",
+      "plan": "Plan & milestones",
+      "procurement": "Procurement",
+      "payments": "Payments",
+      "commissioning": "Commissioning",
+      "handover": "Handover",
+      "updates": "Customer updates",
+      "documents": "Documents"
+    },
+    "columns": {
+      "number": "Project no.",
+      "name": "Project",
+      "status": "Status",
+      "progress": "Progress",
+      "pm": "Project manager",
+      "targetEnd": "Target end"
+    }
+  }
+}

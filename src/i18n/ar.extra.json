@@ -1,0 +1,489 @@
+{
+  "auth": {
+    "login": {
+      "brandHeadline": "مساحة عمل واحدة لكل مراحل رحلة الطاقة الشمسية",
+      "brandSubheadline": "من أول عميل محتمل وحتى تشغيل النظام — تابع العملاء والعروض والمشروعات في نظام إدارة علاقات واحد، مصمم لفرق المبيعات والفريق الفني في إيكوتك."
+    }
+  },
+  "crm": {
+    "common": {
+      "unknownValue": "قيمة غير معروفة"
+    },
+    "tasks": {
+      "status": {
+        "done": "مكتملة"
+      }
+    },
+    "leads": {
+      "mineTitle": "عملائي المحتملون",
+      "mineSubtitle": "العملاء المحتملون المسندون إليك، مرتبون حسب أولوية الاستجابة.",
+      "bulkSelected": "تم تحديد {count} عنصر",
+      "assignSelected": "إسناد المحدد",
+      "toggles": {
+        "unassignedOnly": "غير المسندة فقط",
+        "includeClosed": "تضمين المغلقة"
+      },
+      "mineTabs": {
+        "new": "جديدة",
+        "assigned": "مسندة إليّ",
+        "selfSourced": "من مصادري الخاصة",
+        "followUpsDue": "متابعات مستحقة",
+        "nurture": "قيد الرعاية"
+      },
+      "slaState": {
+        "onTrack": "ضمن الوقت",
+        "dueSoon": "يستحق قريباً",
+        "breached": "تجاوز المهلة",
+        "met": "تم الالتزام",
+        "notStarted": "لم تبدأ المهلة"
+      },
+      "intakeMode": {
+        "selfSourced": "مصدر ذاتي",
+        "bank": "بنك العملاء المحتملين"
+      },
+      "columns": {
+        "intakeMode": "مسار الاستقبال",
+        "campaign": "الحملة",
+        "sector": "القطاع",
+        "governorate": "المحافظة",
+        "customerType": "نوع العميل",
+        "slaStatus": "حالة المهلة",
+        "leadAge": "عمر الطلب",
+        "completeness": "الاكتمال",
+        "nextAction": "الإجراء التالي",
+        "lastActivity": "آخر نشاط",
+        "select": "تحديد"
+      },
+      "fields": {
+        "solutionTypeCode": "نوع الحل",
+        "nextAction": "الإجراء التالي",
+        "qualityCode": "جودة الطلب"
+      },
+      "quickAdd": {
+        "title": "إضافة سريعة",
+        "subtitle": "شاشة واحدة لتسجيل عميل محتمل من مصدرك الخاص في أسرع وقت.",
+        "requirement": "الاحتياج",
+        "logCall": "تسجيل مكالمة الآن",
+        "outcomeCode": "نتيجة المكالمة",
+        "nextAction": "الإجراء التالي",
+        "nextActionAt": "موعد الإجراء التالي",
+        "submit": "حفظ العميل المحتمل",
+        "submitting": "جارٍ الحفظ…",
+        "created": "تم إنشاء العميل المحتمل."
+      },
+      "attempt": {
+        "title": "تسجيل محاولة اتصال",
+        "reached": "تم الوصول إلى العميل",
+        "notReached": "لم يتم الوصول إلى العميل",
+        "notes": "ملاحظات المحاولة",
+        "nextFollowUpAt": "موعد المتابعة القادمة",
+        "nextAction": "الإجراء التالي",
+        "submit": "تسجيل المحاولة",
+        "submitting": "جارٍ التسجيل…",
+        "logged": "تم تسجيل محاولة الاتصال."
+      },
+      "qualify": {
+        "action": "تصنيف كعميل مؤهَّل",
+        "done": "تم تأهيل العميل المحتمل."
+      },
+      "close": {
+        "title": "إغلاق — غير محوَّل",
+        "subtitle": "وضّح سبب عدم استكمال هذا العميل المحتمل.",
+        "reasonCode": "السبب",
+        "comment": "تعليق",
+        "nurtureFollowUpAt": "موعد إعادة المتابعة",
+        "qualityCode": "تقييم جودة الطلب",
+        "submit": "إغلاق العميل المحتمل",
+        "submitting": "جارٍ الإغلاق…",
+        "closed": "تم إغلاق العميل المحتمل.",
+        "readOnlyNotice": "هذا العميل المحتمل مغلق ولا يمكن تعديله."
+      },
+      "reopen": {
+        "title": "إعادة فتح",
+        "reason": "سبب إعادة الفتح",
+        "submit": "إعادة فتح العميل المحتمل",
+        "reopened": "تمت إعادة فتح العميل المحتمل."
+      },
+      "distribute": {
+        "title": "توزيع العملاء المحتملين",
+        "subtitle": "وزّع العملاء المحتملين غير المسندين على فريق المبيعات.",
+        "unassignedCount": "{count} عميل محتمل غير مسند",
+        "previewAction": "معاينة التوزيع",
+        "previewing": "جارٍ إعداد المعاينة…",
+        "confirmAction": "توزيع الآن",
+        "confirming": "جارٍ التوزيع…",
+        "distributed": "تم توزيع {count} عميل محتمل.",
+        "manualTitle": "إسناد يدوي",
+        "manualOwner": "إسناد إلى",
+        "manualReason": "سبب الإسناد",
+        "overrideCapacity": "تجاوز الحد الأقصى للطاقة الاستيعابية",
+        "assign": "إسناد",
+        "assigning": "جارٍ الإسناد…",
+        "assigned": "تم إسناد العملاء المحتملين المحددين.",
+        "columns": {
+          "leadNo": "الرقم المرجعي",
+          "leadName": "العميل المحتمل",
+          "proposedOwner": "المسؤول المقترح",
+          "reason": "سبب الاقتراح"
+        },
+        "noCandidate": "لا يوجد مرشح مناسب"
+      },
+      "duplicates": {
+        "title": "عملاء محتملون مشابهون محتملون",
+        "body": "توجد سجلات مشابهة لهذه البيانات. راجعها قبل المتابعة.",
+        "customerMatches": "عملاء مشابهون",
+        "leadMatches": "عملاء محتملون مشابهون",
+        "score": "نسبة التطابق: {score}%",
+        "confirmAnyway": "المتابعة وإنشاء سجل جديد",
+        "cancel": "رجوع للتعديل"
+      }
+    },
+    "opportunities": {
+      "collaboratingOnMe": "أُشارك فيها",
+      "nextActionOverdue": "الإجراء التالي متأخر",
+      "selectCustomer": "ابحث عن عميل بالاسم أو الرقم المرجعي",
+      "collaboratorsTitle": "الفريق المتعاون",
+      "priority": {
+        "urgent": "عاجلة"
+      },
+      "fields": {
+        "siteId": "الموقع",
+        "solutionTypeCode": "نوع الحل",
+        "estimatedKwp": "القدرة التقديرية (ك.و.ذروة)",
+        "storageKwh": "سعة التخزين (ك.و.س)",
+        "campaignCode": "الحملة"
+      },
+      "duplicates": {
+        "body": "توجد فرصة مفتوحة بنفس العميل والموقع ونوع الحل. راجعها قبل المتابعة.",
+        "confirmAnyway": "المتابعة وإنشاء فرصة جديدة",
+        "cancel": "رجوع للتعديل"
+      },
+      "health": {
+        "title": "الحالة الصحية للفرصة",
+        "status": {
+          "healthy": "سليمة",
+          "watch": "تحت المراقبة",
+          "at_risk": "معرّضة للخطر",
+          "critical": "حرجة"
+        },
+        "reasons": {
+          "days_inactive": "{value} يوم بدون نشاط",
+          "days_in_stage": "{value} يوم في هذه المرحلة",
+          "no_next_action": "لا يوجد إجراء تالٍ محدَّد",
+          "next_action_overdue": "الإجراء التالي متأخر {value} يوم",
+          "proposal_expired": "انتهت صلاحية العرض منذ {value} يوم",
+          "proposal_expires_in": "ينتهي العرض خلال {value} يوم",
+          "approval_delayed": "الموافقة معلّقة منذ {value} يوم",
+          "close_date_slipped": "تأجَّل تاريخ الإغلاق {value} مرة",
+          "close_date_passed": "تجاوز تاريخ الإغلاق المتوقع منذ {value} يوم"
+        }
+      },
+      "team": {
+        "pmId": "مدير المشروع",
+        "engineerId": "المهندس المسؤول",
+        "techLeadId": "القائد الفني",
+        "financialPreparerId": "مُعِدّ العرض المالي",
+        "roleLabel": "الدور",
+        "isTechnicalPoc": "جهة الاتصال الفنية للعميل"
+      },
+      "collaboratorRole": {
+        "project_manager": "مدير مشروع",
+        "technical_lead": "قائد فني",
+        "engineer": "مهندس",
+        "finance": "مالية",
+        "sales": "مبيعات",
+        "other": "أخرى"
+      },
+      "readiness": {
+        "title": "قائمة الجاهزية البيعية",
+        "auto": "تلقائي",
+        "decision_maker_identified": "تحديد صاحب القرار",
+        "bills_collected": "تجميع فواتير الكهرباء",
+        "site_visit_done": "إتمام الزيارة الميدانية",
+        "technical_intake_complete": "اكتمال بيانات المعاينة الفنية",
+        "budget_confirmed": "تأكيد الميزانية",
+        "handoff_accepted": "قبول تسليم المشروع",
+        "proposal_presented": "تقديم العرض للعميل",
+        "feedback_logged": "تسجيل ملاحظات العميل",
+        "approvals_obtained": "الحصول على الموافقات",
+        "contract_docs_collected": "تجميع مستندات التعاقد"
+      },
+      "journey": {
+        "title": "رحلة العميل",
+        "lead_created": "إنشاء العميل المحتمل",
+        "opportunity": "إنشاء الفرصة",
+        "meeting": "الاجتماع الأول",
+        "site_visit": "الزيارة الميدانية",
+        "data_collection": "جمع البيانات",
+        "handoff": "تسليم المشروع",
+        "technical_assessment": "المعاينة الفنية",
+        "technical_proposal": "العرض الفني",
+        "financial_proposal": "العرض المالي",
+        "proposal_presented": "تقديم العرض",
+        "negotiation": "التفاوض",
+        "approval": "الموافقة",
+        "contract": "التعاقد",
+        "project_execution": "تنفيذ المشروع"
+      },
+      "gates": {
+        "primary_contact": "تحديد جهة الاتصال الرئيسية",
+        "owner_assigned": "إسناد مسؤول للفرصة",
+        "next_action_set": "تحديد الإجراء التالي",
+        "site_linked": "ربط الفرصة بموقع",
+        "intake_started": "بدء المعاينة الفنية",
+        "handoff_accepted": "قبول تسليم المشروع",
+        "technical_proposal_approved": "اعتماد العرض الفني",
+        "proposal_released": "إطلاق العرض للمبيعات",
+        "presentation_logged": "تسجيل تقديم العرض للعميل",
+        "customer_feedback_logged": "تسجيل ملاحظات العميل",
+        "approvals_requested": "طلب الموافقات اللازمة",
+        "final_proposal_accepted": "قبول العرض النهائي",
+        "contract_fully_signed": "توقيع العقد بالكامل",
+        "completeness": "اكتمال البيانات المطلوبة",
+        "next_action": "وجود إجراء تالٍ محدَّد"
+      },
+      "transition": {
+        "overrideReason": "سبب تجاوز الشرط"
+      },
+      "detail": {
+        "durationHeader": "المدة"
+      }
+    },
+    "contacts": {
+      "fields": {
+        "decisionAuthority": "صلاحية القرار"
+      },
+      "decisionAuthority": {
+        "final": "صاحب القرار النهائي",
+        "recommends": "يوصي بالقرار",
+        "none": "بلا تأثير على القرار"
+      }
+    },
+    "customers": {
+      "detail": {
+        "sitesTitle": "المواقع",
+        "sitesEmpty": "لا توجد مواقع مسجَّلة لهذا العميل.",
+        "newSite": "موقع جديد"
+      }
+    },
+    "sites": {
+      "title": "المواقع",
+      "new": "موقع جديد",
+      "newTitle": "موقع جديد",
+      "editTitle": "تعديل بيانات الموقع",
+      "created": "تم إنشاء الموقع.",
+      "updated": "تم تحديث بيانات الموقع.",
+      "columns": {
+        "siteNo": "الرقم المرجعي",
+        "name": "الموقع",
+        "governorate": "المحافظة",
+        "type": "النوع",
+        "area": "المساحة"
+      },
+      "fields": {
+        "name": "اسم الموقع",
+        "governorateCode": "المحافظة",
+        "cityCode": "المدينة",
+        "addressLine": "العنوان",
+        "latitude": "خط العرض",
+        "longitude": "خط الطول",
+        "siteTypeCode": "نوع الموقع",
+        "availableAreaM2": "المساحة المتاحة (م²)",
+        "roofTypeCode": "نوع السطح",
+        "roofCondition": "حالة السطح",
+        "roofAgeYears": "عمر السطح (سنوات)",
+        "orientation": "اتجاه السطح",
+        "shading": "التظليل",
+        "utilityProviderCode": "شركة الكهرباء",
+        "meterNumber": "رقم العداد",
+        "infrastructureNotes": "ملاحظات البنية التحتية",
+        "notes": "ملاحظات"
+      },
+      "roofCondition": {
+        "good": "جيدة",
+        "fair": "متوسطة",
+        "poor": "ضعيفة",
+        "needs_repair": "تحتاج إصلاحاً"
+      },
+      "orientation": {
+        "north": "شمال",
+        "north_east": "شمال شرق",
+        "east": "شرق",
+        "south_east": "جنوب شرق",
+        "south": "جنوب",
+        "south_west": "جنوب غرب",
+        "west": "غرب",
+        "north_west": "شمال غرب",
+        "flat": "أفقي"
+      },
+      "shading": {
+        "none": "بلا تظليل",
+        "partial": "تظليل جزئي",
+        "significant": "تظليل كبير"
+      }
+    },
+    "validation": {
+      "mobileRequired": "أدخل رقم الجوال.",
+      "roleRequired": "اختر دور جهة الاتصال.",
+      "siteNameRequired": "أدخل اسم الموقع.",
+      "governorateRequired": "اختر المحافظة."
+    }
+  },
+  "notifications": {
+    "subtitle": "كل إشعاراتك في مكان واحد، مع إمكانية التصفية والانتقال إلى السجل المرتبط",
+    "viewAll": "عرض كل الإشعارات",
+    "filters": {
+      "unreadOnly": "غير المقروءة فقط"
+    },
+    "markRead": "تعليم كمقروء",
+    "critical": "هام",
+    "emptyFiltered": "لا توجد إشعارات مطابقة لعوامل التصفية."
+  },
+  "timeline": {
+    "title": "السجل الزمني",
+    "empty": "لا يوجد سجل بعد.",
+    "system": "النظام",
+    "filters": {
+      "type": "نوع الحدث"
+    },
+    "groups": {
+      "contact": "جهات الاتصال",
+      "customer": "العميل",
+      "lead": "العميل المحتمل",
+      "opportunity": "الفرصة",
+      "site": "الموقع"
+    },
+    "types": {
+      "contactAdded": "تمت إضافة جهة الاتصال {name} ({role})",
+      "customerCreated": "تم إنشاء العميل {customerNo}",
+      "customerOwnerChanged": "تم تغيير المسؤول عن العميل",
+      "customerStatusChanged": "تغيّرت حالة العميل من {from} إلى {to}",
+      "enrichmentCompleted": "اكتمل إثراء بيانات العميل ({score}%)",
+      "leadCreated": "تم إنشاء العميل المحتمل {leadNo} (المصدر: {source})",
+      "leadContacted": "تم الوصول إلى العميل المحتمل",
+      "leadContactAttempted": "محاولة اتصال لم تصل إلى العميل المحتمل",
+      "leadQualified": "تم تصنيف العميل المحتمل كمؤهَّل",
+      "leadNurture": "تم نقل العميل المحتمل لقائمة الرعاية ({reason})",
+      "leadClosed": "تم إغلاق العميل المحتمل ({reason})",
+      "leadReopened": "تمت إعادة فتح العميل المحتمل ({reason})",
+      "leadAssigned": "تم إسناد العميل المحتمل",
+      "leadConverted": "تم تحويل العميل المحتمل {leadNo} إلى عميل",
+      "opportunityCreated": "تم إنشاء الفرصة {name} ({solutionType})",
+      "opportunityStageChanged": "انتقلت الفرصة من مرحلة {from} إلى {to}",
+      "opportunityOutcomeChanged": "تغيّرت نتيجة الفرصة إلى {outcome}",
+      "opportunityWon": "تم كسب الفرصة بقيمة عقد {value}",
+      "opportunityOwnerChanged": "تم تغيير المسؤول عن الفرصة",
+      "collaboratorAdded": "تمت إضافة مشارك إلى الفرصة",
+      "collaboratorRemoved": "تمت إزالة مشارك من الفرصة",
+      "teamChanged": "تم تحديث فريق الفرصة",
+      "siteAdded": "تمت إضافة الموقع {name}"
+    }
+  },
+  "errors": {
+    "network": "تعذر الوصول إلى الخادم. تحقق من الاتصال وحاول مرة أخرى."
+  },
+  "completeness": {
+    "title": "اكتمال البيانات",
+    "score": "مكتمل بنسبة {score}%",
+    "missing": "بيانات ناقصة",
+    "allComplete": "تم تسجيل كل البيانات المطلوبة.",
+    "levels": {
+      "gate": "مطلوب للمرحلة التالية",
+      "recommended": "موصى به",
+      "save": "مطلوب"
+    },
+    "progressLabel": "نسبة الاكتمال",
+    "items": {
+      "address": "العنوان",
+      "area": "المساحة",
+      "authority": "صلاحية التوقيع",
+      "bilingualName": "الاسم بالعربية والإنجليزية",
+      "billingEntity": "جهة الفوترة",
+      "budget": "الميزانية",
+      "campaign": "الحملة",
+      "category": "الفئة",
+      "commercialRegistration": "السجل التجاري",
+      "commissioning": "التشغيل التجريبي",
+      "company": "اسم الشركة",
+      "companySignature": "توقيع الشركة",
+      "companySize": "حجم الشركة",
+      "competitors": "المنافسون",
+      "consumption": "استهلاك الكهرباء",
+      "contractDate": "تاريخ العقد",
+      "crDocument": "مستند السجل التجاري",
+      "customer": "العميل",
+      "customerSignature": "توقيع العميل",
+      "decisionMaker": "صاحب القرار",
+      "decisionMakerContact": "جهة اتصال صاحب القرار",
+      "email": "البريد الإلكتروني",
+      "estimatedKwp": "القدرة التقديرية (ك.و.ذ)",
+      "estimatedSize": "الحجم التقديري للنظام",
+      "expectedCloseDate": "تاريخ الإغلاق المتوقع",
+      "expectedValue": "القيمة المتوقعة",
+      "finalProposal": "العرض النهائي",
+      "financeContact": "جهة الاتصال المالية",
+      "governorate": "المحافظة",
+      "gps": "الموقع الجغرافي",
+      "handoverAcceptance": "قبول التسليم",
+      "jobTitle": "المسمى الوظيفي",
+      "kind": "نوع العميل",
+      "milestones": "المراحل",
+      "name": "الاسم",
+      "nextAction": "الإجراء التالي",
+      "orientation": "اتجاه السطح",
+      "owner": "المسؤول",
+      "paymentMilestones": "دفعات السداد",
+      "phone": "الهاتف",
+      "photos": "صور الموقع",
+      "pm": "مدير المشروع",
+      "primaryContact": "جهة الاتصال الرئيسية",
+      "referrer": "جهة الترشيح",
+      "requiredDocuments": "المستندات المطلوبة",
+      "requirement": "المتطلبات",
+      "role": "دور جهة الاتصال",
+      "roofCondition": "حالة السطح",
+      "roofType": "نوع السطح",
+      "sector": "القطاع",
+      "shading": "التظليل",
+      "signatories": "المفوضون بالتوقيع",
+      "site": "الموقع",
+      "siteType": "نوع الموقع",
+      "solutionType": "نوع الحل",
+      "source": "المصدر",
+      "startDate": "تاريخ البدء",
+      "taxCard": "البطاقة الضريبية",
+      "taxDocument": "مستند البطاقة الضريبية",
+      "technicalIntake": "الاستبيان الفني",
+      "timeline": "الجدول الزمني",
+      "utilityBills": "فواتير الكهرباء",
+      "utilityProvider": "شركة الكهرباء",
+      "value": "القيمة",
+      "website": "الموقع الإلكتروني"
+    },
+    "sections": {
+      "assignment": "الإسناد",
+      "classification": "التصنيف",
+      "commercial": "تجاري",
+      "commissioning": "التشغيل التجريبي",
+      "contact": "الاتصال",
+      "contacts": "جهات الاتصال",
+      "customer": "العميل",
+      "documents": "المستندات",
+      "electricity": "الكهرباء",
+      "handover": "التسليم",
+      "identity": "الهوية",
+      "installation": "التركيب",
+      "intake": "الاستبيان الفني",
+      "location": "الموقع",
+      "nextStep": "الخطوة التالية",
+      "parties": "الأطراف",
+      "plan": "الخطة",
+      "qualification": "التأهيل",
+      "registration": "التسجيل",
+      "requirement": "المتطلبات",
+      "signatures": "التوقيعات",
+      "source": "المصدر",
+      "team": "الفريق"
+    }
+  }
+}
