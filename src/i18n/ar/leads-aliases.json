@@ -1,0 +1,10 @@
+{
+  "crm": {
+    "leads": {
+      "mineTabs": {
+        "self_sourced": "من مصادري الخاصة",
+        "follow_ups_due": "متابعات مستحقة"
+      }
+    }
+  }
+}

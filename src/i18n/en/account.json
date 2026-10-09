@@ -1,0 +1,83 @@
+{
+  "account": {
+    "backToLogin": "Back to sign in",
+    "forgot": {
+      "link": "Forgot your password?",
+      "title": "Reset your password",
+      "subtitle": "Enter your work e-mail and we will send you a reset link.",
+      "submit": "Send reset link",
+      "sent": "If an account exists for that address, a reset link is on its way. The link expires soon and works once."
+    },
+    "reset": {
+      "title": "Choose a new password",
+      "submit": "Set new password",
+      "done": "Your password was changed. Sign in with the new password.",
+      "invalidLink": "This reset link is missing or invalid. Request a new one."
+    },
+    "password": {
+      "title": "Change password",
+      "subtitle": "Confirm your current password, then choose a new one.",
+      "forced": "You must change your password before continuing.",
+      "current": "Current password",
+      "new": "New password",
+      "confirm": "Confirm new password",
+      "rules": "At least 12 characters, mixing letters, numbers and symbols.",
+      "submit": "Change password",
+      "changed": "Your password was changed.",
+      "signInAgain": "Your password was changed and you were signed out everywhere. Sign in with the new password."
+    },
+    "mfa": {
+      "title": "Two-factor sign-in",
+      "subtitle": "Protect your account with a code from an authenticator app.",
+      "required": "Your role requires two-factor sign-in. Set it up to continue.",
+      "enabled": "Two-factor sign-in is on",
+      "disabled": "Two-factor sign-in is off",
+      "intro": "After setup, signing in will ask for a 6-digit code from your authenticator app (Google Authenticator, Microsoft Authenticator…).",
+      "setUp": "Set up two-factor sign-in",
+      "step1": "Open your authenticator app and add a new account.",
+      "step2": "Enter this key (or open the link on this device):",
+      "openApp": "Open in authenticator app",
+      "step3": "Type the 6-digit code the app shows.",
+      "code": "Authentication code",
+      "enable": "Turn on",
+      "enabledNotice": "Two-factor sign-in is on.",
+      "recoveryTitle": "Recovery codes",
+      "recoveryHint": "Store these one-time codes somewhere safe. Each one signs you in once if you lose your phone. They will not be shown again.",
+      "disableHint": "To turn it off, confirm your password and a current code.",
+      "disable": "Turn off",
+      "disabledNotice": "Two-factor sign-in is off.",
+      "verifyTitle": "Enter your authentication code",
+      "verifyHint": "Open your authenticator app, or use one of your recovery codes.",
+      "verify": "Verify",
+      "back": "Use a different account"
+    },
+    "notifications": {
+      "title": "Notification preferences",
+      "subtitle": "Choose how you are told about each kind of event. In-app notifications are always on.",
+      "general": "General",
+      "digest": "Send me a daily digest",
+      "whatsappNumber": "WhatsApp number",
+      "whatsappOff": "WhatsApp delivery is not configured on this server yet.",
+      "pushTitle": "Browser push on this device",
+      "pushUnsupported": "This browser does not support push notifications.",
+      "pushOff": "Push notifications are not configured on this server yet.",
+      "pushDevices": "Registered devices: {count}",
+      "pushEnable": "Enable on this device",
+      "pushDisable": "Disable on this device",
+      "pushEnabled": "Push notifications enabled on this device.",
+      "pushDisabled": "Push notifications disabled on this device.",
+      "pushDenied": "Notifications are blocked in the browser settings.",
+      "pushFailed": "Could not enable push notifications on this device.",
+      "categories": "Categories",
+      "category": "Event",
+      "critical": "(critical)",
+      "channels": {
+        "email": "E-mail",
+        "push": "Push",
+        "whatsapp": "WhatsApp",
+        "digest": "Digest"
+      },
+      "saved": "Preferences saved."
+    }
+  }
+}

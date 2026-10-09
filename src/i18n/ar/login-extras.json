@@ -1,0 +1,8 @@
+{
+  "auth": {
+    "login": {
+      "showPassword": "إظهار كلمة المرور",
+      "hidePassword": "إخفاء كلمة المرور"
+    }
+  }
+}

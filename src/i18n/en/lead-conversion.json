@@ -1,0 +1,119 @@
+{
+  "crm": {
+    "leads": {
+      "sections": {
+        "qualification": "Qualification"
+      },
+      "fields": {
+        "sectorCode": "Business activity"
+      },
+      "qualification": {
+        "hint": "Filled by the assigned rep. Everything here is carried into the customer and the first opportunity on conversion.",
+        "avgMonthlyConsumptionKwh": "Average monthly consumption (kWh)",
+        "avgMonthlyBill": "Average monthly bill (EGP)",
+        "estimatedSizeKwp": "Estimated system size (kWp)",
+        "budget": "Budget (EGP)",
+        "financingInterest": "Interested in financing",
+        "timeline": "Timeline",
+        "interestLevel": "Interest level (1–5)",
+        "decisionMakerName": "Decision maker",
+        "decisionMakerRole": "Decision maker's position",
+        "siteAvailability": "Site availability",
+        "requirements": "Requirements and notes",
+        "timelines": {
+          "immediate": "Immediate",
+          "1_3_months": "1–3 months",
+          "3_6_months": "3–6 months",
+          "6_12_months": "6–12 months",
+          "over_12_months": "Over 12 months"
+        }
+      },
+      "convert": {
+        "subtitle": "Turns the qualified lead into a customer, its primary contact and the first opportunity, using the data already on the lead.",
+        "fromLead": "Taken from the lead",
+        "fromLeadHint": "To change any of these, edit the lead.",
+        "editLead": "Edit lead",
+        "missingTitle": "Complete the lead before converting",
+        "missingBody": "These items are required for conversion and are filled on the lead:",
+        "notQualified": "Only a qualified lead can be converted. Mark the lead as qualified first.",
+        "customerSection": "Customer",
+        "newCustomer": "Create a new customer from this lead",
+        "linkExisting": "Link to an existing customer",
+        "pickCustomer": "Customer",
+        "customerKind": "Customer type",
+        "kinds": {
+          "individual": "Individual",
+          "company": "Company",
+          "government": "Government entity",
+          "ngo": "NGO"
+        },
+        "nameEn": "English name (optional)",
+        "contactSection": "Primary contact",
+        "contactRole": "Contact role",
+        "contactJobTitle": "Job title",
+        "siteSection": "Create a site",
+        "siteName": "Site name",
+        "siteDefaultName": "Main site",
+        "siteGovernorate": "Site governorate",
+        "siteAddress": "Site address",
+        "opportunitySection": "Create the first opportunity",
+        "nextAction": "Next action",
+        "nextActionAt": "Next action date",
+        "solutionTypeMissing": "The lead has no solution type; choose one:",
+        "values": {
+          "name": "Customer name",
+          "kind": "Customer type",
+          "governorate": "Governorate",
+          "address": "Address",
+          "category": "Category",
+          "sector": "Business activity",
+          "phone": "Phone",
+          "email": "Email",
+          "contact": "Primary contact",
+          "solutionType": "Solution type",
+          "size": "Estimated size",
+          "value": "Estimated value"
+        },
+        "duplicateTitle": "This customer may already exist",
+        "duplicateBody": "A customer similar to this lead is already registered. Link the lead to that customer, or create a new one if it is a different customer.",
+        "linkThis": "Link the lead to this customer",
+        "keepSeparate": "Different customer — create a new one",
+        "ownedBy": "owner: {name}",
+        "requiredMissing": "Fill the required fields marked with *:"
+      }
+    },
+    "customers": {
+      "fields": {
+        "nameAr": "Arabic name",
+        "nameEn": "English name"
+      },
+      "sections": {
+        "contacts": "Contacts"
+      }
+    },
+    "sites": {
+      "fields": {
+        "meterType": "Meter type",
+        "voltageLevel": "Voltage level",
+        "contractedLoadKw": "Contracted load (kW)",
+        "transformerKva": "Transformer (kVA)",
+        "tariffCategory": "Tariff category",
+        "avgMonthlyConsumptionKwh": "Average monthly consumption (kWh)",
+        "avgMonthlyBillEgp": "Average monthly bill (EGP)"
+      },
+      "meterTypes": {
+        "single_phase": "Single phase",
+        "three_phase": "Three phase"
+      },
+      "voltageLevels": {
+        "lv": "Low voltage (LV)",
+        "mv": "Medium voltage (MV)"
+      }
+    }
+  },
+  "server": {
+    "validation": {
+      "mustBePositive": "Enter a number greater than zero."
+    }
+  }
+}

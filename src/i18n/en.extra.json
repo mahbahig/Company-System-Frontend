@@ -1,0 +1,489 @@
+{
+  "auth": {
+    "login": {
+      "brandHeadline": "One workspace for every stage of the solar journey.",
+      "brandSubheadline": "From first lead to commissioned system — track customers, proposals and projects in one connected CRM built for EcoTech's sales and technical teams."
+    }
+  },
+  "crm": {
+    "common": {
+      "unknownValue": "Unknown value"
+    },
+    "tasks": {
+      "status": {
+        "done": "Completed"
+      }
+    },
+    "leads": {
+      "mineTitle": "My Leads",
+      "mineSubtitle": "Leads assigned to you, sorted by response urgency.",
+      "bulkSelected": "{count} selected",
+      "assignSelected": "Assign selected",
+      "toggles": {
+        "unassignedOnly": "Unassigned only",
+        "includeClosed": "Include closed"
+      },
+      "mineTabs": {
+        "new": "New",
+        "assigned": "Assigned to me",
+        "selfSourced": "Self-sourced",
+        "followUpsDue": "Follow-ups due",
+        "nurture": "Nurture"
+      },
+      "slaState": {
+        "onTrack": "On track",
+        "dueSoon": "Due soon",
+        "breached": "Breached",
+        "met": "Met",
+        "notStarted": "Not started"
+      },
+      "intakeMode": {
+        "selfSourced": "Self-sourced",
+        "bank": "Lead bank"
+      },
+      "columns": {
+        "intakeMode": "Intake",
+        "campaign": "Campaign",
+        "sector": "Sector",
+        "governorate": "Governorate",
+        "customerType": "Customer type",
+        "slaStatus": "SLA",
+        "leadAge": "Age",
+        "completeness": "Completeness",
+        "nextAction": "Next action",
+        "lastActivity": "Last activity",
+        "select": "Select"
+      },
+      "fields": {
+        "solutionTypeCode": "Solution type",
+        "nextAction": "Next action",
+        "qualityCode": "Lead quality"
+      },
+      "quickAdd": {
+        "title": "Quick Add",
+        "subtitle": "One screen to log a self-sourced lead as fast as possible.",
+        "requirement": "Requirement",
+        "logCall": "Log this call now",
+        "outcomeCode": "Call outcome",
+        "nextAction": "Next action",
+        "nextActionAt": "Next action date",
+        "submit": "Save lead",
+        "submitting": "Saving…",
+        "created": "Lead created."
+      },
+      "attempt": {
+        "title": "Log a contact attempt",
+        "reached": "Reached the customer",
+        "notReached": "Did not reach the customer",
+        "notes": "Attempt notes",
+        "nextFollowUpAt": "Next follow-up",
+        "nextAction": "Next action",
+        "submit": "Log attempt",
+        "submitting": "Logging…",
+        "logged": "Contact attempt logged."
+      },
+      "qualify": {
+        "action": "Mark as qualified",
+        "done": "Lead qualified."
+      },
+      "close": {
+        "title": "Close — Not converted",
+        "subtitle": "State why this lead is not going forward.",
+        "reasonCode": "Reason",
+        "comment": "Comment",
+        "nurtureFollowUpAt": "Nurture follow-up date",
+        "qualityCode": "Lead quality",
+        "submit": "Close lead",
+        "submitting": "Closing…",
+        "closed": "Lead closed.",
+        "readOnlyNotice": "This lead is closed and cannot be edited."
+      },
+      "reopen": {
+        "title": "Reopen",
+        "reason": "Reason for reopening",
+        "submit": "Reopen lead",
+        "reopened": "Lead reopened."
+      },
+      "distribute": {
+        "title": "Distribute leads",
+        "subtitle": "Route unassigned leads to the sales team.",
+        "unassignedCount": "{count} unassigned leads",
+        "previewAction": "Preview distribution",
+        "previewing": "Building preview…",
+        "confirmAction": "Distribute now",
+        "confirming": "Distributing…",
+        "distributed": "{count} leads distributed.",
+        "manualTitle": "Manual assignment",
+        "manualOwner": "Assign to",
+        "manualReason": "Assignment reason",
+        "overrideCapacity": "Override capacity limit",
+        "assign": "Assign",
+        "assigning": "Assigning…",
+        "assigned": "Selected leads assigned.",
+        "columns": {
+          "leadNo": "Reference",
+          "leadName": "Lead",
+          "proposedOwner": "Proposed owner",
+          "reason": "Reason"
+        },
+        "noCandidate": "No suitable candidate"
+      },
+      "duplicates": {
+        "title": "Possible duplicate leads",
+        "body": "Records similar to this one already exist. Review before continuing.",
+        "customerMatches": "Similar customers",
+        "leadMatches": "Similar leads",
+        "score": "Match score: {score}%",
+        "confirmAnyway": "Continue and create anyway",
+        "cancel": "Back to edit"
+      }
+    },
+    "opportunities": {
+      "collaboratingOnMe": "Collaborating on",
+      "nextActionOverdue": "Next action overdue",
+      "selectCustomer": "Search for a customer by name or number",
+      "collaboratorsTitle": "Collaborators",
+      "priority": {
+        "urgent": "Urgent"
+      },
+      "fields": {
+        "siteId": "Site",
+        "solutionTypeCode": "Solution type",
+        "estimatedKwp": "Estimated capacity (kWp)",
+        "storageKwh": "Storage capacity (kWh)",
+        "campaignCode": "Campaign"
+      },
+      "duplicates": {
+        "body": "An open opportunity already exists for this customer, site and solution type. Review it before continuing.",
+        "confirmAnyway": "Continue and create a new opportunity",
+        "cancel": "Back to edit"
+      },
+      "health": {
+        "title": "Deal health",
+        "status": {
+          "healthy": "Healthy",
+          "watch": "Watch",
+          "at_risk": "At risk",
+          "critical": "Critical"
+        },
+        "reasons": {
+          "days_inactive": "{value} days without activity",
+          "days_in_stage": "{value} days in this stage",
+          "no_next_action": "No next action set",
+          "next_action_overdue": "Next action overdue by {value} days",
+          "proposal_expired": "Proposal expired {value} days ago",
+          "proposal_expires_in": "Proposal expires in {value} days",
+          "approval_delayed": "Approval pending for {value} days",
+          "close_date_slipped": "Close date slipped {value} times",
+          "close_date_passed": "Expected close date passed {value} days ago"
+        }
+      },
+      "team": {
+        "pmId": "Project manager",
+        "engineerId": "Assigned engineer",
+        "techLeadId": "Technical lead",
+        "financialPreparerId": "Financial preparer",
+        "roleLabel": "Role",
+        "isTechnicalPoc": "Customer-facing technical point of contact"
+      },
+      "collaboratorRole": {
+        "project_manager": "Project manager",
+        "technical_lead": "Technical lead",
+        "engineer": "Engineer",
+        "finance": "Finance",
+        "sales": "Sales",
+        "other": "Other"
+      },
+      "readiness": {
+        "title": "Sales readiness checklist",
+        "auto": "Auto",
+        "decision_maker_identified": "Decision maker identified",
+        "bills_collected": "Utility bills collected",
+        "site_visit_done": "Site visit completed",
+        "technical_intake_complete": "Technical intake complete",
+        "budget_confirmed": "Budget confirmed",
+        "handoff_accepted": "Handoff accepted",
+        "proposal_presented": "Proposal presented to customer",
+        "feedback_logged": "Customer feedback logged",
+        "approvals_obtained": "Approvals obtained",
+        "contract_docs_collected": "Contract documents collected"
+      },
+      "journey": {
+        "title": "Customer journey",
+        "lead_created": "Lead created",
+        "opportunity": "Opportunity created",
+        "meeting": "First meeting",
+        "site_visit": "Site visit",
+        "data_collection": "Data collection",
+        "handoff": "Handoff",
+        "technical_assessment": "Technical assessment",
+        "technical_proposal": "Technical proposal",
+        "financial_proposal": "Financial proposal",
+        "proposal_presented": "Proposal presented",
+        "negotiation": "Negotiation",
+        "approval": "Approval",
+        "contract": "Contract",
+        "project_execution": "Project execution"
+      },
+      "gates": {
+        "primary_contact": "Primary contact set",
+        "owner_assigned": "Owner assigned",
+        "next_action_set": "Next action set",
+        "site_linked": "Site linked",
+        "intake_started": "Technical intake started",
+        "handoff_accepted": "Handoff accepted",
+        "technical_proposal_approved": "Technical proposal approved",
+        "proposal_released": "Proposal released to sales",
+        "presentation_logged": "Presentation logged",
+        "customer_feedback_logged": "Customer feedback logged",
+        "approvals_requested": "Approvals requested",
+        "final_proposal_accepted": "Final proposal accepted",
+        "contract_fully_signed": "Contract fully signed",
+        "completeness": "Required data complete",
+        "next_action": "Next action set"
+      },
+      "transition": {
+        "overrideReason": "Override reason"
+      },
+      "detail": {
+        "durationHeader": "Duration"
+      }
+    },
+    "contacts": {
+      "fields": {
+        "decisionAuthority": "Decision authority"
+      },
+      "decisionAuthority": {
+        "final": "Final decision maker",
+        "recommends": "Recommends the decision",
+        "none": "No influence on the decision"
+      }
+    },
+    "customers": {
+      "detail": {
+        "sitesTitle": "Sites",
+        "sitesEmpty": "No sites recorded for this customer yet.",
+        "newSite": "New site"
+      }
+    },
+    "sites": {
+      "title": "Sites",
+      "new": "New site",
+      "newTitle": "New site",
+      "editTitle": "Edit site",
+      "created": "Site created.",
+      "updated": "Site updated.",
+      "columns": {
+        "siteNo": "Reference",
+        "name": "Site",
+        "governorate": "Governorate",
+        "type": "Type",
+        "area": "Area"
+      },
+      "fields": {
+        "name": "Site name",
+        "governorateCode": "Governorate",
+        "cityCode": "City",
+        "addressLine": "Address",
+        "latitude": "Latitude",
+        "longitude": "Longitude",
+        "siteTypeCode": "Site type",
+        "availableAreaM2": "Available area (m²)",
+        "roofTypeCode": "Roof type",
+        "roofCondition": "Roof condition",
+        "roofAgeYears": "Roof age (years)",
+        "orientation": "Roof orientation",
+        "shading": "Shading",
+        "utilityProviderCode": "Utility provider",
+        "meterNumber": "Meter number",
+        "infrastructureNotes": "Infrastructure notes",
+        "notes": "Notes"
+      },
+      "roofCondition": {
+        "good": "Good",
+        "fair": "Fair",
+        "poor": "Poor",
+        "needs_repair": "Needs repair"
+      },
+      "orientation": {
+        "north": "North",
+        "north_east": "North-east",
+        "east": "East",
+        "south_east": "South-east",
+        "south": "South",
+        "south_west": "South-west",
+        "west": "West",
+        "north_west": "North-west",
+        "flat": "Flat"
+      },
+      "shading": {
+        "none": "No shading",
+        "partial": "Partial shading",
+        "significant": "Significant shading"
+      }
+    },
+    "validation": {
+      "mobileRequired": "Enter a mobile number.",
+      "roleRequired": "Choose the contact's role.",
+      "siteNameRequired": "Enter the site name.",
+      "governorateRequired": "Choose the governorate."
+    }
+  },
+  "notifications": {
+    "subtitle": "Every notification in one place, filterable and linked to the record it's about",
+    "viewAll": "View all notifications",
+    "filters": {
+      "unreadOnly": "Unread only"
+    },
+    "markRead": "Mark as read",
+    "critical": "Important",
+    "emptyFiltered": "No notifications match the current filters."
+  },
+  "timeline": {
+    "title": "Timeline",
+    "empty": "No history yet.",
+    "system": "System",
+    "filters": {
+      "type": "Event type"
+    },
+    "groups": {
+      "contact": "Contacts",
+      "customer": "Customer",
+      "lead": "Lead",
+      "opportunity": "Opportunity",
+      "site": "Site"
+    },
+    "types": {
+      "contactAdded": "Contact {name} added ({role})",
+      "customerCreated": "Customer {customerNo} created",
+      "customerOwnerChanged": "Customer owner changed",
+      "customerStatusChanged": "Customer status changed from {from} to {to}",
+      "enrichmentCompleted": "Customer enrichment completed ({score}%)",
+      "leadCreated": "Lead {leadNo} created (source: {source})",
+      "leadContacted": "Lead reached",
+      "leadContactAttempted": "Contact attempt did not reach the lead",
+      "leadQualified": "Lead marked qualified",
+      "leadNurture": "Lead moved to nurture ({reason})",
+      "leadClosed": "Lead closed ({reason})",
+      "leadReopened": "Lead reopened ({reason})",
+      "leadAssigned": "Lead assigned",
+      "leadConverted": "Lead {leadNo} converted to a customer",
+      "opportunityCreated": "Opportunity {name} created ({solutionType})",
+      "opportunityStageChanged": "Opportunity moved from {from} to {to}",
+      "opportunityOutcomeChanged": "Opportunity outcome changed to {outcome}",
+      "opportunityWon": "Opportunity won — contract value {value}",
+      "opportunityOwnerChanged": "Opportunity owner changed",
+      "collaboratorAdded": "Collaborator added to the opportunity",
+      "collaboratorRemoved": "Collaborator removed from the opportunity",
+      "teamChanged": "Opportunity team updated",
+      "siteAdded": "Site {name} added"
+    }
+  },
+  "errors": {
+    "network": "The server could not be reached. Check your connection and try again."
+  },
+  "completeness": {
+    "title": "Data completeness",
+    "score": "{score}% complete",
+    "missing": "Missing information",
+    "allComplete": "All required information is recorded.",
+    "levels": {
+      "gate": "Required for next stage",
+      "recommended": "Recommended",
+      "save": "Required"
+    },
+    "progressLabel": "Completeness score",
+    "items": {
+      "address": "Address",
+      "area": "Area",
+      "authority": "Signing authority",
+      "bilingualName": "Arabic and English name",
+      "billingEntity": "Billing entity",
+      "budget": "Budget",
+      "campaign": "Campaign",
+      "category": "Category",
+      "commercialRegistration": "Commercial registration",
+      "commissioning": "Commissioning",
+      "company": "Company name",
+      "companySignature": "Company signature",
+      "companySize": "Company size",
+      "competitors": "Competitors",
+      "consumption": "Electricity consumption",
+      "contractDate": "Contract date",
+      "crDocument": "Commercial registration document",
+      "customer": "Customer",
+      "customerSignature": "Customer signature",
+      "decisionMaker": "Decision maker",
+      "decisionMakerContact": "Decision-maker contact",
+      "email": "Email",
+      "estimatedKwp": "Estimated capacity (kWp)",
+      "estimatedSize": "Estimated system size",
+      "expectedCloseDate": "Expected close date",
+      "expectedValue": "Expected value",
+      "finalProposal": "Final proposal",
+      "financeContact": "Finance contact",
+      "governorate": "Governorate",
+      "gps": "GPS location",
+      "handoverAcceptance": "Handover acceptance",
+      "jobTitle": "Job title",
+      "kind": "Customer kind",
+      "milestones": "Milestones",
+      "name": "Name",
+      "nextAction": "Next action",
+      "orientation": "Roof orientation",
+      "owner": "Owner",
+      "paymentMilestones": "Payment milestones",
+      "phone": "Phone",
+      "photos": "Site photos",
+      "pm": "Project manager",
+      "primaryContact": "Primary contact",
+      "referrer": "Referrer",
+      "requiredDocuments": "Required documents",
+      "requirement": "Requirement",
+      "role": "Contact role",
+      "roofCondition": "Roof condition",
+      "roofType": "Roof type",
+      "sector": "Sector",
+      "shading": "Shading",
+      "signatories": "Signatories",
+      "site": "Site",
+      "siteType": "Site type",
+      "solutionType": "Solution type",
+      "source": "Source",
+      "startDate": "Start date",
+      "taxCard": "Tax card",
+      "taxDocument": "Tax card document",
+      "technicalIntake": "Technical intake",
+      "timeline": "Timeline",
+      "utilityBills": "Utility bills",
+      "utilityProvider": "Utility provider",
+      "value": "Value",
+      "website": "Website"
+    },
+    "sections": {
+      "assignment": "Assignment",
+      "classification": "Classification",
+      "commercial": "Commercial",
+      "commissioning": "Commissioning",
+      "contact": "Contact",
+      "contacts": "Contacts",
+      "customer": "Customer",
+      "documents": "Documents",
+      "electricity": "Electricity",
+      "handover": "Handover",
+      "identity": "Identity",
+      "installation": "Installation",
+      "intake": "Technical intake",
+      "location": "Location",
+      "nextStep": "Next step",
+      "parties": "Parties",
+      "plan": "Plan",
+      "qualification": "Qualification",
+      "registration": "Registration",
+      "requirement": "Requirement",
+      "signatures": "Signatures",
+      "source": "Source",
+      "team": "Team"
+    }
+  }
+}

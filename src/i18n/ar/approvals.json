@@ -1,0 +1,86 @@
+{
+  "navigation": {
+    "items": {
+      "approvals": "الموافقات"
+    }
+  },
+  "approvals": {
+    "title": "الموافقات",
+    "subtitle": "الخصومات والهوامش وشروط الدفع وإصدار العروض والعقود والملكية وتجاوز شروط المراحل.",
+    "empty": "لا توجد طلبات موافقة هنا.",
+    "escalated": "مُصعَّد ×{level}",
+    "openRecord": "فتح السجل",
+    "request": "الطلب",
+    "approverRole": "جهة الاعتماد",
+    "reasons": "أسباب طلب الموافقة",
+    "keyFigures": "الأرقام الرئيسية",
+    "original": "القيمة الحالية",
+    "requested": "القيمة المطلوبة",
+    "onBehalfOf": "نيابةً عن {name}",
+    "decidedBy": "{decision} بواسطة {name} في {date}",
+    "decide": "قرارك",
+    "decision": "القرار",
+    "reason": "السبب",
+    "submitDecision": "تسجيل القرار",
+    "comments": "التعليقات",
+    "noComments": "لا توجد تعليقات بعد.",
+    "addComment": "أضف تعليقًا…",
+    "postComment": "نشر التعليق",
+    "boxes": {
+      "inbox": "بانتظار قراري",
+      "requested": "طلباتي",
+      "decided": "قراراتي",
+      "all": "الكل"
+    },
+    "columns": {
+      "number": "الرقم",
+      "type": "النوع",
+      "subject": "الموضوع",
+      "requester": "مقدم الطلب",
+      "status": "الحالة",
+      "due": "الموعد"
+    },
+    "fields": {
+      "price": "السعر (بدون ضريبة)",
+      "priceWithVat": "السعر شامل الضريبة",
+      "discountPct": "نسبة الخصم",
+      "marginPct": "نسبة الهامش",
+      "kwp": "قدرة النظام (ك.و.ذ)",
+      "validityDays": "مدة الصلاحية (يوم)",
+      "downPaymentPct": "نسبة الدفعة المقدمة",
+      "value": "القيمة",
+      "milestones": "دفعات السداد",
+      "ownerName": "المسؤول الحالي",
+      "requesterName": "مقدم الطلب",
+      "type": "الطلب",
+      "stage": "المرحلة",
+      "fromStage": "من مرحلة",
+      "toStage": "إلى مرحلة",
+      "reason": "السبب"
+    },
+    "reasonCodes": {
+      "discount_within_sales_manager_limit": "الخصم في حدود صلاحية مدير المبيعات",
+      "discount_above_sales_manager_limit": "الخصم يتجاوز صلاحية مدير المبيعات",
+      "discount_above_cfo_limit": "الخصم يتجاوز صلاحية المدير المالي",
+      "margin_below_floor": "الهامش أقل من الحد الأدنى المحدد",
+      "payment_terms_deviation": "الدفعة المقدمة أقل من الشروط المعتادة",
+      "value_above_ceo_threshold": "القيمة تتجاوز حد اعتماد الرئيس التنفيذي",
+      "value_above_finance_validation": "القيمة تتجاوز حد المراجعة المالية",
+      "special_terms": "شروط تجارية خاصة",
+      "release_authorisation": "إصدار العرض للمبيعات يتطلب اعتمادًا",
+      "contract_financial_terms": "مراجعة الشروط المالية للعقد",
+      "cross_team_ownership": "نقل ملكية بين فرق مختلفة",
+      "team_ownership": "نقل ملكية داخل الفريق"
+    },
+    "delegations": {
+      "title": "تفويض الموافقات",
+      "subtitle": "أثناء غيابك يمكن لمفوَّض البت في الموافقات المسندة إليك.",
+      "delegate": "المفوَّض إليه",
+      "from": "من",
+      "to": "إلى",
+      "add": "إضافة تفويض",
+      "none": "لا توجد تفويضات سارية.",
+      "saved": "تم حفظ التفويضات."
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "savedViews": {
+    "views": "Saved views",
+    "none": "No saved views yet.",
+    "saveCurrent": "Save current filters…",
+    "name": "View name",
+    "share": "Share with",
+    "saved": "View saved.",
+    "exportExcel": "Export to Excel",
+    "visibility": { "private": "Only me", "team": "My team", "all": "Everyone" }
+  }
+}

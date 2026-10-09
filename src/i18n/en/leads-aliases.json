@@ -1,0 +1,10 @@
+{
+  "crm": {
+    "leads": {
+      "mineTabs": {
+        "self_sourced": "Self-sourced",
+        "follow_ups_due": "Follow-ups due"
+      }
+    }
+  }
+}
