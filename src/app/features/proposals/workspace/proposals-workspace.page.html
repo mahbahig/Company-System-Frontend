@@ -1,0 +1,448 @@
+<app-page-header [heading]="'prop.workspaceTitle' | t" [subtitle]="'prop.workspaceSubtitle' | t" class="!mb-0">
+  <a appButton variant="outline" [routerLink]="['/', i18n.locale(), 'opportunities', id()]">{{ 'handoffs.backToOpportunity' | t }}</a>
+</app-page-header>
+
+<app-tabs [tabs]="tabs()" [active]="active()" (activeChange)="selectTab($event)" [label]="'prop.workspaceTitle' | t" />
+
+@if (message(); as text) {
+  <app-alert>{{ text }}</app-alert>
+}
+@if (error(); as text) {
+  <app-alert variant="destructive">{{ text }}</app-alert>
+}
+
+@switch (active()) {
+  @case ('technical') {
+    @if (auth.can('technical_proposals.author')) {
+      <section appCard class="max-w-3xl" aria-labelledby="new-tp-heading">
+        <div appCardHeader><h2 appCardTitle id="new-tp-heading">{{ 'prop.newTechnical' | t }}</h2></div>
+        <div appCardContent class="flex flex-col gap-3">
+          <p class="text-sm text-muted-foreground">{{ 'prop.newTechnicalHint' | t }}</p>
+          <label appLabel for="tp-reason">{{ 'prop.changeReason' | t }}</label>
+          <input appInput id="tp-reason" [value]="changeReason()" (input)="changeReason.set($any($event.target).value)" />
+          <button type="button" appButton class="self-start" [disabled]="busy()" (click)="newTechnical()">{{ 'prop.createVersion' | t }}</button>
+        </div>
+      </section>
+    }
+    <app-table-wrapper [label]="'prop.tabs.technical' | t">
+      <table appTable>
+        <thead appTableHeader>
+          <tr appTableRow>
+            <th appTableHead>{{ 'prop.columns.number' | t }}</th>
+            <th appTableHead>{{ 'prop.columns.version' | t }}</th>
+            <th appTableHead>{{ 'prop.columns.status' | t }}</th>
+            <th appTableHead>{{ 'prop.columns.capacity' | t }}</th>
+            <th appTableHead>{{ 'prop.columns.author' | t }}</th>
+            <th appTableHead>{{ 'prop.columns.changeReason' | t }}</th>
+          </tr>
+        </thead>
+        <tbody appTableBody>
+          @for (row of technical.value()?.rows ?? []; track row.id) {
+            <tr appTableRow>
+              <td appTableCell class="tabular whitespace-nowrap"><a class="text-primary hover:underline" [routerLink]="['/', i18n.locale(), 'proposals', 'technical', row.id]" dir="ltr">{{ row.number }}</a></td>
+              <td appTableCell class="tabular">v{{ row.versionNo }}</td>
+              <td appTableCell><app-status-badge enum="technicalProposalStatus" [value]="row.status" /></td>
+              <td appTableCell class="tabular">{{ row.capacityKwp ?? '—' }}</td>
+              <td appTableCell>{{ name(row.authorId) }}</td>
+              <td appTableCell>{{ row.changeReason || '—' }}</td>
+            </tr>
+          } @empty {
+            <tr app-table-empty [colSpan]="6">{{ 'prop.emptyVersions' | t }}</tr>
+          }
+        </tbody>
+      </table>
+    </app-table-wrapper>
+  }
+
+  @case ('financial') {
+    @if (auth.can('financial_proposals.prepare')) {
+      <section appCard class="max-w-3xl" aria-labelledby="new-fp-heading">
+        <div appCardHeader><h2 appCardTitle id="new-fp-heading">{{ 'prop.newFinancial' | t }}</h2></div>
+        <div appCardContent class="flex flex-col gap-3">
+          <label appLabel for="fp-tp" required>{{ 'prop.basedOnTp' | t }}</label>
+          <app-select>
+            <select appSelect id="fp-tp" [value]="selectedTp()" (change)="selectedTp.set($any($event.target).value)">
+              <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
+              @for (tp of approvedTps(); track tp.id) {
+                <option [value]="tp.id">{{ tp.number }} v{{ tp.versionNo }}</option>
+              }
+            </select>
+          </app-select>
+          <label appLabel for="fp-reason">{{ 'prop.changeReason' | t }}</label>
+          <input appInput id="fp-reason" [value]="changeReason()" (input)="changeReason.set($any($event.target).value)" />
+          <button type="button" appButton class="self-start" [disabled]="busy() || !selectedTp()" (click)="newFinancial()">{{ 'prop.createVersion' | t }}</button>
+        </div>
+      </section>
+    }
+    <app-table-wrapper [label]="'prop.tabs.financial' | t">
+      <table appTable>
+        <thead appTableHeader>
+          <tr appTableRow>
+            <th appTableHead>{{ 'prop.columns.number' | t }}</th>
+            <th appTableHead>{{ 'prop.columns.version' | t }}</th>
+            <th appTableHead>{{ 'prop.columns.status' | t }}</th>
+            <th appTableHead>{{ 'prop.columns.price' | t }}</th>
+            <th appTableHead>{{ 'prop.columns.discount' | t }}</th>
+            @if (auth.can('financials.view_cost')) {
+              <th appTableHead>{{ 'prop.columns.margin' | t }}</th>
+            }
+          </tr>
+        </thead>
+        <tbody appTableBody>
+          @for (row of financial.value()?.rows ?? []; track row.id) {
+            <tr appTableRow>
+              <td appTableCell class="tabular whitespace-nowrap"><a class="text-primary hover:underline" [routerLink]="['/', i18n.locale(), 'proposals', 'financial', row.id]" dir="ltr">{{ row.number }}</a></td>
+              <td appTableCell class="tabular">v{{ row.versionNo }}</td>
+              <td appTableCell><app-status-badge enum="financialProposalStatus" [value]="row.status" /></td>
+              <td appTableCell class="tabular whitespace-nowrap">{{ i18n.formatMoney(row.finalPrice) }}</td>
+              <td appTableCell class="tabular">{{ i18n.formatNumber(row.discountPct) }}%</td>
+              @if (auth.can('financials.view_cost')) {
+                <td appTableCell class="tabular">{{ row.marginPct === undefined ? '—' : i18n.formatNumber(row.marginPct) + '%' }}</td>
+              }
+            </tr>
+          } @empty {
+            <tr app-table-empty [colSpan]="6">{{ 'prop.emptyVersions' | t }}</tr>
+          }
+        </tbody>
+      </table>
+    </app-table-wrapper>
+  }
+
+  @case ('combined') {
+    @if (auth.can('combined_proposals.assemble')) {
+      <section appCard class="max-w-3xl" aria-labelledby="new-cp-heading">
+        <div appCardHeader><h2 appCardTitle id="new-cp-heading">{{ 'prop.newCombined' | t }}</h2></div>
+        <div appCardContent class="grid gap-3 sm:grid-cols-2">
+          <div>
+            <label appLabel for="cp-tp" required>{{ 'prop.basedOnTp' | t }}</label>
+            <app-select>
+              <select appSelect id="cp-tp" [value]="selectedTp()" (change)="selectedTp.set($any($event.target).value)">
+                <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
+                @for (tp of approvedTps(); track tp.id) {
+                  <option [value]="tp.id">{{ tp.number }} v{{ tp.versionNo }}</option>
+                }
+              </select>
+            </app-select>
+          </div>
+          <div>
+            <label appLabel for="cp-fp" required>{{ 'prop.basedOnFp' | t }}</label>
+            <app-select>
+              <select appSelect id="cp-fp" [value]="selectedFp()" (change)="selectedFp.set($any($event.target).value)">
+                <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
+                @for (fp of approvedFps(); track fp.id) {
+                  <option [value]="fp.id">{{ fp.number }} v{{ fp.versionNo }} · {{ i18n.formatMoney(fp.finalPrice) }}</option>
+                }
+              </select>
+            </app-select>
+          </div>
+          <div>
+            <label appLabel for="cp-template">{{ 'prop.template' | t }}</label>
+            <app-select>
+              <select appSelect id="cp-template" [value]="templateCode()" (change)="templateCode.set($any($event.target).value)">
+                @for (code of ['standard', 'executive', 'detailed']; track code) {
+                  <option [value]="code">{{ 'prop.templates.' + code | t }}</option>
+                }
+              </select>
+            </app-select>
+          </div>
+          <div>
+            <label appLabel for="cp-lang">{{ 'prop.language' | t }}</label>
+            <app-select>
+              <select appSelect id="cp-lang" [value]="language()" (change)="language.set($any($event.target).value)">
+                <option value="ar">العربية</option>
+                <option value="en">English</option>
+              </select>
+            </app-select>
+          </div>
+          <div class="sm:col-span-2">
+            <label appLabel for="cp-reason">{{ 'prop.changeReason' | t }}</label>
+            <input appInput id="cp-reason" [value]="changeReason()" (input)="changeReason.set($any($event.target).value)" />
+          </div>
+          <button type="button" appButton class="self-start" [disabled]="busy() || !selectedTp() || !selectedFp()" (click)="newCombined()">{{ 'prop.assemble' | t }}</button>
+        </div>
+      </section>
+    }
+    <app-table-wrapper [label]="'prop.tabs.combined' | t">
+      <table appTable>
+        <thead appTableHeader>
+          <tr appTableRow>
+            <th appTableHead>{{ 'prop.columns.number' | t }}</th>
+            <th appTableHead>{{ 'prop.columns.version' | t }}</th>
+            <th appTableHead>{{ 'prop.columns.status' | t }}</th>
+            <th appTableHead>{{ 'prop.columns.capacity' | t }}</th>
+            <th appTableHead>{{ 'prop.columns.price' | t }}</th>
+            <th appTableHead>{{ 'prop.columns.validUntil' | t }}</th>
+          </tr>
+        </thead>
+        <tbody appTableBody>
+          @for (row of combined.value()?.rows ?? []; track row.id) {
+            <tr appTableRow>
+              <td appTableCell class="tabular whitespace-nowrap">
+                <a class="text-primary hover:underline" [routerLink]="['/', i18n.locale(), 'proposals', 'combined', row.id]" dir="ltr">{{ row.proposalNo }}</a>
+                @if (row.isFinal) {
+                  <app-badge tone="success" class="ms-1">{{ 'prop.final' | t }}</app-badge>
+                }
+              </td>
+              <td appTableCell class="tabular">v{{ row.versionNo }}</td>
+              <td appTableCell><app-status-badge enum="combinedProposalStatus" [value]="row.status" /></td>
+              <td appTableCell class="tabular">{{ row.kwp }}</td>
+              <td appTableCell class="tabular whitespace-nowrap">{{ i18n.formatMoney(row.price) }}</td>
+              <td appTableCell class="tabular whitespace-nowrap">{{ i18n.formatDate(row.validUntil) || '—' }}</td>
+            </tr>
+          } @empty {
+            <tr app-table-empty [colSpan]="6">{{ 'prop.emptyVersions' | t }}</tr>
+          }
+        </tbody>
+      </table>
+    </app-table-wrapper>
+  }
+
+  @case ('register') {
+    <div class="flex items-center justify-between gap-3">
+      <p class="text-sm text-muted-foreground">{{ 'prop.registerHint' | t }}</p>
+      <button type="button" appButton variant="outline" size="sm" [disabled]="compareIds().length !== 2" (click)="compare()">{{ 'prop.compareSelected' | t }}</button>
+    </div>
+    <app-table-wrapper [label]="'prop.tabs.register' | t">
+      <table appTable>
+        <thead appTableHeader>
+          <tr appTableRow>
+            <th appTableHead><span class="sr-only">{{ 'prop.compare' | t }}</span></th>
+            <th appTableHead>{{ 'prop.columns.version' | t }}</th>
+            <th appTableHead>{{ 'prop.columns.sent' | t }}</th>
+            <th appTableHead>{{ 'prop.columns.channel' | t }}</th>
+            <th appTableHead>{{ 'prop.columns.presenter' | t }}</th>
+            <th appTableHead>{{ 'prop.columns.author' | t }}</th>
+            <th appTableHead>{{ 'prop.columns.preparer' | t }}</th>
+            <th appTableHead>{{ 'prop.columns.approver' | t }}</th>
+            <th appTableHead>{{ 'prop.columns.price' | t }}</th>
+            <th appTableHead>{{ 'prop.columns.capacity' | t }}</th>
+            <th appTableHead>{{ 'prop.columns.discount' | t }}</th>
+            <th appTableHead>{{ 'prop.columns.validUntil' | t }}</th>
+            <th appTableHead>{{ 'prop.columns.response' | t }}</th>
+            <th appTableHead>{{ 'prop.columns.status' | t }}</th>
+          </tr>
+        </thead>
+        <tbody appTableBody>
+          @for (row of register.value()?.rows ?? []; track row.versionNo) {
+            <tr appTableRow>
+              <td appTableCell><input type="checkbox" [attr.aria-label]="('prop.compare' | t) + ' v' + row.versionNo" [checked]="compareIds().includes(rowId(row))" (change)="toggleCompare(row)" /></td>
+              <td appTableCell class="tabular whitespace-nowrap"><a class="text-primary hover:underline" [routerLink]="['/', i18n.locale(), 'proposals', 'combined', rowId(row)]" dir="ltr">{{ row.proposalNo }} v{{ row.versionNo }}</a></td>
+              <td appTableCell class="tabular whitespace-nowrap">{{ i18n.formatDate(row.firstSentAt) || '—' }}</td>
+              <td appTableCell>{{ row.deliveries[0]?.channel ? (row.deliveries[0].channel | enum: 'deliveryChannel') : '—' }}</td>
+              <td appTableCell>{{ name(row.presenter) }}</td>
+              <td appTableCell>{{ name(row.technicalAuthor) }}</td>
+              <td appTableCell>{{ name(row.financialPreparer) }}</td>
+              <td appTableCell>{{ name(row.approver) }}</td>
+              <td appTableCell class="tabular whitespace-nowrap">{{ i18n.formatMoney(row.price) }}</td>
+              <td appTableCell class="tabular">{{ row.kwp }}</td>
+              <td appTableCell class="tabular">{{ i18n.formatNumber(row.discountPct) }}%</td>
+              <td appTableCell class="tabular whitespace-nowrap" [class.text-destructive]="row.expired">{{ i18n.formatDate(row.validUntil) || '—' }}</td>
+              <td appTableCell>{{ row.customerResponse ? (row.customerResponse | enum: 'customerResponse') : '—' }}</td>
+              <td appTableCell>
+                <app-status-badge enum="combinedProposalStatus" [value]="row.status" />
+                @if (row.isFinal) {
+                  <app-badge tone="success" class="ms-1">{{ 'prop.final' | t }}</app-badge>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr app-table-empty [colSpan]="14">{{ 'prop.registerEmpty' | t }}</tr>
+          }
+        </tbody>
+      </table>
+    </app-table-wrapper>
+  }
+
+  @case ('revisions') {
+    @if (auth.can('proposals.request_revision') && facingCps().length) {
+      <section appCard class="max-w-3xl" aria-labelledby="new-revision-heading">
+        <div appCardHeader><h2 appCardTitle id="new-revision-heading">{{ 'prop.revision.request' | t }}</h2></div>
+        <form appCardContent class="grid gap-3 sm:grid-cols-2" (submit)="requestRevision($event)">
+          <div>
+            <label appLabel for="rev-cp" required>{{ 'prop.revision.proposal' | t }}</label>
+            <app-select>
+              <select appSelect id="rev-cp" [value]="revision().combinedProposalId" (change)="patchRevision('combinedProposalId', $any($event.target).value)">
+                <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
+                @for (cp of facingCps(); track cp.id) {
+                  <option [value]="cp.id">{{ cp.proposalNo }} v{{ cp.versionNo }}</option>
+                }
+              </select>
+            </app-select>
+          </div>
+          <div>
+            <label appLabel for="rev-type" required>{{ 'prop.revision.type' | t }}</label>
+            <app-select>
+              <select appSelect id="rev-type" [value]="revision().type" (change)="patchRevision('type', $any($event.target).value)">
+                @for (type of ['financial', 'technical', 'both']; track type) {
+                  <option [value]="type">{{ type | enum: 'revisionType' }}</option>
+                }
+              </select>
+            </app-select>
+          </div>
+          <div class="sm:col-span-2">
+            <label appLabel for="rev-details" required>{{ 'prop.revision.details' | t }}</label>
+            <textarea appTextarea id="rev-details" rows="3" [value]="revision().details" (input)="patchRevision('details', $any($event.target).value)"></textarea>
+          </div>
+          <button type="submit" appButton class="self-start" [disabled]="busy() || !revision().combinedProposalId || !revision().details.trim()">{{ 'prop.revision.submit' | t }}</button>
+        </form>
+      </section>
+    }
+    <app-table-wrapper [label]="'prop.tabs.revisions' | t">
+      <table appTable>
+        <thead appTableHeader>
+          <tr appTableRow>
+            <th appTableHead>{{ 'prop.revision.requested' | t }}</th>
+            <th appTableHead>{{ 'prop.revision.type' | t }}</th>
+            <th appTableHead>{{ 'prop.revision.details' | t }}</th>
+            <th appTableHead>{{ 'prop.revision.by' | t }}</th>
+            <th appTableHead>{{ 'prop.columns.status' | t }}</th>
+            <th appTableHead>{{ 'prop.revision.outcome' | t }}</th>
+          </tr>
+        </thead>
+        <tbody appTableBody>
+          @for (row of revisions.value()?.rows ?? []; track row.id) {
+            <tr appTableRow>
+              <td appTableCell class="tabular whitespace-nowrap">{{ i18n.formatDate(row.createdAt, true) }}</td>
+              <td appTableCell>{{ row.type | enum: 'revisionType' }}</td>
+              <td appTableCell class="max-w-md">{{ row.details }}</td>
+              <td appTableCell>{{ name(row.requestedBy) }}</td>
+              <td appTableCell><app-status-badge enum="revisionStatus" [value]="row.status" /></td>
+              <td appTableCell>
+                @if (row.status === 'rejected') {
+                  <span class="text-sm text-destructive">{{ row.rejectionReason }}</span>
+                } @else if (row.resultingProposalId) {
+                  <a class="text-sm text-primary hover:underline" [routerLink]="['/', i18n.locale(), 'proposals', 'combined', row.resultingProposalId]">{{ 'prop.revision.resultingVersion' | t }}</a>
+                } @else if (row.status === 'open' && (auth.can('combined_proposals.assemble') || auth.can('financial_proposals.prepare'))) {
+                  <div class="flex flex-col gap-2">
+                    <button type="button" appButton size="sm" [disabled]="busy()" (click)="startRevision(row)">{{ 'prop.revision.start' | t }}</button>
+                    <input appInput [attr.aria-label]="'prop.revision.rejectReason' | t" [placeholder]="'prop.revision.rejectReason' | t" [value]="rejectReason()" (input)="rejectReason.set($any($event.target).value)" />
+                    <button type="button" appButton size="sm" variant="destructive" [disabled]="busy() || !rejectReason().trim()" (click)="rejectRevision(row)">{{ 'prop.revision.reject' | t }}</button>
+                  </div>
+                } @else {
+                  —
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr app-table-empty [colSpan]="6">{{ 'prop.revision.empty' | t }}</tr>
+          }
+        </tbody>
+      </table>
+    </app-table-wrapper>
+  }
+
+  @case ('negotiations') {
+    @if (auth.can('negotiations.create')) {
+      <section appCard aria-labelledby="new-neg-heading">
+        <div appCardHeader><h2 appCardTitle id="new-neg-heading">{{ 'prop.negotiation.log' | t }}</h2></div>
+        <form appCardContent class="grid gap-3 sm:grid-cols-3" (submit)="logNegotiation($event)">
+          <div>
+            <label appLabel for="neg-type" required>{{ 'prop.negotiation.type' | t }}</label>
+            <app-select>
+              <select appSelect id="neg-type" [value]="negotiation().typeCode" (change)="patchNegotiation('typeCode', $any($event.target).value)">
+                <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
+                @for (option of reference.options('negotiation_type'); track option.value) {
+                  <option [value]="option.value">{{ option.label }}</option>
+                }
+              </select>
+            </app-select>
+          </div>
+          <div>
+            <label appLabel for="neg-cp">{{ 'prop.revision.proposal' | t }}</label>
+            <app-select>
+              <select appSelect id="neg-cp" [value]="negotiation().combinedProposalId" (change)="patchNegotiation('combinedProposalId', $any($event.target).value)">
+                <option value="">{{ 'crm.common.none' | t }}</option>
+                @for (cp of facingCps(); track cp.id) {
+                  <option [value]="cp.id">{{ cp.proposalNo }} v{{ cp.versionNo }}</option>
+                }
+              </select>
+            </app-select>
+          </div>
+          <div>
+            <label appLabel for="neg-unit">{{ 'prop.negotiation.unit' | t }}</label>
+            <app-select>
+              <select appSelect id="neg-unit" [value]="negotiation().valueUnit" (change)="patchNegotiation('valueUnit', $any($event.target).value)">
+                @for (unit of ['text', 'pct', 'egp', 'days']; track unit) {
+                  <option [value]="unit">{{ 'prop.negotiation.units.' + unit | t }}</option>
+                }
+              </select>
+            </app-select>
+          </div>
+          <div>
+            <label appLabel for="neg-orig">{{ 'prop.negotiation.original' | t }}</label>
+            <input appInput id="neg-orig" dir="auto" [value]="negotiation().originalValue" (input)="patchNegotiation('originalValue', $any($event.target).value)" />
+          </div>
+          <div>
+            <label appLabel for="neg-req">{{ 'prop.negotiation.requested' | t }}</label>
+            <input appInput id="neg-req" dir="auto" [value]="negotiation().requestedValue" (input)="patchNegotiation('requestedValue', $any($event.target).value)" />
+          </div>
+          <div>
+            <label appLabel for="neg-comp">{{ 'prop.negotiation.competitor' | t }}</label>
+            <input appInput id="neg-comp" [value]="negotiation().competitorName" (input)="patchNegotiation('competitorName', $any($event.target).value)" />
+          </div>
+          <div class="sm:col-span-3">
+            <label appLabel for="neg-obj">{{ 'prop.negotiation.objections' | t }}</label>
+            <textarea appTextarea id="neg-obj" rows="2" [value]="negotiation().objections" (input)="patchNegotiation('objections', $any($event.target).value)"></textarea>
+          </div>
+          <div class="rounded-md border border-warning/50 bg-warning/5 p-3 sm:col-span-3 lg:col-span-1 lg:col-start-1 lg:row-span-1">
+            <label appLabel for="neg-internal">{{ 'prop.negotiation.internalNotes' | t }}</label>
+            <p class="mb-1 text-xs text-muted-foreground">{{ 'prop.negotiation.internalHint' | t }}</p>
+            <textarea appTextarea id="neg-internal" rows="3" [value]="negotiation().internalNotes" (input)="patchNegotiation('internalNotes', $any($event.target).value)"></textarea>
+          </div>
+          <div class="rounded-md border border-info/50 bg-info/5 p-3 sm:col-span-3 lg:col-span-2">
+            <label appLabel for="neg-customer">{{ 'prop.negotiation.customerNotes' | t }}</label>
+            <p class="mb-1 text-xs text-muted-foreground">{{ 'prop.negotiation.customerHint' | t }}</p>
+            <textarea appTextarea id="neg-customer" rows="3" [value]="negotiation().customerNotes" (input)="patchNegotiation('customerNotes', $any($event.target).value)"></textarea>
+          </div>
+          <label class="flex items-center gap-2 text-sm sm:col-span-3"><input type="checkbox" [checked]="negotiation().createRevisionRequest" (change)="patchNegotiation('createRevisionRequest', $any($event.target).checked)" /> {{ 'prop.negotiation.createRevision' | t }}</label>
+          <button type="submit" appButton class="self-start" [disabled]="busy() || !negotiation().typeCode">{{ 'prop.negotiation.save' | t }}</button>
+        </form>
+      </section>
+    }
+    <app-table-wrapper [label]="'prop.tabs.negotiations' | t">
+      <table appTable>
+        <thead appTableHeader>
+          <tr appTableRow>
+            <th appTableHead>{{ 'prop.negotiation.date' | t }}</th>
+            <th appTableHead>{{ 'prop.negotiation.type' | t }}</th>
+            <th appTableHead>{{ 'prop.negotiation.original' | t }}</th>
+            <th appTableHead>{{ 'prop.negotiation.requested' | t }}</th>
+            <th appTableHead>{{ 'prop.negotiation.competitor' | t }}</th>
+            <th appTableHead>{{ 'prop.negotiation.approval' | t }}</th>
+            <th appTableHead>{{ 'prop.negotiation.outcome' | t }}</th>
+          </tr>
+        </thead>
+        <tbody appTableBody>
+          @for (row of negotiations.value()?.rows ?? []; track row.id) {
+            <tr appTableRow>
+              <td appTableCell class="tabular whitespace-nowrap">{{ i18n.formatDate(row.at, true) }}<span class="block text-xs text-muted-foreground">{{ name(row.loggedBy) }}</span></td>
+              <td appTableCell>{{ reference.label('negotiation_type', row.typeCode) }}@if (row.proposalVersion) { <span class="block text-xs text-muted-foreground">v{{ row.proposalVersion }}</span>}</td>
+              <td appTableCell class="tabular">{{ value(row.originalValue, row.valueUnit) }}</td>
+              <td appTableCell class="tabular">{{ value(row.requestedValue, row.valueUnit) }}</td>
+              <td appTableCell>{{ row.competitor?.name || '—' }}</td>
+              <td appTableCell>
+                @if (row.approvalRequired) {
+                  <app-badge tone="warning">{{ 'prop.negotiation.approvalRequired' | t }}</app-badge>
+                } @else {
+                  —
+                }
+              </td>
+              <td appTableCell>
+                <app-status-badge enum="negotiationOutcome" [value]="row.outcome" />
+                @if (row.outcome === 'pending' && auth.can('negotiations.create')) {
+                  <div class="mt-2 flex flex-wrap gap-1">
+                    @for (outcome of ['accepted', 'rejected', 'counter_offer']; track outcome) {
+                      <button type="button" appButton variant="outline" size="sm" [disabled]="busy()" (click)="setOutcome(row, outcome)">{{ outcome | enum: 'negotiationOutcome' }}</button>
+                    }
+                  </div>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr app-table-empty [colSpan]="7">{{ 'prop.negotiation.empty' | t }}</tr>
+          }
+        </tbody>
+      </table>
+    </app-table-wrapper>
+  }
+}

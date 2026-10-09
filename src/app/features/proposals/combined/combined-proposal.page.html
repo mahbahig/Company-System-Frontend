@@ -1,0 +1,279 @@
+@if (data.error()) {
+  <app-alert variant="destructive">{{ i18n.errorText(data.error()) }}</app-alert>
+}
+@if (data.value(); as d) {
+  @let p = d.proposal;
+  @let perms = d.permissions;
+  <app-page-header [eyebrow]="p.proposalNo + ' · v' + p.versionNo" [heading]="p.title || d.opportunity.name" [subtitle]="d.opportunity.opportunityNo">
+    <app-status-badge enum="combinedProposalStatus" [value]="p.status" />
+    @if (p.isFinal) {
+      <app-badge tone="success">{{ 'prop.final' | t }}</app-badge>
+    }
+    <a appButton variant="outline" [routerLink]="['/', i18n.locale(), 'opportunities', opportunityId(), 'proposals']" [queryParams]="{ tab: 'register' }">{{ 'prop.workspaceTitle' | t }}</a>
+  </app-page-header>
+
+  @if (actions.message(); as text) {
+    <app-alert>{{ text }}</app-alert>
+  }
+  @if (actions.error(); as text) {
+    <app-alert variant="destructive">{{ text }}</app-alert>
+  }
+  @if (d.expired) {
+    <app-alert variant="destructive">{{ 'prop.expired' | t }}</app-alert>
+  }
+  @if (p.decisionReason && p.status === 'returned') {
+    <app-alert variant="destructive">{{ 'assess.returnReason' | t }}: {{ p.decisionReason }}</app-alert>
+  }
+
+  <section appCard aria-labelledby="cp-summary">
+    <div appCardHeader><h2 appCardTitle id="cp-summary">{{ 'crm.common.details' | t }}</h2></div>
+    <dl appCardContent class="grid gap-4 sm:grid-cols-3 lg:grid-cols-6">
+      <div appDetailItem [label]="'prop.fields.kwp' | t"><span class="tabular">{{ i18n.formatNumber(p.kwp) }}</span></div>
+      <div appDetailItem [label]="'prop.fields.price' | t"><span class="tabular font-semibold">{{ i18n.formatMoney(p.price) }}</span></div>
+      <div appDetailItem [label]="'prop.fields.priceWithVat' | t"><span class="tabular">{{ i18n.formatMoney(p.priceWithVat) }}</span></div>
+      <div appDetailItem [label]="'prop.fields.discountPct' | t"><span class="tabular">{{ i18n.formatNumber(p.discountPct) }}%</span></div>
+      <div appDetailItem [label]="'prop.fields.validUntil' | t"><span class="tabular" [class.text-destructive]="d.expired">{{ i18n.formatDate(p.validUntil) || '—' }}</span></div>
+      <div appDetailItem [label]="'prop.columns.response' | t">{{ p.customerResponse ? (p.customerResponse | enum: 'customerResponse') : '—' }}</div>
+      <div appDetailItem [label]="'prop.columns.author' | t">{{ name(p.team.technicalAuthorId) }}</div>
+      <div appDetailItem [label]="'prop.columns.preparer' | t">{{ name(p.team.financialPreparerId) }}</div>
+      <div appDetailItem [label]="'prop.columns.approver' | t">{{ name(p.team.finalApproverId) }}</div>
+      <div appDetailItem [label]="'prop.columns.presenter' | t">{{ name(p.team.presenterId) }}</div>
+      <div appDetailItem [label]="'prop.tabs.technical' | t">
+        <a class="text-primary hover:underline" [routerLink]="['/', i18n.locale(), 'proposals', 'technical', ref(p.technicalProposalId, 'id')]" dir="ltr">{{ ref(p.technicalProposalId, 'number') }} v{{ ref(p.technicalProposalId, 'versionNo') }}</a>
+      </div>
+      <div appDetailItem [label]="'prop.tabs.financial' | t">
+        <a class="text-primary hover:underline" [routerLink]="['/', i18n.locale(), 'proposals', 'financial', ref(p.financialProposalId, 'id')]" dir="ltr">{{ ref(p.financialProposalId, 'number') }} v{{ ref(p.financialProposalId, 'versionNo') }}</a>
+      </div>
+    </dl>
+    @if (p.paymentMilestones.length) {
+      <div appCardContent class="pt-0">
+        <h3 class="mb-2 text-sm font-semibold">{{ 'prop.fields.paymentMilestones' | t }}</h3>
+        <ul class="flex flex-wrap gap-2 text-sm">
+          @for (m of p.paymentMilestones; track $index) {
+            <li class="rounded-md border border-border px-2 py-1">{{ m.name }} · <span class="tabular">{{ m.pct }}%</span> · <span class="tabular">{{ i18n.formatMoney(m.amount) }}</span></li>
+          }
+        </ul>
+      </div>
+    }
+  </section>
+
+  <div class="grid gap-6 lg:grid-cols-3">
+    <div class="flex flex-col gap-6 lg:col-span-2">
+      <form appCard aria-labelledby="cp-texts" (submit)="saveTexts($event)">
+        <div appCardHeader><h2 appCardTitle id="cp-texts">{{ 'prop.documentSection' | t }}</h2></div>
+        <fieldset appCardContent class="grid gap-4 sm:grid-cols-2" [disabled]="!perms.canEdit">
+          <div>
+            <label appLabel for="cp-template">{{ 'prop.template' | t }}</label>
+            <app-select>
+              <select appSelect id="cp-template" [value]="texts().templateCode" (change)="setText('templateCode', $any($event.target).value)">
+                @for (code of ['standard', 'executive', 'detailed']; track code) {
+                  <option [value]="code">{{ 'prop.templates.' + code | t }}</option>
+                }
+              </select>
+            </app-select>
+          </div>
+          <div>
+            <label appLabel for="cp-language">{{ 'prop.language' | t }}</label>
+            <app-select>
+              <select appSelect id="cp-language" [value]="texts().language" (change)="setText('language', $any($event.target).value)">
+                <option value="ar">العربية</option>
+                <option value="en">English</option>
+              </select>
+            </app-select>
+          </div>
+          @for (key of ['title', 'introduction', 'customerNotes', 'terms']; track key) {
+            <div [class.sm:col-span-2]="key !== 'title'">
+              <label appLabel [for]="'cp-' + key">{{ 'prop.fields.' + key | t }}</label>
+              @if (key === 'title') {
+                <input appInput [id]="'cp-' + key" [value]="texts().title" (input)="setText(key, $any($event.target).value)" />
+              } @else {
+                <textarea appTextarea rows="3" [id]="'cp-' + key" [value]="$any(texts())[key]" (input)="setText(key, $any($event.target).value)"></textarea>
+              }
+            </div>
+          }
+          @if (perms.canEdit) {
+            <div class="flex flex-wrap gap-2 sm:col-span-2">
+              <button type="submit" appButton [disabled]="actions.busy()">{{ 'crm.common.save' | t }}</button>
+              <button type="button" appButton variant="outline" [disabled]="actions.busy()" (click)="actions.run(api.generate(id()), 'prop.saved', reload)">{{ 'prop.generatePdf' | t }}</button>
+            </div>
+            <div class="flex flex-wrap items-end gap-2 sm:col-span-2">
+              <div class="flex-1">
+                <label appLabel for="cp-attach">{{ 'prop.uploadPdfHint' | t }}</label>
+                <input appInput id="cp-attach" dir="ltr" placeholder="document id" [value]="attachId()" (input)="attachId.set($any($event.target).value)" />
+              </div>
+              <button type="button" appButton variant="outline" [disabled]="actions.busy() || !attachId()" (click)="actions.run(api.attachDocument(id(), attachId()), 'prop.saved', reload)">{{ 'prop.attach' | t }}</button>
+            </div>
+          }
+        </fieldset>
+        @if (p.documentId) {
+          <div appCardContent class="pt-0">
+            <button type="button" appButton variant="link" class="px-0" (click)="openDocument(p.documentId!)">{{ 'docs.download' | t }} PDF</button>
+          </div>
+        }
+        @if (perms.canSubmit) {
+          <div appCardContent class="pt-0">
+            <button type="button" appButton [disabled]="actions.busy()" (click)="actions.run(api.submitCombined(id()), 'prop.submitted', reload)">{{ 'prop.submitForApproval' | t }}</button>
+          </div>
+        }
+      </form>
+
+      @if (perms.canDeliver) {
+        <form appCard aria-labelledby="cp-deliver" (submit)="deliver($event)">
+          <div appCardHeader><h2 appCardTitle id="cp-deliver">{{ 'prop.deliverTitle' | t }}</h2></div>
+          <div appCardContent class="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label appLabel for="dv-channel" required>{{ 'prop.deliverChannel' | t }}</label>
+              <app-select>
+                <select appSelect id="dv-channel" [value]="delivery().channel" (change)="setDelivery('channel', $any($event.target).value)">
+                  @for (c of ['meeting', 'email', 'whatsapp', 'portal']; track c) {
+                    <option [value]="c">{{ c | enum: 'deliveryChannel' }}</option>
+                  }
+                </select>
+              </app-select>
+            </div>
+            <div>
+              <label appLabel for="dv-at">{{ 'prop.deliverAt' | t }}</label>
+              <input appInput id="dv-at" type="datetime-local" dir="ltr" [value]="delivery().at" (change)="setDelivery('at', $any($event.target).value)" />
+            </div>
+            <div>
+              <label appLabel for="dv-recipients" required>{{ 'prop.recipients' | t }}</label>
+              <textarea appTextarea id="dv-recipients" rows="3" [value]="delivery().recipients" (input)="setDelivery('recipients', $any($event.target).value)"></textarea>
+            </div>
+            <div class="flex flex-col gap-3">
+              <div>
+                <label appLabel for="dv-presenter">{{ 'prop.presenters' | t }}</label>
+                <app-user-select inputId="dv-presenter" [value]="delivery().presenterId" (valueChange)="setDelivery('presenterId', $event)" />
+              </div>
+              <div>
+                <label appLabel for="dv-notes">{{ 'prop.notes' | t }}</label>
+                <input appInput id="dv-notes" [value]="delivery().notes" (input)="setDelivery('notes', $any($event.target).value)" />
+              </div>
+            </div>
+            <button type="submit" appButton class="self-start" [disabled]="actions.busy() || !delivery().recipients.trim()">{{ 'prop.deliver' | t }}</button>
+          </div>
+        </form>
+      }
+
+      @if (perms.canRecordFeedback) {
+        <form appCard aria-labelledby="cp-feedback" (submit)="recordFeedback($event)">
+          <div appCardHeader><h2 appCardTitle id="cp-feedback">{{ 'prop.feedbackTitle' | t }}</h2></div>
+          <div appCardContent class="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label appLabel for="fb-response" required>{{ 'prop.response' | t }}</label>
+              <app-select>
+                <select appSelect id="fb-response" [value]="response().response" (change)="setResponse('response', $any($event.target).value)">
+                  @for (r of ['accepted', 'rejected', 'revision_requested', 'no_response', 'postponed']; track r) {
+                    <option [value]="r">{{ r | enum: 'customerResponse' }}</option>
+                  }
+                </select>
+              </app-select>
+            </div>
+            <div></div>
+            @for (key of ['feedback', 'questions', 'requestedModifications']; track key) {
+              <div>
+                <label appLabel [for]="'fb-' + key">{{ (key === 'requestedModifications' ? 'prop.modifications' : 'prop.' + key) | t }}</label>
+                <textarea appTextarea rows="2" [id]="'fb-' + key" [value]="$any(response())[key]" (input)="setResponse(key, $any($event.target).value)"></textarea>
+              </div>
+            }
+            <div>
+              <label appLabel for="fb-next">{{ 'prop.nextAction' | t }}</label>
+              <input appInput id="fb-next" [value]="response().nextAction" (input)="setResponse('nextAction', $any($event.target).value)" />
+              <label appLabel for="fb-next-at" class="mt-2 block">{{ 'prop.nextActionAt' | t }}</label>
+              <input appInput id="fb-next-at" type="datetime-local" dir="ltr" [value]="response().nextActionAt" (change)="setResponse('nextActionAt', $any($event.target).value)" />
+            </div>
+            <div class="flex flex-wrap gap-2 sm:col-span-2">
+              <button type="submit" appButton [disabled]="actions.busy()">{{ 'prop.recordFeedback' | t }}</button>
+              @if (perms.canMarkFinal) {
+                <button type="button" appButton variant="outline" [disabled]="actions.busy()" (click)="actions.run(api.markFinal(id()), 'prop.markedFinal', reload)">{{ 'prop.markFinal' | t }}</button>
+              }
+              @if (perms.canRequestRevision) {
+                <a appButton variant="ghost" [routerLink]="['/', i18n.locale(), 'opportunities', opportunityId(), 'proposals']" [queryParams]="{ tab: 'revisions' }">{{ 'prop.revision.request' | t }}</a>
+              }
+            </div>
+          </div>
+        </form>
+
+        <form appCard aria-labelledby="cp-share" (submit)="share($event)">
+          <div appCardHeader><h2 appCardTitle id="cp-share">{{ 'prop.shareTitle' | t }}</h2></div>
+          <div appCardContent class="grid gap-4 sm:grid-cols-3">
+            <div>
+              <label appLabel for="sh-channel">{{ 'prop.shareChannel' | t }}</label>
+              <app-select>
+                <select appSelect id="sh-channel" [value]="shareForm().channel" (change)="setShare('channel', $any($event.target).value)">
+                  <option value="email">{{ 'email' | enum: 'deliveryChannel' }}</option>
+                  <option value="whatsapp">{{ 'whatsapp' | enum: 'deliveryChannel' }}</option>
+                  <option value="portal">{{ 'portal' | enum: 'deliveryChannel' }}</option>
+                </select>
+              </app-select>
+            </div>
+            <div>
+              <label appLabel for="sh-days">{{ 'prop.expiresInDays' | t }}</label>
+              <input appInput id="sh-days" type="number" min="1" max="60" dir="ltr" [value]="shareForm().expiresInDays" (input)="setShare('expiresInDays', +$any($event.target).value)" />
+            </div>
+            <div class="sm:col-span-3">
+              <label appLabel for="sh-recipients" required>{{ 'prop.recipients' | t }}</label>
+              <textarea appTextarea id="sh-recipients" rows="2" dir="ltr" [value]="shareForm().recipients" (input)="setShare('recipients', $any($event.target).value)"></textarea>
+            </div>
+            <div class="sm:col-span-3">
+              <label appLabel for="sh-message">{{ 'prop.message' | t }}</label>
+              <textarea appTextarea id="sh-message" rows="2" [value]="shareForm().message" (input)="setShare('message', $any($event.target).value)"></textarea>
+            </div>
+            <button type="submit" appButton variant="outline" class="self-start" [disabled]="actions.busy() || !shareForm().recipients.trim()">{{ 'prop.share' | t }}</button>
+            @if (shareResult(); as s) {
+              <p class="text-sm sm:col-span-3">{{ 'prop.shareLink' | t: { date: i18n.formatDate(s.expiresAt) } }} <span class="break-all font-mono text-xs" dir="ltr">{{ s.url }}</span></p>
+            }
+          </div>
+        </form>
+      }
+
+      @if (perms.canRequestResend) {
+        <button type="button" appButton variant="outline" class="self-start" [disabled]="actions.busy()" (click)="actions.run(api.requestResend(id()), 'prop.submitted', reload)">{{ 'prop.requestResend' | t }}</button>
+      }
+
+      @if (p.deliveries.length || p.feedback.length) {
+        <section appCard aria-labelledby="cp-history">
+          <div appCardHeader><h2 appCardTitle id="cp-history">{{ 'prop.deliveries' | t }}</h2></div>
+          <ul appCardContent class="flex flex-col gap-2 text-sm">
+            @for (dv of p.deliveries; track $index) {
+              <li><span class="tabular">{{ i18n.formatDate(dv.at, true) }}</span> · {{ dv.channel | enum: 'deliveryChannel' }} · <span dir="auto">{{ dv.recipients.join('، ') }}</span></li>
+            }
+            @for (fb of p.feedback; track $index) {
+              <li class="rounded-md bg-muted p-2"><span class="tabular">{{ i18n.formatDate(fb.at, true) }}</span> · {{ fb.response | enum: 'customerResponse' }}@if (fb.feedback) { — {{ fb.feedback }}}</li>
+            }
+          </ul>
+        </section>
+      }
+    </div>
+
+    <div class="flex flex-col gap-6">
+      <app-completeness-panel [result]="d.completeness" entityType="combined_proposal" [entityId]="id()" />
+      @if (d.approvals.length) {
+        <section appCard aria-labelledby="cp-approvals">
+          <div appCardHeader><h2 appCardTitle id="cp-approvals">{{ 'prop.approvals' | t }}</h2></div>
+          <ul appCardContent class="flex flex-col gap-2 text-sm">
+            @for (a of d.approvals; track a.id) {
+              <li class="flex items-center justify-between gap-2">
+                <a class="text-primary hover:underline" [routerLink]="['/', i18n.locale(), 'approvals', a.id]" dir="ltr">{{ a.approvalNo }}</a>
+                <app-status-badge enum="approvalStatus" [value]="a.status" />
+              </li>
+            }
+          </ul>
+        </section>
+      }
+      <section appCard aria-labelledby="cp-versions">
+        <div appCardHeader><h2 appCardTitle id="cp-versions">{{ 'prop.versions' | t }}</h2></div>
+        <ul appCardContent class="flex flex-col gap-2 text-sm">
+          @for (v of d.versions; track v.id) {
+            <li class="flex items-center justify-between gap-2">
+              <a class="text-primary hover:underline" [routerLink]="['/', i18n.locale(), 'proposals', 'combined', v.id]">v{{ v.versionNo }} · {{ i18n.formatMoney(v.price) }}</a>
+              <app-status-badge enum="combinedProposalStatus" [value]="v.status" />
+            </li>
+          }
+        </ul>
+      </section>
+      <app-documents-panel entityType="combined_proposal" [entityId]="id()" />
+    </div>
+  </div>
+} @else if (data.isLoading()) {
+  <p class="text-sm text-muted-foreground">{{ 'common.labels.loading' | t }}</p>
+}
