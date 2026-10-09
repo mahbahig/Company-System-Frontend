@@ -1,0 +1,88 @@
+<!-- Desktop sidebar -->
+<aside class="hidden w-64 shrink-0 flex-col border-e border-sidebar-border bg-sidebar lg:flex">
+  <app-sidebar-brand />
+  <div class="flex-1 overflow-y-auto px-2 pb-4">
+    <app-sidebar-nav />
+  </div>
+</aside>
+
+<!-- Mobile drawer: a modal dialog (a div: axe disallows role=dialog on <aside>), focus trapped while open -->
+@if (drawerOpen()) {
+  <div class="fixed inset-0 z-40 lg:hidden">
+    <!-- The scrim stays a neutral black wash in both themes. -->
+    <button
+      type="button"
+      tabindex="-1"
+      [attr.aria-label]="'common.labels.closeMenu' | t"
+      class="absolute inset-0 bg-black/50"
+      (click)="closeDrawer()"
+    ></button>
+    <div
+      role="dialog"
+      aria-modal="true"
+      [attr.aria-label]="'common.labels.menu' | t"
+      cdkTrapFocus
+      [cdkTrapFocusAutoCapture]="true"
+      class="absolute inset-y-0 start-0 flex w-72 flex-col bg-sidebar shadow-xl"
+    >
+      <div class="flex items-center justify-end px-2 pt-2">
+        <button
+          type="button"
+          appButton
+          variant="ghost"
+          size="icon"
+          cdkFocusInitial
+          [attr.aria-label]="'common.labels.closeMenu' | t"
+          class="text-sidebar-foreground hover:bg-sidebar-accent/20"
+          (click)="closeDrawer()"
+        >
+          <app-icon [icon]="closeIcon" />
+        </button>
+      </div>
+      <app-sidebar-brand />
+      <div class="flex-1 overflow-y-auto px-2 pb-4">
+        <app-sidebar-nav (navigate)="closeDrawer()" />
+      </div>
+    </div>
+  </div>
+}
+
+<div class="flex min-w-0 flex-1 flex-col">
+  <header
+    class="sticky top-0 z-30 flex h-14 items-center gap-2 border-b border-border bg-background/95 px-3 backdrop-blur supports-[backdrop-filter]:bg-background/80"
+  >
+    <button
+      #menuButton
+      type="button"
+      appButton
+      variant="ghost"
+      size="icon"
+      class="lg:hidden"
+      [attr.aria-label]="'common.labels.openMenu' | t"
+      [attr.aria-expanded]="drawerOpen()"
+      (click)="openDrawer()"
+    >
+      <app-icon [icon]="menuIcon" />
+    </button>
+
+    @if (environmentBadge) {
+      <span
+        class="max-w-24 truncate rounded-full border border-warning/40 bg-warning/10 px-2 py-0.5 text-2xs font-semibold uppercase tracking-wide text-warning-tint sm:max-w-none sm:px-2.5"
+      >
+        {{ 'app.environment.' + environmentBadge | t }}
+      </span>
+    }
+
+    <div class="ms-auto flex min-w-0 items-center gap-0.5 sm:gap-1">
+      <app-global-search />
+      <app-notification-bell />
+      <app-theme-toggle />
+      <app-locale-switcher />
+      <app-user-menu />
+    </div>
+  </header>
+
+  <main id="main-content" tabindex="-1" class="min-w-0 flex-1 p-4 focus:outline-none sm:p-6">
+    <router-outlet />
+  </main>
+</div>
