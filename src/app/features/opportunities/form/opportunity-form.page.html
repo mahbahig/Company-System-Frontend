@@ -1,0 +1,268 @@
+<app-page-header [heading]="(isEdit() ? 'crm.opportunities.editTitle' : 'crm.opportunities.newTitle') | t" class="!mb-0" />
+
+@if (existing.error()) {
+  <app-alert variant="destructive">{{ 'errors.db.unexpected' | t }}</app-alert>
+}
+
+<form class="flex flex-col gap-6" novalidate (submit)="onSubmit($event)">
+  @if (serverError(); as key) {
+    <app-alert variant="destructive">{{ key | t }}</app-alert>
+  }
+
+  @if (duplicateMatches(); as matches) {
+    <app-alert variant="destructive" class="flex flex-col gap-3">
+      <p class="font-medium">{{ 'crm.opportunities.duplicates.body' | t }}</p>
+      <ul class="flex flex-col gap-1">
+        @for (match of matches; track match.id) {
+          <li class="flex items-center gap-2 text-sm">
+            <span class="tabular font-medium" dir="ltr">{{ match.opportunityNo }}</span>
+            <span>{{ match.name }}</span>
+            <app-badge [tone]="reference.tone('pipeline_stage', match.stage)">{{ reference.label('pipeline_stage', match.stage) }}</app-badge>
+            <span class="text-muted-foreground">{{ ownerName(match.ownerId) }}</span>
+          </li>
+        }
+      </ul>
+      <div class="flex gap-2">
+        <button type="button" appButton variant="destructive" (click)="confirmDuplicate()">{{ 'crm.opportunities.duplicates.confirmAnyway' | t }}</button>
+        <button type="button" appButton variant="outline" (click)="duplicateMatches.set(null)">{{ 'crm.opportunities.duplicates.cancel' | t }}</button>
+      </div>
+    </app-alert>
+  }
+
+  <section appCard aria-labelledby="customer-heading">
+    <div appCardHeader>
+      <h2 appCardTitle id="customer-heading">{{ 'crm.opportunities.sections.customer' | t }}</h2>
+    </div>
+    <div appCardContent class="flex flex-col gap-3">
+      @if (isEdit()) {
+        @if (selectedCustomer(); as customer) {
+          <p class="text-sm">
+            <span class="tabular font-medium" dir="ltr">{{ customer.customerNo }}</span>
+            — {{ customerLabel(customer) }}
+          </p>
+        }
+      } @else if (selectedCustomer(); as customer) {
+        <div class="flex items-center justify-between rounded-md border border-border p-3">
+          <p class="text-sm">
+            <span class="tabular font-medium" dir="ltr">{{ customer.customerNo }}</span>
+            — {{ customerLabel(customer) }}
+          </p>
+          <button type="button" appButton variant="outline" size="sm" (click)="clearCustomer()">{{ 'common.actions.cancel' | t }}</button>
+        </div>
+      } @else {
+        <div>
+          <label appLabel for="customer-search" required>{{ 'crm.opportunities.fields.customerId' | t }}</label>
+          <div class="relative mt-1.5">
+            <span class="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+              <app-icon [icon]="searchIcon" />
+            </span>
+            <input
+              appInput
+              id="customer-search"
+              type="search"
+              class="ps-9"
+              [value]="customerQuery()"
+              (input)="customerQuery.set($any($event.target).value)"
+              [placeholder]="'crm.opportunities.selectCustomer' | t"
+            />
+          </div>
+          @if (fieldError('customerId'); as key) {
+            <p class="mt-1.5 text-sm text-destructive">{{ key | t }}</p>
+          }
+          @if (customerResults().length > 0) {
+            <ul class="mt-2 flex flex-col gap-1 rounded-md border border-border p-1">
+              @for (customer of customerResults(); track customer.id) {
+                <li>
+                  <button
+                    type="button"
+                    class="flex w-full items-center gap-2 rounded px-2 py-1.5 text-start text-sm hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    (click)="pickCustomer(customer)"
+                  >
+                    <span class="tabular text-muted-foreground" dir="ltr">{{ customer.customerNo }}</span>
+                    {{ customerLabel(customer) }}
+                  </button>
+                </li>
+              }
+            </ul>
+          }
+        </div>
+      }
+    </div>
+  </section>
+
+  <section appCard aria-labelledby="identity-heading">
+    <div appCardHeader>
+      <h2 appCardTitle id="identity-heading">{{ 'crm.opportunities.sections.identity' | t }}</h2>
+    </div>
+    <div appCardContent class="grid gap-4 sm:grid-cols-2">
+      <div class="sm:col-span-2">
+        <label appLabel for="name" required>{{ 'crm.opportunities.fields.name' | t }}</label>
+        <input appInput id="name" class="mt-1.5" [formField]="opportunityForm.name" [attr.aria-invalid]="fieldError('name') ? true : null" />
+        @if (fieldError('name'); as key) {
+          <p class="mt-1.5 text-sm text-destructive">{{ key | t }}</p>
+        }
+      </div>
+      <div>
+        <label appLabel for="solutionTypeCode" required>{{ 'crm.opportunities.fields.solutionTypeCode' | t }}</label>
+        <app-select class="mt-1.5">
+          <select appSelect id="solutionTypeCode" [formField]="opportunityForm.solutionTypeCode" [attr.aria-invalid]="fieldError('solutionTypeCode') ? true : null">
+            <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
+            @for (option of reference.options('solution_type'); track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
+            }
+          </select>
+        </app-select>
+        @if (fieldError('solutionTypeCode'); as key) {
+          <p class="mt-1.5 text-sm text-destructive">{{ key | t }}</p>
+        }
+      </div>
+      <div>
+        <label appLabel for="serviceTypeCode">{{ 'crm.opportunities.fields.serviceTypeCode' | t }}</label>
+        <app-select class="mt-1.5">
+          <select appSelect id="serviceTypeCode" [formField]="opportunityForm.serviceTypeCode">
+            <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
+            @for (option of reference.options('service_type'); track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
+            }
+          </select>
+        </app-select>
+      </div>
+      <div>
+        <label appLabel for="priority">{{ 'crm.opportunities.fields.priority' | t }}</label>
+        <app-select class="mt-1.5">
+          <select appSelect id="priority" [formField]="opportunityForm.priority">
+            <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
+            <option value="low">{{ 'crm.opportunities.priority.low' | t }}</option>
+            <option value="normal">{{ 'crm.opportunities.priority.normal' | t }}</option>
+            <option value="high">{{ 'crm.opportunities.priority.high' | t }}</option>
+            <option value="urgent">{{ 'crm.opportunities.priority.urgent' | t }}</option>
+          </select>
+        </app-select>
+      </div>
+      <div>
+        <label appLabel for="leadSourceCode">{{ 'crm.opportunities.fields.leadSourceCode' | t }}</label>
+        <app-select class="mt-1.5">
+          <select appSelect id="leadSourceCode" [formField]="opportunityForm.leadSourceCode">
+            <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
+            @for (option of reference.options('lead_source'); track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
+            }
+          </select>
+        </app-select>
+      </div>
+      <div>
+        <label appLabel for="campaignCode">{{ 'crm.opportunities.fields.campaignCode' | t }}</label>
+        <app-select class="mt-1.5">
+          <select appSelect id="campaignCode" [formField]="opportunityForm.campaignCode">
+            <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
+            @for (option of reference.options('campaign'); track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
+            }
+          </select>
+        </app-select>
+      </div>
+    </div>
+  </section>
+
+  <section appCard aria-labelledby="assignment-heading">
+    <div appCardHeader>
+      <h2 appCardTitle id="assignment-heading">{{ 'crm.customers.sections.assignment' | t }}</h2>
+    </div>
+    <div appCardContent class="grid gap-4 sm:grid-cols-2">
+      <div>
+        <label appLabel for="primaryContactId">{{ 'crm.opportunities.fields.primaryContactId' | t }}</label>
+        <app-select class="mt-1.5">
+          <select appSelect id="primaryContactId" [formField]="opportunityForm.primaryContactId">
+            <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
+            @for (contact of contacts.value() ?? []; track contact.id) {
+              <option [value]="contact.id">{{ contact.fullName }}</option>
+            }
+          </select>
+        </app-select>
+      </div>
+      <div>
+        <label appLabel for="siteId">{{ 'crm.opportunities.fields.siteId' | t }}</label>
+        <app-select class="mt-1.5">
+          <select appSelect id="siteId" [formField]="opportunityForm.siteId">
+            <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
+            @for (site of sites.value() ?? []; track site.id) {
+              <option [value]="site.id">{{ site.siteNo }} — {{ site.name || site.siteNo }}</option>
+            }
+          </select>
+        </app-select>
+      </div>
+      @if (canAssign()) {
+        <div>
+          <label appLabel for="ownerId">{{ 'crm.opportunities.fields.ownerId' | t }}</label>
+          <app-select class="mt-1.5">
+            <select appSelect id="ownerId" [formField]="opportunityForm.ownerId">
+              <option value="">{{ 'crm.common.unassigned' | t }}</option>
+              @for (owner of owners.value() ?? []; track owner.id) {
+                <option [value]="owner.id">{{ i18n.pick(owner.fullNameAr, owner.fullNameEn) }}</option>
+              }
+            </select>
+          </app-select>
+        </div>
+      }
+    </div>
+  </section>
+
+  <section appCard aria-labelledby="commercial-heading">
+    <div appCardHeader>
+      <h2 appCardTitle id="commercial-heading">{{ 'crm.opportunities.sections.commercial' | t }}</h2>
+    </div>
+    <div appCardContent class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div>
+        <label appLabel for="estimatedValue">{{ 'crm.opportunities.fields.estimatedValue' | t }}</label>
+        <input appInput id="estimatedValue" type="number" step="any" class="mt-1.5 tabular" dir="ltr" [formField]="opportunityForm.estimatedValue" />
+        @if (fieldError('estimatedValue'); as key) {
+          <p class="mt-1.5 text-sm text-destructive">{{ key | t }}</p>
+        }
+      </div>
+      <div>
+        <label appLabel for="estimatedKwp">{{ 'crm.opportunities.fields.estimatedKwp' | t }}</label>
+        <input appInput id="estimatedKwp" type="number" step="any" class="mt-1.5 tabular" dir="ltr" [formField]="opportunityForm.estimatedKwp" />
+      </div>
+      <div>
+        <label appLabel for="storageKwh">{{ 'crm.opportunities.fields.storageKwh' | t }}</label>
+        <input appInput id="storageKwh" type="number" step="any" class="mt-1.5 tabular" dir="ltr" [formField]="opportunityForm.storageKwh" />
+      </div>
+      <div>
+        <label appLabel for="expectedCloseDate">{{ 'crm.opportunities.fields.expectedCloseDate' | t }}</label>
+        <input appInput id="expectedCloseDate" type="date" class="mt-1.5 tabular" dir="ltr" [formField]="opportunityForm.expectedCloseDate" />
+      </div>
+    </div>
+  </section>
+
+  <section appCard aria-labelledby="next-step-heading">
+    <div appCardHeader>
+      <h2 appCardTitle id="next-step-heading">{{ 'crm.opportunities.sections.nextStep' | t }}</h2>
+    </div>
+    <div appCardContent class="grid gap-4 sm:grid-cols-2">
+      <div>
+        <label appLabel for="nextAction">{{ 'crm.opportunities.fields.nextAction' | t }}</label>
+        <input appInput id="nextAction" class="mt-1.5" [formField]="opportunityForm.nextAction" />
+      </div>
+      <div>
+        <label appLabel for="nextActionAt">{{ 'crm.opportunities.fields.nextActionAt' | t }}</label>
+        <input appInput id="nextActionAt" type="date" class="mt-1.5 tabular" dir="ltr" [formField]="opportunityForm.nextActionAt" />
+      </div>
+    </div>
+  </section>
+
+  <section appCard aria-labelledby="notes-heading">
+    <div appCardHeader>
+      <h2 appCardTitle id="notes-heading">{{ 'crm.opportunities.sections.notes' | t }}</h2>
+    </div>
+    <div appCardContent>
+      <textarea appTextarea id="notes" rows="4" [formField]="opportunityForm.notes"></textarea>
+    </div>
+  </section>
+
+  <div class="flex gap-2">
+    <button type="submit" appButton [disabled]="opportunityForm().submitting()" [attr.aria-busy]="opportunityForm().submitting()">
+      {{ (opportunityForm().submitting() ? 'common.actions.saving' : 'common.actions.save') | t }}
+    </button>
+    <a appButton variant="outline" routerLink="..">{{ 'common.actions.cancel' | t }}</a>
+  </div>
+</form>

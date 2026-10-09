@@ -1,0 +1,84 @@
+<app-page-header [heading]="'crm.pipeline.title' | t" [subtitle]="'crm.pipeline.subtitle' | t" class="!mb-0" />
+
+<app-list-toolbar [searchValue]="q() ?? ''" [searchPlaceholder]="'crm.opportunities.searchPlaceholder' | t" [filters]="filters()" [toggles]="toggles()" />
+
+@if (board.error()) {
+  <app-alert variant="destructive">{{ 'errors.db.unexpected' | t }}</app-alert>
+}
+@if (moveError(); as key) {
+  <app-alert variant="destructive">{{ key | t }}</app-alert>
+}
+
+@if (board.hasValue() && totalCount() === 0) {
+  <p class="rounded-lg border border-border py-12 text-center text-sm text-muted-foreground">{{ 'crm.pipeline.empty' | t }}</p>
+} @else {
+  <div role="region" [attr.aria-label]="'crm.pipeline.title' | t" tabindex="0" class="flex gap-4 overflow-x-auto pb-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+    @for (column of columns(); track column.stage) {
+      <section class="flex w-72 shrink-0 flex-col gap-3 rounded-lg border border-border bg-muted/30 p-3" [attr.aria-label]="reference.label('pipeline_stage', column.stage)">
+        <header class="flex flex-col gap-1">
+          <div class="flex items-baseline justify-between gap-2">
+            <h2 class="text-sm font-semibold">{{ reference.label('pipeline_stage', column.stage) }}</h2>
+            <span class="tabular text-xs text-muted-foreground">{{ column.count }}</span>
+          </div>
+          @if (stageProbability(column.stage); as probability) {
+            <p class="text-2xs text-muted-foreground">{{ 'crm.pipeline.probability' | t: { value: probability } }}</p>
+          }
+          @if (canViewFinancials()) {
+            <p class="tabular text-2xs text-muted-foreground">
+              {{ 'crm.pipeline.columnValue' | t: { value: i18n.formatMoneyCompact(column.totalValue) } }}
+              ·
+              {{ 'crm.pipeline.columnWeighted' | t: { value: i18n.formatMoneyCompact(column.weightedValue) } }}
+            </p>
+          }
+        </header>
+
+        <ul
+          cdkDropList
+          [id]="column.stage"
+          [cdkDropListData]="column.stage"
+          [cdkDropListConnectedTo]="stages"
+          (cdkDropListDropped)="onDrop($event)"
+          class="flex min-h-16 flex-col gap-2"
+        >
+          @for (card of column.cards; track card.id) {
+            <li cdkDrag [cdkDragData]="card.id">
+              <a
+                [routerLink]="['/opportunities', card.id]"
+                class="block rounded-md border border-border bg-card p-3 transition-colors hover:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <p class="tabular text-2xs text-muted-foreground" dir="ltr">{{ card.opportunityNo }}</p>
+                <p class="mt-0.5 line-clamp-2 text-sm font-medium">{{ card.name }}</p>
+                <p class="mt-0.5 line-clamp-1 text-xs text-muted-foreground">{{ customerName(card.customerId) }}</p>
+
+                <div class="mt-2 flex flex-wrap items-center gap-1.5">
+                  @if (card.priority) {
+                    <app-badge [tone]="card.priority === 'urgent' ? 'danger' : card.priority === 'high' ? 'warning' : 'neutral'">
+                      {{ 'crm.opportunities.priority.' + card.priority | t }}
+                    </app-badge>
+                  }
+                  @if (daysInStage(card); as days) {
+                    <span class="tabular text-2xs text-muted-foreground">{{ 'crm.pipeline.daysInStage' | t: { days } }}</span>
+                  }
+                  @if (isAtRisk(card)) {
+                    <span class="inline-flex items-center gap-1 text-2xs font-medium text-destructive" [title]="'crm.pipeline.slaBreached' | t">
+                      <app-icon [icon]="warningIcon" svgClass="size-3" [label]="'crm.pipeline.slaBreached' | t" />
+                    </span>
+                  }
+                </div>
+
+                @if (canViewFinancials() && card.estimatedValue) {
+                  <p class="tabular mt-2 text-xs font-medium">{{ i18n.formatMoneyCompact(card.estimatedValue, card.currency) }}</p>
+                }
+                @if (card.expectedCloseDate) {
+                  <p class="tabular mt-1 text-2xs text-muted-foreground">{{ i18n.formatDate(card.expectedCloseDate) }}</p>
+                }
+              </a>
+            </li>
+          } @empty {
+            <li class="py-6 text-center text-2xs text-muted-foreground">{{ 'crm.common.none' | t }}</li>
+          }
+        </ul>
+      </section>
+    }
+  </div>
+}

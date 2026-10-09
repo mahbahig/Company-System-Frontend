@@ -1,0 +1,454 @@
+@if (notFound()) {
+  <app-status-page [code]="404" titleKey="errors.notFound.title" bodyKey="errors.db.notFound" />
+} @else if (detail.error()) {
+  <app-alert variant="destructive">{{ 'errors.db.unexpected' | t }}</app-alert>
+} @else if (opportunity(); as o) {
+  <app-page-header [eyebrow]="o.opportunityNo" [heading]="o.name" [subtitle]="customerLabel(o)" class="!mb-0">
+    @if (canEdit() && o.outcome === 'open') {
+      <a appButton variant="outline" routerLink="edit">{{ 'common.actions.edit' | t }}</a>
+    }
+    @if (canClose() && o.outcome === 'open') {
+      <button type="button" appButton variant="outline" (click)="startOutcome('on_hold')">{{ 'crm.opportunities.outcome.on_hold' | t }}</button>
+      <button type="button" appButton variant="destructive" (click)="startOutcome('cancelled')">{{ 'crm.opportunities.outcome.cancelled' | t }}</button>
+    }
+    @if (canClose() && o.outcome === 'on_hold') {
+      <button type="button" appButton (click)="startOutcome('open')">{{ 'crm.opportunities.outcome.open' | t }}</button>
+    }
+  </app-page-header>
+
+  <div class="flex flex-wrap items-center gap-2">
+    <app-badge [tone]="reference.tone('pipeline_stage', o.stage)">{{ reference.label('pipeline_stage', o.stage) }}</app-badge>
+    <app-badge tone="outline">{{ 'crm.opportunities.outcome.' + o.outcome | t }}</app-badge>
+    @if (o.health) {
+      <app-badge
+        [tone]="o.health.status === 'healthy' ? 'success' : o.health.status === 'watch' ? 'info' : o.health.status === 'at_risk' ? 'warning' : 'danger'"
+      >
+        {{ 'crm.opportunities.health.status.' + o.health.status | t }}
+      </app-badge>
+      @if (o.health.reasons.length > 0) {
+        <span class="text-xs text-muted-foreground">
+          @for (reason of o.health.reasons; track reason.code; let last = $last) {
+            {{ 'crm.opportunities.health.reasons.' + reason.code | t: { value: reason.value ?? 0 } }}{{ last ? '' : '، ' }}
+          }
+        </span>
+      }
+    }
+    @if (overdueNextAction(o)) {
+      <app-badge tone="danger">{{ 'crm.opportunities.nextActionOverdue' | t }}</app-badge>
+    }
+  </div>
+
+  @if (outcomeAction(); as action) {
+    <app-alert variant="destructive">
+      <form class="flex flex-col gap-3" (submit)="submitOutcome($event)">
+        <label appLabel for="outcome-reason" required>{{ 'crm.opportunities.transition.reasonNotes' | t }}</label>
+        <textarea appTextarea id="outcome-reason" rows="2" [value]="outcomeReason()" (input)="outcomeReason.set($any($event.target).value)"></textarea>
+        <div class="flex gap-2">
+          <button type="submit" appButton [disabled]="outcomeSubmitting() || !outcomeReason().trim()">{{ 'common.actions.save' | t }}</button>
+          <button type="button" appButton variant="outline" (click)="outcomeAction.set(null)">{{ 'common.actions.cancel' | t }}</button>
+        </div>
+      </form>
+    </app-alert>
+  }
+
+  <app-opportunity-hub
+    [opportunityId]="o.id"
+    [customerId]="customerIdOf(o)"
+    [intakeStatus]="o.intakeStatus"
+    [handoffStatus]="o.handoffStatus"
+    [proposalStatus]="o.proposalStatus"
+    [contactRoles]="o.contactRoles ?? []"
+    [primaryContactId]="contactIdOf(o)"
+    (changed)="detail.reload()"
+  />
+
+  <div class="grid gap-6 lg:grid-cols-3">
+    <section appCard class="lg:col-span-2" aria-labelledby="details-heading">
+      <div appCardHeader>
+        <h2 appCardTitle id="details-heading">{{ 'crm.common.details' | t }}</h2>
+      </div>
+      <div appCardContent>
+        <dl class="grid gap-x-8 gap-y-4 sm:grid-cols-2">
+          <div appDetailItem [label]="'crm.opportunities.fields.solutionTypeCode' | t">{{ reference.label('solution_type', o.solutionTypeCode) }}</div>
+          <div appDetailItem [label]="'crm.opportunities.fields.serviceTypeCode' | t">{{ reference.label('service_type', o.serviceTypeCode) }}</div>
+          <div appDetailItem [label]="'crm.opportunities.columns.customer' | t">{{ customerLabel(o) }}</div>
+          <div appDetailItem [label]="'crm.opportunities.fields.primaryContactId' | t">{{ contactLabel(o) }}</div>
+          <div appDetailItem [label]="'crm.opportunities.fields.siteId' | t">{{ siteLabel(o) }}</div>
+          <div appDetailItem [label]="'crm.opportunities.fields.priority' | t">{{ o.priority ? ('crm.opportunities.priority.' + o.priority | t) : ('crm.common.notSet' | t) }}</div>
+          @if (detail.value()?.canViewFinancials) {
+            <div appDetailItem [label]="'crm.opportunities.fields.estimatedValue' | t">
+              <span class="tabular">{{ i18n.formatMoney(o.estimatedValue, o.currency) || ('crm.common.notSet' | t) }}</span>
+            </div>
+          }
+          <div appDetailItem [label]="'crm.opportunities.fields.estimatedKwp' | t"><span class="tabular">{{ i18n.formatNumber(o.estimatedKwp) || ('crm.common.notSet' | t) }}</span></div>
+          <div appDetailItem [label]="'crm.opportunities.fields.storageKwh' | t"><span class="tabular">{{ i18n.formatNumber(o.storageKwh) || ('crm.common.notSet' | t) }}</span></div>
+          <div appDetailItem [label]="'crm.opportunities.fields.expectedCloseDate' | t">
+            <span class="tabular">{{ i18n.formatDate(o.expectedCloseDate) || ('crm.common.notSet' | t) }}</span>
+          </div>
+          <div appDetailItem [label]="'crm.opportunities.detail.stageTitle' | t">{{ i18n.formatDate(o.stageEnteredAt, true) }}</div>
+          @if (o.nextAction) {
+            <div appDetailItem class="sm:col-span-2" [label]="'crm.opportunities.fields.nextAction' | t">
+              <span [class.text-destructive]="overdueNextAction(o)" [class.font-medium]="overdueNextAction(o)">
+                {{ o.nextAction }} — <span class="tabular">{{ i18n.formatDate(o.nextActionAt, true) }}</span>
+              </span>
+            </div>
+          }
+          @if (o.notes) {
+            <div appDetailItem class="sm:col-span-2" [label]="'crm.opportunities.fields.notes' | t"><span class="whitespace-pre-wrap">{{ o.notes }}</span></div>
+          }
+        </dl>
+      </div>
+    </section>
+
+    <div class="flex flex-col gap-6">
+      <section appCard aria-labelledby="assignment-heading">
+        <div appCardHeader>
+          <h2 appCardTitle id="assignment-heading">{{ 'crm.customers.sections.assignment' | t }}</h2>
+        </div>
+        <div appCardContent>
+          <dl class="flex flex-col gap-4">
+            <div appDetailItem [label]="'crm.common.owner' | t">{{ ref(o.ownerId) }}</div>
+            <div appDetailItem [label]="'crm.opportunities.team.pmId' | t">{{ ref(o.team?.pmId) }}</div>
+            <div appDetailItem [label]="'crm.opportunities.team.engineerId' | t">{{ ref(o.team?.engineerId) }}</div>
+            <div appDetailItem [label]="'crm.opportunities.team.techLeadId' | t">{{ ref(o.team?.techLeadId) }}</div>
+            <div appDetailItem [label]="'crm.opportunities.team.financialPreparerId' | t">{{ ref(o.team?.financialPreparerId) }}</div>
+            <div appDetailItem [label]="'crm.common.createdAt' | t"><span class="tabular">{{ i18n.formatDate(o.createdAt, true) }}</span></div>
+          </dl>
+
+          @if (canAssign()) {
+            <form class="mt-4 flex flex-col gap-3 border-t border-border pt-4" (submit)="submitTeam($event)">
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label appLabel for="team-pm" class="mb-1.5 block text-xs">{{ 'crm.opportunities.team.pmId' | t }}</label>
+                  <app-select>
+                    <select appSelect id="team-pm" (change)="teamModel.set({ ...teamModel(), pmId: $any($event.target).value || null })">
+                      <option value="">{{ 'crm.common.unassigned' | t }}</option>
+                      @for (user of owners.value() ?? []; track user.id) {
+                        <option [value]="user.id">{{ i18n.pick(user.fullNameAr, user.fullNameEn) }}</option>
+                      }
+                    </select>
+                  </app-select>
+                </div>
+                <div>
+                  <label appLabel for="team-engineer" class="mb-1.5 block text-xs">{{ 'crm.opportunities.team.engineerId' | t }}</label>
+                  <app-select>
+                    <select appSelect id="team-engineer" (change)="teamModel.set({ ...teamModel(), engineerId: $any($event.target).value || null })">
+                      <option value="">{{ 'crm.common.unassigned' | t }}</option>
+                      @for (user of owners.value() ?? []; track user.id) {
+                        <option [value]="user.id">{{ i18n.pick(user.fullNameAr, user.fullNameEn) }}</option>
+                      }
+                    </select>
+                  </app-select>
+                </div>
+                <div>
+                  <label appLabel for="team-tech-lead" class="mb-1.5 block text-xs">{{ 'crm.opportunities.team.techLeadId' | t }}</label>
+                  <app-select>
+                    <select appSelect id="team-tech-lead" (change)="teamModel.set({ ...teamModel(), techLeadId: $any($event.target).value || null })">
+                      <option value="">{{ 'crm.common.unassigned' | t }}</option>
+                      @for (user of owners.value() ?? []; track user.id) {
+                        <option [value]="user.id">{{ i18n.pick(user.fullNameAr, user.fullNameEn) }}</option>
+                      }
+                    </select>
+                  </app-select>
+                </div>
+                <div>
+                  <label appLabel for="team-finance" class="mb-1.5 block text-xs">{{ 'crm.opportunities.team.financialPreparerId' | t }}</label>
+                  <app-select>
+                    <select appSelect id="team-finance" (change)="teamModel.set({ ...teamModel(), financialPreparerId: $any($event.target).value || null })">
+                      <option value="">{{ 'crm.common.unassigned' | t }}</option>
+                      @for (user of owners.value() ?? []; track user.id) {
+                        <option [value]="user.id">{{ i18n.pick(user.fullNameAr, user.fullNameEn) }}</option>
+                      }
+                    </select>
+                  </app-select>
+                </div>
+              </div>
+              <button type="submit" appButton size="sm" [disabled]="teamSubmitting()">{{ 'common.actions.save' | t }}</button>
+            </form>
+          }
+        </div>
+      </section>
+
+      @if (detail.value(); as value) {
+        <app-completeness-panel [result]="value.completeness" entityType="opportunity" [entityId]="o.id" />
+      }
+    </div>
+  </div>
+
+  @if ((canChangeStage() && o.outcome !== 'won' && o.outcome !== 'lost' && o.outcome !== 'cancelled') || ((o.outcome === 'lost' || o.outcome === 'cancelled') && canReopen())) {
+    <section appCard aria-labelledby="transition-heading">
+      <div appCardHeader>
+        <h2 appCardTitle id="transition-heading">{{ 'crm.opportunities.transition.title' | t }}</h2>
+      </div>
+      <div appCardContent>
+        <form class="flex flex-col gap-4" (submit)="submitTransition($event)">
+          @if (transitionError(); as key) {
+            <app-alert variant="destructive">{{ key | t }}</app-alert>
+          }
+          <div class="max-w-xs">
+            <label appLabel for="target-stage">{{ 'crm.opportunities.transition.toStage' | t }}</label>
+            <app-select class="mt-1.5">
+              <select appSelect id="target-stage" [value]="targetStage()" (change)="targetStage.set($any($event.target).value)">
+                <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
+                @for (stage of availableStages(); track stage) {
+                  <option [value]="stage">{{ reference.label('pipeline_stage', stage) }}</option>
+                }
+              </select>
+            </app-select>
+          </div>
+
+          @if (targetStage()) {
+            @if (gates.hasValue()) {
+              <ul class="flex flex-col gap-1.5">
+                @for (check of gates.value().checks; track check.code) {
+                  <li class="flex items-center gap-2 text-sm">
+                    <app-badge [tone]="check.passed ? 'success' : check.severity === 'hard' ? 'danger' : 'warning'">
+                      {{ (check.passed ? 'crm.common.yes' : 'crm.common.no') | t }}
+                    </app-badge>
+                    {{ gateLabel(check) }}
+                  </li>
+                }
+              </ul>
+            }
+
+            @if (isBackwardMove() || isReopen() || targetStage() === 'lost' || targetStage() === 'won') {
+              <div>
+                <label appLabel for="transition-reason">{{ 'crm.opportunities.transition.reasonNotes' | t }}</label>
+                <textarea
+                  appTextarea
+                  id="transition-reason"
+                  rows="2"
+                  class="mt-1.5"
+                  [value]="transitionReason()"
+                  (input)="transitionReason.set($any($event.target).value)"
+                ></textarea>
+              </div>
+            }
+
+            @if (targetStage() === 'lost') {
+              <div class="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label appLabel for="lost-reason" required>{{ 'crm.opportunities.transition.reasonCode' | t }}</label>
+                  <app-select class="mt-1.5">
+                    <select appSelect id="lost-reason" [value]="lostReasonCode()" (change)="lostReasonCode.set($any($event.target).value)">
+                      <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
+                      @for (option of reference.options('loss_reason'); track option.value) {
+                        <option [value]="option.value">{{ option.label }}</option>
+                      }
+                    </select>
+                  </app-select>
+                </div>
+                <div>
+                  <label appLabel for="lost-competitor">{{ 'crm.opportunities.transition.competitor' | t }}</label>
+                  <app-select class="mt-1.5">
+                    <select appSelect id="lost-competitor" [value]="lostCompetitorCode()" (change)="lostCompetitorCode.set($any($event.target).value)">
+                      <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
+                      @for (option of reference.options('competitor'); track option.value) {
+                        <option [value]="option.value">{{ option.label }}</option>
+                      }
+                    </select>
+                  </app-select>
+                </div>
+                <div>
+                  <label appLabel for="lost-competitor-name">{{ 'crm.opportunities.transition.competitorName' | t }}</label>
+                  <input appInput id="lost-competitor-name" class="mt-1.5" [value]="lostCompetitorName()" (input)="lostCompetitorName.set($any($event.target).value)" />
+                </div>
+                <div class="sm:col-span-2">
+                  <label appLabel for="lost-comment">{{ 'crm.opportunities.transition.lostComment' | t }}</label>
+                  <textarea appTextarea id="lost-comment" rows="2" class="mt-1.5" [value]="lostComment()" (input)="lostComment.set($any($event.target).value)"></textarea>
+                </div>
+              </div>
+            }
+
+            @if (gates.hasValue() && !gates.value().canProceed && canOverrideGates()) {
+              <div>
+                <label appLabel for="override-reason">{{ 'crm.opportunities.transition.overrideReason' | t }}</label>
+                <textarea appTextarea id="override-reason" rows="2" class="mt-1.5" [value]="overrideReason()" (input)="overrideReason.set($any($event.target).value)"></textarea>
+              </div>
+            }
+
+            <div>
+              <button
+                type="submit"
+                appButton
+                [disabled]="transitionSubmitting() || (targetStage() === 'lost' && !lostReasonCode()) || (isReopen() && !transitionReason().trim())"
+                [attr.aria-busy]="transitionSubmitting()"
+              >
+                {{ (transitionSubmitting() ? 'crm.opportunities.transition.submitting' : 'crm.opportunities.transition.submit') | t }}
+              </button>
+            </div>
+          }
+        </form>
+      </div>
+    </section>
+  }
+
+  <section appCard aria-labelledby="history-heading">
+    <div appCardHeader>
+      <h2 appCardTitle id="history-heading">{{ 'crm.opportunities.detail.historyTitle' | t }}</h2>
+    </div>
+    <div appCardContent>
+      <app-table-wrapper [label]="'crm.opportunities.detail.historyTitle' | t">
+        <table appTable>
+          <thead appTableHeader>
+            <tr appTableRow>
+              <th appTableHead>{{ 'crm.opportunities.columns.stage' | t }}</th>
+              <th appTableHead>{{ 'crm.common.createdAt' | t }}</th>
+              <th appTableHead>{{ 'crm.opportunities.detail.durationHeader' | t }}</th>
+              <th appTableHead>{{ 'crm.common.owner' | t }}</th>
+              <th appTableHead>{{ 'crm.opportunities.transition.reasonNotes' | t }}</th>
+            </tr>
+          </thead>
+          <tbody appTableBody>
+            @for (entry of o.stageHistory ?? []; track $index) {
+              <tr appTableRow>
+                <td appTableCell><app-badge [tone]="reference.tone('pipeline_stage', entry.toStage)">{{ reference.label('pipeline_stage', entry.toStage) }}</app-badge></td>
+                <td appTableCell class="tabular whitespace-nowrap">{{ i18n.formatDate(entry.enteredAt, true) }}</td>
+                <td appTableCell class="tabular whitespace-nowrap">{{ stageDuration(entry.enteredAt, entry.exitedAt) }}</td>
+                <td appTableCell class="whitespace-nowrap">{{ ref(entry.changedBy) }}</td>
+                <td appTableCell>{{ entry.reason || ('crm.common.notSet' | t) }}</td>
+              </tr>
+            } @empty {
+              <tr app-table-empty [colSpan]="5">{{ 'crm.opportunities.detail.historyEmpty' | t }}</tr>
+            }
+          </tbody>
+        </table>
+      </app-table-wrapper>
+    </div>
+  </section>
+
+  <div class="grid gap-6 lg:grid-cols-2">
+    <section appCard aria-labelledby="readiness-heading">
+      <div appCardHeader>
+        <h2 appCardTitle id="readiness-heading">{{ 'crm.opportunities.readiness.title' | t }}</h2>
+      </div>
+      <div appCardContent>
+        <ul class="flex flex-col gap-2">
+          @for (item of detail.value()?.readiness ?? []; track item.id) {
+            <li class="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                [id]="'readiness-' + item.id"
+                [checked]="item.done"
+                [disabled]="!item.manual || !canEdit()"
+                (change)="toggleReadiness(item.id, $any($event.target).checked)"
+                class="size-4 rounded border-input accent-primary"
+              />
+              <label [for]="'readiness-' + item.id" class="flex-1">{{ 'crm.opportunities.readiness.' + item.id | t }}</label>
+              @if (item.source === 'auto') {
+                <app-badge tone="outline">{{ 'crm.opportunities.readiness.auto' | t }}</app-badge>
+              }
+            </li>
+          }
+        </ul>
+      </div>
+    </section>
+
+    <section appCard aria-labelledby="journey-heading">
+      <div appCardHeader>
+        <h2 appCardTitle id="journey-heading">{{ 'crm.opportunities.journey.title' | t }}</h2>
+      </div>
+      <div appCardContent>
+        <ol class="flex flex-col gap-2">
+          @for (milestone of detail.value()?.journey ?? []; track milestone.code) {
+            <li class="flex items-center gap-2 text-sm">
+              <app-badge [tone]="milestone.state === 'completed' ? 'success' : milestone.state === 'current' ? 'info' : 'neutral'">
+                {{ 'crm.opportunities.journey.' + milestone.code | t }}
+              </app-badge>
+              @if (milestone.completedAt) {
+                <span class="tabular text-xs text-muted-foreground">{{ i18n.formatDate(milestone.completedAt) }}</span>
+              }
+            </li>
+          }
+        </ol>
+      </div>
+    </section>
+  </div>
+
+  <section appCard aria-labelledby="team-heading">
+    <div appCardHeader>
+      <h2 appCardTitle id="team-heading">{{ 'crm.opportunities.collaboratorsTitle' | t }}</h2>
+    </div>
+    <div appCardContent class="flex flex-col gap-4">
+      <app-table-wrapper [label]="'crm.opportunities.collaboratorsTitle' | t">
+        <table appTable>
+          <thead appTableHeader>
+            <tr appTableRow>
+              <th appTableHead>{{ 'crm.common.owner' | t }}</th>
+              <th appTableHead>{{ 'crm.opportunities.team.roleLabel' | t }}</th>
+              <th appTableHead></th>
+            </tr>
+          </thead>
+          <tbody appTableBody>
+            @for (collaborator of o.collaborators ?? []; track $index) {
+              <tr appTableRow>
+                <td appTableCell>{{ ref(collaborator.userId) }}</td>
+                <td appTableCell>{{ 'crm.opportunities.collaboratorRole.' + collaborator.role | t }}</td>
+                <td appTableCell class="text-end">
+                  @if (canManageCollaborators()) {
+                    <button
+                      type="button"
+                      appButton
+                      variant="outline"
+                      size="sm"
+                      (click)="removeCollaborator(idOf(collaborator.userId))"
+                    >
+                      {{ 'common.actions.delete' | t }}
+                    </button>
+                  }
+                </td>
+              </tr>
+            } @empty {
+              <tr app-table-empty [colSpan]="3">{{ 'crm.common.none' | t }}</tr>
+            }
+          </tbody>
+        </table>
+      </app-table-wrapper>
+
+      @if (canManageCollaborators()) {
+        <form class="flex flex-wrap items-end gap-3 border-t border-border pt-4" (submit)="addCollaborator($event)">
+          <div>
+            <label appLabel for="collaborator-user" class="mb-1.5 block text-xs">{{ 'crm.common.owner' | t }}</label>
+            <app-select>
+              <select appSelect id="collaborator-user" [value]="collaboratorUserId()" (change)="collaboratorUserId.set($any($event.target).value)">
+                <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
+                @for (user of owners.value() ?? []; track user.id) {
+                  <option [value]="user.id">{{ i18n.pick(user.fullNameAr, user.fullNameEn) }}</option>
+                }
+              </select>
+            </app-select>
+          </div>
+          <div>
+            <label appLabel for="collaborator-role" class="mb-1.5 block text-xs">{{ 'crm.opportunities.team.roleLabel' | t }}</label>
+            <app-select>
+              <select appSelect id="collaborator-role" [value]="collaboratorRole()" (change)="collaboratorRole.set($any($event.target).value)">
+                <option value="project_manager">{{ 'crm.opportunities.collaboratorRole.project_manager' | t }}</option>
+                <option value="technical_lead">{{ 'crm.opportunities.collaboratorRole.technical_lead' | t }}</option>
+                <option value="engineer">{{ 'crm.opportunities.collaboratorRole.engineer' | t }}</option>
+                <option value="finance">{{ 'crm.opportunities.collaboratorRole.finance' | t }}</option>
+                <option value="sales">{{ 'crm.opportunities.collaboratorRole.sales' | t }}</option>
+                <option value="other">{{ 'crm.opportunities.collaboratorRole.other' | t }}</option>
+              </select>
+            </app-select>
+          </div>
+          <label class="flex items-center gap-2 pb-2 text-sm">
+            <input
+              type="checkbox"
+              [checked]="collaboratorIsPoc()"
+              (change)="collaboratorIsPoc.set($any($event.target).checked)"
+              class="size-4 rounded border-input accent-primary"
+            />
+            {{ 'crm.opportunities.team.isTechnicalPoc' | t }}
+          </label>
+          <button type="submit" appButton size="sm" [disabled]="collaboratorSubmitting() || !collaboratorUserId()">{{ 'common.actions.save' | t }}</button>
+        </form>
+      }
+    </div>
+  </section>
+
+  <app-documents-panel entityType="opportunity" [entityId]="o.id" [opportunityScope]="true" />
+
+  <app-timeline entityType="opportunity" [entityId]="o.id" />
+} @else {
+  <p class="text-sm text-muted-foreground" role="status">{{ 'common.labels.loading' | t }}</p>
+}

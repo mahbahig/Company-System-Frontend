@@ -1,0 +1,239 @@
+@if (data.error()) {
+  <app-alert variant="destructive">{{ i18n.errorText(data.error()) }}</app-alert>
+}
+@if (data.value(); as d) {
+  @let p = d.proposal;
+  <app-page-header [eyebrow]="p.number + ' · v' + p.versionNo" [heading]="'prop.tabs.financial' | t" [subtitle]="'prop.columns.preparer' | t">
+    <app-status-badge enum="financialProposalStatus" [value]="p.status" />
+    @if (tpLink(); as link) {
+      <a appButton variant="outline" [routerLink]="link">{{ 'prop.tabs.technical' | t }}</a>
+    }
+    <a appButton variant="outline" [routerLink]="['/', i18n.locale(), 'opportunities', p.opportunityId, 'proposals']" [queryParams]="{ tab: 'financial' }">{{ 'prop.workspaceTitle' | t }}</a>
+  </app-page-header>
+
+  @if (actions.message(); as text) {
+    <app-alert>{{ text }}</app-alert>
+  }
+  @if (actions.error(); as text) {
+    <app-alert variant="destructive">{{ text }}</app-alert>
+  }
+  @if (!canEdit()) {
+    <app-alert>{{ (p.status === 'approved' || p.status === 'superseded' ? 'prop.lockedNotice' : 'prop.readOnlyNotice') | t }}</app-alert>
+  }
+  @if (p.approvalReasons.length) {
+    <app-alert variant="destructive">{{ 'prop.requiresApproval' | t: { reasons: reasons() } }}</app-alert>
+  }
+  @if (d.suggestedListPrice) {
+    <app-alert>{{ 'prop.suggestedPrice' | t: { price: i18n.formatMoney(d.suggestedListPrice) } }}</app-alert>
+  }
+
+  <section appCard aria-labelledby="fp-summary">
+    <div appCardHeader><h2 appCardTitle id="fp-summary">{{ 'crm.common.details' | t }}</h2></div>
+    <dl appCardContent class="grid gap-4 sm:grid-cols-3 lg:grid-cols-6">
+      <div appDetailItem [label]="'prop.fields.listPrice' | t"><span class="tabular">{{ i18n.formatMoney(p.listPrice) }}</span></div>
+      <div appDetailItem [label]="'prop.fields.discountPct' | t"><span class="tabular">{{ i18n.formatNumber(p.discountPct) }}%</span></div>
+      <div appDetailItem [label]="'prop.fields.finalPrice' | t"><span class="tabular font-semibold">{{ i18n.formatMoney(p.finalPrice) }}</span></div>
+      <div appDetailItem [label]="'prop.fields.totalWithVat' | t"><span class="tabular">{{ i18n.formatMoney(p.totalWithVat) }}</span></div>
+      <div appDetailItem [label]="'prop.fields.downPaymentPct' | t"><span class="tabular">{{ i18n.formatNumber(p.downPaymentPct) }}%</span></div>
+      @if (canSeeCost()) {
+        <div appDetailItem [label]="'prop.fields.marginPct' | t"><span class="tabular" [class.text-destructive]="(p.marginPct ?? 0) < 15">{{ i18n.formatNumber(p.marginPct ?? 0) }}% · {{ i18n.formatMoney(p.marginAmount ?? 0) }}</span></div>
+        <div appDetailItem [label]="'prop.fields.totalCost' | t"><span class="tabular">{{ i18n.formatMoney(p.totalCost ?? 0) }}</span></div>
+      }
+    </dl>
+  </section>
+
+  <div class="grid gap-6 lg:grid-cols-3">
+    <form class="flex flex-col gap-6 lg:col-span-2" (submit)="save($event)">
+      @if (canSeeCost()) {
+        <section appCard aria-labelledby="fp-costs">
+          <div appCardHeader>
+            <h2 appCardTitle id="fp-costs">{{ 'prop.costs.title' | t }}</h2>
+            <p class="text-sm text-muted-foreground">{{ 'prop.costs.fromBom' | t }}</p>
+          </div>
+          <div appCardContent>
+            <app-table-wrapper [label]="'prop.costs.title' | t">
+              <table appTable>
+                <thead appTableHeader>
+                  <tr appTableRow>
+                    <th appTableHead>{{ 'prop.costs.category' | t }}</th>
+                    <th appTableHead>{{ 'prop.costs.description' | t }}</th>
+                    <th appTableHead>{{ 'prop.costs.quantity' | t }}</th>
+                    <th appTableHead>{{ 'prop.costs.unitCost' | t }}</th>
+                    <th appTableHead>{{ 'prop.costs.currency' | t }}</th>
+                    <th appTableHead>{{ 'prop.costs.total' | t }}</th>
+                    @if (canEdit()) {
+                      <th appTableHead><span class="sr-only">{{ 'crm.common.actions' | t }}</span></th>
+                    }
+                  </tr>
+                </thead>
+                <tbody appTableBody>
+                  @for (line of costLines(); track $index; let index = $index) {
+                    <tr appTableRow>
+                      <td appTableCell class="min-w-32">
+                        <select class="h-9 w-full rounded-md border border-input bg-background px-2 text-sm" [disabled]="!canEdit()" [attr.aria-label]="'prop.costs.category' | t" [value]="line.category" (change)="patchLine(index, 'category', $any($event.target).value)">
+                          @for (category of categories; track category) {
+                            <option [value]="category">{{ category | enum: 'costCategory' }}</option>
+                          }
+                        </select>
+                      </td>
+                      <td appTableCell class="min-w-52"><input appInput [disabled]="!canEdit()" [attr.aria-label]="'prop.costs.description' | t" [value]="line.description" (input)="patchLine(index, 'description', $any($event.target).value)" /></td>
+                      <td appTableCell class="w-24"><input appInput type="number" step="any" dir="ltr" [disabled]="!canEdit()" [attr.aria-label]="'prop.costs.quantity' | t" [value]="line.quantity" (input)="patchLine(index, 'quantity', $any($event.target).value)" /></td>
+                      <td appTableCell class="w-32"><input appInput type="number" step="any" dir="ltr" [disabled]="!canEdit()" [attr.aria-label]="'prop.costs.unitCost' | t" [value]="line.unitCost" (input)="patchLine(index, 'unitCost', $any($event.target).value)" /></td>
+                      <td appTableCell class="w-24">
+                        <select class="h-9 w-full rounded-md border border-input bg-background px-2 text-sm" [disabled]="!canEdit()" [attr.aria-label]="'prop.costs.currency' | t" [value]="line.currency" (change)="patchLine(index, 'currency', $any($event.target).value)">
+                          <option value="EGP">EGP</option>
+                          <option value="USD">USD</option>
+                          <option value="EUR">EUR</option>
+                        </select>
+                      </td>
+                      <td appTableCell class="tabular whitespace-nowrap">{{ line.totalEgp === undefined ? '—' : i18n.formatMoney(line.totalEgp) }}</td>
+                      @if (canEdit()) {
+                        <td appTableCell><button type="button" appButton variant="ghost" size="sm" (click)="removeLine(index)">{{ 'crm.common.delete' | t }}</button></td>
+                      }
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </app-table-wrapper>
+            @if (canEdit()) {
+              <button type="button" appButton variant="outline" size="sm" class="mt-3" (click)="addLine()">{{ 'prop.costs.add' | t }}</button>
+            }
+          </div>
+        </section>
+      }
+
+      <section appCard aria-labelledby="fp-pricing">
+        <div appCardHeader><h2 appCardTitle id="fp-pricing">{{ 'completeness.sections.pricing' | t }}</h2></div>
+        <fieldset appCardContent class="grid gap-4 sm:grid-cols-3" [disabled]="!canEdit()">
+          @if (canSeeCost()) {
+            <div>
+              <label appLabel for="fp-contingency">{{ 'prop.fields.contingencyPct' | t }}</label>
+              <input appInput id="fp-contingency" type="number" step="any" dir="ltr" [value]="form().contingencyPct" (input)="patch('contingencyPct', $any($event.target).value)" />
+            </div>
+          }
+          <div>
+            <label appLabel for="fp-list">{{ 'prop.fields.listPrice' | t }}</label>
+            <input appInput id="fp-list" type="number" step="any" dir="ltr" [value]="form().listPrice" [placeholder]="data.value()?.suggestedListPrice ?? proposal()?.listPrice ?? ''" aria-describedby="fp-list-hint" (input)="patch('listPrice', $any($event.target).value)" />
+            <p id="fp-list-hint" class="mt-1 text-xs text-muted-foreground">{{ 'prop.fields.listPriceHint' | t }}</p>
+          </div>
+          <div>
+            <label appLabel for="fp-discount">{{ 'prop.fields.discountPct' | t }}</label>
+            <input appInput id="fp-discount" type="number" step="any" min="0" max="100" dir="ltr" [value]="form().discountPct" (input)="patch('discountPct', $any($event.target).value)" />
+          </div>
+          @if (form().discountPct) {
+            <div class="sm:col-span-3">
+              <label appLabel for="fp-discount-reason" required>{{ 'prop.fields.discountReason' | t }}</label>
+              <input appInput id="fp-discount-reason" [value]="form().discountReason" (input)="patch('discountReason', $any($event.target).value, false)" />
+            </div>
+          }
+          <div>
+            <label appLabel for="fp-vat">{{ 'prop.fields.vatPct' | t }}</label>
+            <input appInput id="fp-vat" type="number" step="any" dir="ltr" [value]="form().vatPct" (input)="patch('vatPct', $any($event.target).value)" />
+          </div>
+          <div>
+            <label appLabel for="fp-validity">{{ 'prop.fields.validityDays' | t }}</label>
+            <input appInput id="fp-validity" type="number" min="1" dir="ltr" [value]="form().validityDays" (input)="patch('validityDays', $any($event.target).value)" />
+          </div>
+          <div>
+            <label appLabel for="fp-usd">{{ 'prop.fields.exchangeUsd' | t }}</label>
+            <input appInput id="fp-usd" type="number" step="any" dir="ltr" [value]="form().usd" (input)="patch('usd', $any($event.target).value)" />
+          </div>
+          <div>
+            <label appLabel for="fp-eur">{{ 'prop.fields.exchangeEur' | t }}</label>
+            <input appInput id="fp-eur" type="number" step="any" dir="ltr" [value]="form().eur" (input)="patch('eur', $any($event.target).value)" />
+          </div>
+        </fieldset>
+      </section>
+
+      <section appCard aria-labelledby="fp-milestones">
+        <div appCardHeader><h2 appCardTitle id="fp-milestones">{{ 'prop.milestones.title' | t }}</h2></div>
+        <fieldset appCardContent class="flex flex-col gap-2" [disabled]="!canEdit()">
+          @for (m of milestones(); track $index; let index = $index) {
+            <div class="grid gap-2 sm:grid-cols-5">
+              <input appInput class="sm:col-span-2" [attr.aria-label]="'prop.milestones.name' | t" [placeholder]="'prop.milestones.name' | t" [value]="m.name" (input)="patchMilestone(index, 'name', $any($event.target).value)" />
+              <input appInput type="number" dir="ltr" [attr.aria-label]="'prop.milestones.pct' | t" [placeholder]="'prop.milestones.pct' | t" [value]="m.pct" (input)="patchMilestone(index, 'pct', $any($event.target).value)" />
+              <input appInput [attr.aria-label]="'prop.milestones.trigger' | t" [placeholder]="'prop.milestones.trigger' | t" [value]="m.trigger ?? ''" (input)="patchMilestone(index, 'trigger', $any($event.target).value)" />
+              @if (canEdit()) {
+                <button type="button" appButton variant="ghost" size="sm" (click)="removeMilestone(index)">{{ 'crm.common.delete' | t }}</button>
+              }
+            </div>
+          }
+          <p class="text-sm" [class.text-destructive]="milestoneTotal() !== 100 && milestones().length > 0">{{ 'prop.milestones.total' | t: { pct: milestoneTotal() } }}</p>
+          @if (canEdit()) {
+            <button type="button" appButton variant="outline" size="sm" class="self-start" (click)="addMilestone()">{{ 'prop.milestones.add' | t }}</button>
+          }
+        </fieldset>
+      </section>
+
+      <section appCard aria-labelledby="fp-financing">
+        <div appCardHeader><h2 appCardTitle id="fp-financing">{{ 'prop.financing.title' | t }}</h2></div>
+        <fieldset appCardContent class="flex flex-col gap-2" [disabled]="!canEdit()">
+          @for (option of financing(); track $index; let index = $index) {
+            <div class="grid gap-2 sm:grid-cols-4">
+              <input appInput [attr.aria-label]="'prop.financing.provider' | t" [placeholder]="'prop.financing.provider' | t" [value]="option.provider ?? ''" (input)="patchFinancing(index, 'provider', $any($event.target).value)" />
+              <input appInput type="number" dir="ltr" [attr.aria-label]="'prop.financing.termMonths' | t" [placeholder]="'prop.financing.termMonths' | t" [value]="option.termMonths ?? ''" (input)="patchFinancing(index, 'termMonths', $any($event.target).value)" />
+              <input appInput type="number" step="any" dir="ltr" [attr.aria-label]="'prop.financing.interestPct' | t" [placeholder]="'prop.financing.interestPct' | t" [value]="option.interestPct ?? ''" (input)="patchFinancing(index, 'interestPct', $any($event.target).value)" />
+              @if (canEdit()) {
+                <button type="button" appButton variant="ghost" size="sm" (click)="removeFinancing(index)">{{ 'crm.common.delete' | t }}</button>
+              }
+            </div>
+          }
+          @if (canEdit()) {
+            <button type="button" appButton variant="outline" size="sm" class="self-start" (click)="addFinancing()">{{ 'prop.financing.add' | t }}</button>
+          }
+        </fieldset>
+      </section>
+
+      <section appCard aria-labelledby="fp-terms">
+        <div appCardHeader><h2 appCardTitle id="fp-terms">{{ 'completeness.sections.terms' | t }}</h2></div>
+        <fieldset appCardContent class="grid gap-4 sm:grid-cols-2" [disabled]="!canEdit()">
+          <div>
+            <label appLabel for="fp-commercial">{{ 'prop.fields.commercialTerms' | t }}</label>
+            <textarea appTextarea id="fp-commercial" rows="4" [value]="form().commercialTerms" (input)="patch('commercialTerms', $any($event.target).value, false)"></textarea>
+          </div>
+          <div>
+            <label appLabel for="fp-special">{{ 'prop.fields.specialTerms' | t }}</label>
+            <textarea appTextarea id="fp-special" rows="4" [value]="form().specialTerms" (input)="patch('specialTerms', $any($event.target).value, false)"></textarea>
+          </div>
+        </fieldset>
+      </section>
+
+      @if (canEdit()) {
+        <div class="flex flex-wrap gap-2">
+          <button type="submit" appButton [disabled]="actions.busy()">{{ 'crm.common.save' | t }}</button>
+          <button type="button" appButton variant="outline" [disabled]="actions.busy()" (click)="actions.run(api.submitFinancial(id()), 'prop.submitted', reload)">{{ 'prop.submitForApproval' | t }}</button>
+        </div>
+      }
+    </form>
+
+    <div class="flex flex-col gap-6">
+      <app-completeness-panel [result]="d.completeness" entityType="financial_proposal" [entityId]="id()" />
+      @if (d.approvals.length) {
+        <section appCard aria-labelledby="fp-approvals">
+          <div appCardHeader><h2 appCardTitle id="fp-approvals">{{ 'prop.approvals' | t }}</h2></div>
+          <ul appCardContent class="flex flex-col gap-2 text-sm">
+            @for (a of d.approvals; track a.id) {
+              <li class="flex items-center justify-between gap-2">
+                <a class="text-primary hover:underline" [routerLink]="['/', i18n.locale(), 'approvals', a.id]" dir="ltr">{{ a.approvalNo }}</a>
+                <app-status-badge enum="approvalStatus" [value]="a.status" />
+              </li>
+            }
+          </ul>
+        </section>
+      }
+      <section appCard aria-labelledby="fp-versions">
+        <div appCardHeader><h2 appCardTitle id="fp-versions">{{ 'prop.versions' | t }}</h2></div>
+        <ul appCardContent class="flex flex-col gap-2 text-sm">
+          @for (v of d.versions; track v.id) {
+            <li class="flex items-center justify-between gap-2">
+              <a class="text-primary hover:underline" [routerLink]="['/', i18n.locale(), 'proposals', 'financial', v.id]">v{{ v.versionNo }} · {{ i18n.formatMoney(v.finalPrice) }}</a>
+              <app-status-badge enum="financialProposalStatus" [value]="v.status" />
+            </li>
+          }
+        </ul>
+      </section>
+    </div>
+  </div>
+} @else if (data.isLoading()) {
+  <p class="text-sm text-muted-foreground">{{ 'common.labels.loading' | t }}</p>
+}

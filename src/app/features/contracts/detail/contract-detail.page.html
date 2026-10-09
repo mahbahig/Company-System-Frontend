@@ -1,0 +1,184 @@
+@if (data.error()) {
+  <app-alert variant="destructive">{{ i18n.errorText(data.error()) }}</app-alert>
+}
+@if (data.value(); as d) {
+  @let c = d.contract;
+  @let perms = d.permissions;
+  <app-page-header [eyebrow]="c.contractNo + ' · v' + c.versionNo" [heading]="customerName()" [subtitle]="'contracts.fromProposal' | t: { version: c.proposalVersion }">
+    <app-status-badge enum="contractStatus" [value]="c.status" />
+    @if (opportunityId()) {
+      <a appButton variant="outline" [routerLink]="['/', i18n.locale(), 'opportunities', opportunityId()]">{{ 'handoffs.backToOpportunity' | t }}</a>
+    }
+    @if (c.projectId) {
+      <a appButton [routerLink]="['/', i18n.locale(), 'projects', c.projectId]">{{ 'contracts.openProject' | t }}</a>
+    }
+  </app-page-header>
+
+  @if (actions.message(); as text) {
+    <app-alert>{{ text }}</app-alert>
+  }
+  @if (actions.error(); as text) {
+    <app-alert variant="destructive">{{ text }}</app-alert>
+  }
+  @if (c.terminationReason) {
+    <app-alert variant="destructive">{{ 'contracts.terminatedBecause' | t: { reason: c.terminationReason } }}</app-alert>
+  }
+
+  <section appCard aria-labelledby="ct-summary">
+    <div appCardHeader><h2 appCardTitle id="ct-summary">{{ 'crm.common.details' | t }}</h2></div>
+    <dl appCardContent class="grid gap-4 sm:grid-cols-3 lg:grid-cols-6">
+      <div appDetailItem [label]="'contracts.columns.value' | t"><span class="tabular font-semibold">{{ i18n.formatMoney(c.value) }}</span></div>
+      <div appDetailItem [label]="'contracts.valueExVat' | t"><span class="tabular">{{ i18n.formatMoney(c.valueExVat) }}</span></div>
+      <div appDetailItem [label]="'contracts.columns.date' | t"><span class="tabular">{{ i18n.formatDate(c.contractDate) || '—' }}</span></div>
+      <div appDetailItem [label]="'prop.fields.validUntil' | t"><span class="tabular">{{ i18n.formatDate(c.validUntil) || '—' }}</span></div>
+      <div appDetailItem [label]="'contracts.customerSigned' | t"><span class="tabular">{{ i18n.formatDate(c.customerSignedAt) || '—' }}</span></div>
+      <div appDetailItem [label]="'contracts.companySigned' | t"><span class="tabular">{{ i18n.formatDate(c.companySignedAt) || '—' }}</span></div>
+      <div appDetailItem [label]="'prop.columns.author' | t">{{ name(c.proposalTeam.technicalAuthorId) }}</div>
+      <div appDetailItem [label]="'prop.columns.preparer' | t">{{ name(c.proposalTeam.financialPreparerId) }}</div>
+      <div appDetailItem [label]="'contracts.proposalApprover' | t">{{ name(c.proposalTeam.finalApproverId) }}</div>
+    </dl>
+    @if (c.paymentMilestones.length) {
+      <div appCardContent class="pt-0">
+        <h3 class="mb-2 text-sm font-semibold">{{ 'prop.fields.paymentMilestones' | t }}</h3>
+        <ul class="flex flex-wrap gap-2 text-sm">
+          @for (m of c.paymentMilestones; track $index) {
+            <li class="rounded-md border border-border px-2 py-1">{{ m.name }} · <span class="tabular">{{ m.pct }}%</span> · <span class="tabular">{{ i18n.formatMoney(m.amount) }}</span></li>
+          }
+        </ul>
+      </div>
+    }
+  </section>
+
+  <div class="grid gap-6 lg:grid-cols-3">
+    <div class="flex flex-col gap-6 lg:col-span-2">
+      <form appCard aria-labelledby="ct-edit" (submit)="save($event)">
+        <div appCardHeader><h2 appCardTitle id="ct-edit">{{ 'contracts.terms' | t }}</h2></div>
+        <fieldset appCardContent class="grid gap-4 sm:grid-cols-2" [disabled]="!perms.canEdit">
+          <div>
+            <label appLabel for="ct-date">{{ 'contracts.columns.date' | t }}</label>
+            <input appInput id="ct-date" type="date" dir="ltr" [value]="form().contractDate" (change)="setForm('contractDate', $any($event.target).value)" />
+          </div>
+          <div>
+            <label appLabel for="ct-valid">{{ 'prop.fields.validUntil' | t }}</label>
+            <input appInput id="ct-valid" type="date" dir="ltr" [value]="form().validUntil" (change)="setForm('validUntil', $any($event.target).value)" />
+          </div>
+          @for (key of ['scope', 'specialTerms', 'notes']; track key) {
+            <div class="sm:col-span-2">
+              <label appLabel [for]="'ct-' + key">{{ 'contracts.fields.' + key | t }}</label>
+              <textarea appTextarea rows="3" [id]="'ct-' + key" [value]="$any(form())[key]" (input)="setForm(key, $any($event.target).value)"></textarea>
+            </div>
+          }
+          <div class="sm:col-span-2">
+            <h3 class="mb-2 text-sm font-semibold">{{ 'contracts.signatories' | t }}</h3>
+            @for (s of signatories(); track $index; let index = $index) {
+              <div class="mb-2 grid gap-2 sm:grid-cols-5">
+                <select class="h-10 rounded-md border border-input bg-background px-2 text-sm" [attr.aria-label]="'contracts.party' | t" [value]="s.party" (change)="setSignatory(index, 'party', $any($event.target).value)">
+                  <option value="customer">{{ 'contracts.parties.customer' | t }}</option>
+                  <option value="company">{{ 'contracts.parties.company' | t }}</option>
+                </select>
+                <input appInput [attr.aria-label]="'contracts.signatoryName' | t" [placeholder]="'contracts.signatoryName' | t" [value]="s.name" (input)="setSignatory(index, 'name', $any($event.target).value)" />
+                <input appInput [attr.aria-label]="'contracts.signatoryTitle' | t" [placeholder]="'contracts.signatoryTitle' | t" [value]="s.title ?? ''" (input)="setSignatory(index, 'title', $any($event.target).value)" />
+                <input appInput type="email" dir="ltr" [attr.aria-label]="'crm.contacts.fields.email' | t" placeholder="email" [value]="s.email ?? ''" (input)="setSignatory(index, 'email', $any($event.target).value)" />
+                @if (perms.canEdit) {
+                  <button type="button" appButton variant="ghost" size="sm" (click)="removeSignatory(index)">{{ 'crm.common.delete' | t }}</button>
+                }
+              </div>
+            }
+            @if (perms.canEdit) {
+              <button type="button" appButton variant="outline" size="sm" (click)="addSignatory()">{{ 'contracts.addSignatory' | t }}</button>
+            }
+          </div>
+          @if (perms.canEdit && c.status !== 'draft') {
+            <div class="sm:col-span-2">
+              <label appLabel for="ct-reason" required>{{ 'prop.changeReason' | t }}</label>
+              <input appInput id="ct-reason" [value]="form().changeReason" (input)="setForm('changeReason', $any($event.target).value)" />
+            </div>
+          }
+          @if (perms.canEdit) {
+            <div class="flex flex-wrap gap-2 sm:col-span-2">
+              <button type="submit" appButton [disabled]="actions.busy()">{{ 'crm.common.save' | t }}</button>
+              <button type="button" appButton variant="outline" [disabled]="actions.busy()" (click)="actions.run(api.generate(id()), 'prop.saved', reload)">{{ 'prop.generatePdf' | t }}</button>
+            </div>
+          }
+        </fieldset>
+        <div appCardContent class="flex flex-wrap gap-2 pt-0">
+          @if (perms.canSubmit) {
+            <button type="button" appButton [disabled]="actions.busy()" (click)="actions.run(api.submit(id()), 'prop.submitted', reload)">{{ 'prop.submitForApproval' | t }}</button>
+          }
+          @if (perms.canSend) {
+            <button type="button" appButton [disabled]="actions.busy()" (click)="actions.run(api.send(id()), 'contracts.sent', reload)">{{ 'contracts.send' | t }}</button>
+          }
+        </div>
+      </form>
+
+      @if (perms.canSignCustomer || perms.canSignCompany) {
+        <form appCard aria-labelledby="ct-sign" (submit)="sign($event)">
+          <div appCardHeader><h2 appCardTitle id="ct-sign">{{ 'contracts.recordSignature' | t }}</h2></div>
+          <div appCardContent class="grid gap-4 sm:grid-cols-2">
+            <p class="text-sm sm:col-span-2">{{ 'contracts.parties.' + signature().party | t }}</p>
+            <div>
+              <label appLabel for="sg-name" required>{{ 'contracts.signatoryName' | t }}</label>
+              <input appInput id="sg-name" [value]="signature().signatoryName" (input)="setSignature('signatoryName', $any($event.target).value)" />
+            </div>
+            <div>
+              <label appLabel for="sg-title">{{ 'contracts.signatoryTitle' | t }}</label>
+              <input appInput id="sg-title" [value]="signature().signatoryTitle" (input)="setSignature('signatoryTitle', $any($event.target).value)" />
+            </div>
+            <div>
+              <label appLabel for="sg-at">{{ 'contracts.signedAt' | t }}</label>
+              <input appInput id="sg-at" type="date" dir="ltr" [value]="signature().signedAt" (change)="setSignature('signedAt', $any($event.target).value)" />
+            </div>
+            <button type="submit" appButton class="self-end" [disabled]="actions.busy() || !signature().signatoryName.trim()">{{ 'contracts.sign' | t }}</button>
+          </div>
+        </form>
+      }
+
+      @if (perms.canTerminate) {
+        <section appCard aria-labelledby="ct-terminate">
+          <div appCardHeader><h2 appCardTitle id="ct-terminate">{{ 'contracts.terminate' | t }}</h2></div>
+          <div appCardContent class="flex flex-col gap-3">
+            <label appLabel for="ct-term-reason" required>{{ 'handoffs.reason' | t }}</label>
+            <textarea appTextarea id="ct-term-reason" rows="2" [value]="terminateReason()" (input)="terminateReason.set($any($event.target).value)"></textarea>
+            <button type="button" appButton variant="destructive" class="self-start" [disabled]="actions.busy() || !terminateReason().trim()" (click)="actions.run(api.terminate(id(), terminateReason().trim()), 'contracts.terminated', reload)">{{ 'contracts.terminate' | t }}</button>
+          </div>
+        </section>
+      }
+    </div>
+
+    <div class="flex flex-col gap-6">
+      <section appCard aria-labelledby="ct-docs">
+        <div appCardHeader><h2 appCardTitle id="ct-docs">{{ 'contracts.requiredDocuments' | t }}</h2></div>
+        <ul appCardContent class="flex flex-col gap-2 text-sm">
+          @for (doc of c.requiredDocuments; track doc.code) {
+            <li class="flex items-center justify-between gap-2">
+              <label class="flex items-center gap-2">
+                <input type="checkbox" [checked]="doc.received" [disabled]="actions.busy()" (change)="toggleDocument(doc.code, $any($event.target).checked)" />
+                {{ i18n.pick(doc.nameAr, doc.nameEn) }}
+              </label>
+              <span class="text-xs" [class.text-success-tint]="doc.received" [class.text-destructive]="!doc.received">{{ (doc.received ? 'contracts.received' : 'contracts.outstanding') | t }}</span>
+            </li>
+          } @empty {
+            <li class="text-muted-foreground">—</li>
+          }
+        </ul>
+      </section>
+      <app-completeness-panel [result]="d.completeness" entityType="contract" [entityId]="id()" />
+      @if (d.approvals.length) {
+        <section appCard aria-labelledby="ct-approvals">
+          <div appCardHeader><h2 appCardTitle id="ct-approvals">{{ 'prop.approvals' | t }}</h2></div>
+          <ul appCardContent class="flex flex-col gap-2 text-sm">
+            @for (a of d.approvals; track a.id) {
+              <li class="flex items-center justify-between gap-2">
+                <a class="text-primary hover:underline" [routerLink]="['/', i18n.locale(), 'approvals', a.id]" dir="ltr">{{ a.approvalNo }}</a>
+                <app-status-badge enum="approvalStatus" [value]="a.status" />
+              </li>
+            }
+          </ul>
+        </section>
+      }
+      <app-documents-panel entityType="contract" [entityId]="id()" />
+    </div>
+  </div>
+} @else if (data.isLoading()) {
+  <p class="text-sm text-muted-foreground">{{ 'common.labels.loading' | t }}</p>
+}
