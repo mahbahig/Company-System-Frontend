@@ -1,0 +1,124 @@
+@if (notFound()) {
+  <app-status-page [code]="404" titleKey="errors.notFound.title" bodyKey="errors.db.notFound" />
+} @else if (detail.error()) {
+  <app-alert variant="destructive">{{ 'errors.db.unexpected' | t }}</app-alert>
+} @else if (task(); as task) {
+  <app-page-header class="!mb-0" [heading]="task.title" [subtitle]="task.description">
+    @if (auth.can('tasks.edit') && task.status !== 'done' && task.status !== 'cancelled') {
+      <a appButton variant="outline" [routerLink]="['..', task.id, 'edit']">{{ 'crm.common.edit' | t }}</a>
+    }
+  </app-page-header>
+
+  @if (errorKey(); as key) {
+    <app-alert variant="destructive">{{ key | t }}</app-alert>
+  }
+
+  <div class="grid gap-6 lg:grid-cols-3">
+    <section appCard class="lg:col-span-2" aria-labelledby="details-heading">
+      <div appCardHeader>
+        <h2 appCardTitle id="details-heading">{{ 'crm.tasks.sections.details' | t }}</h2>
+      </div>
+      <div appCardContent>
+        <dl class="grid gap-x-8 gap-y-4 sm:grid-cols-2">
+          <div appDetailItem [label]="'crm.tasks.columns.status' | t">
+            <app-badge [tone]="statusTone[task.status]">{{ statusLabel(task.status) }}</app-badge>
+            @if (isOverdue()) {
+              <app-badge tone="danger" class="ms-2">{{ 'crm.tasks.status.overdue' | t }}</app-badge>
+            }
+          </div>
+          <div appDetailItem [label]="'crm.tasks.fields.priorityCode' | t">{{ reference.label('task_priority', task.priority) }}</div>
+          <div appDetailItem [label]="'crm.tasks.fields.dueAt' | t">
+            <span class="tabular">{{ i18n.formatDate(task.dueAt, true) || ('crm.common.notSet' | t) }}</span>
+          </div>
+          <div appDetailItem [label]="'crm.tasks.fields.reminderAt' | t">
+            <span class="tabular">{{ i18n.formatDate(task.reminderAt, true) || ('crm.common.notSet' | t) }}</span>
+          </div>
+          @if (task.customerId) {
+            <div appDetailItem [label]="'crm.tasks.fields.customerId' | t">
+              <a class="text-primary hover:underline" [routerLink]="['/', i18n.locale(), 'customers', task.customerId]">{{ 'crm.common.view' | t }}</a>
+            </div>
+          }
+          @if (task.leadId) {
+            <div appDetailItem [label]="'crm.tasks.fields.leadId' | t"><span class="tabular" dir="ltr">{{ task.leadId }}</span></div>
+          }
+          @if (task.opportunityId) {
+            <div appDetailItem [label]="'crm.tasks.fields.opportunityId' | t"><span class="tabular" dir="ltr">{{ task.opportunityId }}</span></div>
+          }
+          @if (task.isSystemGenerated) {
+            <div appDetailItem [label]="'crm.tasks.columns.title' | t"><app-badge tone="outline">{{ 'crm.tasks.systemGenerated' | t }}</app-badge></div>
+          }
+          @if (task.status === 'done') {
+            <div appDetailItem [label]="'crm.tasks.complete.completionNotes' | t">{{ task.completionNotes || ('crm.common.notSet' | t) }}</div>
+            <div appDetailItem [label]="'crm.common.updatedAt' | t"><span class="tabular">{{ i18n.formatDate(task.completedAt, true) }}</span></div>
+            @if (completedByName(); as name) {
+              <div appDetailItem [label]="'crm.common.owner' | t">{{ name }}</div>
+            }
+          }
+          @if (task.status === 'cancelled') {
+            <div appDetailItem class="sm:col-span-2" [label]="'crm.tasks.cancel.reasonLabel' | t">{{ task.cancellationReason }}</div>
+          }
+        </dl>
+      </div>
+
+      @if (canAct()) {
+        <div appCardFooter class="flex flex-wrap gap-2 border-t border-border">
+          @if (task.status === 'open') {
+            <button type="button" appButton variant="outline" [disabled]="busy()" (click)="start()">{{ 'crm.tasks.actions.start' | t }}</button>
+          }
+          <button type="button" appButton [disabled]="busy()" (click)="showComplete.set(!showComplete()); showCancel.set(false)">
+            {{ 'crm.tasks.actions.complete' | t }}
+          </button>
+          <button type="button" appButton variant="destructive" [disabled]="busy()" (click)="showCancel.set(!showCancel()); showComplete.set(false)">
+            {{ 'crm.tasks.actions.cancel' | t }}
+          </button>
+        </div>
+
+        @if (showComplete()) {
+          <form appCardContent class="flex flex-col gap-3 border-t border-border" novalidate (submit)="submitComplete($event)">
+            <div>
+              <label appLabel for="completion-notes">{{ 'crm.tasks.complete.completionNotes' | t }}</label>
+              <textarea appTextarea id="completion-notes" rows="3" [formField]="completeForm.completionNotes"></textarea>
+            </div>
+            <button type="submit" appButton [disabled]="completeForm().submitting()">{{ 'crm.tasks.complete.submit' | t }}</button>
+          </form>
+        }
+
+        @if (showCancel()) {
+          <form appCardContent class="flex flex-col gap-3 border-t border-border" novalidate (submit)="submitCancel($event)">
+            <div>
+              <label appLabel for="cancel-reason" required>{{ 'crm.tasks.cancel.reasonLabel' | t }}</label>
+              <input
+                appInput
+                id="cancel-reason"
+                [formField]="cancelForm.reason"
+                [attr.aria-invalid]="cancelReasonError() ? true : null"
+                [attr.aria-describedby]="cancelReasonError() ? 'cancel-reason-error' : null"
+              />
+              @if (cancelReasonError(); as key) {
+                <p id="cancel-reason-error" class="mt-1 text-sm text-destructive">{{ key | t }}</p>
+              }
+            </div>
+            <button type="submit" appButton variant="destructive" [disabled]="cancelForm().submitting()">{{ 'crm.tasks.actions.cancel' | t }}</button>
+          </form>
+        }
+      }
+    </section>
+
+    <div class="flex flex-col gap-6">
+      <section appCard aria-labelledby="assignment-heading">
+        <div appCardHeader>
+          <h2 appCardTitle id="assignment-heading">{{ 'crm.tasks.sections.assignment' | t }}</h2>
+        </div>
+        <div appCardContent>
+          <dl class="flex flex-col gap-4">
+            <div appDetailItem [label]="'crm.common.owner' | t">{{ ownerName() }}</div>
+            <div appDetailItem [label]="'crm.common.createdAt' | t"><span class="tabular">{{ i18n.formatDate(task.createdAt, true) }}</span></div>
+            <div appDetailItem [label]="'crm.common.updatedAt' | t"><span class="tabular">{{ i18n.formatDate(task.updatedAt, true) }}</span></div>
+          </dl>
+        </div>
+      </section>
+    </div>
+  </div>
+} @else {
+  <p class="text-sm text-muted-foreground" role="status">{{ 'common.labels.loading' | t }}</p>
+}

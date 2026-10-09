@@ -1,0 +1,89 @@
+<app-page-header [heading]="'crm.tasks.title' | t" [subtitle]="'crm.tasks.subtitle' | t" class="!mb-0">
+  @if (auth.can('tasks.create')) {
+    <a appButton routerLink="new"><app-icon [icon]="addIcon" />{{ 'crm.tasks.new' | t }}</a>
+  }
+</app-page-header>
+
+<app-saved-views-bar list="tasks" />
+
+<!-- SRS §8.8: mine / team / overdue / today / upcoming / all, as URL-driven views (not a JS tabpanel, so plain links + aria-current, not role="tablist"). -->
+<nav [attr.aria-label]="'crm.tasks.title' | t" class="flex flex-wrap gap-1 border-b border-border">
+  @for (candidate of views; track candidate) {
+    <a
+      [attr.aria-current]="candidate === view() ? 'page' : null"
+      [routerLink]="[]"
+      [queryParams]="{ view: candidate, page: null }"
+      queryParamsHandling="merge"
+      class="rounded-t-md px-3 py-2 text-sm font-medium transition-colors"
+      [class.border-b-2]="candidate === view()"
+      [class.border-primary]="candidate === view()"
+      [class.text-primary]="candidate === view()"
+      [class.text-muted-foreground]="candidate !== view()"
+    >
+      {{ 'crm.tasks.views.' + candidate | t }}
+    </a>
+  }
+</nav>
+
+<app-list-toolbar
+  [searchValue]="q() ?? ''"
+  [searchPlaceholder]="'crm.tasks.searchPlaceholder' | t"
+  [filters]="filters()"
+/>
+
+@if (result.error()) {
+  <app-alert variant="destructive">{{ 'errors.db.unexpected' | t }}</app-alert>
+}
+
+<app-table-wrapper [label]="'crm.tasks.title' | t" [attr.aria-busy]="result.isLoading()">
+  <table appTable>
+    <thead appTableHeader>
+      <tr appTableRow>
+        <th appTableHead>{{ 'crm.tasks.columns.title' | t }}</th>
+        <th appTableHead>{{ 'crm.tasks.columns.priority' | t }}</th>
+        <th appTableHead>{{ 'crm.tasks.columns.status' | t }}</th>
+        <th appTableHead>{{ 'crm.tasks.columns.dueAt' | t }}</th>
+        <th appTableHead>{{ 'crm.tasks.columns.owner' | t }}</th>
+      </tr>
+    </thead>
+    <tbody appTableBody>
+      @for (row of rows(); track row.id) {
+        <tr appTableRow>
+          <td appTableCell class="font-medium">
+            <a
+              [routerLink]="row.id"
+              class="text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              {{ row.title }}
+            </a>
+            @if (row.isSystemGenerated) {
+              <app-badge tone="outline" class="ms-2">{{ 'crm.tasks.systemGenerated' | t }}</app-badge>
+            }
+          </td>
+          <td appTableCell class="whitespace-nowrap">{{ reference.label('task_priority', row.priority) }}</td>
+          <td appTableCell>
+            <app-badge [tone]="statusTone[row.status]">{{ statusLabel(row.status) }}</app-badge>
+          </td>
+          <td appTableCell class="whitespace-nowrap">
+            @if (row.dueAt) {
+              <span class="tabular" [class.font-medium]="overdue(row)" [class.text-destructive]="overdue(row)">{{ i18n.formatDate(row.dueAt, true) }}</span>
+            } @else {
+              {{ 'crm.common.notSet' | t }}
+            }
+          </td>
+          <td appTableCell class="whitespace-nowrap">{{ ownerName(row) }}</td>
+        </tr>
+      } @empty {
+        @if (!result.isLoading()) {
+          <tr app-table-empty [colSpan]="5">{{ (hasFilters() ? 'crm.tasks.emptyFiltered' : 'crm.tasks.empty') | t }}</tr>
+        } @else {
+          <tr app-table-empty [colSpan]="5">{{ 'common.labels.loading' | t }}</tr>
+        }
+      }
+    </tbody>
+  </table>
+</app-table-wrapper>
+
+@if (result.hasValue()) {
+  <app-pagination [page]="result.value().page" [pageCount]="result.value().pageCount" [total]="result.value().total" [pageSize]="result.value().pageSize" />
+}

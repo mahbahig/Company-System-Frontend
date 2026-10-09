@@ -1,0 +1,89 @@
+<app-page-header class="!mb-0" [heading]="(editing() ? 'crm.tasks.editTitle' : 'crm.tasks.newTitle') | t" />
+
+<section appCard class="max-w-2xl">
+  <form appCardContent class="flex flex-col gap-5" novalidate (submit)="onSubmit($event)">
+    @if (errorKey(); as key) {
+      <app-alert variant="destructive">{{ key | t }}</app-alert>
+    }
+
+    <div>
+      <label appLabel for="title" required>{{ 'crm.tasks.fields.title' | t }}</label>
+      <input
+        appInput
+        id="title"
+        [formField]="taskForm.title"
+        [attr.aria-invalid]="fieldError('title') ? true : null"
+        [attr.aria-describedby]="fieldError('title') ? 'title-error' : null"
+      />
+      @if (fieldError('title'); as key) {
+        <p id="title-error" class="mt-1 text-sm text-destructive">{{ key | t }}</p>
+      }
+    </div>
+
+    <div>
+      <label appLabel for="description">{{ 'crm.tasks.fields.description' | t }}</label>
+      <textarea appTextarea id="description" rows="4" [formField]="taskForm.description"></textarea>
+    </div>
+
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div>
+        <label appLabel for="priority">{{ 'crm.tasks.fields.priorityCode' | t }}</label>
+        <app-select>
+          <select appSelect id="priority" [formField]="taskForm.priority">
+            @for (option of reference.options('task_priority'); track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
+            }
+          </select>
+        </app-select>
+      </div>
+
+      @if (canAssign()) {
+        <div>
+          <label appLabel for="assignee">{{ 'crm.tasks.fields.ownerId' | t }}</label>
+          <input appInput id="assignee" dir="ltr" [formField]="taskForm.assigneeId" [placeholder]="'crm.common.unassigned' | t" />
+        </div>
+      }
+    </div>
+
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div>
+        <label appLabel for="due-at">{{ 'crm.tasks.fields.dueAt' | t }}</label>
+        <input appInput id="due-at" type="datetime-local" dir="ltr" [formField]="taskForm.dueAt" />
+      </div>
+      <div>
+        <label appLabel for="reminder-at">{{ 'crm.tasks.fields.reminderAt' | t }}</label>
+        <input appInput id="reminder-at" type="datetime-local" dir="ltr" [formField]="taskForm.reminderAt" />
+      </div>
+    </div>
+
+    @if (!editing()) {
+      <div class="flex flex-col gap-2 rounded-md border border-border p-4">
+        <p class="text-sm text-muted-foreground">{{ 'crm.tasks.subjectHint' | t }}</p>
+        <div class="grid gap-4 sm:grid-cols-3">
+          <div>
+            <label appLabel for="customer-id">{{ 'crm.tasks.fields.customerId' | t }}</label>
+            <app-record-picker kind="customer" inputId="customer-id" [value]="taskForm.customerId().value()" (valueChange)="setLink('customerId', $event)" />
+          </div>
+          <div>
+            <label appLabel for="lead-id">{{ 'crm.tasks.fields.leadId' | t }}</label>
+            <app-record-picker kind="lead" inputId="lead-id" [value]="taskForm.leadId().value()" (valueChange)="setLink('leadId', $event)" />
+          </div>
+          <div>
+            <label appLabel for="opportunity-id">{{ 'crm.tasks.fields.opportunityId' | t }}</label>
+            <app-record-picker kind="opportunity" inputId="opportunity-id" [parentId]="taskForm.customerId().value() || undefined" [value]="taskForm.opportunityId().value()" (valueChange)="setLink('opportunityId', $event)" />
+          </div>
+        </div>
+      </div>
+    }
+
+    <div class="flex gap-2">
+      <button type="submit" appButton [disabled]="taskForm().submitting()" [attr.aria-busy]="taskForm().submitting()">
+        @if (taskForm().submitting()) {
+          {{ 'crm.common.saving' | t }}
+        } @else {
+          {{ 'crm.common.save' | t }}
+        }
+      </button>
+    </div>
+  </form>
+</section>
