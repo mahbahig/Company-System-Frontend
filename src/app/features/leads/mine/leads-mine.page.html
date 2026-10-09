@@ -1,0 +1,85 @@
+<app-page-header [heading]="'crm.leads.mineTitle' | t" [subtitle]="'crm.leads.mineSubtitle' | t" class="!mb-0" />
+
+<nav aria-label="tabs" class="flex flex-wrap gap-1 border-b border-border">
+  @for (candidate of tabs; track candidate) {
+    <a
+      [routerLink]="[]"
+      [queryParams]="{ tab: candidate, page: null }"
+      queryParamsHandling="merge"
+      [attr.aria-current]="candidate === tab() ? 'page' : null"
+      class="border-b-2 px-3 py-2 text-sm font-medium transition-colors"
+      [class]="candidate === tab() ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'"
+    >
+      {{ 'crm.leads.mineTabs.' + candidate | t }}
+    </a>
+  }
+</nav>
+
+@if (result.error()) {
+  <app-alert variant="destructive">{{ 'errors.db.unexpected' | t }}</app-alert>
+}
+
+<app-table-wrapper [label]="'crm.leads.mineTitle' | t" [attr.aria-busy]="result.isLoading()">
+  <table appTable>
+    <thead appTableHeader>
+      <tr appTableRow>
+        <th appTableHead>{{ 'crm.leads.columns.leadNo' | t }}</th>
+        <th appTableHead>{{ 'crm.leads.columns.name' | t }}</th>
+        <th appTableHead>{{ 'crm.leads.columns.phone' | t }}</th>
+        <th appTableHead>{{ 'crm.leads.columns.status' | t }}</th>
+        <th appTableHead>{{ 'crm.leads.columns.urgency' | t }}</th>
+        <th appTableHead>{{ 'crm.leads.columns.followUp' | t }}</th>
+        <th appTableHead>{{ 'crm.leads.columns.slaStatus' | t }}</th>
+      </tr>
+    </thead>
+    <tbody appTableBody>
+      @for (row of rows(); track row.id) {
+        <tr appTableRow>
+          <td appTableCell class="tabular whitespace-nowrap font-medium">
+            <a [routerLink]="['/', i18n.locale(), 'leads', row.id]" class="text-primary underline-offset-4 hover:underline" dir="ltr">
+              {{ row.leadNo }}
+            </a>
+            @if (!row.openedAt) {
+              <app-badge tone="info" class="ms-2">{{ 'crm.common.new' | t }}</app-badge>
+            }
+          </td>
+          <td appTableCell>
+            <span class="font-medium">{{ row.name }}</span>
+            @if (row.companyName) {
+              <span class="block text-xs text-muted-foreground">{{ row.companyName }}</span>
+            }
+          </td>
+          <td appTableCell class="tabular whitespace-nowrap" dir="ltr">
+            @if (row.phone) {
+              <a [href]="'tel:' + row.phone" class="underline-offset-4 hover:underline">{{ formatPhone(row.phone) }}</a>
+            } @else {
+              {{ 'crm.common.notSet' | t }}
+            }
+          </td>
+          <td appTableCell><app-badge [tone]="reference.tone('lead_status', row.status)">{{ reference.label('lead_status', row.status) }}</app-badge></td>
+          <td appTableCell><app-badge [tone]="priorityTone(row.priority)">{{ 'crm.leads.urgency.' + row.priority | t }}</app-badge></td>
+          <td appTableCell class="whitespace-nowrap">
+            @if (row.nextFollowUpAt) {
+              <span class="tabular" [class.font-medium]="overdueDate(row.nextFollowUpAt)" [class.text-destructive]="overdueDate(row.nextFollowUpAt)">
+                {{ i18n.formatDate(row.nextFollowUpAt) }}
+              </span>
+            } @else {
+              {{ 'crm.common.notSet' | t }}
+            }
+          </td>
+          <td appTableCell><app-badge [tone]="slaTone(row.slaState)">{{ 'enums.slaState.' + row.slaState | t }}</app-badge></td>
+        </tr>
+      } @empty {
+        @if (!result.isLoading()) {
+          <tr app-table-empty [colSpan]="7">{{ 'crm.leads.empty' | t }}</tr>
+        } @else {
+          <tr app-table-empty [colSpan]="7">{{ 'common.labels.loading' | t }}</tr>
+        }
+      }
+    </tbody>
+  </table>
+</app-table-wrapper>
+
+@if (result.hasValue()) {
+  <app-pagination [page]="result.value().page" [pageCount]="result.value().pageCount" [total]="result.value().total" [pageSize]="result.value().pageSize" />
+}

@@ -1,0 +1,259 @@
+@if (notFound()) {
+  <app-status-page [code]="404" titleKey="errors.notFound.title" bodyKey="errors.db.notFound" />
+} @else if (detail.error()) {
+  <app-alert variant="destructive">{{ 'errors.db.unexpected' | t }}</app-alert>
+} @else if (lead(); as lead) {
+  <app-page-header class="!mb-0" [eyebrow]="lead.leadNo" [heading]="lead.name" [subtitle]="lead.companyName ?? ''">
+    @if (!isFinal() && auth.can('leads.edit')) {
+      <a appButton variant="outline" [routerLink]="['/', i18n.locale(), 'leads', lead.id, 'edit']">{{ 'crm.common.edit' | t }}</a>
+    }
+    @if (canConvert()) {
+      <a appButton [routerLink]="['/', i18n.locale(), 'leads', lead.id, 'convert']">{{ 'crm.leads.convert.title' | t }}</a>
+    }
+  </app-page-header>
+
+  @if (actionMessage(); as key) {
+    <app-alert variant="default">{{ key | t }}</app-alert>
+  }
+  @if (actionError(); as key) {
+    <app-alert variant="destructive">{{ key | t }}</app-alert>
+  }
+
+  @if (lead.conversion; as conversion) {
+    <app-alert variant="default">
+      {{ 'crm.leads.detail.convertedNotice' | t: { date: i18n.formatDate(conversion.convertedAt) } }}
+      <a class="ms-2 underline" [routerLink]="['/', i18n.locale(), 'customers', conversion.customerId]">{{ 'crm.leads.detail.convertedCustomer' | t }}</a>
+      @if (conversion.opportunityId) {
+        <a class="ms-2 underline" [routerLink]="['/', i18n.locale(), 'opportunities', conversion.opportunityId]">{{ 'crm.leads.detail.convertedOpportunity' | t }}</a>
+      }
+    </app-alert>
+  }
+
+  <div class="grid gap-6 lg:grid-cols-3">
+    <section appCard class="lg:col-span-2" aria-labelledby="details-heading">
+      <div appCardHeader><h2 appCardTitle id="details-heading">{{ 'crm.common.details' | t }}</h2></div>
+      <div appCardContent>
+        <dl class="grid gap-x-8 gap-y-4 sm:grid-cols-2">
+          <div appDetailItem [label]="'crm.leads.columns.status' | t">
+            <app-badge [tone]="reference.tone('lead_status', lead.status)">{{ reference.label('lead_status', lead.status) }}</app-badge>
+          </div>
+          <div appDetailItem [label]="'crm.leads.columns.slaStatus' | t">
+            <app-badge tone="outline">{{ 'enums.slaState.' + (detail.value()?.slaState ?? lead.slaState) | t }}</app-badge>
+          </div>
+          <div appDetailItem [label]="'crm.leads.fields.urgency' | t">{{ 'crm.leads.urgency.' + lead.priority | t }}</div>
+          <div appDetailItem [label]="'crm.leads.columns.intakeMode' | t">{{ 'enums.intakeMode.' + lead.intakeMode | t }}</div>
+          <div appDetailItem [label]="'crm.leads.fields.phone' | t">
+            @if (lead.phone) {
+              <a dir="ltr" class="tabular hover:underline" [href]="'tel:' + lead.phone">{{ formatPhone(lead.phone) }}</a>
+            } @else {
+              {{ 'crm.common.notSet' | t }}
+            }
+          </div>
+          <div appDetailItem [label]="'crm.leads.fields.email' | t">
+            @if (lead.email) {
+              <a dir="ltr" class="hover:underline" [href]="'mailto:' + lead.email">{{ lead.email }}</a>
+            } @else {
+              {{ 'crm.common.notSet' | t }}
+            }
+          </div>
+          <div appDetailItem [label]="'crm.leads.fields.governorateCode' | t">{{ reference.label('governorate', lead.governorateCode) }}</div>
+          <div appDetailItem [label]="'crm.leads.fields.sourceCode' | t">{{ reference.label('lead_source', lead.sourceCode) }}</div>
+          <div appDetailItem [label]="'crm.leads.fields.categoryCode' | t">{{ reference.label('customer_category', lead.categoryCode) }}</div>
+          <div appDetailItem [label]="'crm.leads.fields.requestedServiceCode' | t">{{ reference.label('service_type', lead.requestedServiceCode) }}</div>
+          <div appDetailItem [label]="'crm.leads.fields.estimatedValue' | t">
+            <span class="tabular">{{ lead.estimatedValue ? i18n.formatMoney(lead.estimatedValue) : ('crm.common.notSet' | t) }}</span>
+          </div>
+          @if (lead.addressLine) {
+            <div appDetailItem class="sm:col-span-2" [label]="'crm.leads.fields.addressLine' | t">{{ lead.addressLine }}</div>
+          }
+          @if (lead.notes) {
+            <div appDetailItem class="sm:col-span-2" [label]="'crm.leads.sections.notes' | t">
+              <span class="whitespace-pre-wrap">{{ lead.notes }}</span>
+            </div>
+          }
+        </dl>
+
+        @if (lead.closure; as closure) {
+          <div class="mt-6 border-t border-border pt-4">
+            <h3 class="mb-2 text-sm font-semibold">{{ 'crm.leads.detail.disqualifiedTitle' | t }}</h3>
+            <dl class="grid gap-x-8 gap-y-4 sm:grid-cols-2">
+              <div appDetailItem [label]="'crm.leads.detail.disqualifiedReason' | t">{{ reference.label('lead_closure_reason', closure.reason) }}</div>
+              @if (closure.comment) {
+                <div appDetailItem [label]="'crm.leads.close.comment' | t">{{ closure.comment }}</div>
+              }
+            </dl>
+          </div>
+        }
+      </div>
+    </section>
+
+    <div class="flex flex-col gap-6">
+      <section appCard aria-labelledby="assignment-heading">
+        <div appCardHeader><h2 appCardTitle id="assignment-heading">{{ 'crm.leads.sections.assignment' | t }}</h2></div>
+        <div appCardContent>
+          <dl class="flex flex-col gap-4">
+            <div appDetailItem [label]="'crm.common.owner' | t">{{ ownerName(lead) }}</div>
+            <div appDetailItem [label]="'crm.leads.fields.nextFollowUpAt' | t">
+              <span class="tabular">{{ i18n.formatDate(lead.nextFollowUpAt, true) || ('crm.common.notSet' | t) }}</span>
+            </div>
+            <div appDetailItem [label]="'crm.common.createdAt' | t"><span class="tabular">{{ i18n.formatDate(lead.createdAt, true) }}</span></div>
+            <div appDetailItem [label]="'crm.common.updatedAt' | t"><span class="tabular">{{ i18n.formatDate(lead.updatedAt, true) }}</span></div>
+          </dl>
+          @if (canAssign()) {
+            <form class="mt-4 flex flex-col gap-3 border-t pt-4" novalidate (submit)="assign($event)">
+              <div>
+                <label appLabel for="lead-assign-owner" required>{{ (lead.ownerId ? 'crm.leads.reassignTo' : 'crm.leads.assignTo') | t }}</label>
+                <app-user-select class="mt-1.5" inputId="lead-assign-owner" roles="sales_representative,telesales,sales_manager" [value]="assignOwner()" (valueChange)="assignOwner.set($event)" />
+              </div>
+              <div>
+                <label appLabel for="lead-assign-reason" required>{{ 'crm.leads.distribute.manualReason' | t }}</label>
+                <input appInput id="lead-assign-reason" class="mt-1.5" [value]="assignReason()" (input)="assignReason.set($any($event.target).value)" />
+              </div>
+              <label class="flex items-center gap-2 text-sm">
+                <input type="checkbox" id="lead-assign-override" class="size-4 rounded border-input accent-primary" [checked]="assignOverride()" (change)="assignOverride.set($any($event.target).checked)" />
+                {{ 'crm.leads.distribute.overrideCapacity' | t }}
+              </label>
+              <button type="submit" appButton class="self-start" [disabled]="assigning() || !assignOwner() || !assignReason().trim()">{{ 'crm.leads.assignAction' | t }}</button>
+            </form>
+          }
+        </div>
+      </section>
+
+      @if (detail.value(); as value) {
+        <app-completeness-panel [result]="value.completeness" />
+      }
+    </div>
+  </div>
+
+  <section appCard aria-labelledby="activity-heading">
+    <div appCardHeader class="flex flex-row items-center justify-between">
+      <h2 appCardTitle id="activity-heading">{{ 'crm.leads.detail.activityTitle' | t }}</h2>
+      @if (!isFinal() && auth.can('leads.edit') && !showAttemptForm()) {
+        <button type="button" appButton size="sm" (click)="showAttemptForm.set(true)">{{ 'crm.leads.detail.logAttempt' | t }}</button>
+      }
+    </div>
+    <div appCardContent class="flex flex-col gap-4">
+      <dl class="grid gap-x-8 gap-y-4 sm:grid-cols-3">
+        <div appDetailItem [label]="'crm.leads.detail.attempts' | t">{{ lead.contactAttempts }}</div>
+        <div appDetailItem [label]="'crm.leads.detail.lastAttempt' | t">
+          <span class="tabular">{{ i18n.formatDate(lead.lastContactAttemptAt, true) || ('crm.common.notSet' | t) }}</span>
+        </div>
+        <div appDetailItem [label]="'crm.leads.detail.firstContacted' | t">
+          <span class="tabular">{{ i18n.formatDate(lead.sla.firstContactAt, true) || ('crm.common.notSet' | t) }}</span>
+        </div>
+        @if (lead.qualifiedAt) {
+          <div appDetailItem [label]="'crm.leads.detail.qualifiedAt' | t"><span class="tabular">{{ i18n.formatDate(lead.qualifiedAt, true) }}</span></div>
+        }
+      </dl>
+
+      @if (showAttemptForm()) {
+        <form class="flex flex-col gap-4 border-t border-border pt-4" novalidate (submit)="submitAttempt($event)">
+          <div class="flex items-center gap-2">
+            <input type="checkbox" id="att-reached" class="size-4 rounded border-input accent-primary" [formField]="attemptForm.reached" />
+            <label appLabel for="att-reached">{{ 'crm.leads.attempt.reached' | t }}</label>
+          </div>
+          <div>
+            <label appLabel for="att-notes" class="mb-1.5 block">{{ 'crm.leads.attempt.notes' | t }}</label>
+            <textarea appTextarea id="att-notes" rows="2" [formField]="attemptForm.notes"></textarea>
+          </div>
+          <div class="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label appLabel for="att-followup" class="mb-1.5 block">{{ 'crm.leads.attempt.nextFollowUpAt' | t }}</label>
+              <input appInput id="att-followup" type="date" dir="ltr" [formField]="attemptForm.nextFollowUpAt" />
+            </div>
+            <div>
+              <label appLabel for="att-nextaction" class="mb-1.5 block">{{ 'crm.leads.attempt.nextAction' | t }}</label>
+              <input appInput id="att-nextaction" [formField]="attemptForm.nextAction" />
+            </div>
+          </div>
+          <div class="flex gap-2">
+            <button type="submit" appButton [disabled]="attemptForm().submitting()">
+              {{ (attemptForm().submitting() ? 'crm.leads.attempt.submitting' : 'crm.leads.attempt.submit') | t }}
+            </button>
+            <button type="button" appButton variant="ghost" (click)="showAttemptForm.set(false)">{{ 'common.actions.cancel' | t }}</button>
+          </div>
+        </form>
+      }
+    </div>
+  </section>
+
+  @if (canQualify() || canClose() || canReopen()) {
+    <section appCard aria-labelledby="lifecycle-heading">
+      <div appCardHeader><h2 appCardTitle id="lifecycle-heading">{{ 'crm.common.actions' | t }}</h2></div>
+      <div appCardContent class="flex flex-col gap-4">
+        <div class="flex flex-wrap gap-2">
+          @if (canQualify()) {
+            <button type="button" appButton variant="outline" (click)="qualify()">{{ 'crm.leads.qualify.action' | t }}</button>
+          }
+          @if (canClose() && !showCloseForm()) {
+            <button type="button" appButton variant="outline" (click)="showCloseForm.set(true)">{{ 'crm.leads.close.title' | t }}</button>
+          }
+          @if (canReopen() && !showReopenForm()) {
+            <button type="button" appButton variant="outline" (click)="showReopenForm.set(true)">{{ 'crm.leads.reopen.title' | t }}</button>
+          }
+        </div>
+
+        @if (showCloseForm()) {
+          <form class="flex flex-col gap-4 border-t border-border pt-4" novalidate (submit)="submitClose($event)">
+            <p class="text-sm text-muted-foreground">{{ 'crm.leads.close.subtitle' | t }}</p>
+            <div class="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label appLabel for="close-reason" class="mb-1.5 block" required>{{ 'crm.leads.close.reasonCode' | t }}</label>
+                <app-select>
+                  <select appSelect id="close-reason" [formField]="closeForm.reason">
+                    <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
+                    @for (option of reference.options('lead_closure_reason'); track option.value) {
+                      <option [value]="option.value">{{ option.label }}</option>
+                    }
+                  </select>
+                </app-select>
+              </div>
+              <div>
+                <label appLabel for="close-quality" class="mb-1.5 block">{{ 'crm.leads.close.qualityCode' | t }}</label>
+                <app-select>
+                  <select appSelect id="close-quality" [formField]="closeForm.qualityCode">
+                    <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
+                    @for (option of reference.options('lead_quality'); track option.value) {
+                      <option [value]="option.value">{{ option.label }}</option>
+                    }
+                  </select>
+                </app-select>
+              </div>
+              @if (closeIsNurture()) {
+                <div>
+                  <label appLabel for="close-nurture" class="mb-1.5 block" required>{{ 'crm.leads.close.nurtureFollowUpAt' | t }}</label>
+                  <input appInput id="close-nurture" type="date" dir="ltr" [formField]="closeForm.nurtureFollowUpAt" />
+                </div>
+              }
+            </div>
+            <div>
+              <label appLabel for="close-comment" class="mb-1.5 block">{{ 'crm.leads.close.comment' | t }}</label>
+              <textarea appTextarea id="close-comment" rows="2" [formField]="closeForm.comment"></textarea>
+            </div>
+            <div class="flex gap-2">
+              <button type="submit" appButton variant="destructive" [disabled]="closeForm().submitting()">
+                {{ (closeForm().submitting() ? 'crm.leads.close.submitting' : 'crm.leads.close.submit') | t }}
+              </button>
+              <button type="button" appButton variant="ghost" (click)="showCloseForm.set(false)">{{ 'common.actions.cancel' | t }}</button>
+            </div>
+          </form>
+        }
+
+        @if (showReopenForm()) {
+          <form class="flex flex-col gap-4 border-t border-border pt-4" novalidate (submit)="submitReopen($event)">
+            <div>
+              <label appLabel for="reopen-reason" class="mb-1.5 block" required>{{ 'crm.leads.reopen.reason' | t }}</label>
+              <input appInput id="reopen-reason" [formField]="reopenForm.reason" />
+            </div>
+            <div class="flex gap-2">
+              <button type="submit" appButton [disabled]="reopenForm().submitting()">{{ 'crm.leads.reopen.submit' | t }}</button>
+              <button type="button" appButton variant="ghost" (click)="showReopenForm.set(false)">{{ 'common.actions.cancel' | t }}</button>
+            </div>
+          </form>
+        }
+      </div>
+    </section>
+  }
+} @else {
+  <p class="text-sm text-muted-foreground" role="status">{{ 'common.labels.loading' | t }}</p>
+}

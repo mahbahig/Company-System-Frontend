@@ -1,0 +1,154 @@
+<app-page-header [heading]="'crm.leads.quickAdd.title' | t" [subtitle]="'crm.leads.quickAdd.subtitle' | t" class="!mb-0" />
+
+@if (duplicates(); as matches) {
+  <section appCard aria-labelledby="dup-heading">
+    <div appCardHeader>
+      <h2 appCardTitle id="dup-heading">{{ 'crm.leads.duplicates.title' | t }}</h2>
+    </div>
+    <div appCardContent class="flex flex-col gap-4">
+      <p class="text-sm text-muted-foreground">{{ 'crm.leads.duplicates.body' | t }}</p>
+
+      @if (matches.customerMatches.length > 0) {
+        <div>
+          <h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{{ 'crm.leads.duplicates.customerMatches' | t }}</h3>
+          <ul class="flex flex-col gap-2">
+            @for (match of matches.customerMatches; track match.customerId) {
+              <li class="flex items-center justify-between gap-3 text-sm">
+                <span>{{ i18n.pick(match.nameAr, match.nameEn) || match.customerNo }}</span>
+                <app-badge tone="warning">{{ 'crm.leads.duplicates.score' | t: { score: match.score } }}</app-badge>
+              </li>
+            }
+          </ul>
+        </div>
+      }
+
+      @if (matches.leadMatches.length > 0) {
+        <div>
+          <h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{{ 'crm.leads.duplicates.leadMatches' | t }}</h3>
+          <ul class="flex flex-col gap-2">
+            @for (match of matches.leadMatches; track match.leadId) {
+              <li class="text-sm">{{ match.name || match.leadNo }}</li>
+            }
+          </ul>
+        </div>
+      }
+
+      <div class="flex gap-2">
+        <button type="button" appButton variant="destructive" (click)="confirmAnyway($event)">{{ 'crm.leads.duplicates.confirmAnyway' | t }}</button>
+        <button type="button" appButton variant="outline" (click)="cancelDuplicates()">{{ 'crm.leads.duplicates.cancel' | t }}</button>
+      </div>
+    </div>
+  </section>
+} @else {
+  <section appCard aria-labelledby="quick-add-heading">
+    <div appCardHeader>
+      <h2 appCardTitle id="quick-add-heading" class="sr-only">{{ 'crm.leads.quickAdd.title' | t }}</h2>
+    </div>
+    <div appCardContent>
+      <form class="grid gap-5 sm:grid-cols-2" novalidate (submit)="onSubmit($event)">
+        @if (errorKey(); as key) {
+          <app-alert variant="destructive" class="sm:col-span-2">{{ key | t }}</app-alert>
+        }
+
+        <div>
+          <label appLabel for="qa-name" class="mb-1.5 block" required>{{ 'crm.leads.fields.personOrCompanyName' | t }}</label>
+          <input appInput id="qa-name" [formField]="quickAddForm.name" [attr.aria-invalid]="fieldError('name') ? true : null" />
+          @if (fieldError('name'); as key) {
+            <p class="mt-1 text-sm text-destructive">{{ key | t }}</p>
+          }
+        </div>
+
+        <div>
+          <label appLabel for="qa-phone" class="mb-1.5 block" required>{{ 'crm.leads.fields.phone' | t }}</label>
+          <input appInput id="qa-phone" dir="ltr" [formField]="quickAddForm.phone" [attr.aria-invalid]="fieldError('phone') ? true : null" />
+          @if (fieldError('phone'); as key) {
+            <p class="mt-1 text-sm text-destructive">{{ key | t }}</p>
+          }
+        </div>
+
+        <div>
+          <label appLabel for="qa-company" class="mb-1.5 block">{{ 'crm.leads.fields.personOrCompanyName' | t }} ({{ 'crm.common.optional' | t }})</label>
+          <input appInput id="qa-company" [formField]="quickAddForm.companyName" />
+        </div>
+
+        <div>
+          <label appLabel for="qa-gov" class="mb-1.5 block">{{ 'crm.leads.fields.governorateCode' | t }}</label>
+          <app-select>
+            <select appSelect id="qa-gov" [formField]="quickAddForm.governorateCode">
+              <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
+              @for (option of reference.options('governorate'); track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+          </app-select>
+        </div>
+
+        <div>
+          <label appLabel for="qa-source" class="mb-1.5 block" required>{{ 'crm.leads.fields.sourceCode' | t }}</label>
+          <app-select>
+            <select appSelect id="qa-source" [formField]="quickAddForm.sourceCode" [attr.aria-invalid]="fieldError('sourceCode') ? true : null">
+              <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
+              @for (option of reference.options('lead_source'); track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+          </app-select>
+          @if (fieldError('sourceCode'); as key) {
+            <p class="mt-1 text-sm text-destructive">{{ key | t }}</p>
+          }
+        </div>
+
+        <div>
+          <label appLabel for="qa-service" class="mb-1.5 block">{{ 'crm.leads.fields.requestedServiceCode' | t }}</label>
+          <app-select>
+            <select appSelect id="qa-service" [formField]="quickAddForm.requestedServiceCode">
+              <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
+              @for (option of reference.options('service_type'); track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+          </app-select>
+        </div>
+
+        <div class="sm:col-span-2">
+          <label appLabel for="qa-requirement" class="mb-1.5 block">{{ 'crm.leads.quickAdd.requirement' | t }}</label>
+          <textarea appTextarea id="qa-requirement" rows="2" [formField]="quickAddForm.requirement"></textarea>
+        </div>
+
+        <div class="sm:col-span-2">
+          <label appLabel for="qa-notes" class="mb-1.5 block">{{ 'crm.leads.fields.notes' | t }}</label>
+          <textarea appTextarea id="qa-notes" rows="2" [formField]="quickAddForm.notes"></textarea>
+        </div>
+
+        <div class="sm:col-span-2 flex items-center gap-2 border-t border-border pt-4">
+          <input type="checkbox" id="qa-logcall" class="size-4 rounded border-input accent-primary" [formField]="quickAddForm.logCall" />
+          <label appLabel for="qa-logcall">{{ 'crm.leads.quickAdd.logCall' | t }}</label>
+        </div>
+
+        @if (showCallOutcome()) {
+          <div>
+            <label appLabel for="qa-outcome" class="mb-1.5 block">{{ 'crm.leads.quickAdd.outcomeCode' | t }}</label>
+            <app-select>
+              <select appSelect id="qa-outcome" [formField]="quickAddForm.outcomeCode">
+                <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
+                @for (option of reference.options('call_outcome'); track option.value) {
+                  <option [value]="option.value">{{ option.label }}</option>
+                }
+              </select>
+            </app-select>
+          </div>
+          <div>
+            <label appLabel for="qa-call-notes" class="mb-1.5 block">{{ 'crm.leads.attempt.notes' | t }}</label>
+            <input appInput id="qa-call-notes" [formField]="quickAddForm.callNotes" />
+          </div>
+        }
+
+        <div class="sm:col-span-2">
+          <button type="submit" appButton fullWidth [disabled]="quickAddForm().submitting()">
+            {{ (quickAddForm().submitting() ? 'crm.leads.quickAdd.submitting' : 'crm.leads.quickAdd.submit') | t }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </section>
+}
