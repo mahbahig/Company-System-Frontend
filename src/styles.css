@@ -151,12 +151,13 @@
     --input: 214 22% 83%;
     --ring: 176 66% 30%;
 
-    /* Near-black forest ink for the sidebar — deeper and a touch greener than
-       a neutral charcoal so the chrome reads as part of the brand. */
-    --sidebar: 198 34% 10%;
-    --sidebar-foreground: 200 20% 88%;
-    --sidebar-accent: 176 56% 36%;
-    --sidebar-border: 198 28% 18%;
+    /* A light sidebar for the light theme: a cool off-white a step below the
+       page, so the chrome reads as its own surface, with ink text and the
+       emerald accent (the dark theme keeps its near-black forest ink). */
+    --sidebar: 200 22% 96.5%;
+    --sidebar-foreground: 210 32% 13%;
+    --sidebar-accent: 176 66% 26%;
+    --sidebar-border: 214 22% 88%;
 
     /* Categorical chart scale — distinguishable in both themes and for the
        most common colour-vision deficiencies. */
@@ -577,8 +578,8 @@
   }
 }
 
-/* Sidebar variant: the sidebar surface is dark in both themes, so the thumb
-   tints the light sidebar foreground instead. */
+/* Sidebar variant: the sidebar has its own surface in each theme, so the
+   thumb tints the sidebar foreground rather than the page's. */
 @utility scroll-area-sidebar {
   scrollbar-width: thin;
   scrollbar-color: hsl(var(--sidebar-foreground) / 0.25) transparent;
