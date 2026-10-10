@@ -25,6 +25,7 @@ It talks to a separate NestJS REST API over `/api/v1`.
 - [Routing & features](#routing--features)
 - [Internationalization (i18n)](#internationalization-i18n)
 - [Theming & design tokens](#theming--design-tokens)
+- [Sign-in experience](#sign-in-experience)
 - [Architecture & conventions](#architecture--conventions)
 - [Accessibility](#accessibility)
 - [Build & deployment](#build--deployment)
@@ -44,6 +45,7 @@ It talks to a separate NestJS REST API over `/api/v1`.
 | Icons          | [`lucide`](https://lucide.dev)                                |
 | UI variants    | `class-variance-authority`                                    |
 | CDK            | `@angular/cdk` (a11y, overlay)                                |
+| 3D             | [`three`](https://threejs.org) — the sign-in screens' interactive solar scene, `@defer`-loaded |
 | Formatting     | Prettier                                                      |
 
 ## Prerequisites
@@ -105,7 +107,8 @@ in [`FINAL_SRS_FRONTEND.md`](./FINAL_SRS_FRONTEND.md).
 ├── public/                     static assets (icon, PWA manifest, push service worker)
 │   └── i18n/                    generated locale catalogues (do not edit — see i18n)
 ├── scripts/
-│   └── sync-messages.mjs        merges i18n sources → public/i18n
+│   ├── sync-messages.mjs        merges i18n sources → public/i18n
+│   └── build-wordmark-glyphs.mjs  regenerates the sign-in scene's 3D wordmark glyphs
 ├── src/
 │   ├── main.ts                  standalone bootstrap
 │   ├── index.html
@@ -205,6 +208,39 @@ place.
 
 Custom thin, theme-aware scrollbar utilities (`scroll-area`, `scroll-area-sidebar`)
 are used by the shell's independently-scrolling panes.
+
+The ECOTECH brand colours from [ecotecheg.com](https://ecotecheg.com) live as
+theme-independent constants (`--brand-petrol`, `--brand-sun`, `--brand-leaf`, …,
+exposed as `bg-brand-*` / `text-brand-*`). The sign-in screens apply the
+`.auth-theme` class, which re-points the shared token names at that palette, so
+every primitive inside them follows without per-page overrides.
+
+## Sign-in experience
+
+Login, forgot-password and reset-password are children of one layout route
+(`features/auth/shared/auth-layout.component`), so they share an interactive
+Three.js scene — a shader-driven sun with a turning crown of rays and the
+"ECOTECH" wordmark as extruded 3D type (petrol lacquer and gold by day,
+platinum and gold by night) — that stays mounted while moving between them.
+
+- **Isolation** — everything 3D lives in `features/auth/shared/solar-scene/`:
+  a framework-free `SolarScene` (renderer, camera fitting, OrbitControls,
+  disposal) wrapped by `SolarSceneComponent` (lifecycle, resize, visibility,
+  reduced motion). Auth pages never touch it; tunables are in
+  `solar-scene.config.ts`.
+- **Themes** — the stage follows the app theme: a daylight sky in light mode,
+  a petrol night in dark. The CSS backdrop reads the `--stage-*` tokens in
+  `styles.css`; the scene relights in place from the matching entry in
+  `SOLAR_SCENE.looks`.
+- **Loading** — the scene is `@defer (on idle)`, so three.js ships in its own
+  lazy chunk and never delays the form; without WebGL the CSS backdrop stands alone.
+- **Cost** — pixel ratio capped at 1.75, rendering capped at 60 fps and paused
+  off-screen; under `prefers-reduced-motion` it renders only while being dragged.
+  Leaving the sign-in screens disposes every GPU resource and the WebGL context.
+- **Wordmark glyphs** — `wordmark-typeface.ts` holds just the five Inter glyphs
+  the wordmark needs. It is generated; to change the font or word, run
+  `npm install --no-save opentype.js` then
+  `node scripts/build-wordmark-glyphs.mjs path/to/font.ttf`.
 
 ## Architecture & conventions
 

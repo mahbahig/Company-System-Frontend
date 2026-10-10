@@ -1,7 +1,9 @@
 <!-- Desktop sidebar -->
-<aside class="hidden w-64 shrink-0 flex-col border-e border-sidebar-border bg-sidebar lg:flex">
+<aside
+  class="relative hidden w-64 shrink-0 flex-col overflow-hidden border-e border-sidebar-border bg-sidebar lg:flex before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-48 before:[background:radial-gradient(120%_80%_at_20%_0%,hsl(var(--sidebar-accent)/0.18),transparent_70%)]"
+>
   <app-sidebar-brand />
-  <div class="min-h-0 flex-1 overflow-y-auto px-2 pb-4 scroll-area-sidebar">
+  <div class="relative min-h-0 flex-1 overflow-y-auto px-2 pb-4 scroll-area-sidebar">
     <app-sidebar-nav />
   </div>
 </aside>
@@ -49,7 +51,7 @@
 
 <div class="flex min-w-0 flex-1 flex-col">
   <header
-    class="sticky top-0 z-30 flex h-14 items-center gap-2 border-b border-border bg-background/95 px-3 backdrop-blur supports-[backdrop-filter]:bg-background/80"
+    class="sticky top-0 z-30 flex h-14 items-center gap-2 border-b border-border/80 bg-background/95 px-3 shadow-xs backdrop-blur-xl supports-[backdrop-filter]:bg-background/70"
   >
     <button
       #menuButton

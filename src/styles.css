@@ -58,6 +58,11 @@
   --color-chart-4: hsl(var(--chart-4));
   --color-chart-5: hsl(var(--chart-5));
   --color-chart-6: hsl(var(--chart-6));
+  --color-brand-petrol: hsl(var(--brand-petrol));
+  --color-brand-petrol-deep: hsl(var(--brand-petrol-deep));
+  --color-brand-sun: hsl(var(--brand-sun));
+  --color-brand-leaf: hsl(var(--brand-leaf));
+  --color-brand-night: hsl(var(--brand-night));
 
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
@@ -70,6 +75,22 @@
   /* Dense-but-legible scale tuned for data tables. */
   --text-2xs: 0.6875rem;
   --text-2xs--line-height: 1rem;
+
+  /* Premium easing curves — one decisive set shared by every transition and
+     reveal so motion across the app feels like it comes from one hand.
+     `ease-premium` for entrances/settles, `ease-emphasized` for longer moves. */
+  --ease-premium: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-emphasized: cubic-bezier(0.33, 1, 0.68, 1);
+
+  /* Softly-tinted elevation scale. Shadows are drawn from the foreground
+     slate rather than pure black, which reads cooler and more expensive on
+     the warm-white surfaces; dark mode leans on borders so these stay faint. */
+  --shadow-xs: 0 1px 2px 0 hsl(215 28% 12% / 0.05);
+  --shadow-sm: 0 1px 2px 0 hsl(215 28% 12% / 0.06), 0 1px 3px 0 hsl(215 28% 12% / 0.04);
+  --shadow-md: 0 4px 14px -3px hsl(215 28% 12% / 0.1), 0 2px 5px -3px hsl(215 28% 12% / 0.06);
+  --shadow-lg: 0 14px 34px -8px hsl(215 28% 12% / 0.14), 0 5px 12px -6px hsl(215 28% 12% / 0.08);
+  --shadow-xl: 0 28px 56px -14px hsl(215 28% 12% / 0.2), 0 10px 20px -10px hsl(215 28% 12% / 0.1);
+  --shadow-2xl: 0 40px 80px -20px hsl(215 28% 12% / 0.28);
 }
 
 @utility container {
@@ -80,24 +101,28 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 215 25% 16%;
+    /* A whisper-cool off-white base so the pure-white cards sit slightly
+       proud of it — quiet elevation without a single extra shadow. */
+    --background: 200 24% 99%;
+    --foreground: 210 30% 13%;
 
     --card: 0 0% 100%;
-    --card-foreground: 215 25% 16%;
+    --card-foreground: 210 30% 13%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 16%;
+    --popover-foreground: 210 30% 13%;
 
-    /* Deep teal — primary actions, active navigation, focus rings */
-    --primary: 178 62% 26%;
+    /* Deep emerald-teal — primary actions, active navigation, focus rings.
+       Richer and a shade darker than the base brand for a more jewel-like,
+       premium read while clearing WCAG AA for white text with room to spare. */
+    --primary: 176 70% 21%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 20% 96%;
-    --secondary-foreground: 215 25% 22%;
+    --secondary: 200 24% 96%;
+    --secondary-foreground: 210 28% 22%;
 
-    --muted: 210 20% 96%;
-    --muted-foreground: 215 14% 44%;
+    --muted: 200 24% 96%;
+    --muted-foreground: 210 15% 42%;
 
     /* Solar amber — emphasis only, never large fills */
     --accent: 38 92% 50%;
@@ -122,14 +147,16 @@
     --info-tint-foreground: 205 78% 37%;
     --destructive-tint-foreground: 0 72% 44%;
 
-    --border: 214 20% 88%;
-    --input: 214 20% 84%;
-    --ring: 178 62% 32%;
+    --border: 214 22% 89%;
+    --input: 214 22% 83%;
+    --ring: 176 66% 30%;
 
-    --sidebar: 200 30% 12%;
-    --sidebar-foreground: 205 20% 88%;
-    --sidebar-accent: 178 55% 34%;
-    --sidebar-border: 200 25% 20%;
+    /* Near-black forest ink for the sidebar — deeper and a touch greener than
+       a neutral charcoal so the chrome reads as part of the brand. */
+    --sidebar: 198 34% 10%;
+    --sidebar-foreground: 200 20% 88%;
+    --sidebar-accent: 176 56% 36%;
+    --sidebar-border: 198 28% 18%;
 
     /* Categorical chart scale — distinguishable in both themes and for the
        most common colour-vision deficiencies. */
@@ -141,26 +168,123 @@
     --chart-6: 12 75% 52%;
 
     --radius: 0.5rem;
+
+    /* ECOTECH brand constants, taken from ecotecheg.com's own stylesheet
+       (maincolor / secendcolor / therrtcolor). Theme-independent on purpose:
+       they are facts about the brand, which the themed tokens draw on. */
+    --brand-petrol: 194 100% 26%; /* #006584 — primary brand colour */
+    --brand-petrol-deep: 194 100% 19%; /* #004a61 — its pressed / deep shade */
+    --brand-sun: 50 100% 50%; /* #ffd400 — solar yellow, the logo's sun */
+    --brand-leaf: 147 95% 23%; /* #037235 — environmental green */
+    --brand-night: 197 72% 5%; /* deep petrol night — the dark theme's solar stage */
+  }
+
+  /* Sign-in experience (login, forgot / reset password). It speaks the brand
+     palette directly — petrol primary, solar-yellow accent, leaf-green success —
+     by redefining the shared token names, so every primitive used inside
+     (labels, alerts, focus rings) follows without per-page overrides.
+     `--primary-hover` is the hover state of primary text/links; the solid
+     action button has its own fill trio (`--primary-fill*`) so in dark mode it
+     can stay deep brand petrol while links lift for contrast. */
+  .auth-theme {
+    --background: 195 33% 98.5%;
+    --foreground: 200 45% 9%;
+    --card: 0 0% 100%;
+    --card-foreground: 200 45% 9%;
+    --primary: var(--brand-petrol);
+    --primary-hover: var(--brand-petrol-deep);
+    --primary-foreground: 0 0% 100%;
+    --primary-fill: var(--brand-petrol);
+    --primary-fill-hover: var(--brand-petrol-deep);
+    --primary-fill-foreground: 0 0% 100%;
+    --primary-deep: 194 100% 14%;
+    --accent: var(--brand-sun);
+    --accent-foreground: 200 45% 9%;
+    --secondary: 195 25% 94%;
+    --secondary-foreground: 200 40% 14%;
+    --muted: 195 25% 95%;
+    --muted-foreground: 200 14% 38%;
+    --success: var(--brand-leaf);
+    --success-tint-foreground: 147 95% 23%;
+    --border: 197 22% 88%;
+    --input: 197 20% 80%;
+    --ring: 194 100% 30%;
+
+    /* The solar stage behind the 3D scene: a daylight sky here, a petrol
+       night in the dark theme. Values carry their own alpha (`hsl(var(--x))`). */
+    --stage-zenith: 199 62% 89%;
+    --stage-horizon: 42 55% 97%;
+    --stage-halo: 46 100% 91% / 0.95;
+    --stage-glow: 47 100% 64% / 0.3;
+    --stage-pool-start: var(--brand-leaf) / 0.07;
+    --stage-pool-end: var(--brand-petrol) / 0.1;
+    --stage-vignette: 199 48% 72% / 0.3;
+    --stage-line: 194 70% 26% / 0.06;
+    --stage-shadow: 199 60% 25% / 0.2;
+    --stage-glass: 0 0% 100% / 0.55;
+    --stage-glass-border: 0 0% 100% / 0.8;
+    --stage-glass-shadow: 0 1px 2px hsl(199 50% 20% / 0.06), inset 0 1px 0 hsl(0 0% 100% / 0.9);
+  }
+
+  .dark .auth-theme {
+    --background: 200 40% 4.5%;
+    --foreground: 195 25% 94%;
+    --card: 200 32% 7%;
+    --card-foreground: 195 25% 94%;
+    /* A lifted petrol that keeps AA contrast as text on the near-black page
+       (and carries dark text where it is used as a fill). The button fill
+       stays deep brand petrol with white text (5.5:1). */
+    --primary: 192 82% 44%;
+    --primary-hover: 192 82% 54%;
+    --primary-foreground: 200 60% 6%;
+    --primary-fill: 194 100% 29%;
+    --primary-fill-hover: 194 100% 33%;
+    --primary-fill-foreground: 0 0% 100%;
+    --primary-deep: 194 100% 8%;
+    --secondary: 200 25% 12%;
+    --secondary-foreground: 195 25% 94%;
+    --muted: 200 25% 11%;
+    --muted-foreground: 197 14% 66%;
+    --success: 147 60% 42%;
+    --success-tint-foreground: 147 55% 52%;
+    --border: 199 24% 15%;
+    --input: 199 22% 22%;
+    --ring: 192 82% 50%;
+
+    --stage-zenith: var(--brand-night);
+    --stage-horizon: var(--brand-night);
+    --stage-halo: var(--brand-petrol) / 0.6;
+    --stage-glow: var(--brand-sun) / 0.16;
+    --stage-pool-start: var(--brand-leaf) / 0.3;
+    --stage-pool-end: var(--brand-petrol-deep) / 0.55;
+    --stage-vignette: 200 70% 2% / 0.75;
+    --stage-line: 0 0% 100% / 0.05;
+    --stage-shadow: 200 70% 4% / 0.6;
+    --stage-glass: 0 0% 100% / 0.06;
+    --stage-glass-border: 0 0% 100% / 0.1;
+    --stage-glass-shadow: inset 0 1px 0 hsl(0 0% 100% / 0.08);
   }
 
   .dark {
-    --background: 210 28% 9%;
-    --foreground: 205 20% 92%;
+    /* Deep cool near-black; the card lifts a few points above it so panels
+       read as surfaces without needing a heavy border. */
+    --background: 210 34% 6%;
+    --foreground: 205 22% 93%;
 
-    --card: 210 25% 12%;
-    --card-foreground: 205 20% 92%;
+    --card: 210 28% 9%;
+    --card-foreground: 205 22% 93%;
 
-    --popover: 210 25% 12%;
-    --popover-foreground: 205 20% 92%;
+    --popover: 210 28% 9%;
+    --popover-foreground: 205 22% 93%;
 
-    --primary: 178 55% 42%;
-    --primary-foreground: 200 40% 8%;
+    --primary: 176 60% 44%;
+    --primary-foreground: 200 45% 7%;
 
-    --secondary: 210 20% 18%;
-    --secondary-foreground: 205 20% 92%;
+    --secondary: 210 22% 15%;
+    --secondary-foreground: 205 22% 93%;
 
-    --muted: 210 20% 18%;
-    --muted-foreground: 210 12% 62%;
+    --muted: 210 22% 15%;
+    --muted-foreground: 210 13% 63%;
 
     --accent: 38 88% 56%;
     --accent-foreground: 30 60% 12%;
@@ -182,14 +306,14 @@
     --info-tint-foreground: 205 70% 57%;
     --destructive-tint-foreground: 0 62% 65%;
 
-    --border: 210 18% 22%;
-    --input: 210 18% 26%;
-    --ring: 178 55% 46%;
+    --border: 210 20% 19%;
+    --input: 210 20% 24%;
+    --ring: 176 60% 48%;
 
-    --sidebar: 210 30% 8%;
-    --sidebar-foreground: 205 18% 84%;
-    --sidebar-accent: 178 50% 38%;
-    --sidebar-border: 210 24% 16%;
+    --sidebar: 210 36% 5%;
+    --sidebar-foreground: 205 18% 85%;
+    --sidebar-accent: 176 54% 42%;
+    --sidebar-border: 210 26% 13%;
 
     --chart-1: 178 55% 46%;
     --chart-2: 38 88% 58%;
@@ -215,6 +339,11 @@
     font-feature-settings:
       'rlig' 1,
       'calt' 1;
+  }
+
+  /* Selection carries the brand rather than the browser default blue. */
+  ::selection {
+    background-color: hsl(var(--primary) / 0.18);
   }
 
   /* Arabic renders in the Arabic-optimised stack; dir/lang are set on <html>
@@ -262,7 +391,145 @@
   }
 }
 @utility animate-fade-in-up {
-  animation: fade-in-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: fade-in-up 0.5s var(--ease-premium) both;
+}
+
+/* ───────────────────────────────────────────────────────────────────────
+   Motion vocabulary. One restrained set of entrances and two slow ambient
+   loops, all built on transform/opacity only and all sharing --ease-premium
+   so the whole app moves with one accent. Pair an entrance with an arbitrary
+   delay utility (e.g. [animation-delay:120ms]) to stagger a group of items.
+   Every animation here is zeroed by the prefers-reduced-motion rule below.
+   ─────────────────────────────────────────────────────────────────────── */
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@utility animate-fade-in {
+  animation: fade-in 0.5s var(--ease-premium) both;
+}
+
+/* A larger-travel reveal for whole sections entering on load. */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@utility animate-rise-in {
+  animation: rise-in 0.6s var(--ease-premium) both;
+}
+
+/* Gentle zoom-settle for cards, dialogs and KPI tiles. */
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@utility animate-scale-in {
+  animation: scale-in 0.45s var(--ease-premium) both;
+}
+
+/* Slow drifting glow — the energy behind the login/brand panels. The 0% and
+   100% frames are identical so it loops seamlessly and rests correctly when
+   reduced-motion freezes it on frame one. */
+@keyframes aurora {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.85;
+  }
+  50% {
+    transform: translate3d(3%, -2%, 0) scale(1.12);
+    opacity: 1;
+  }
+}
+@utility animate-aurora {
+  animation: aurora 16s var(--ease-emphasized) infinite;
+}
+
+/* A single light sweep across a surface — used once, on the brand mark. */
+@keyframes sheen {
+  0% {
+    transform: translateX(-150%) skewX(-12deg);
+  }
+  55%,
+  100% {
+    transform: translateX(260%) skewX(-12deg);
+  }
+}
+@utility animate-sheen {
+  animation: sheen 7s var(--ease-premium) infinite;
+}
+
+/* A short, damped shake for a rejected submission — symmetric, so it reads
+   the same in LTR and RTL. */
+@keyframes shake {
+  0%,
+  100% {
+    transform: none;
+  }
+  20% {
+    transform: translateX(-5px);
+  }
+  40% {
+    transform: translateX(4px);
+  }
+  60% {
+    transform: translateX(-2.5px);
+  }
+  80% {
+    transform: translateX(1.5px);
+  }
+}
+@utility animate-shake {
+  animation: shake 0.45s var(--ease-emphasized) both;
+}
+
+/* Text-caret blink for custom inputs that draw their own caret. */
+@keyframes caret-blink {
+  0%,
+  45% {
+    opacity: 1;
+  }
+  55%,
+  100% {
+    opacity: 0;
+  }
+}
+@utility animate-caret-blink {
+  animation: caret-blink 1.1s steps(1, end) infinite;
+}
+
+/* Frosted glass for chips and controls floating over the solar stage, in
+   either theme (the --stage-glass* tokens). Works with variants:
+   `max-lg:stage-glass`. */
+@utility stage-glass {
+  border: 1px solid hsl(var(--stage-glass-border));
+  background-color: hsl(var(--stage-glass));
+  box-shadow: var(--stage-glass-shadow);
+  backdrop-filter: blur(12px);
+}
+
+/* Static film grain (an inline SVG turbulence tile). Layer it at a few
+   percent opacity to take the digital flatness off large gradients. */
+@utility bg-grain {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .5 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
 }
 
 /* Visually hidden until focused — used for the skip link. */
@@ -345,5 +612,13 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+
+  /* Route changes use the View Transitions API; its pseudo-elements are not
+     matched by `*`, so they are switched off explicitly. */
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
   }
 }

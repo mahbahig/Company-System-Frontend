@@ -6,13 +6,16 @@
       "title": "Reset your password",
       "subtitle": "Enter your work e-mail and we will send you a reset link.",
       "submit": "Send reset link",
-      "sent": "If an account exists for that address, a reset link is on its way. The link expires soon and works once."
+      "sent": "If an account exists for that address, a reset link is on its way. The link expires soon and works once.",
+      "eyebrow": "Account recovery"
     },
     "reset": {
       "title": "Choose a new password",
       "submit": "Set new password",
       "done": "Your password was changed. Sign in with the new password.",
-      "invalidLink": "This reset link is missing or invalid. Request a new one."
+      "invalidLink": "This reset link is missing or invalid. Request a new one.",
+      "subtitle": "Choose a new password for your EcoTech account.",
+      "requestNew": "Request a new link"
     },
     "password": {
       "title": "Change password",
@@ -22,9 +25,16 @@
       "new": "New password",
       "confirm": "Confirm new password",
       "rules": "At least 12 characters, mixing letters, numbers and symbols.",
+      "mismatch": "Both passwords must match.",
       "submit": "Change password",
       "changed": "Your password was changed.",
-      "signInAgain": "Your password was changed and you were signed out everywhere. Sign in with the new password."
+      "signInAgain": "Your password was changed and you were signed out everywhere. Sign in with the new password.",
+      "requirements": "Password requirements",
+      "ruleLength": "At least 12 characters",
+      "ruleLetter": "At least one letter",
+      "ruleNumber": "At least one number",
+      "ruleMet": "met",
+      "ruleUnmet": "not met yet"
     },
     "mfa": {
       "title": "Two-factor sign-in",
@@ -49,7 +59,11 @@
       "verifyTitle": "Enter your authentication code",
       "verifyHint": "Open your authenticator app, or use one of your recovery codes.",
       "verify": "Verify",
-      "back": "Use a different account"
+      "back": "Use a different account",
+      "useRecovery": "Use a recovery code",
+      "useAuthenticator": "Use your authenticator app",
+      "recoveryLabel": "Recovery code",
+      "recoveryUseHint": "Each recovery code signs you in once."
     },
     "notifications": {
       "title": "Notification preferences",

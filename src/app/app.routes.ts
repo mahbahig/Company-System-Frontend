@@ -26,21 +26,29 @@ export const routes: Routes = [
     canActivate: [localeGuard],
     children: [
       {
-        path: 'login',
-        title: 'auth.login.title',
-        canActivate: [guestGuard],
-        loadComponent: () => import('./features/auth/login/login.page').then((m) => m.LoginPage),
-      },
-      {
-        path: 'forgot-password',
-        title: 'account.forgot.title',
-        canActivate: [guestGuard],
-        loadComponent: () => import('./features/auth/password-reset/forgot-password.page').then((m) => m.ForgotPasswordPage),
-      },
-      {
-        path: 'reset-password',
-        title: 'account.reset.title',
-        loadComponent: () => import('./features/auth/password-reset/reset-password.page').then((m) => m.ResetPasswordPage),
+        // Shared sign-in layout (and its 3D scene) stays mounted while moving
+        // between these screens; URLs and guards are unchanged.
+        path: '',
+        loadComponent: () => import('./features/auth/shared/auth-layout.component').then((m) => m.AuthLayoutComponent),
+        children: [
+          {
+            path: 'login',
+            title: 'auth.login.title',
+            canActivate: [guestGuard],
+            loadComponent: () => import('./features/auth/login/login.page').then((m) => m.LoginPage),
+          },
+          {
+            path: 'forgot-password',
+            title: 'account.forgot.title',
+            canActivate: [guestGuard],
+            loadComponent: () => import('./features/auth/password-reset/forgot-password.page').then((m) => m.ForgotPasswordPage),
+          },
+          {
+            path: 'reset-password',
+            title: 'account.reset.title',
+            loadComponent: () => import('./features/auth/password-reset/reset-password.page').then((m) => m.ResetPasswordPage),
+          },
+        ],
       },
       {
         path: '',

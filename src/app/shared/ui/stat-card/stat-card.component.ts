@@ -10,12 +10,15 @@ import { RouterLink } from '@angular/router';
   selector: 'app-stat-card',
   imports: [RouterLink],
   template: `
-    <div class="flex h-full flex-col gap-1 rounded-lg border border-border bg-card p-4 shadow-sm" [class]="accent()">
+    <div
+      class="group/stat relative flex h-full flex-col gap-1 rounded-lg border border-border bg-card p-4 shadow-sm transition-[box-shadow,transform,border-color] duration-200 ease-premium hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md"
+      [class]="accent()"
+    >
       <p class="text-xs font-medium uppercase tracking-wide text-muted-foreground">{{ label() }}</p>
       @if (link()) {
-        <a [routerLink]="link()" [queryParams]="queryParams()" class="tabular text-2xl font-semibold tracking-tight text-foreground underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" dir="ltr">{{ value() }}</a>
+        <a [routerLink]="link()" [queryParams]="queryParams()" class="tabular text-3xl font-semibold tracking-tight text-foreground underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" dir="ltr">{{ value() }}</a>
       } @else {
-        <p class="tabular text-2xl font-semibold tracking-tight" dir="ltr">{{ value() }}</p>
+        <p class="tabular text-3xl font-semibold tracking-tight" dir="ltr">{{ value() }}</p>
       }
       @if (hint()) {
         <p class="text-xs text-muted-foreground">{{ hint() }}</p>

@@ -1,0 +1,150 @@
+<!-- Stage: the interactive solar scene and the brand story — daylight in the
+     light theme, a petrol night in the dark one. On wide screens an inset
+     panel, on narrow ones a hero. -->
+<div
+  class="relative isolate flex h-[clamp(16rem,42svh,24rem)] flex-col overflow-hidden [--sun-y:39%] md:h-[clamp(19rem,46svh,30rem)] lg:sticky lg:top-3 lg:m-3 lg:me-0 lg:h-[calc(100dvh-1.5rem)] lg:rounded-[1.75rem] lg:[--sun-y:31%] lg:shadow-[0_30px_80px_-30px_hsl(var(--stage-shadow))]"
+>
+  <div aria-hidden="true" class="stage-backdrop absolute inset-0 -z-10"></div>
+  <div aria-hidden="true" class="stage-grid absolute inset-0 -z-10"></div>
+  <div
+    aria-hidden="true"
+    class="pointer-events-none absolute inset-0 -z-10 bg-grain opacity-[0.07] mix-blend-overlay"
+  ></div>
+
+  @defer (on idle) {
+    <app-solar-scene
+      class="absolute inset-0"
+      [framing]="framing()"
+      [theme]="theme()"
+      (ready)="sceneReady.set(true)"
+      (interacted)="explored.set(true)"
+    />
+  }
+
+  <!-- Hairline edges: a lit top rim and, on wide screens, an inner border. -->
+  <div
+    aria-hidden="true"
+    class="pointer-events-none absolute inset-x-12 top-0 h-px bg-gradient-to-r from-transparent via-white/80 to-transparent dark:via-white/25"
+  ></div>
+  <div
+    aria-hidden="true"
+    class="pointer-events-none absolute inset-0 hidden rounded-[inherit] ring-1 ring-inset ring-foreground/[0.07] lg:block"
+  ></div>
+
+  <div class="pointer-events-none relative p-4 sm:p-6 lg:p-8 xl:p-10">
+    <p
+      class="inline-flex items-center gap-2.5 rounded-full py-1.5 pe-4 ps-1.5 stage-glass animate-fade-in"
+    >
+      <span class="sr-only">{{ 'app.name' | t }}</span>
+      <span
+        aria-hidden="true"
+        class="flex size-7 items-center justify-center rounded-full bg-brand-night ring-1 ring-white/10"
+      >
+        <app-brand-mark class="size-[1.125rem]" />
+      </span>
+      <span aria-hidden="true" class="text-[0.8125rem] font-semibold tracking-[0.26em]" dir="ltr"
+        >ECOTECH</span
+      >
+      <span aria-hidden="true" class="h-3.5 w-px bg-foreground/15"></span>
+      <span
+        aria-hidden="true"
+        class="text-[0.6875rem] font-medium tracking-[0.2em] text-muted-foreground"
+        dir="ltr"
+        >CRM</span
+      >
+    </p>
+  </div>
+
+  <!-- Brand story, wide screens only (on a phone the form needs the room). -->
+  <div class="pointer-events-none relative mt-auto hidden px-8 pb-8 lg:block xl:px-12 xl:pb-11">
+    <p
+      class="max-w-lg text-[1.75rem] font-semibold leading-[1.15] text-balance ltr:tracking-[-0.022em] animate-fade-in-up [animation-delay:200ms] xl:text-[2.125rem]"
+    >
+      {{ 'auth.login.brandHeadline' | t }}
+    </p>
+    <p
+      class="mt-4 max-w-md text-sm leading-relaxed text-muted-foreground animate-fade-in-up [animation-delay:280ms]"
+    >
+      {{ 'auth.login.brandSubheadline' | t }}
+    </p>
+    <div
+      class="mt-8 flex min-h-5 items-center justify-between gap-4 border-t border-foreground/10 pt-5 text-xs text-muted-foreground"
+    >
+      <span>{{ 'auth.scene.since' | t }}</span>
+      @if (sceneReady() && !explored()) {
+        <span aria-hidden="true" class="inline-flex items-center gap-2 animate-fade-in">
+          <app-icon [icon]="hintIcon" svgClass="size-3.5 text-primary dark:text-brand-sun/80" />{{
+            'auth.scene.hint' | t
+          }}
+        </span>
+      }
+    </div>
+  </div>
+
+  <!-- Narrow screens: the interaction hint sits just above the sheet. -->
+  @if (sceneReady() && !explored()) {
+    <p
+      aria-hidden="true"
+      class="pointer-events-none absolute bottom-11 end-4 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[0.6875rem] text-muted-foreground stage-glass animate-fade-in sm:end-6 lg:hidden"
+    >
+      <app-icon [icon]="hintIcon" svgClass="size-3 text-primary dark:text-brand-sun/80" />{{
+        'auth.scene.hint' | t
+      }}
+    </p>
+  }
+</div>
+
+<!-- Locale / theme. On glass over the hero on narrow screens, over the form
+     panel on wide ones. -->
+<div
+  class="absolute end-3 top-3 z-30 flex items-center gap-0.5 max-lg:rounded-full max-lg:p-0.5 max-lg:stage-glass sm:end-5 sm:top-5 lg:end-6 lg:top-6"
+>
+  <app-locale-switcher />
+  <app-theme-toggle />
+</div>
+
+<!-- Form panel — a sheet rising over the hero on narrow screens. -->
+<div
+  class="relative z-10 -mt-7 flex flex-1 flex-col rounded-t-[1.75rem] bg-background shadow-[0_-24px_48px_-24px_hsl(var(--stage-shadow))] lg:static lg:mt-0 lg:rounded-none lg:bg-transparent lg:shadow-none"
+>
+  <!-- Ambient glow and grain. On narrow screens it fills the sheet; on wide
+       ones (the panel turns static) it spans the whole page beneath the stage,
+       so the frame around the stage is the same surface as the form side. -->
+  <div
+    aria-hidden="true"
+    class="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit] lg:-z-10"
+  >
+    <div
+      class="absolute -top-48 end-[-12%] size-[32rem] rounded-full bg-primary/[0.07] blur-3xl dark:bg-primary/[0.09] lg:end-[-5%]"
+    ></div>
+    <div
+      class="absolute -bottom-56 start-[-18%] size-[30rem] rounded-full bg-brand-sun/[0.07] blur-3xl dark:bg-brand-sun/[0.04] lg:start-[44%] xl:start-[48%]"
+    ></div>
+    <div
+      class="absolute inset-0 bg-grain opacity-[0.035] mix-blend-multiply dark:opacity-[0.05] dark:mix-blend-soft-light"
+    ></div>
+  </div>
+  <div
+    aria-hidden="true"
+    class="absolute inset-x-12 top-0 h-px bg-gradient-to-r from-transparent via-white to-transparent dark:via-white/15 lg:hidden"
+  ></div>
+
+  <main
+    id="main-content"
+    class="relative mx-auto flex w-full max-w-[26rem] flex-1 flex-col justify-center px-6 pb-10 pt-10 sm:px-8 lg:px-0 lg:py-24"
+  >
+    <!-- Makes it impossible to mistake staging for production in adjacent tabs. -->
+    @if (environmentBadge) {
+      <p
+        class="mb-6 inline-flex self-start rounded-full border border-warning/30 bg-warning/10 px-2.5 py-0.5 text-[0.6875rem] font-semibold uppercase text-warning-tint ltr:tracking-[0.14em]"
+      >
+        {{ 'app.environment.' + environmentBadge | t }}
+      </p>
+    }
+    <router-outlet />
+  </main>
+
+  <footer class="relative px-6 pb-6 text-center text-xs text-muted-foreground lg:pb-8">
+    © {{ year }} {{ 'app.companyName' | t }}
+  </footer>
+</div>

@@ -2,7 +2,15 @@
   "auth": {
     "login": {
       "showPassword": "Show password",
-      "hidePassword": "Hide password"
+      "hidePassword": "Hide password",
+      "capsLock": "Caps Lock is on",
+      "welcome": "Welcome back",
+      "eyebrow": "Secure sign-in",
+      "restricted": "Access is restricted to authorized EcoTech personnel."
+    },
+    "scene": {
+      "hint": "Drag to explore",
+      "since": "Powering Egypt's clean-energy transition since 2018"
     }
   }
 }

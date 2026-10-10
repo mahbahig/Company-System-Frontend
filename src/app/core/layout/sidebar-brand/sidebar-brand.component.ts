@@ -9,12 +9,17 @@ import { TranslatePipe } from '../../i18n/translate.pipe';
   selector: 'app-sidebar-brand',
   imports: [IconComponent, TranslatePipe],
   template: `
-    <span aria-hidden="true" class="flex size-8 shrink-0 items-center justify-center rounded-md bg-sidebar-accent text-sidebar-foreground">
-      <app-icon [icon]="sun" />
+    <span
+      aria-hidden="true"
+      class="relative flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-sidebar-accent to-primary text-primary-foreground shadow-md shadow-black/30 ring-1 ring-sidebar-foreground/10"
+    >
+      <app-icon [icon]="sun" svgClass="size-5" />
+      <!-- A single slow light-sweep gives the mark a crafted, metallic feel. -->
+      <span class="pointer-events-none absolute inset-y-0 -start-full w-1/2 bg-white/25 blur-[2px] animate-sheen"></span>
     </span>
-    <span class="truncate text-sm font-semibold text-sidebar-foreground">{{ 'app.name' | t }}</span>
+    <span class="truncate text-sm font-semibold tracking-tight text-sidebar-foreground">{{ 'app.name' | t }}</span>
   `,
-  host: { class: 'flex items-center gap-2.5 px-3 py-4' },
+  host: { class: 'flex items-center gap-3 px-3 py-4' },
 })
 export class SidebarBrandComponent {
   protected readonly sun = Sun;

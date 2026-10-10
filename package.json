@@ -23,6 +23,7 @@
     "class-variance-authority": "^0.7.1",
     "lucide": "^1.48.0",
     "rxjs": "~7.8.0",
+    "three": "^0.186.1",
     "tslib": "^2.3.0"
   },
   "devDependencies": {
@@ -30,6 +31,7 @@
     "@angular/cli": "^22.2.0",
     "@angular/compiler-cli": "^22.2.0",
     "@tailwindcss/postcss": "^4.3.3",
+    "@types/three": "^0.186.0",
     "postcss": "^8.5.28",
     "prettier": "^3.8.1",
     "tailwindcss": "^4.3.3",

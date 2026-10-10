@@ -9,11 +9,11 @@ import { Component, input } from '@angular/core';
   template: `
     <div class="min-w-0">
       @if (eyebrow()) {
-        <p class="tabular text-sm text-muted-foreground" dir="ltr">{{ eyebrow() }}</p>
+        <p class="tabular text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground" dir="ltr">{{ eyebrow() }}</p>
       }
-      <h1 class="text-2xl font-semibold tracking-tight">{{ heading() }}</h1>
+      <h1 class="mt-0.5 text-2xl font-semibold leading-tight tracking-tight text-balance sm:text-[1.7rem]">{{ heading() }}</h1>
       @if (subtitle()) {
-        <p class="mt-1 text-sm text-muted-foreground">{{ subtitle() }}</p>
+        <p class="mt-1.5 max-w-prose text-sm leading-relaxed text-muted-foreground">{{ subtitle() }}</p>
       }
     </div>
     <div class="flex flex-wrap items-center gap-2"><ng-content /></div>
