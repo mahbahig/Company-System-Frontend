@@ -45,7 +45,7 @@ const DIGIT = /[0-9]/;
     <app-auth-heading
       [icon]="recoveryIcon"
       eyebrow="account.forgot.eyebrow"
-      title="account.reset.title"
+      heading="account.reset.title"
       [lead]="done() ? null : 'account.reset.subtitle'"
     />
 
