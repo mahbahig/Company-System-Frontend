@@ -1,14 +1,33 @@
+<!-- Wide screens: one sky behind the whole page — the stage's gradient, with
+     stars twinkling and meteors streaking across it (three.js) — that the sun
+     and the form both sit on. -->
+<div aria-hidden="true" class="page-sky pointer-events-none fixed inset-0 -z-10 hidden lg:block">
+  <div
+    class="absolute inset-0 bg-grain opacity-[0.035] mix-blend-multiply dark:opacity-[0.05] dark:mix-blend-soft-light"
+  ></div>
+  @if (wide()) {
+    @defer (on idle) {
+      <app-star-sky class="absolute inset-0" [theme]="theme()" />
+    }
+  }
+</div>
+
 <!-- Stage: the interactive solar scene and the brand story — daylight in the
-     light theme, a petrol night in the dark one. On wide screens an inset
-     panel, on narrow ones a hero. -->
+     light theme, a petrol night in the dark one. On narrow screens a hero with
+     its own sky; on wide ones no panel at all: the sun stands on the page sky,
+     its glow fading out long before any edge, so the page reads as one layer. -->
 <div
-  class="relative isolate flex h-[clamp(16rem,42svh,24rem)] flex-col overflow-hidden [--sun-y:39%] md:h-[clamp(19rem,46svh,30rem)] lg:sticky lg:top-3 lg:m-3 lg:me-0 lg:h-[calc(100dvh-1.5rem)] lg:rounded-[1.75rem] lg:[--sun-y:31%] lg:shadow-[0_30px_80px_-30px_hsl(var(--stage-shadow))]"
+  class="relative isolate flex h-[clamp(16rem,42svh,24rem)] flex-col overflow-hidden [--sun-y:39%] md:h-[clamp(19rem,46svh,30rem)] lg:sticky lg:top-0 lg:h-dvh lg:overflow-visible lg:[--sun-y:31%]"
 >
-  <div aria-hidden="true" class="stage-backdrop absolute inset-0 -z-10"></div>
+  <div aria-hidden="true" class="stage-backdrop absolute inset-0 -z-10 lg:hidden"></div>
+  <div
+    aria-hidden="true"
+    class="sun-glow pointer-events-none absolute left-1/2 top-[var(--sun-y)] -z-10 hidden size-[200%] -translate-x-1/2 -translate-y-1/2 lg:block"
+  ></div>
   <div aria-hidden="true" class="stage-grid absolute inset-0 -z-10"></div>
   <div
     aria-hidden="true"
-    class="pointer-events-none absolute inset-0 -z-10 bg-grain opacity-[0.07] mix-blend-overlay"
+    class="pointer-events-none absolute inset-0 -z-10 bg-grain opacity-[0.07] mix-blend-overlay lg:hidden"
   ></div>
 
   @defer (on idle) {
@@ -21,14 +40,10 @@
     />
   }
 
-  <!-- Hairline edges: a lit top rim and, on wide screens, an inner border. -->
+  <!-- The hero's lit top rim. -->
   <div
     aria-hidden="true"
-    class="pointer-events-none absolute inset-x-12 top-0 h-px bg-gradient-to-r from-transparent via-white/80 to-transparent dark:via-white/25"
-  ></div>
-  <div
-    aria-hidden="true"
-    class="pointer-events-none absolute inset-0 hidden rounded-[inherit] ring-1 ring-inset ring-foreground/[0.07] lg:block"
+    class="pointer-events-none absolute inset-x-12 top-0 h-px bg-gradient-to-r from-transparent via-white/80 to-transparent dark:via-white/25 lg:hidden"
   ></div>
 
   <div class="pointer-events-none relative p-4 sm:p-6 lg:p-8 xl:p-10">
@@ -55,7 +70,9 @@
     </p>
   </div>
 
-  <!-- Brand story, wide screens only (on a phone the form needs the room). -->
+  <!-- Brand story, wide screens only (on a phone the form needs the room). On
+       short screens the supporting line steps aside so the headline stays
+       clear of the wordmark above it. -->
   <div class="pointer-events-none relative mt-auto hidden px-8 pb-8 lg:block xl:px-12 xl:pb-11">
     <p
       class="max-w-lg text-[1.75rem] font-semibold leading-[1.15] text-balance ltr:tracking-[-0.022em] animate-fade-in-up [animation-delay:200ms] xl:text-[2.125rem]"
@@ -63,7 +80,7 @@
       {{ 'auth.login.brandHeadline' | t }}
     </p>
     <p
-      class="mt-4 max-w-md text-sm leading-relaxed text-muted-foreground animate-fade-in-up [animation-delay:280ms]"
+      class="mt-4 max-w-md text-sm leading-relaxed text-muted-foreground animate-fade-in-up [animation-delay:280ms] [@media(max-height:47.5rem)]:hidden"
     >
       {{ 'auth.login.brandSubheadline' | t }}
     </p>
@@ -105,20 +122,18 @@
 
 <!-- Form panel — a sheet rising over the hero on narrow screens. -->
 <div
-  class="relative z-10 -mt-7 flex flex-1 flex-col rounded-t-[1.75rem] bg-background shadow-[0_-24px_48px_-24px_hsl(var(--stage-shadow))] lg:static lg:mt-0 lg:rounded-none lg:bg-transparent lg:shadow-none"
+  class="relative z-10 -mt-7 flex flex-1 flex-col rounded-t-[1.75rem] bg-background shadow-[0_-24px_48px_-24px_hsl(var(--stage-shadow))] lg:mt-0 lg:rounded-none lg:bg-transparent lg:shadow-none"
 >
-  <!-- Ambient glow and grain. On narrow screens it fills the sheet; on wide
-       ones (the panel turns static) it spans the whole page beneath the stage,
-       so the frame around the stage is the same surface as the form side. -->
+  <!-- The sheet's ambient glow and grain; wide screens have the page sky instead. -->
   <div
     aria-hidden="true"
-    class="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit] lg:-z-10"
+    class="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit] lg:hidden"
   >
     <div
-      class="absolute -top-48 end-[-12%] size-[32rem] rounded-full bg-primary/[0.07] blur-3xl dark:bg-primary/[0.09] lg:end-[-5%]"
+      class="absolute -top-48 end-[-12%] size-[32rem] rounded-full bg-primary/[0.07] blur-3xl dark:bg-primary/[0.09]"
     ></div>
     <div
-      class="absolute -bottom-56 start-[-18%] size-[30rem] rounded-full bg-brand-sun/[0.07] blur-3xl dark:bg-brand-sun/[0.04] lg:start-[44%] xl:start-[48%]"
+      class="absolute -bottom-56 start-[-18%] size-[30rem] rounded-full bg-brand-sun/[0.07] blur-3xl dark:bg-brand-sun/[0.04]"
     ></div>
     <div
       class="absolute inset-0 bg-grain opacity-[0.035] mix-blend-multiply dark:opacity-[0.05] dark:mix-blend-soft-light"

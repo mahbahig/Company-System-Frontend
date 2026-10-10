@@ -222,21 +222,30 @@ Login, forgot-password and reset-password are children of one layout route
 Three.js scene — a shader-driven sun with a turning crown of rays and the
 "ECOTECH" wordmark as extruded 3D type (petrol lacquer and gold by day,
 platinum and gold by night) — that stays mounted while moving between them.
+On wide screens the page is one layer: a sky filling the whole viewport, with
+twinkling stars and meteors streaking across it at random, and on it the sun
+(left, full height, pinned while the form scrolls) and the form — no panel
+between them. On narrow screens the sun is a compact hero with its own sky.
 
-- **Isolation** — everything 3D lives in `features/auth/shared/solar-scene/`:
-  a framework-free `SolarScene` (renderer, camera fitting, OrbitControls,
-  disposal) wrapped by `SolarSceneComponent` (lifecycle, resize, visibility,
-  reduced motion). Auth pages never touch it; tunables are in
-  `solar-scene.config.ts`.
-- **Themes** — the stage follows the app theme: a daylight sky in light mode,
-  a petrol night in dark. The CSS backdrop reads the `--stage-*` tokens in
-  `styles.css`; the scene relights in place from the matching entry in
-  `SOLAR_SCENE.looks`.
-- **Loading** — the scene is `@defer (on idle)`, so three.js ships in its own
-  lazy chunk and never delays the form; without WebGL the CSS backdrop stands alone.
-- **Cost** — pixel ratio capped at 1.75, rendering capped at 60 fps and paused
-  off-screen; under `prefers-reduced-motion` it renders only while being dragged.
-  Leaving the sign-in screens disposes every GPU resource and the WebGL context.
+- **Isolation** — everything 3D lives in `features/auth/shared/`:
+  `solar-scene/` holds a framework-free `SolarScene` (renderer, camera fitting,
+  OrbitControls, disposal) wrapped by `SolarSceneComponent` (lifecycle, resize,
+  visibility, reduced motion); `star-sky/` holds the flat `StarSky` (a seeded
+  star field plus an instanced pool of meteors) wrapped by `StarSkyComponent`.
+  Auth pages never touch either; tunables are in `solar-scene.config.ts` and
+  `star-sky.config.ts`.
+- **Themes** — the sky follows the app theme: daylight in light mode, a petrol
+  night in dark. The CSS backdrops read the `--stage-*` tokens in `styles.css`;
+  both scenes redraw in place from their `looks` entry for the theme.
+- **Loading** — both canvases are `@defer (on idle)`, so three.js ships in a
+  lazy chunk they share and never delays the form; the star sky is only mounted
+  on wide screens. Without WebGL the CSS backdrops stand alone.
+- **Cost** — pixel ratio capped (1.75 for the sun, 1.5 for the sky), rendering
+  capped at 60 fps; the sun pauses off-screen. Under `prefers-reduced-motion`
+  the sun renders only while dragged and the sky holds still with no meteors.
+  Measured, the star sky adds no noticeable CPU or frame-time cost over the sun
+  scene. Leaving the sign-in screens disposes every GPU resource and both WebGL
+  contexts.
 - **Wordmark glyphs** — `wordmark-typeface.ts` holds just the five Inter glyphs
   the wordmark needs. It is generated; to change the font or word, run
   `npm install --no-save opentype.js` then
