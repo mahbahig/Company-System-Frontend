@@ -26,6 +26,7 @@ It talks to a separate NestJS REST API over `/api/v1`.
 - [Internationalization (i18n)](#internationalization-i18n)
 - [Theming & design tokens](#theming--design-tokens)
 - [Sign-in experience](#sign-in-experience)
+- [Decorative 3D](#decorative-3d)
 - [Architecture & conventions](#architecture--conventions)
 - [Accessibility](#accessibility)
 - [Build & deployment](#build--deployment)
@@ -45,7 +46,7 @@ It talks to a separate NestJS REST API over `/api/v1`.
 | Icons          | [`lucide`](https://lucide.dev)                                |
 | UI variants    | `class-variance-authority`                                    |
 | CDK            | `@angular/cdk` (a11y, overlay)                                |
-| 3D             | [`three`](https://threejs.org) — the sign-in screens' interactive solar scene, `@defer`-loaded |
+| 3D             | [`three`](https://threejs.org) — the sign-in scene and the decorative pieces, always `@defer`-loaded |
 | Formatting     | Prettier                                                      |
 
 ## Prerequisites
@@ -250,6 +251,40 @@ between them. On narrow screens the sun is a compact hero with its own sky.
   the wordmark needs. It is generated; to change the font or word, run
   `npm install --no-save opentype.js` then
   `node scripts/build-wordmark-glyphs.mjs path/to/font.ttf`.
+
+## Decorative 3D
+
+A few quiet three.js pieces make the authenticated app feel finished. They
+are presentation only — no CRM data, no business logic — and the app works
+the same without them (no WebGL simply means no canvas).
+
+| Where | Composition | What it is |
+| --- | --- | --- |
+| Dashboards (`/dashboard`, `/dashboard/executive`) | `centerpiece` | A hero band: three all-black solar panels floating in a staggered row, slowly following an imagined sun, with silk ribbons of light and motes |
+| 404 / 403 | `sculpture` | The panel row on its own, above the code |
+| Customer proposal link (`/p/:token`) | `ribbons` | Slow ribbons of light behind the proposal card |
+
+Everything else — lists, forms, record pages, admin, table empty states — has
+no 3D on purpose: those are work surfaces.
+
+- **Where it lives** — `shared/decor/`: `DecorComponent` (`<app-decor composition="…">`,
+  the only Angular part) wraps a framework-free `DecorStage`, which composes
+  the pieces in `pieces/` (solar array, light ribbons, motes, sun glow) with
+  their shaders in `shaders/`. Every tunable and both theme looks are in
+  `decor.config.ts`. `HeroBannerComponent` (`shared/ui/hero-banner`) is the
+  dashboards' band.
+- **Usage** — always inside `@defer`, with the host sized by the page:
+  `@defer (on idle) { <app-decor composition="ribbons" class="fixed inset-0 -z-10" /> }`.
+  It never takes pointer events.
+- **Budget** — at most 30 fps, paused whenever it is off-screen or the tab is
+  hidden; pixel ratio capped (1.5, 1.25 on phones); no post-processing and no
+  textures (the panels' cells are drawn in the shader). Measured on the
+  dashboard: about +4 % CPU while the hero is visible, frame pacing unchanged.
+- **Reduced motion** — one still frame, re-rendered only when the theme or size changes.
+- **Teardown** — `disposeRenderer()` frees every GPU resource and the WebGL
+  context, and also unhooks three.js's shared `DFG_LUT` lookup texture,
+  which otherwise keeps every discarded renderer alive (the sign-in scene uses
+  it too).
 
 ## Architecture & conventions
 
