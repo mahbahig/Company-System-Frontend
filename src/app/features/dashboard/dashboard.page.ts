@@ -7,6 +7,7 @@ import { I18nService } from '../../core/i18n/i18n.service';
 import { TranslatePipe } from '../../core/i18n/translate.pipe';
 import { BadgeComponent } from '../../shared/ui/badge/badge.component';
 import { CARD_IMPORTS } from '../../shared/ui/card/card.imports';
+import { HeroBannerComponent } from '../../shared/ui/hero-banner/hero-banner.component';
 import { PageHeaderComponent } from '../../shared/ui/page-header/page-header.component';
 import { TabsComponent } from '../../shared/ui/tabs/tabs.component';
 import type { TabItem } from '../../shared/ui/tabs/tab-item.interface';
@@ -30,6 +31,7 @@ import { AnalyticsFilterBarComponent } from '../analytics/shared/analytics-filte
   selector: 'app-dashboard-page',
   imports: [
     TranslatePipe,
+    HeroBannerComponent,
     PageHeaderComponent,
     BadgeComponent,
     TabsComponent,
@@ -43,14 +45,28 @@ import { AnalyticsFilterBarComponent } from '../analytics/shared/analytics-filte
     ...CARD_IMPORTS,
   ],
   template: `
-    <app-page-header [heading]="'dashboard.welcome' | t: { name: name() }" [subtitle]="subtitle()" class="!mb-0">
-      @for (role of user()?.roles ?? []; track role.id) {
-        <app-badge tone="info">{{ i18n.pick(role.nameAr, role.nameEn) }}</app-badge>
+    <app-hero-banner>
+      <app-page-header
+        [heading]="'dashboard.welcome' | t: { name: name() }"
+        [subtitle]="subtitle()"
+        class="!mb-0"
+      />
+      @if (user()?.roles?.length) {
+        <div class="mt-4 flex flex-wrap gap-2">
+          @for (role of user()?.roles ?? []; track role.id) {
+            <app-badge tone="info">{{ i18n.pick(role.nameAr, role.nameEn) }}</app-badge>
+          }
+        </div>
       }
-    </app-page-header>
+    </app-hero-banner>
 
     @if (tabs().length > 1) {
-      <app-tabs [tabs]="tabs()" [active]="active()" (activeChange)="select($event)" [label]="'analytics.dashboards' | t" />
+      <app-tabs
+        [tabs]="tabs()"
+        [active]="active()"
+        (activeChange)="select($event)"
+        [label]="'analytics.dashboards' | t"
+      />
     }
 
     @if (active() !== 'personal') {
@@ -58,12 +74,24 @@ import { AnalyticsFilterBarComponent } from '../analytics/shared/analytics-filte
     }
 
     @switch (active()) {
-      @case ('executive') { <app-executive-dashboard [filter]="filter()" /> }
-      @case ('sales') { <app-sales-dashboard [filter]="filter()" /> }
-      @case ('marketing') { <app-marketing-dashboard [filter]="filter()" /> }
-      @case ('operational') { <app-operational-dashboard [filter]="filter()" /> }
-      @case ('finance') { <app-finance-dashboard [filter]="filter()" /> }
-      @default { <app-personal-dashboard [filter]="filter()" /> }
+      @case ('executive') {
+        <app-executive-dashboard [filter]="filter()" />
+      }
+      @case ('sales') {
+        <app-sales-dashboard [filter]="filter()" />
+      }
+      @case ('marketing') {
+        <app-marketing-dashboard [filter]="filter()" />
+      }
+      @case ('operational') {
+        <app-operational-dashboard [filter]="filter()" />
+      }
+      @case ('finance') {
+        <app-finance-dashboard [filter]="filter()" />
+      }
+      @default {
+        <app-personal-dashboard [filter]="filter()" />
+      }
     }
   `,
   host: { class: 'flex flex-col gap-6' },
@@ -88,7 +116,9 @@ export class DashboardPage {
   protected readonly available = rxResource({ stream: () => this.analytics.available() });
 
   protected readonly tabs = computed<TabItem[]>(() => {
-    const codes: DashboardCode[] = this.available.hasValue() ? this.available.value().dashboards : ['personal'];
+    const codes: DashboardCode[] = this.available.hasValue()
+      ? this.available.value().dashboards
+      : ['personal'];
     return codes.map((code) => ({ id: code, label: this.i18n.t(`analytics.tabs.${code}`) }));
   });
 
@@ -115,10 +145,15 @@ export class DashboardPage {
   protected readonly subtitle = computed(() => {
     const user = this.user();
     const last = this.i18n.formatDate(user?.lastLoginAt, true);
-    return last ? this.i18n.t('analytics.lastLogin', { date: last }) : this.i18n.t('dashboard.signedInAs', { email: user?.email ?? '' });
+    return last
+      ? this.i18n.t('analytics.lastLogin', { date: last })
+      : this.i18n.t('dashboard.signedInAs', { email: user?.email ?? '' });
   });
 
   protected select(view: string): void {
-    void this.router.navigate([], { queryParams: { view: view === 'personal' ? null : view }, queryParamsHandling: 'merge' });
+    void this.router.navigate([], {
+      queryParams: { view: view === 'personal' ? null : view },
+      queryParamsHandling: 'merge',
+    });
   }
 }
