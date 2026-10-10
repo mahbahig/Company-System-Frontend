@@ -17,6 +17,7 @@ import {
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
+import { disposeRenderer } from '../../../../shared/decor/dispose-renderer';
 import { EnergyOrbits } from './energy-orbits';
 import type { SceneFraming } from './scene-framing.interface';
 import type { SceneLook } from './scene-look.type';
@@ -188,14 +189,13 @@ export class SolarScene {
     this.controls.removeEventListener('end', this.onControlEnd);
     this.controls.dispose();
     this.timer.dispose();
-    this.sun.dispose();
-    this.wordmark.dispose();
-    this.dust.dispose();
-    this.orbits.dispose();
-    this.environment.dispose();
-    this.renderer.dispose();
-    // Free the context now rather than whenever the canvas is garbage-collected.
-    this.renderer.forceContextLoss();
+    disposeRenderer(this.renderer, this.scene, () => {
+      this.sun.dispose();
+      this.wordmark.dispose();
+      this.dust.dispose();
+      this.orbits.dispose();
+      this.environment.dispose();
+    });
   }
 
   /** The scene-wide part of a look: exposure, environment and the lights. */
