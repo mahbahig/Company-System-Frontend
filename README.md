@@ -230,11 +230,16 @@ between them. On narrow screens the sun is a compact hero with its own sky.
 
 - **Isolation** — everything 3D lives in `features/auth/shared/`:
   `solar-scene/` holds a framework-free `SolarScene` (renderer, camera fitting,
-  OrbitControls, disposal) wrapped by `SolarSceneComponent` (lifecycle, resize,
-  visibility, reduced motion); `star-sky/` holds the flat `StarSky` (a seeded
-  star field plus an instanced pool of meteors) wrapped by `StarSkyComponent`.
-  Auth pages never touch either; tunables are in `solar-scene.config.ts` and
-  `star-sky.config.ts`.
+  OrbitControls, the `SunGrip`, disposal) wrapped by `SolarSceneComponent`
+  (lifecycle, resize, visibility, reduced motion); `star-sky/` holds the flat
+  `StarSky` (a seeded star field plus an instanced pool of meteors) wrapped by
+  `StarSkyComponent`. Auth pages never touch either; tunables are in
+  `solar-scene.config.ts` and `star-sky.config.ts`.
+- **Interaction** — drag the sun to turn it any way, all the way round (mouse
+  or touch). It stops spinning while held; on release a spring brings it home —
+  a gentle release eases back, a flick completes the revolution — and it spins
+  on. A drag anywhere else orbits the camera within limits and the wheel zooms;
+  after a few idle seconds the camera drifts back to rest.
 - **Themes** — the sky follows the app theme: daylight in light mode, a petrol
   night in dark. The CSS backdrops read the `--stage-*` tokens in `styles.css`;
   both scenes redraw in place from their `looks` entry for the theme.
@@ -243,10 +248,10 @@ between them. On narrow screens the sun is a compact hero with its own sky.
   on wide screens. Without WebGL the CSS backdrops stand alone.
 - **Cost** — pixel ratio capped (1.75 for the sun, 1.5 for the sky), rendering
   capped at 60 fps; the sun pauses off-screen. Under `prefers-reduced-motion`
-  the sun renders only while dragged and the sky holds still with no meteors.
-  Measured, the star sky adds no noticeable CPU or frame-time cost over the sun
-  scene. Leaving the sign-in screens disposes every GPU resource and both WebGL
-  contexts.
+  the sun renders only while dragged, returns home at once when let go, and the
+  sky holds still with no meteors. Measured, the star sky adds no noticeable CPU
+  or frame-time cost over the sun scene. Leaving the sign-in screens disposes
+  every GPU resource and both WebGL contexts.
 - **Wordmark glyphs** — `wordmark-typeface.ts` holds just the five Inter glyphs
   the wordmark needs. It is generated; to change the font or word, run
   `npm install --no-save opentype.js` then

@@ -26,6 +26,7 @@ import { SolarDust } from './solar-dust';
 import type { SolarSceneOptions } from './solar-scene-options.interface';
 import { SOLAR_SCENE } from './solar-scene.config';
 import { Sun } from './sun';
+import { SunGrip } from './sun-grip';
 import { Wordmark } from './wordmark';
 
 /** Below this summed angle/zoom error the camera counts as back at rest. */
@@ -43,10 +44,12 @@ const spherical = new Spherical();
  * - The camera is fitted to the sun + wordmark lockup for any canvas size and
  *   framing; OrbitControls (damped, no pan) rotate and zoom within limits that
  *   keep the wordmark legible.
+ * - The sun itself can be grabbed and turned all the way round ({@link SunGrip});
+ *   it stops spinning while held and springs home when let go.
  * - On first show the camera eases in from a wider pose; after a few idle
  *   seconds it drifts back to rest, so the composition always recovers.
  * - Reduced motion freezes all ambient animation and renders only when the
- *   user moves the camera.
+ *   user moves the camera or the sun.
  * - `setTheme()` relights it for the app theme (daylight or night) in place.
  * - `dispose()` releases every GPU resource and the WebGL context itself.
  */
@@ -64,6 +67,7 @@ export class SolarScene {
   private readonly wordmark: Wordmark;
   private readonly dust: SolarDust;
   private readonly orbits: EnergyOrbits;
+  private readonly grip: SunGrip;
   private readonly timer = new Timer();
   private readonly target = new Vector3(...SOLAR_SCENE.composition.target);
   private readonly home = new Spherical(1, Math.PI / 2 - SOLAR_SCENE.camera.homeElevation, 0);
@@ -76,6 +80,8 @@ export class SolarScene {
   private fitDistance = 0;
   /** Ambient-animation clock; frozen under reduced motion. */
   private elapsed: number = SOLAR_SCENE.motion.restTime;
+  /** The sun's turning clock: the ambient clock, minus the time it was held. */
+  private turning: number = SOLAR_SCENE.motion.restTime;
   /** Wall clock, for idle detection. */
   private clock = 0;
   private lastFrameTime = 0;
@@ -131,7 +137,20 @@ export class SolarScene {
     this.rig.add(this.sun.object, this.orbits.object, this.wordmark.object, this.dust.object);
     this.scene.add(this.rig);
 
-    this.controls = this.createControls(canvas, options.touchScroll);
+    this.controls = this.createControls();
+    // The grip listens first, so a press on the sun never also orbits the camera.
+    this.grip = new SunGrip(
+      canvas,
+      this.camera,
+      this.controls,
+      this.sun,
+      options.reducedMotion,
+      this.noteInteraction,
+    );
+    this.controls.connect(canvas);
+    // OrbitControls claims every touch gesture; on touch screens hand vertical
+    // swipes back to the page so the form below can always be scrolled to.
+    if (options.touchScroll) canvas.style.touchAction = 'pan-y';
     this.timer.connect(canvas.ownerDocument);
     this.setSize(canvas.clientWidth || 1, canvas.clientHeight || 1);
   }
@@ -170,6 +189,7 @@ export class SolarScene {
 
   setReducedMotion(reduced: boolean): void {
     this.reducedMotion = reduced;
+    this.grip.setReducedMotion(reduced);
     if (reduced) {
       this.introducing = false;
       this.parallax.set(0, 0);
@@ -187,6 +207,7 @@ export class SolarScene {
     this.stop();
     this.controls.removeEventListener('start', this.onControlStart);
     this.controls.removeEventListener('end', this.onControlEnd);
+    this.grip.dispose();
     this.controls.dispose();
     this.timer.dispose();
     disposeRenderer(this.renderer, this.scene, () => {
@@ -212,9 +233,10 @@ export class SolarScene {
     this.needsRender = true;
   }
 
-  private createControls(canvas: HTMLCanvasElement, touchScroll: boolean): OrbitControls {
+  /** Created unconnected; the constructor connects them to the canvas after the sun grip. */
+  private createControls(): OrbitControls {
     const { controls: config } = SOLAR_SCENE;
-    const controls = new OrbitControls(this.camera, canvas);
+    const controls = new OrbitControls(this.camera);
     controls.target.copy(this.target);
     controls.enableDamping = true;
     controls.dampingFactor = config.dampingFactor;
@@ -227,19 +249,19 @@ export class SolarScene {
     controls.maxPolarAngle = Math.PI / 2 + config.polarDip;
     controls.addEventListener('start', this.onControlStart);
     controls.addEventListener('end', this.onControlEnd);
-    // OrbitControls claims every touch gesture; on touch screens hand vertical
-    // swipes back to the page so the form below can always be scrolled to.
-    if (touchScroll) canvas.style.touchAction = 'pan-y';
     return controls;
   }
 
   private readonly onControlStart = (): void => {
     this.interacting = true;
     this.introducing = false;
-    if (!this.interacted) {
-      this.interacted = true;
-      this.options.onFirstInteraction();
-    }
+    this.noteInteraction();
+  };
+
+  private readonly noteInteraction = (): void => {
+    if (this.interacted) return;
+    this.interacted = true;
+    this.options.onFirstInteraction();
   };
 
   private readonly onControlEnd = (): void => {
@@ -303,11 +325,15 @@ export class SolarScene {
     this.timer.update(timestamp);
     const delta = Math.min(this.timer.getDelta(), SOLAR_SCENE.renderer.maxFrameDelta);
     this.clock += delta;
-    if (!this.reducedMotion) this.elapsed += delta;
+    if (!this.reducedMotion) {
+      this.elapsed += delta;
+      if (!this.grip.held) this.turning += delta;
+    }
 
     const cameraMoved = this.updateCamera(delta);
+    const sunMoved = this.grip.update(delta);
     // Under reduced motion nothing changes on its own: skip idle frames.
-    if (this.reducedMotion && !cameraMoved && !this.needsRender) return;
+    if (this.reducedMotion && !cameraMoved && !sunMoved && !this.needsRender) return;
     this.needsRender = false;
 
     this.updateScene(delta);
@@ -351,7 +377,7 @@ export class SolarScene {
     const { lighting, motion } = SOLAR_SCENE;
     const { elapsed } = this;
 
-    this.sun.update(elapsed, this.camera);
+    this.sun.update(elapsed, this.turning, this.grip.turn, this.camera);
     this.wordmark.update(elapsed, this.reducedMotion ? Number.POSITIVE_INFINITY : this.clock);
     this.dust.update(elapsed);
     this.orbits.update(elapsed);
