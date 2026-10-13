@@ -8,6 +8,10 @@ import { IconComponent } from '../../../shared/ui/icon/icon.component';
  * Eyebrow, page title (the screen's `<h1>`) and lead line, shared by every
  * sign-in screen. Tracking is applied to Latin script only — letter-spacing
  * breaks the joins of Arabic letters.
+ *
+ * The title input is `heading`, not `title`: a static `title="…"` would also
+ * stay on the host element as the native attribute, and the browser would
+ * show the raw i18n key as a hover tooltip.
  */
 @Component({
   selector: 'app-auth-heading',
@@ -21,7 +25,7 @@ import { IconComponent } from '../../../shared/ui/icon/icon.component';
     <h1
       class="mt-3 text-[1.75rem] font-semibold leading-tight text-balance text-foreground ltr:tracking-[-0.022em] sm:text-[2rem]"
     >
-      {{ title() | t }}
+      {{ heading() | t }}
     </h1>
     @if (lead(); as lead) {
       <p class="mt-2.5 text-[0.9375rem] leading-relaxed text-muted-foreground">{{ lead | t }}</p>
@@ -32,6 +36,6 @@ import { IconComponent } from '../../../shared/ui/icon/icon.component';
 export class AuthHeadingComponent {
   readonly icon = input.required<IconNode>();
   readonly eyebrow = input.required<string>();
-  readonly title = input.required<string>();
+  readonly heading = input.required<string>();
   readonly lead = input<string | null>(null);
 }

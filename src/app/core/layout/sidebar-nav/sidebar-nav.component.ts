@@ -16,7 +16,9 @@ import { NavigationService } from '../../navigation/navigation.service';
     <nav [attr.aria-label]="'navigation.sections.overview' | t" class="flex flex-col gap-6">
       @for (section of navigation.sections(); track section.labelKey) {
         <div>
-          <h2 class="px-3 pb-2 text-2xs font-semibold uppercase tracking-wider text-sidebar-foreground/60">
+          <h2
+            class="px-3 pb-2 text-2xs font-semibold uppercase tracking-wider text-sidebar-foreground/65"
+          >
             {{ 'navigation.sections.' + section.labelKey | t }}
           </h2>
           <ul class="flex flex-col gap-0.5">

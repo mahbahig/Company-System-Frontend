@@ -78,6 +78,29 @@ export const SOLAR_SCENE = {
     segments: { width: 96, height: 64 },
   },
 
+  /**
+   * Taking hold of the sun: a drag on it turns it any way, as far as the user
+   * likes; on release a spring brings it home, carrying the fling.
+   */
+  grip: {
+    /** Hit area in sun radii — a little past the rim, so the edge is easy to catch. */
+    reach: 1.12,
+    /** Turn per sun radius dragged on screen (1 would keep the surface under the hand). */
+    turnRate: 1.6,
+    /**
+     * The fling: velocity is smoothed over `smoothing` seconds, a hand held
+     * still longer than `stillness` before letting go throws nothing, and the
+     * spin is capped at `maxSpin` rad/s.
+     */
+    fling: { smoothing: 0.04, stillness: 0.09, maxSpin: 22 },
+    /**
+     * The way home: natural frequency (rad/s) and damping ratio — just under
+     * critical, so it settles with the faintest overshoot. A gentle release
+     * eases back; a flick past half a turn completes the revolution instead.
+     */
+    spring: { frequency: 3.8, damping: 0.72 },
+  },
+
   wordmark: {
     text: 'ECOTECH',
     size: 0.44,

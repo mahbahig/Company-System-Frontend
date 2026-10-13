@@ -14,6 +14,7 @@ import { BrandMarkComponent } from '../../../shared/ui/brand-mark/brand-mark.com
 import { IconComponent } from '../../../shared/ui/icon/icon.component';
 import type { SceneFraming } from './solar-scene/scene-framing.interface';
 import { SolarSceneComponent } from './solar-scene/solar-scene.component';
+import { StarSkyComponent } from './star-sky/star-sky.component';
 
 /** Tailwind's `lg` breakpoint: from here the stage and the form sit side by side. */
 const WIDE_LAYOUT = '(min-width: 64rem)';
@@ -27,14 +28,16 @@ const HERO_FRAMING: SceneFraming = { centerY: 0.47, fillWidth: 0.8, fillHeight: 
  * the screens read as one product and the 3D scene lives across navigation
  * between them instead of being rebuilt on each.
  *
- * Wide screens: an inset "stage" holding the interactive solar scene and the
- * brand story, beside the form panel. The stage follows the app theme — a
- * daylight sky in light mode, a petrol night in dark — and so does the scene. Narrow screens: the stage becomes a
- * compact hero and the form rises over it as a sheet — the form stays the
- * primary, fully reachable surface at every size.
+ * Wide screens: one layer — a sky filling the page, with twinkling stars and
+ * random meteors (a second, flat three.js canvas), and on it the interactive
+ * solar scene and brand story beside the form, with no panel between them.
+ * The sky follows the app theme — daylight in light mode, a petrol night in
+ * dark — and so do both scenes. Narrow screens: the scene becomes a compact
+ * hero with its own sky and the form rises over it as a sheet — the form
+ * stays the primary, fully reachable surface at every size.
  *
  * Presentational only: the routed pages own all authentication logic.
- * The scene is `@defer`red so three.js never delays the form.
+ * Both canvases are `@defer`red so three.js never delays the form.
  */
 @Component({
   selector: 'app-auth-layout',
@@ -46,13 +49,15 @@ const HERO_FRAMING: SceneFraming = { centerY: 0.47, fillWidth: 0.8, fillHeight: 
     LocaleSwitcherComponent,
     ThemeToggleComponent,
     SolarSceneComponent,
+    StarSkyComponent,
   ],
   templateUrl: './auth-layout.component.html',
   styles: `
-    /* The stage's sky (the --stage-* tokens, per theme). Light pools where the
-       sun sits (--sun-y), brand colour rises from the lower corners, and the
-       edges fall away into a vignette. On its own it is the backdrop before
-       the scene loads, and the whole picture on devices without WebGL. */
+    /* The hero's sky on narrow screens (the --stage-* tokens, per theme).
+       Light pools where the sun sits (--sun-y), brand colour rises from the
+       lower corners, and the edges fall away into a vignette. On its own it
+       is the backdrop before the scene loads, and the whole picture on
+       devices without WebGL. */
     .stage-backdrop {
       background:
         radial-gradient(
@@ -64,6 +69,24 @@ const HERO_FRAMING: SceneFraming = { centerY: 0.47, fillWidth: 0.8, fillHeight: 
         radial-gradient(80% 55% at 50% var(--sun-y), hsl(var(--stage-halo)), transparent 72%),
         radial-gradient(75% 50% at 0% 100%, hsl(var(--stage-pool-start)), transparent 70%),
         radial-gradient(60% 45% at 100% 100%, hsl(var(--stage-pool-end)), transparent 70%),
+        linear-gradient(hsl(var(--stage-zenith)), hsl(var(--stage-horizon)));
+    }
+
+    /* Wide screens: the same light round the sun, on a box twice the stage's
+       size centred on it, so it fades out long before reaching any edge. */
+    .sun-glow {
+      background:
+        radial-gradient(14% 11%, hsl(var(--stage-glow)), transparent 70%),
+        radial-gradient(40% 27.5%, hsl(var(--stage-halo)), transparent 72%);
+    }
+
+    /* The sky behind the whole page on wide screens: the stage's gradient,
+       brand colour rising from the horizon and a vignette at the edges. */
+    .page-sky {
+      background:
+        radial-gradient(140% 110% at 50% 45%, transparent 55%, hsl(var(--stage-vignette)) 100%),
+        radial-gradient(45% 40% at 0% 100%, hsl(var(--stage-pool-start)), transparent 70%),
+        radial-gradient(60% 45% at 50% 105%, hsl(var(--stage-pool-end)), transparent 70%),
         linear-gradient(hsl(var(--stage-zenith)), hsl(var(--stage-horizon)));
     }
 
@@ -79,7 +102,7 @@ const HERO_FRAMING: SceneFraming = { centerY: 0.47, fillWidth: 0.8, fillHeight: 
   `,
   host: {
     class:
-      'auth-theme relative isolate flex min-h-dvh flex-col bg-background text-foreground lg:grid lg:grid-cols-[minmax(0,1.12fr)_minmax(28rem,1fr)] xl:grid-cols-[minmax(0,1.3fr)_minmax(32rem,1fr)]',
+      'auth-theme relative isolate flex min-h-dvh flex-col overflow-clip bg-background text-foreground lg:grid lg:grid-cols-[minmax(0,1.12fr)_minmax(28rem,1fr)] xl:grid-cols-[minmax(0,1.3fr)_minmax(32rem,1fr)]',
   },
 })
 export class AuthLayoutComponent {
@@ -88,7 +111,7 @@ export class AuthLayoutComponent {
   protected readonly hintIcon = Rotate3d;
   protected readonly theme = inject(ThemeService).resolved;
 
-  private readonly wide = toSignal(
+  protected readonly wide = toSignal(
     inject(BreakpointObserver)
       .observe(WIDE_LAYOUT)
       .pipe(map(({ matches }) => matches)),

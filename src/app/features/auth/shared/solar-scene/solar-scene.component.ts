@@ -45,7 +45,7 @@ export class SolarSceneComponent {
   readonly theme = input.required<SceneTheme>();
   /** The first frame is on screen. */
   readonly ready = output<void>();
-  /** The user rotated or zoomed the scene for the first time. */
+  /** The user turned the sun, or rotated or zoomed the scene, for the first time. */
   readonly interacted = output<void>();
 
   protected readonly visible = signal(false);

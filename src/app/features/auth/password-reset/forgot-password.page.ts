@@ -38,7 +38,7 @@ import { AuthResultComponent } from '../shared/auth-result.component';
     <app-auth-heading
       [icon]="recoveryIcon"
       eyebrow="account.forgot.eyebrow"
-      title="account.forgot.title"
+      heading="account.forgot.title"
       [lead]="sent() ? null : 'account.forgot.subtitle'"
     />
 

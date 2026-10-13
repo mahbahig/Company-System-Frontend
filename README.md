@@ -26,6 +26,7 @@ It talks to a separate NestJS REST API over `/api/v1`.
 - [Internationalization (i18n)](#internationalization-i18n)
 - [Theming & design tokens](#theming--design-tokens)
 - [Sign-in experience](#sign-in-experience)
+- [Decorative 3D](#decorative-3d)
 - [Architecture & conventions](#architecture--conventions)
 - [Accessibility](#accessibility)
 - [Build & deployment](#build--deployment)
@@ -45,7 +46,7 @@ It talks to a separate NestJS REST API over `/api/v1`.
 | Icons          | [`lucide`](https://lucide.dev)                                |
 | UI variants    | `class-variance-authority`                                    |
 | CDK            | `@angular/cdk` (a11y, overlay)                                |
-| 3D             | [`three`](https://threejs.org) — the sign-in screens' interactive solar scene, `@defer`-loaded |
+| 3D             | [`three`](https://threejs.org) — the sign-in scene and the decorative pieces, always `@defer`-loaded |
 | Formatting     | Prettier                                                      |
 
 ## Prerequisites
@@ -222,25 +223,73 @@ Login, forgot-password and reset-password are children of one layout route
 Three.js scene — a shader-driven sun with a turning crown of rays and the
 "ECOTECH" wordmark as extruded 3D type (petrol lacquer and gold by day,
 platinum and gold by night) — that stays mounted while moving between them.
+On wide screens the page is one layer: a sky filling the whole viewport, with
+twinkling stars and meteors streaking across it at random, and on it the sun
+(left, full height, pinned while the form scrolls) and the form — no panel
+between them. On narrow screens the sun is a compact hero with its own sky.
 
-- **Isolation** — everything 3D lives in `features/auth/shared/solar-scene/`:
-  a framework-free `SolarScene` (renderer, camera fitting, OrbitControls,
-  disposal) wrapped by `SolarSceneComponent` (lifecycle, resize, visibility,
-  reduced motion). Auth pages never touch it; tunables are in
-  `solar-scene.config.ts`.
-- **Themes** — the stage follows the app theme: a daylight sky in light mode,
-  a petrol night in dark. The CSS backdrop reads the `--stage-*` tokens in
-  `styles.css`; the scene relights in place from the matching entry in
-  `SOLAR_SCENE.looks`.
-- **Loading** — the scene is `@defer (on idle)`, so three.js ships in its own
-  lazy chunk and never delays the form; without WebGL the CSS backdrop stands alone.
-- **Cost** — pixel ratio capped at 1.75, rendering capped at 60 fps and paused
-  off-screen; under `prefers-reduced-motion` it renders only while being dragged.
-  Leaving the sign-in screens disposes every GPU resource and the WebGL context.
+- **Isolation** — everything 3D lives in `features/auth/shared/`:
+  `solar-scene/` holds a framework-free `SolarScene` (renderer, camera fitting,
+  OrbitControls, the `SunGrip`, disposal) wrapped by `SolarSceneComponent`
+  (lifecycle, resize, visibility, reduced motion); `star-sky/` holds the flat
+  `StarSky` (a seeded star field plus an instanced pool of meteors) wrapped by
+  `StarSkyComponent`. Auth pages never touch either; tunables are in
+  `solar-scene.config.ts` and `star-sky.config.ts`.
+- **Interaction** — drag the sun to turn it any way, all the way round (mouse
+  or touch). It stops spinning while held; on release a spring brings it home —
+  a gentle release eases back, a flick completes the revolution — and it spins
+  on. A drag anywhere else orbits the camera within limits and the wheel zooms;
+  after a few idle seconds the camera drifts back to rest.
+- **Themes** — the sky follows the app theme: daylight in light mode, a petrol
+  night in dark. The CSS backdrops read the `--stage-*` tokens in `styles.css`;
+  both scenes redraw in place from their `looks` entry for the theme.
+- **Loading** — both canvases are `@defer (on idle)`, so three.js ships in a
+  lazy chunk they share and never delays the form; the star sky is only mounted
+  on wide screens. Without WebGL the CSS backdrops stand alone.
+- **Cost** — pixel ratio capped (1.75 for the sun, 1.5 for the sky), rendering
+  capped at 60 fps; the sun pauses off-screen. Under `prefers-reduced-motion`
+  the sun renders only while dragged, returns home at once when let go, and the
+  sky holds still with no meteors. Measured, the star sky adds no noticeable CPU
+  or frame-time cost over the sun scene. Leaving the sign-in screens disposes
+  every GPU resource and both WebGL contexts.
 - **Wordmark glyphs** — `wordmark-typeface.ts` holds just the five Inter glyphs
   the wordmark needs. It is generated; to change the font or word, run
   `npm install --no-save opentype.js` then
   `node scripts/build-wordmark-glyphs.mjs path/to/font.ttf`.
+
+## Decorative 3D
+
+A few quiet three.js pieces make the authenticated app feel finished. They
+are presentation only — no CRM data, no business logic — and the app works
+the same without them (no WebGL simply means no canvas).
+
+| Where | Composition | What it is |
+| --- | --- | --- |
+| Dashboards (`/dashboard`, `/dashboard/executive`) | `centerpiece` | A hero band: three all-black solar panels floating in a staggered row, slowly following an imagined sun, with silk ribbons of light and motes |
+| 404 / 403 | `sculpture` | The panel row on its own, above the code |
+| Customer proposal link (`/p/:token`) | `ribbons` | Slow ribbons of light behind the proposal card |
+
+Everything else — lists, forms, record pages, admin, table empty states — has
+no 3D on purpose: those are work surfaces.
+
+- **Where it lives** — `shared/decor/`: `DecorComponent` (`<app-decor composition="…">`,
+  the only Angular part) wraps a framework-free `DecorStage`, which composes
+  the pieces in `pieces/` (solar array, light ribbons, motes, sun glow) with
+  their shaders in `shaders/`. Every tunable and both theme looks are in
+  `decor.config.ts`. `HeroBannerComponent` (`shared/ui/hero-banner`) is the
+  dashboards' band.
+- **Usage** — always inside `@defer`, with the host sized by the page:
+  `@defer (on idle) { <app-decor composition="ribbons" class="fixed inset-0 -z-10" /> }`.
+  It never takes pointer events.
+- **Budget** — at most 30 fps, paused whenever it is off-screen or the tab is
+  hidden; pixel ratio capped (1.5, 1.25 on phones); no post-processing and no
+  textures (the panels' cells are drawn in the shader). Measured on the
+  dashboard: about +4 % CPU while the hero is visible, frame pacing unchanged.
+- **Reduced motion** — one still frame, re-rendered only when the theme or size changes.
+- **Teardown** — `disposeRenderer()` frees every GPU resource and the WebGL
+  context, and also unhooks three.js's shared `DFG_LUT` lookup texture,
+  which otherwise keeps every discarded renderer alive (the sign-in scene uses
+  it too).
 
 ## Architecture & conventions
 

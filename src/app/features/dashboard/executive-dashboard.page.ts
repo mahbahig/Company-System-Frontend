@@ -1,6 +1,7 @@
 import { Component, computed, input } from '@angular/core';
 
 import { TranslatePipe } from '../../core/i18n/translate.pipe';
+import { HeroBannerComponent } from '../../shared/ui/hero-banner/hero-banner.component';
 import { PageHeaderComponent } from '../../shared/ui/page-header/page-header.component';
 import { ExecutiveDashboardComponent } from '../analytics/dashboards/executive-dashboard.component';
 import type { AnalyticsFilter } from '../analytics/models/analytics-filter.interface';
@@ -9,9 +10,21 @@ import { AnalyticsFilterBarComponent } from '../analytics/shared/analytics-filte
 /** `/dashboard/executive` (E5): company-wide KPIs; the route is gated by `dashboards.view_executive`. */
 @Component({
   selector: 'app-executive-dashboard-page',
-  imports: [TranslatePipe, PageHeaderComponent, AnalyticsFilterBarComponent, ExecutiveDashboardComponent],
+  imports: [
+    TranslatePipe,
+    HeroBannerComponent,
+    PageHeaderComponent,
+    AnalyticsFilterBarComponent,
+    ExecutiveDashboardComponent,
+  ],
   template: `
-    <app-page-header [heading]="'analytics.tabs.executive' | t" [subtitle]="'analytics.executive.subtitle' | t" class="!mb-0" />
+    <app-hero-banner>
+      <app-page-header
+        [heading]="'analytics.tabs.executive' | t"
+        [subtitle]="'analytics.executive.subtitle' | t"
+        class="!mb-0"
+      />
+    </app-hero-banner>
     <app-analytics-filter-bar [filter]="filter()" />
     <app-executive-dashboard [filter]="filter()" />
   `,

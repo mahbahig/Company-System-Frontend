@@ -5,11 +5,19 @@ import type { TabItem } from './tab-item.interface';
 /**
  * Accessible tab strip (WAI-ARIA tabs pattern, arrow keys move between tabs).
  * The panel content is rendered by the page with `@switch (active())`.
+ *
+ * Never shows a scrollbar: the baseline is an inset shadow the active tab's
+ * underline covers (no tab hangs past the strip), and a strip too long for a
+ * narrow screen still swipes sideways, with focus scrolling tabs into view.
  */
 @Component({
   selector: 'app-tabs',
   template: `
-    <div role="tablist" [attr.aria-label]="label()" class="flex gap-1 overflow-x-auto border-b border-border">
+    <div
+      role="tablist"
+      [attr.aria-label]="label()"
+      class="flex gap-1 overflow-x-auto overflow-y-hidden shadow-[inset_0_-1px_0_hsl(var(--border))] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+    >
       @for (tab of tabs(); track tab.id; let index = $index) {
         <button
           type="button"
@@ -19,7 +27,7 @@ import type { TabItem } from './tab-item.interface';
           [attr.tabindex]="active() === tab.id ? 0 : -1"
           (click)="active.set(tab.id)"
           (keydown)="onKey($event, index)"
-          class="-mb-px inline-flex items-center gap-2 whitespace-nowrap border-b-2 px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          class="inline-flex items-center gap-2 whitespace-nowrap border-b-2 px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
           [class.border-primary]="active() === tab.id"
           [class.text-foreground]="active() === tab.id"
           [class.border-transparent]="active() !== tab.id"

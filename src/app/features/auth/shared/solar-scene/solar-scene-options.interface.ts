@@ -16,6 +16,6 @@ export interface SolarSceneOptions {
   checkShaders: boolean;
   /** Called once, after the first frame is on screen. */
   onFirstFrame: () => void;
-  /** Called once, the first time the user rotates or zooms the scene. */
+  /** Called once, the first time the user turns the sun or rotates or zooms the scene. */
   onFirstInteraction: () => void;
 }

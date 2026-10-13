@@ -8,6 +8,7 @@ import {
   ShaderMaterial,
   SphereGeometry,
   type Camera,
+  type Sphere,
 } from 'three';
 
 import type { SceneLook } from './scene-look.type';
@@ -20,10 +21,12 @@ const parentRotation = new Quaternion();
 /**
  * The sun: a plasma-shaded sphere that turns, a camera-facing corona behind
  * it carrying the turning crown of rays, and a warm point light that rims the
- * wordmark's upper edges.
+ * wordmark's upper edges. The sphere sits in its own `body` group, so the
+ * user can turn it (see `SunGrip`) without disturbing the corona or light.
  */
 export class Sun {
   readonly object = new Group();
+  private readonly body = new Group();
 
   private readonly time = { value: 0 };
   private readonly coronaUniforms = {
@@ -79,8 +82,16 @@ export class Sun {
     this.corona.scale.setScalar(radius * coronaExtent * 2);
 
     this.light = new PointLight(palette.sunLight, 0, 0, 2);
-    this.object.add(this.surface, this.corona, this.light);
+    this.body.add(this.surface);
+    this.object.add(this.body, this.corona, this.light);
     this.setLook(look);
+  }
+
+  /** The disc in world space, breathing included — for hit tests. */
+  getBounds(target: Sphere): Sphere {
+    this.object.getWorldPosition(target.center);
+    target.radius = SOLAR_SCENE.sun.radius * this.object.scale.x;
+    return target;
   }
 
   setLook(look: SceneLook): void {
@@ -97,11 +108,17 @@ export class Sun {
     this.lightIntensity = look.sunLight;
   }
 
-  update(elapsed: number, camera: Camera): void {
+  /**
+   * @param elapsed The ambient clock: plasma, breathing and the light's pulse.
+   * @param turning The clock the surface and crown turn by; it stops while the sun is held.
+   * @param turn How far the user has turned the sun from rest.
+   */
+  update(elapsed: number, turning: number, turn: Quaternion, camera: Camera): void {
     const { spin, crownTurn, breath, light } = SOLAR_SCENE.sun;
     this.time.value = elapsed;
-    this.surface.rotation.y = elapsed * spin;
-    this.coronaUniforms.uTurn.value = elapsed * crownTurn;
+    this.body.quaternion.copy(turn);
+    this.surface.rotation.y = turning * spin;
+    this.coronaUniforms.uTurn.value = turning * crownTurn;
     this.object.scale.setScalar(1 + Math.sin(elapsed * breath.speed) * breath.amplitude);
     this.light.intensity =
       this.lightIntensity * (1 + light.pulse * Math.sin(elapsed * light.pulseSpeed));
