@@ -1,6 +1,8 @@
 /**
- * Every permission code the backend knows (backend/src/modules/rbac/constants/permission-codes.ts).
- * Regenerate when the catalogue changes; a typo in a route or menu item is then a compile error.
+ * Every permission code the backend knows (Backend `Permission` enum,
+ * src/common/enums/permission.enum.ts). Keep in sync when the catalogue
+ * changes — the spec `permission-code.spec.ts` lists the expected set — so a
+ * typo in a route, menu item or action check is a compile error.
  */
 export type PermissionCode =
   | 'activities.create'
@@ -17,6 +19,7 @@ export type PermissionCode =
   | 'assessments.review'
   | 'assessments.view'
   | 'audit.view'
+  | 'audit.view_security'
   | 'automation.manage'
   | 'calls.create'
   | 'calls.delete'
@@ -24,6 +27,7 @@ export type PermissionCode =
   | 'calls.view'
   | 'campaigns.manage'
   | 'campaigns.view'
+  | 'catalog.manage'
   | 'combined_proposals.assemble'
   | 'combined_proposals.present'
   | 'combined_proposals.release'
@@ -33,6 +37,7 @@ export type PermissionCode =
   | 'contacts.edit'
   | 'contacts.view'
   | 'contracts.approve'
+  | 'contracts.confirm_scope'
   | 'contracts.create'
   | 'contracts.edit'
   | 'contracts.sign'
@@ -53,6 +58,9 @@ export type PermissionCode =
   | 'data.export'
   | 'data.import'
   | 'data.view_quality'
+  | 'delivery_handovers.decide'
+  | 'delivery_handovers.submit'
+  | 'delivery_handovers.view'
   | 'duplicates.request_merge'
   | 'duplicates.review'
   | 'exceptions.view'
@@ -108,6 +116,7 @@ export type PermissionCode =
   | 'pricing.manage'
   | 'projects.execute'
   | 'projects.manage'
+  | 'projects.technical_acceptance'
   | 'projects.view'
   | 'proposals.approve'
   | 'proposals.create'
@@ -117,16 +126,20 @@ export type PermissionCode =
   | 'proposals.review_financial'
   | 'proposals.review_technical'
   | 'proposals.send'
-  | 'proposals.view'
+  | 'proposals.view'
+  | 'records.correct'
   | 'reports.view'
   | 'reports.view_all'
   | 'security.manage_roles'
+  | 'security.manage_settings'
   | 'security.view_sessions'
   | 'settings.manage'
+  | 'settings.manage_policy'
   | 'settings.view'
   | 'sites.create'
   | 'sites.edit'
   | 'sites.view'
+  | 'system.monitor'
   | 'tasks.assign'
   | 'tasks.create'
   | 'tasks.delete'
@@ -136,8 +149,21 @@ export type PermissionCode =
   | 'technical_proposals.review'
   | 'technical_proposals.view'
   | 'users.view'
+  | 'users.view_performance'
   | 'visits.create'
   | 'visits.delete'
   | 'visits.edit'
   | 'visits.view'
   | 'visits.view_locations';
+
+/** Permissions that only read (view, dashboards, reports, export / download) — the rest change data. */
+export function isReadPermission(code: PermissionCode): boolean {
+  return (
+    /\.view(_[a-z_]+)?$/.test(code) ||
+    code.startsWith('dashboards.') ||
+    code === 'data.view_quality' ||
+    code === 'data.export' ||
+    code === 'files.download' ||
+    code === 'system.monitor'
+  );
+}

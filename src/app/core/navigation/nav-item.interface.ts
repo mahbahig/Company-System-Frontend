@@ -11,4 +11,6 @@ export interface NavItem {
   icon: IconNode;
   /** Required permission (any of a list), or null when every signed-in user may see it. */
   permission: PermissionCode | readonly PermissionCode[] | null;
+  /** Additional permissions that must all be held (mirrors the route data `requiresAll`). */
+  requiresAll?: readonly PermissionCode[];
 }

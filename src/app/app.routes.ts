@@ -2,6 +2,23 @@ import type { Routes } from '@angular/router';
 
 import { authGuard } from './core/auth/auth.guard';
 import { ADMIN_ROUTES } from './features/admin/admin.routes';
+import { ACCOUNT_ROUTES } from './features/account/account.routes';
+import { CALLS_ROUTES, MEETINGS_ROUTES, VISITS_ROUTES } from './features/activities/activities.routes';
+import { APPROVALS_ROUTES } from './features/approvals/approvals.routes';
+import { ASSESSMENTS_ROUTES } from './features/assessments/assessments.routes';
+import { CONTRACTS_ROUTES } from './features/contracts/contracts.routes';
+import { CUSTOMERS_ROUTES } from './features/customers/customers.routes';
+import { HANDOFFS_ROUTES } from './features/handoffs/handoffs.routes';
+import { IMPORTS_ROUTES } from './features/imports/imports.routes';
+import { LEADS_ROUTES } from './features/leads/leads.routes';
+import { NOTIFICATIONS_ROUTES } from './features/notifications/notifications.routes';
+import { OPPORTUNITIES_ROUTES } from './features/opportunities/opportunities.routes';
+import { PIPELINE_ROUTES } from './features/pipeline/pipeline.routes';
+import { PROJECTS_ROUTES } from './features/projects/projects.routes';
+import { PROPOSALS_ROUTES } from './features/proposals/proposals.routes';
+import { REPORTS_ROUTES } from './features/reports/reports.routes';
+import { TASKS_ROUTES } from './features/tasks/tasks.routes';
+
 import { guestGuard } from './core/auth/guest.guard';
 import { permissionGuard } from './core/auth/permission.guard';
 import { fallbackLocaleGuard } from './core/i18n/fallback-locale.guard';
@@ -11,6 +28,9 @@ import { localeRedirectGuard } from './core/i18n/locale-redirect.guard';
 /**
  * `/:locale/...` exactly like the Next app. Every feature page is lazy-loaded
  * and declares `data.permission` (UX gate; the API re-checks everything).
+ * Feature route tables are static `children` (only their pages lazy-load) so
+ * the navigation, command palette, breadcrumbs and notification links can
+ * judge any in-app path with the same checks the route guard applies.
  */
 export const routes: Routes = [
   { path: '', pathMatch: 'full', canActivate: [localeRedirectGuard], children: [] },
@@ -58,9 +78,9 @@ export const routes: Routes = [
         children: [
           { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
           {
+            // Every signed-in user lands here; the page shows the dashboards their role opens (platform for the administrator).
             path: 'dashboard',
             title: 'dashboard.title',
-            data: { permission: 'dashboards.view_own' },
             loadComponent: () => import('./features/dashboard/dashboard.page').then((m) => m.DashboardPage),
           },
           {
@@ -78,32 +98,32 @@ export const routes: Routes = [
           {
             path: 'assessments',
             data: { permission: 'assessments.view' },
-            loadChildren: () => import('./features/assessments/assessments.routes').then((m) => m.ASSESSMENTS_ROUTES),
+            children: ASSESSMENTS_ROUTES,
           },
           {
             path: 'proposals',
             data: { permission: ['combined_proposals.view', 'technical_proposals.view', 'financial_proposals.view'] },
-            loadChildren: () => import('./features/proposals/proposals.routes').then((m) => m.PROPOSALS_ROUTES),
+            children: PROPOSALS_ROUTES,
           },
           {
             path: 'contracts',
             data: { permission: 'contracts.view' },
-            loadChildren: () => import('./features/contracts/contracts.routes').then((m) => m.CONTRACTS_ROUTES),
+            children: CONTRACTS_ROUTES,
           },
           {
             path: 'projects',
             data: { permission: 'projects.view' },
-            loadChildren: () => import('./features/projects/projects.routes').then((m) => m.PROJECTS_ROUTES),
+            children: PROJECTS_ROUTES,
           },
           {
             path: 'handoffs',
             data: { permission: 'handoffs.view' },
-            loadChildren: () => import('./features/handoffs/handoffs.routes').then((m) => m.HANDOFFS_ROUTES),
+            children: HANDOFFS_ROUTES,
           },
           {
             path: 'approvals',
             data: { permission: 'approvals.view' },
-            loadChildren: () => import('./features/approvals/approvals.routes').then((m) => m.APPROVALS_ROUTES),
+            children: APPROVALS_ROUTES,
           },
           {
             path: 'search',
@@ -113,27 +133,31 @@ export const routes: Routes = [
           {
             path: 'customers',
             data: { permission: 'customers.view' },
-            loadChildren: () => import('./features/customers/customers.routes').then((m) => m.CUSTOMERS_ROUTES),
+            children: CUSTOMERS_ROUTES,
           },
           {
             path: 'leads',
             data: { permission: 'leads.view' },
-            loadChildren: () => import('./features/leads/leads.routes').then((m) => m.LEADS_ROUTES),
+            children: LEADS_ROUTES,
           },
           {
             path: 'opportunities',
             data: { permission: 'opportunities.view' },
-            loadChildren: () => import('./features/opportunities/opportunities.routes').then((m) => m.OPPORTUNITIES_ROUTES),
+            children: OPPORTUNITIES_ROUTES,
           },
           {
+            // The sales kanban: sales and oversight roles; technical and delivery roles open their deals from the list.
             path: 'pipeline',
-            data: { permission: 'opportunities.view' },
-            loadChildren: () => import('./features/pipeline/pipeline.routes').then((m) => m.PIPELINE_ROUTES),
+            data: {
+              permission: ['opportunities.change_stage', 'opportunities.approve_stage', 'dashboards.view_company', 'dashboards.view_executive'],
+              requiresAll: ['opportunities.view'],
+            },
+            children: PIPELINE_ROUTES,
           },
           {
             path: 'reports',
             data: { permission: ['reports.view', 'reports.view_all'] },
-            loadChildren: () => import('./features/reports/reports.routes').then((m) => m.REPORTS_ROUTES),
+            children: REPORTS_ROUTES,
           },
           {
             path: 'campaigns',
@@ -144,7 +168,7 @@ export const routes: Routes = [
           {
             path: 'imports',
             data: { permission: 'data.import' },
-            loadChildren: () => import('./features/imports/imports.routes').then((m) => m.IMPORTS_ROUTES),
+            children: IMPORTS_ROUTES,
           },
           {
             path: 'admin',
@@ -166,17 +190,17 @@ export const routes: Routes = [
           {
             path: 'calls',
             data: { permission: 'calls.view' },
-            loadChildren: () => import('./features/activities/activities.routes').then((m) => m.CALLS_ROUTES),
+            children: CALLS_ROUTES,
           },
           {
             path: 'meetings',
             data: { permission: 'meetings.view' },
-            loadChildren: () => import('./features/activities/activities.routes').then((m) => m.MEETINGS_ROUTES),
+            children: MEETINGS_ROUTES,
           },
           {
             path: 'visits',
             data: { permission: 'visits.view' },
-            loadChildren: () => import('./features/activities/activities.routes').then((m) => m.VISITS_ROUTES),
+            children: VISITS_ROUTES,
           },
           {
             path: 'activities',
@@ -187,15 +211,15 @@ export const routes: Routes = [
           {
             path: 'tasks',
             data: { permission: 'tasks.view' },
-            loadChildren: () => import('./features/tasks/tasks.routes').then((m) => m.TASKS_ROUTES),
+            children: TASKS_ROUTES,
           },
           {
             path: 'notifications',
-            loadChildren: () => import('./features/notifications/notifications.routes').then((m) => m.NOTIFICATIONS_ROUTES),
+            children: NOTIFICATIONS_ROUTES,
           },
           {
             path: 'account',
-            loadChildren: () => import('./features/account/account.routes').then((m) => m.ACCOUNT_ROUTES),
+            children: ACCOUNT_ROUTES,
           },
           {
             path: 'forbidden',
