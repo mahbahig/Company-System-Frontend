@@ -18,8 +18,8 @@ self.addEventListener('push', (event) => {
     self.registration.showNotification(title, {
       body: data.body || '',
       tag: data.tag || undefined,
-      icon: '/icon.svg',
-      badge: '/icon.svg',
+      icon: '/icon-192.png',
+      badge: '/favicon-64.png',
       requireInteraction: !!data.critical,
       data: { url: data.url || '/' },
     }),
