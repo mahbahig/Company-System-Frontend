@@ -1,3 +1,9 @@
+@if (exception(); as code) {
+  <div role="status" class="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-info/30 bg-info/10 px-4 py-2.5 text-sm text-info-tint animate-fade-in [animation-duration:200ms]">
+    <span>{{ 'ux.exceptions.fromCenter' | t: { name: ('exceptionsCenter.codes.' + code | t) } }}</span>
+    <button type="button" class="font-medium underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" (click)="clear()">{{ 'crm.filters.clear' | t }}</button>
+  </div>
+}
 <form role="search" class="flex flex-col gap-3" novalidate (submit)="onSubmit($event)">
   <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
     <div class="flex-1">

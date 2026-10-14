@@ -25,6 +25,7 @@ import { TableWrapperComponent } from '../../../shared/ui/table/table-wrapper.co
 import { TableDirective } from '../../../shared/ui/table/table.directive';
 import { LeadsApi } from '../leads-api.service';
 import type { RoutingProposal } from '../models/routing-proposal.interface';
+import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.component';
 
 interface AssignModel {
   ownerId: string;
@@ -35,6 +36,7 @@ interface AssignModel {
 @Component({
   selector: 'app-leads-distribute-page',
   imports: [
+    SkeletonRowComponent,
     FormField,
     TranslatePipe,
     PageHeaderComponent,

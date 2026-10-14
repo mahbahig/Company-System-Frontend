@@ -1,4 +1,5 @@
 import { Component, computed, inject, input, linkedSignal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { FormField, form, maxLength } from '@angular/forms/signals';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Search, X } from 'lucide';
@@ -33,6 +34,10 @@ export class ListToolbarComponent {
   readonly filters = input<FilterDefinition[]>([]);
   readonly toggles = input<ToggleDefinition[]>([]);
 
+  /** Set when the user arrived from an Exceptions Center card (`?exception=<code>`). */
+  private readonly params = toSignal(this.route.queryParamMap, { requireSync: true });
+  protected readonly exception = computed(() => this.params().get('exception'));
+
   protected readonly searchIcon = Search;
   protected readonly clearIcon = X;
 
@@ -46,6 +51,7 @@ export class ListToolbarComponent {
 
   protected readonly hasActiveFilter = computed(
     () =>
+      !!this.exception() ||
       this.searchValue().length > 0 ||
       this.filters().some((filter) => filter.value.length > 0) ||
       this.toggles().some((toggle) => toggle.checked),
@@ -57,14 +63,15 @@ export class ListToolbarComponent {
   }
 
   protected apply(): void {
-    const queryParams: Record<string, string | null> = { q: this.searchModel().q.trim() || null, page: null };
+    // Changing the filters leaves the exception's view, so its banner goes too.
+    const queryParams: Record<string, string | null> = { q: this.searchModel().q.trim() || null, page: null, exception: null };
     for (const [name, value] of Object.entries(this.filterModel())) queryParams[name] = value || null;
     for (const [name, checked] of Object.entries(this.toggleModel())) queryParams[name] = checked ? '1' : null;
     void this.router.navigate([], { relativeTo: this.route, queryParams, queryParamsHandling: 'merge' });
   }
 
   protected clear(): void {
-    const queryParams: Record<string, null> = { q: null, page: null };
+    const queryParams: Record<string, null> = { q: null, page: null, exception: null };
     for (const filter of this.filters()) queryParams[filter.name] = null;
     for (const toggle of this.toggles()) queryParams[toggle.name] = null;
     void this.router.navigate([], { relativeTo: this.route, queryParams, queryParamsHandling: 'merge' });

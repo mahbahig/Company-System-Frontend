@@ -45,7 +45,7 @@
       <h2 appCardTitle id="quick-add-heading" class="sr-only">{{ 'crm.leads.quickAdd.title' | t }}</h2>
     </div>
     <div appCardContent>
-      <form class="grid gap-5 sm:grid-cols-2" novalidate (submit)="onSubmit($event)">
+      <form class="grid gap-5 sm:grid-cols-2" novalidate appSaveShortcut (submit)="onSubmit($event)">
         @if (errorKey(); as key) {
           <app-alert variant="destructive" class="sm:col-span-2">{{ key | t }}</app-alert>
         }

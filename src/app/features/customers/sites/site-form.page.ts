@@ -4,6 +4,8 @@ import { FormField, form, required, submit } from '@angular/forms/signals';
 import { Router, RouterLink } from '@angular/router';
 import { LoaderCircle, MapPin } from 'lucide';
 import { of } from 'rxjs';
+import { UnsavedChanges, type HasUnsavedChanges } from '../../../core/forms/unsaved-changes';
+import { SaveShortcutDirective } from '../../../core/shortcuts/save-shortcut.directive';
 
 import { ApiError } from '../../../core/api/api-error';
 import { I18nService } from '../../../core/i18n/i18n.service';
@@ -114,7 +116,7 @@ const toModel = (site: Site): SiteFormModel => ({
 /** `/customers/:id/sites/new` and `/customers/:id/sites/:siteId/edit` (SITE-01..05). */
 @Component({
   selector: 'app-site-form-page',
-  imports: [
+  imports: [SaveShortcutDirective, 
     RouterLink,
     FormField,
     TranslatePipe,
@@ -133,7 +135,15 @@ const toModel = (site: Site): SiteFormModel => ({
   templateUrl: './site-form.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
-export class SiteFormPage {
+export class SiteFormPage implements HasUnsavedChanges {
+  private saved = false;
+  /** Asks before leaving with typed-in input (route change, tab close); quiet once saved. */
+  private readonly unsavedTracking = inject(UnsavedChanges).track(() => this.hasUnsavedChanges());
+
+  hasUnsavedChanges(): boolean {
+    return !this.saved && this.siteForm().dirty();
+  }
+
   private readonly sites = inject(SitesApi);
   private readonly router = inject(Router);
   protected readonly i18n = inject(I18nService);
@@ -215,6 +225,7 @@ export class SiteFormPage {
       };
       try {
         await this.save(body);
+        this.saved = true;
         await this.router.navigateByUrl(`/${this.i18n.locale()}/customers/${this.customerId()}`);
       } catch (error) {
         this.errorKey.set(this.messageFor(error));

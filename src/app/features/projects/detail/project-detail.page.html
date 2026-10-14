@@ -4,12 +4,14 @@
 @if (data.value(); as d) {
   @let p = d.project;
   @let perms = d.permissions;
-  <app-page-header [eyebrow]="p.projectNo" [heading]="p.name" [subtitle]="customerName()">
+  <app-breadcrumbs [items]="crumbs()" />
+  <app-page-header [eyebrow]="p.projectNo" [heading]="p.name" [subtitle]="customerName()" class="!mb-0">
     <app-status-badge enum="projectStatus" [value]="p.status" />
     @if (p.isDelayed) {
       <app-badge tone="danger">{{ 'projects.delayed' | t }}</app-badge>
     }
-    @if (ref(p.contractId, 'id')) {
+    <app-favorite-toggle type="project" [id]="p.id" />
+    @if (ref(p.contractId, 'id') && navigation.canOpen('/contracts/' + ref(p.contractId, 'id'))) {
       <a appButton variant="outline" [routerLink]="['/', i18n.locale(), 'contracts', ref(p.contractId, 'id')]">{{ 'contracts.title' | t }}</a>
     }
   </app-page-header>
@@ -21,10 +23,10 @@
     <app-alert variant="destructive">{{ text }}</app-alert>
   }
 
-  <ol class="grid gap-2 sm:grid-cols-5" [attr.aria-label]="'projects.phases' | t">
+  <ol class="grid gap-2 sm:grid-cols-6" [attr.aria-label]="'projects.phases' | t">
     @for (phase of phases; track phase) {
       <li class="rounded-md border border-border p-3 text-sm" [class.border-primary]="p.status === phase">
-        <p class="font-medium">{{ phase | enum: 'projectStatus' }}</p>
+        <p class="font-medium">{{ 'pipeline.stages.project.' + phase | t }}</p>
         <app-status-badge enum="milestoneStatus" [value]="phaseStatus(phase)" />
       </li>
     }
@@ -33,6 +35,9 @@
   <app-tabs [tabs]="tabs()" [active]="active()" (activeChange)="selectTab($event)" [label]="p.name" />
 
   @switch (active()) {
+    @case ('delivery') {
+      <app-project-workflow-panel [project]="p" (changed)="reload()" />
+    }
     @case ('overview') {
       <div class="grid gap-6 lg:grid-cols-3">
         <section appCard class="lg:col-span-2" aria-labelledby="pj-inherited">
@@ -59,23 +64,6 @@
           </dl>
         </section>
         <div class="flex flex-col gap-6">
-          @if (perms.canExecute && d.nextStatuses.length) {
-            <section appCard aria-labelledby="pj-status">
-              <div appCardHeader><h2 appCardTitle id="pj-status">{{ 'projects.changeStatus' | t }}</h2></div>
-              <div appCardContent class="flex flex-col gap-3">
-                <app-select>
-                  <select appSelect [attr.aria-label]="'projects.columns.status' | t" [value]="statusForm().status" (change)="patch(statusForm, 'status', $any($event.target).value)">
-                    <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
-                    @for (s of d.nextStatuses; track s) {
-                      <option [value]="s">{{ s | enum: 'projectStatus' }}</option>
-                    }
-                  </select>
-                </app-select>
-                <input appInput [attr.aria-label]="'handoffs.reason' | t" [placeholder]="'handoffs.reason' | t" [value]="statusForm().reason" (input)="patch(statusForm, 'reason', $any($event.target).value)" />
-                <button type="button" appButton [disabled]="actions.busy() || !statusForm().status" (click)="changeStatus()">{{ 'crm.common.save' | t }}</button>
-              </div>
-            </section>
-          }
           <app-completeness-panel [result]="d.completeness" entityType="project" [entityId]="id()" />
         </div>
       </div>
@@ -84,7 +72,7 @@
     @case ('plan') {
       <section appCard aria-labelledby="pj-plan">
         <div appCardHeader><h2 appCardTitle id="pj-plan">{{ 'projects.tabs.plan' | t }}</h2></div>
-        <fieldset appCardContent class="grid gap-4 sm:grid-cols-4" [disabled]="!perms.canManage && !perms.canExecute">
+        <fieldset appCardContent class="grid gap-4 sm:grid-cols-4" [disabled]="!perms.canManage">
           <div>
             <label appLabel for="pj-start">{{ 'projects.startDate' | t }}</label>
             <input appInput id="pj-start" type="date" dir="ltr" [value]="plan().startDate" (change)="patch(plan, 'startDate', $any($event.target).value)" />
@@ -97,7 +85,9 @@
             <label appLabel for="pj-progress">{{ 'projects.columns.progress' | t }}</label>
             <input appInput id="pj-progress" type="number" min="0" max="100" dir="ltr" [value]="plan().progress" (input)="patch(plan, 'progress', +$any($event.target).value)" />
           </div>
-          <button type="button" appButton class="self-end" [disabled]="actions.busy()" (click)="savePlan()">{{ 'crm.common.save' | t }}</button>
+          @if (perms.canManage) {
+            <button type="button" appButton class="self-end" [disabled]="actions.busy()" (click)="savePlan()">{{ 'crm.common.save' | t }}</button>
+          }
         </fieldset>
       </section>
 
@@ -228,7 +218,7 @@
             </tr>
           </thead>
           <tbody appTableBody>
-            @for (pay of p.payments; track $index) {
+            @for (pay of p.payments ?? []; track $index) {
               <tr appTableRow>
                 <td appTableCell>{{ pay.name }}</td>
                 <td appTableCell class="tabular">{{ pay.pct }}%</td>
@@ -257,7 +247,7 @@
     @case ('commissioning') {
       <section appCard aria-labelledby="pj-comm">
         <div appCardHeader><h2 appCardTitle id="pj-comm">{{ 'projects.tabs.commissioning' | t }}</h2></div>
-        <fieldset appCardContent class="flex flex-col gap-4" [disabled]="!perms.canExecute">
+        <fieldset appCardContent class="flex flex-col gap-4" [disabled]="!perms.canAcceptTechnically">
           @for (t of tests(); track $index; let index = $index) {
             <div class="grid gap-2 sm:grid-cols-4">
               <input appInput [attr.aria-label]="'projects.test' | t" [placeholder]="'projects.test' | t" [value]="t.test" (input)="setTest(index, 'test', $any($event.target).value)" />
@@ -266,7 +256,9 @@
               <input appInput [attr.aria-label]="'prop.notes' | t" [placeholder]="'prop.notes' | t" [value]="t.notes ?? ''" (input)="setTest(index, 'notes', $any($event.target).value)" />
             </div>
           }
-          <button type="button" appButton variant="ghost" size="sm" class="self-start" (click)="tests.update((rows) => [...rows, { test: '', result: '', passed: false }])">{{ 'projects.addTest' | t }}</button>
+          @if (perms.canAcceptTechnically) {
+            <button type="button" appButton variant="ghost" size="sm" class="self-start" (click)="tests.update((rows) => [...rows, { test: '', result: '', passed: false }])">{{ 'projects.addTest' | t }}</button>
+          }
           <div class="grid gap-3 sm:grid-cols-3">
             <div>
               <label appLabel for="pj-comm-at">{{ 'projects.commissionedAt' | t }}</label>
@@ -289,7 +281,9 @@
               </select>
             </div>
           </div>
-          <button type="button" appButton class="self-start" [disabled]="actions.busy()" (click)="saveCommissioning()">{{ 'crm.common.save' | t }}</button>
+          @if (perms.canAcceptTechnically) {
+            <button type="button" appButton class="self-start" [disabled]="actions.busy()" (click)="saveCommissioning()">{{ 'projects.recordTechnicalAcceptance' | t }}</button>
+          }
         </fieldset>
       </section>
     }
@@ -297,7 +291,7 @@
     @case ('handover') {
       <section appCard aria-labelledby="pj-handover">
         <div appCardHeader><h2 appCardTitle id="pj-handover">{{ 'projects.tabs.handover' | t }}</h2></div>
-        <fieldset appCardContent class="flex flex-col gap-4" [disabled]="!perms.canExecute">
+        <fieldset appCardContent class="flex flex-col gap-4" [disabled]="!perms.canManage">
           <h3 class="text-sm font-semibold">{{ 'projects.warranties' | t }}</h3>
           @for (w of warranties(); track $index; let index = $index) {
             <div class="grid gap-2 sm:grid-cols-3">
@@ -306,7 +300,9 @@
               <input appInput type="number" min="0" dir="ltr" [attr.aria-label]="'projects.years' | t" [value]="w.years" (input)="setWarranty(index, 'years', +$any($event.target).value)" />
             </div>
           }
-          <button type="button" appButton variant="ghost" size="sm" class="self-start" (click)="warranties.update((rows) => [...rows, { item: '', years: 1 }])">{{ 'projects.addWarranty' | t }}</button>
+          @if (perms.canManage) {
+            <button type="button" appButton variant="ghost" size="sm" class="self-start" (click)="warranties.update((rows) => [...rows, { item: '', years: 1 }])">{{ 'projects.addWarranty' | t }}</button>
+          }
           <div class="grid gap-3 sm:grid-cols-2">
             <div>
               <label appLabel for="pj-accepted-at">{{ 'projects.acceptedAt' | t }}</label>
@@ -317,7 +313,9 @@
               <input appInput id="pj-accepted-by" [value]="handoverForm().acceptedByName" (input)="patch(handoverForm, 'acceptedByName', $any($event.target).value)" />
             </div>
           </div>
-          <button type="button" appButton class="self-start" [disabled]="actions.busy()" (click)="saveHandover()">{{ 'crm.common.save' | t }}</button>
+          @if (perms.canManage) {
+            <button type="button" appButton class="self-start" [disabled]="actions.busy()" (click)="saveHandover()">{{ 'crm.common.save' | t }}</button>
+          }
         </fieldset>
       </section>
     }
@@ -325,7 +323,7 @@
     @case ('updates') {
       <section class="flex flex-col gap-3" aria-labelledby="pj-updates">
         <h2 id="pj-updates" class="text-lg font-semibold">{{ 'projects.tabs.updates' | t }}</h2>
-        @if (perms.canExecute) {
+        @if (perms.canManage) {
           <div class="grid gap-3 sm:grid-cols-4">
             <select class="h-10 rounded-md border border-input bg-background px-2 text-sm" [attr.aria-label]="'prop.deliverChannel' | t" [value]="update().channel" (change)="patch(update, 'channel', $any($event.target).value)">
               @for (c of ['call', 'whatsapp', 'email', 'meeting', 'site']; track c) {
@@ -351,5 +349,5 @@
     }
   }
 } @else if (data.isLoading()) {
-  <p class="text-sm text-muted-foreground">{{ 'common.labels.loading' | t }}</p>
+  <app-detail-skeleton [label]="'common.labels.loading' | t" />
 }

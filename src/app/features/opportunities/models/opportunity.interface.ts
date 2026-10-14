@@ -1,5 +1,8 @@
 import type { UserRef } from '../../../core/auth/models/user-ref.interface';
 import type { Collaborator } from './collaborator.interface';
+import type { Deal } from './deal.interface';
+import type { FieldFact } from './field-fact.interface';
+import type { OpportunityRisk } from './opportunity-risk.interface';
 import type { ContactRef } from './contact-ref.interface';
 import type { CustomerRef } from './customer-ref.interface';
 import type { OpportunityHealth } from './opportunity-health.interface';
@@ -25,7 +28,14 @@ export interface Opportunity {
   stage: string;
   stageEnteredAt?: string;
   stageHistory?: StageHistoryEntry[];
-  outcome: 'open' | 'won' | 'lost' | 'cancelled' | 'on_hold';
+  outcome: 'open' | 'won' | 'lost' | 'cancelled' | 'on_hold' | 'nurture';
+  /** O1 discovery facts, each with its explicit state. */
+  discovery?: Record<string, FieldFact>;
+  risks?: OpportunityRisk[];
+  deal?: Deal | null;
+  useCase?: string;
+  needConfirmation?: { method: string; note: string; confirmedAt: string } | null;
+  acceptance?: { proposalId: string; proposalVersion: number; evidenceType: string; documentId: string; acceptedAt: string } | null;
   lostReason?: { code: string; competitorCode?: string; competitorName?: string; comment?: string } | null;
   closedAt?: string | null;
   probability: number;

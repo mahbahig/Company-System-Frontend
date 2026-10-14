@@ -17,6 +17,7 @@ import { TABLE_IMPORTS } from '../../../shared/ui/table/table.imports';
 import { TabsComponent } from '../../../shared/ui/tabs/tabs.component';
 import { ActionRunner } from '../../../shared/utils/action-runner';
 import { userName } from '../../../shared/utils/display-name';
+import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.component';
 
 type Ref = { id: string; customerNo?: string; nameAr?: string; nameEn?: string; primaryContactName?: string; fullNameAr?: string; fullNameEn?: string } | string | null | undefined;
 
@@ -41,7 +42,7 @@ interface OwnershipRequest {
  */
 @Component({
   selector: 'app-ownership-requests-page',
-  imports: [RouterLink, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, AlertComponent, ButtonDirective, PageHeaderComponent, PaginationComponent, TabsComponent, ...TABLE_IMPORTS],
+  imports: [SkeletonRowComponent, RouterLink, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, AlertComponent, ButtonDirective, PageHeaderComponent, PaginationComponent, TabsComponent, ...TABLE_IMPORTS],
   template: `
     <app-page-header [heading]="'admin.ownership.title' | t" [subtitle]="'admin.ownership.subtitle' | t" class="!mb-0" />
     @if (actions.message(); as text) {
@@ -87,7 +88,13 @@ interface OwnershipRequest {
               </td>
             </tr>
           } @empty {
-            <tr app-table-empty [colSpan]="8">{{ (data.isLoading() ? 'common.labels.loading' : 'admin.empty') | t }}</tr>
+            @if (data.isLoading()) {
+              @for (i of [0, 1, 2, 3, 4]; track i) {
+                <tr app-skeleton-row [columns]="8" [index]="i"></tr>
+              }
+            } @else {
+              <tr app-table-empty [colSpan]="8">{{ 'admin.empty' | t }}</tr>
+            }
           }
         </tbody>
       </table>

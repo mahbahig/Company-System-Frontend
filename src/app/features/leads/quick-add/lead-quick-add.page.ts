@@ -1,7 +1,9 @@
 import { Component, computed, inject, signal } from '@angular/core';
-import { FormField, form, required } from '@angular/forms/signals';
+import { FormField, form, required, submit } from '@angular/forms/signals';
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
+import { UnsavedChanges, type HasUnsavedChanges } from '../../../core/forms/unsaved-changes';
+import { SaveShortcutDirective } from '../../../core/shortcuts/save-shortcut.directive';
 
 import { ApiError } from '../../../core/api/api-error';
 import { I18nService } from '../../../core/i18n/i18n.service';
@@ -55,7 +57,7 @@ const EMPTY: QuickAddModel = {
 /** LEAD-06 Quick Add: one mobile-friendly screen for a self-sourced lead. */
 @Component({
   selector: 'app-lead-quick-add-page',
-  imports: [
+  imports: [SaveShortcutDirective, 
     FormField,
     TranslatePipe,
     PageHeaderComponent,
@@ -75,7 +77,15 @@ const EMPTY: QuickAddModel = {
   templateUrl: './lead-quick-add.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
-export class LeadQuickAddPage {
+export class LeadQuickAddPage implements HasUnsavedChanges {
+  private saved = false;
+  /** Asks before leaving with typed-in input (route change, tab close); quiet once saved. */
+  private readonly unsavedTracking = inject(UnsavedChanges).track(() => this.hasUnsavedChanges());
+
+  hasUnsavedChanges(): boolean {
+    return !this.saved && this.quickAddForm().dirty();
+  }
+
   private readonly leads = inject(LeadsApi);
   private readonly router = inject(Router);
   protected readonly i18n = inject(I18nService);
@@ -100,6 +110,7 @@ export class LeadQuickAddPage {
 
   protected async onSubmit(event: Event, confirmDuplicate = false): Promise<void> {
     event.preventDefault();
+    if (this.quickAddForm().submitting()) return;
     this.quickAddForm().markAsTouched();
     if (this.quickAddForm().invalid()) return;
     this.errorKey.set(null);
@@ -118,16 +129,20 @@ export class LeadQuickAddPage {
       confirmDuplicate: confirmDuplicate || undefined,
     };
 
-    try {
-      const lead = await firstValueFrom(this.leads.quickAdd(payload));
-      await this.router.navigate(['/', this.i18n.locale(), 'leads', lead.id]);
-    } catch (error) {
-      if (ApiError.is(error) && error.status === 409) {
-        this.duplicates.set((error.details as DuplicateMatches) ?? { customerMatches: [], leadMatches: [] });
-        return;
+    await submit(this.quickAddForm, async () => {
+      try {
+        const lead = await firstValueFrom(this.leads.quickAdd(payload));
+        this.saved = true;
+        await this.router.navigate(['/', this.i18n.locale(), 'leads', lead.id]);
+      } catch (error) {
+        if (ApiError.is(error) && error.status === 409) {
+          this.duplicates.set((error.details as DuplicateMatches) ?? { customerMatches: [], leadMatches: [] });
+          return undefined;
+        }
+        this.errorKey.set(ApiError.is(error) && this.i18n.has(error.messageKey) ? error.messageKey : 'errors.db.unexpected');
       }
-      this.errorKey.set(ApiError.is(error) && this.i18n.has(error.messageKey) ? error.messageKey : 'errors.db.unexpected');
-    }
+      return undefined;
+    });
   }
 
   protected confirmAnyway(event: Event): void {

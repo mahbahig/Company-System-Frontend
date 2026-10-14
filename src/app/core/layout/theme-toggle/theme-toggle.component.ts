@@ -9,13 +9,14 @@ import { TranslatePipe } from '../../i18n/translate.pipe';
 import { THEMES, type Theme } from '../../theme/theme';
 import { ThemeService } from '../../theme/theme.service';
 import { END_ALIGNED_BELOW } from '../menu-positions';
+import { TooltipDirective } from '../../../shared/ui/tooltip/tooltip.directive';
 
 const ICONS: Record<Theme, IconNode> = { light: Sun, dark: Moon, system: Monitor };
 
 /** Light / Dark / System picker; a tick (not colour alone) marks the active choice. */
 @Component({
   selector: 'app-theme-toggle',
-  imports: [CdkMenuTrigger, CdkMenu, CdkMenuItemRadio, ButtonDirective, IconComponent, TranslatePipe],
+  imports: [TooltipDirective, CdkMenuTrigger, CdkMenu, CdkMenuItemRadio, ButtonDirective, IconComponent, TranslatePipe],
   template: `
     <button
       type="button"
@@ -25,6 +26,8 @@ const ICONS: Record<Theme, IconNode> = { light: Sun, dark: Moon, system: Monitor
       [cdkMenuTriggerFor]="menu"
       [cdkMenuPosition]="positions"
       [attr.aria-label]="label()"
+      [appTooltip]="label()"
+      appTooltipSide="bottom"
     >
       <app-icon [icon]="activeIcon()" />
     </button>

@@ -3,8 +3,10 @@
 } @else if (detail.error()) {
   <app-alert variant="destructive">{{ 'errors.db.unexpected' | t }}</app-alert>
 } @else if (lead(); as lead) {
+  <app-breadcrumbs [items]="crumbs()" />
   <app-page-header class="!mb-0" [eyebrow]="lead.leadNo" [heading]="lead.name" [subtitle]="lead.companyName ?? ''">
-    @if (!isFinal() && auth.can('leads.edit')) {
+    <app-favorite-toggle type="lead" [id]="lead.id" />
+    @if (canEdit()) {
       <a appButton variant="outline" [routerLink]="['/', i18n.locale(), 'leads', lead.id, 'edit']">{{ 'crm.common.edit' | t }}</a>
     }
     @if (canConvert()) {
@@ -50,11 +52,24 @@
             }
           </div>
           <div appDetailItem [label]="'crm.leads.fields.email' | t">
-            @if (lead.email) {
-              <a dir="ltr" class="hover:underline" [href]="'mailto:' + lead.email">{{ lead.email }}</a>
-            } @else {
-              {{ 'crm.common.notSet' | t }}
-            }
+            <app-inline-edit
+              type="email"
+              hasContent
+              [label]="'crm.leads.fields.email' | t"
+              [value]="lead.email"
+              [editable]="canEdit()"
+              placeholder="name@company.com"
+              [maxLength]="200"
+              [validate]="emailCheck"
+              [save]="saveEmail"
+              (saved)="detail.reload()"
+            >
+              @if (lead.email) {
+                <a dir="ltr" class="hover:underline" [href]="'mailto:' + lead.email">{{ lead.email }}</a>
+              } @else {
+                {{ 'crm.common.notSet' | t }}
+              }
+            </app-inline-edit>
           </div>
           <div appDetailItem [label]="'crm.leads.fields.governorateCode' | t">{{ reference.label('governorate', lead.governorateCode) }}</div>
           <div appDetailItem [label]="'crm.leads.fields.sourceCode' | t">{{ reference.label('lead_source', lead.sourceCode) }}</div>
@@ -94,7 +109,16 @@
           <dl class="flex flex-col gap-4">
             <div appDetailItem [label]="'crm.common.owner' | t">{{ ownerName(lead) }}</div>
             <div appDetailItem [label]="'crm.leads.fields.nextFollowUpAt' | t">
-              <span class="tabular">{{ i18n.formatDate(lead.nextFollowUpAt, true) || ('crm.common.notSet' | t) }}</span>
+              <app-inline-edit
+                type="date"
+                [label]="'crm.leads.fields.nextFollowUpAt' | t"
+                [value]="lead.nextFollowUpAt"
+                [display]="i18n.formatDate(lead.nextFollowUpAt, true)"
+                [editable]="canEdit()"
+                [validate]="requiredCheck"
+                [save]="saveFollowUp"
+                (saved)="detail.reload()"
+              />
             </div>
             <div appDetailItem [label]="'crm.common.createdAt' | t"><span class="tabular">{{ i18n.formatDate(lead.createdAt, true) }}</span></div>
             <div appDetailItem [label]="'crm.common.updatedAt' | t"><span class="tabular">{{ i18n.formatDate(lead.updatedAt, true) }}</span></div>
@@ -125,6 +149,8 @@
     </div>
   </div>
 
+  <app-lead-workflow-panel [lead]="lead" (changed)="detail.reload()" />
+
   <section appCard aria-labelledby="activity-heading">
     <div appCardHeader class="flex flex-row items-center justify-between">
       <h2 appCardTitle id="activity-heading">{{ 'crm.leads.detail.activityTitle' | t }}</h2>
@@ -148,9 +174,27 @@
 
       @if (showAttemptForm()) {
         <form class="flex flex-col gap-4 border-t border-border pt-4" novalidate (submit)="submitAttempt($event)">
-          <div class="flex items-center gap-2">
-            <input type="checkbox" id="att-reached" class="size-4 rounded border-input accent-primary" [formField]="attemptForm.reached" />
-            <label appLabel for="att-reached">{{ 'crm.leads.attempt.reached' | t }}</label>
+          <div class="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label appLabel for="att-channel" class="mb-1.5 block" required>{{ 'crm.leads.workflow.channel' | t }}</label>
+              <app-select>
+                <select appSelect id="att-channel" [formField]="attemptForm.channel">
+                  @for (channel of attemptChannels; track channel) {
+                    <option [value]="channel">{{ 'crm.leads.workflow.channels.' + channel | t }}</option>
+                  }
+                </select>
+              </app-select>
+            </div>
+            <div>
+              <label appLabel for="att-outcome" class="mb-1.5 block" required>{{ 'crm.leads.workflow.attemptOutcome' | t }}</label>
+              <app-select>
+                <select appSelect id="att-outcome" [formField]="attemptForm.outcome">
+                  @for (outcome of attemptOutcomes; track outcome) {
+                    <option [value]="outcome">{{ 'crm.leads.workflow.attemptOutcomes.' + outcome | t }}</option>
+                  }
+                </select>
+              </app-select>
+            </div>
           </div>
           <div>
             <label appLabel for="att-notes" class="mb-1.5 block">{{ 'crm.leads.attempt.notes' | t }}</label>
@@ -159,7 +203,7 @@
           <div class="grid gap-4 sm:grid-cols-2">
             <div>
               <label appLabel for="att-followup" class="mb-1.5 block">{{ 'crm.leads.attempt.nextFollowUpAt' | t }}</label>
-              <input appInput id="att-followup" type="date" dir="ltr" [formField]="attemptForm.nextFollowUpAt" />
+              <input appInput id="att-followup" type="datetime-local" dir="ltr" [formField]="attemptForm.nextAttemptAt" />
             </div>
             <div>
               <label appLabel for="att-nextaction" class="mb-1.5 block">{{ 'crm.leads.attempt.nextAction' | t }}</label>
@@ -177,14 +221,11 @@
     </div>
   </section>
 
-  @if (canQualify() || canClose() || canReopen()) {
+  @if (canClose() || canReopen()) {
     <section appCard aria-labelledby="lifecycle-heading">
       <div appCardHeader><h2 appCardTitle id="lifecycle-heading">{{ 'crm.common.actions' | t }}</h2></div>
       <div appCardContent class="flex flex-col gap-4">
         <div class="flex flex-wrap gap-2">
-          @if (canQualify()) {
-            <button type="button" appButton variant="outline" (click)="qualify()">{{ 'crm.leads.qualify.action' | t }}</button>
-          }
           @if (canClose() && !showCloseForm()) {
             <button type="button" appButton variant="outline" (click)="showCloseForm.set(true)">{{ 'crm.leads.close.title' | t }}</button>
           }
@@ -255,5 +296,5 @@
     </section>
   }
 } @else {
-  <p class="text-sm text-muted-foreground" role="status">{{ 'common.labels.loading' | t }}</p>
+  <app-detail-skeleton [label]="'common.labels.loading' | t" />
 }

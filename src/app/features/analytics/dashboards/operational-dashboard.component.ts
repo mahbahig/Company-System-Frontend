@@ -2,6 +2,7 @@ import { Component, inject, input } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 
 import { I18nService } from '../../../core/i18n/i18n.service';
+import { NavigationService } from '../../../core/navigation/navigation.service';
 import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { AlertComponent } from '../../../shared/ui/alert/alert.component';
 import { StatCardComponent } from '../../../shared/ui/stat-card/stat-card.component';
@@ -9,11 +10,12 @@ import { TABLE_IMPORTS } from '../../../shared/ui/table/table.imports';
 import { AnalyticsApi } from '../analytics-api.service';
 import type { AnalyticsFilter } from '../models/analytics-filter.interface';
 import type { WorkloadRow } from '../models/dashboards.interface';
+import { DashboardSkeletonComponent } from '../../../shared/ui/skeleton/skeleton.component';
 
 /** DASH-04 operational / PM dashboard: handoffs, visits, assessments, proposals, contracts, projects and resource workload. */
 @Component({
   selector: 'app-operational-dashboard',
-  imports: [TranslatePipe, AlertComponent, StatCardComponent, ...TABLE_IMPORTS],
+  imports: [DashboardSkeletonComponent, TranslatePipe, AlertComponent, StatCardComponent, ...TABLE_IMPORTS],
   template: `
     @if (data.error()) {
       <app-alert variant="destructive">{{ i18n.errorText(data.error()) }}</app-alert>
@@ -21,7 +23,7 @@ import type { WorkloadRow } from '../models/dashboards.interface';
     @if (data.value(); as d) {
       <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         @for (card of cards; track card.key) {
-          <app-stat-card [label]="('analytics.operational.' + card.key) | t" [value]="n(d.counts[card.key])" [tone]="d.counts[card.key] && card.tone ? card.tone : 'neutral'" [link]="card.path ? link(card.path) : undefined" />
+          <app-stat-card [label]="('analytics.operational.' + card.key) | t" [value]="n(d.counts[card.key])" [tone]="d.counts[card.key] && card.tone ? card.tone : 'neutral'" [link]="card.path ? openable(card.path) : undefined" />
         }
       </div>
 
@@ -59,7 +61,7 @@ import type { WorkloadRow } from '../models/dashboards.interface';
         </app-table-wrapper>
       </section>
     } @else if (data.isLoading()) {
-      <p class="text-sm text-muted-foreground">{{ 'common.labels.loading' | t }}</p>
+      <app-dashboard-skeleton [label]="'common.labels.loading' | t" />
     }
   `,
   host: { class: 'flex flex-col gap-6' },
@@ -67,6 +69,7 @@ import type { WorkloadRow } from '../models/dashboards.interface';
 export class OperationalDashboardComponent {
   private readonly api = inject(AnalyticsApi);
   protected readonly i18n = inject(I18nService);
+  private readonly navigation = inject(NavigationService);
 
   readonly filter = input<AnalyticsFilter>({});
 
@@ -91,6 +94,11 @@ export class OperationalDashboardComponent {
 
   protected n(value: number | undefined): string {
     return this.i18n.formatNumber(value ?? 0);
+  }
+
+  /** A drill-down link only into an area the role can open (same rule as the route guard). */
+  protected openable(path: string): string | undefined {
+    return this.navigation.canOpen(path) ? this.link(path.split('?')[0]) : undefined;
   }
 
   protected link(path: string): string {

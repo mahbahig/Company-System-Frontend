@@ -14,11 +14,12 @@ import { PageHeaderComponent } from '../../../shared/ui/page-header/page-header.
 import { TABLE_IMPORTS } from '../../../shared/ui/table/table.imports';
 import { userName } from '../../../shared/utils/display-name';
 import { AssessmentsApi, type Assessment } from '../assessments-api.service';
+import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.component';
 
 /** §11.4/11.5 engineer assignments and the Technical Lead review queue. */
 @Component({
   selector: 'app-assessments-list-page',
-  imports: [RouterLink, TranslatePipe, StatusBadgeComponent, AlertComponent, PageHeaderComponent, ListToolbarComponent, PaginationComponent, ...TABLE_IMPORTS],
+  imports: [SkeletonRowComponent, RouterLink, TranslatePipe, StatusBadgeComponent, AlertComponent, PageHeaderComponent, ListToolbarComponent, PaginationComponent, ...TABLE_IMPORTS],
   template: `
     <app-page-header [heading]="'crm.assessments.title' | t" [subtitle]="'crm.assessments.subtitle' | t" class="!mb-0" />
     <app-list-toolbar [searchValue]="q() ?? ''" [searchPlaceholder]="'crm.assessments.searchPlaceholder' | t" [filters]="filters()" [toggles]="toggles()" />
@@ -40,7 +41,7 @@ import { AssessmentsApi, type Assessment } from '../assessments-api.service';
         </thead>
         <tbody appTableBody>
           @for (row of rows(); track row.id) {
-            <tr appTableRow>
+            <tr appTableRow [appRowLink]="row.id">
               <td appTableCell class="tabular whitespace-nowrap font-medium"><a [routerLink]="row.id" class="text-primary hover:underline" dir="ltr">{{ row.assessmentNo }}</a></td>
               <td appTableCell>{{ ref(row.opportunityId, 'name') }}</td>
               <td appTableCell>{{ customer(row) }}</td>
@@ -50,7 +51,13 @@ import { AssessmentsApi, type Assessment } from '../assessments-api.service';
               <td appTableCell class="tabular whitespace-nowrap">{{ i18n.formatDate(row.createdAt) }}</td>
             </tr>
           } @empty {
-            <tr app-table-empty [colSpan]="7">{{ (result.isLoading() ? 'common.labels.loading' : 'crm.assessments.empty') | t }}</tr>
+            @if (result.isLoading()) {
+              @for (i of [0, 1, 2, 3, 4]; track i) {
+                <tr app-skeleton-row [columns]="7" [index]="i"></tr>
+              }
+            } @else {
+              <tr app-table-empty [colSpan]="7">{{ 'crm.assessments.empty' | t }}</tr>
+            }
           }
         </tbody>
       </table>

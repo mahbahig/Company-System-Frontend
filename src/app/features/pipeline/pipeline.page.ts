@@ -3,7 +3,6 @@ import { Component, computed, inject, input, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { AlertTriangle } from 'lucide';
-import { firstValueFrom } from 'rxjs';
 
 import { AuthService } from '../../core/auth/auth.service';
 import { I18nService } from '../../core/i18n/i18n.service';
@@ -15,30 +14,20 @@ import type { ToggleDefinition } from '../../shared/crm/list-toolbar/toggle-defi
 import { AlertComponent } from '../../shared/ui/alert/alert.component';
 import { BadgeComponent } from '../../shared/ui/badge/badge.component';
 import { IconComponent } from '../../shared/ui/icon/icon.component';
-import { ApiError } from '../../core/api/api-error';
 import { PageHeaderComponent } from '../../shared/ui/page-header/page-header.component';
 import type { BoardColumn } from '../opportunities/models/board-column.interface';
 import type { Opportunity } from '../opportunities/models/opportunity.interface';
 import { OpportunitiesApi } from '../opportunities/opportunities-api.service';
 
-const OPEN_STAGE_ORDER = [
-  'opportunity',
-  'meeting',
-  'site_visit',
-  'data_collection',
-  'technical_preparation',
-  'proposal',
-  'proposal_presented',
-  'negotiation',
-  'approval',
-  'contract',
-];
+/** O0–O8, the open opportunity stages in pipeline order. */
+const OPEN_STAGE_ORDER = ['draft', 'discovery', 'survey', 'feasibility', 'costing', 'proposal_preparation', 'proposal_sent', 'negotiation', 'acceptance'];
 
 /**
- * Pipeline Kanban board (OPP-04). Drag-and-drop attempts the stage change
- * optimistically and reverts the card when the server rejects it (a gate is
- * blocking, or a reason/value is required) — the record's detail page is
- * where that richer transition form lives.
+ * Pipeline Kanban board (O0–O8). Stages move only through their business
+ * actions (confirmed need, technical request, survey, baseline, costing,
+ * quotation, acceptance, signatures), so the board is a view: dropping a
+ * card on another column explains where that move happens instead of
+ * changing the stage.
  */
 @Component({
   selector: 'app-pipeline-page',
@@ -59,6 +48,8 @@ export class PipelinePage {
   protected readonly warningIcon = AlertTriangle;
   protected readonly stages = OPEN_STAGE_ORDER;
   protected readonly canViewFinancials = computed(() => this.auth.can('financials.view'));
+  /** Cards can be dragged to ask "how do I move this?" — the answer is the opportunity's tracker. */
+  protected readonly canChangeStage = computed(() => this.auth.can('opportunities.change_stage'));
 
   protected readonly moveError = signal<string | null>(null);
   /** Client-side optimistic override so a rejected drop can be reverted without a full reload. */
@@ -113,23 +104,9 @@ export class PipelinePage {
     return opportunity.health?.status === 'at_risk' || opportunity.health?.status === 'critical';
   }
 
-  protected async onDrop(event: CdkDragDrop<string>): Promise<void> {
-    const opportunityId = event.item.data as string;
-    const toStage = event.container.id;
+  /** No stage changes by drag-and-drop: the move belongs to its business action on the opportunity. */
+  protected onDrop(event: CdkDragDrop<string>): void {
     if (event.previousContainer === event.container) return;
-    this.moveError.set(null);
-    this.override.update((map) => new Map(map).set(opportunityId, toStage));
-    try {
-      await firstValueFrom(this.opportunitiesApi.changeStage(opportunityId, { toStage }));
-      this.board.reload();
-    } catch (error: unknown) {
-      this.moveError.set(ApiError.is(error) && this.i18n.has(error.messageKey) ? error.messageKey : 'crm.opportunities.transitionNotAllowed');
-    } finally {
-      this.override.update((map) => {
-        const next = new Map(map);
-        next.delete(opportunityId);
-        return next;
-      });
-    }
+    this.moveError.set('crm.pipeline.moveByAction');
   }
 }

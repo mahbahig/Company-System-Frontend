@@ -15,6 +15,7 @@ import { ButtonDirective } from '../../../shared/ui/button/button.directive';
 import { PageHeaderComponent } from '../../../shared/ui/page-header/page-header.component';
 import { TABLE_IMPORTS } from '../../../shared/ui/table/table.imports';
 import { ActionRunner } from '../../../shared/utils/action-runner';
+import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.component';
 
 interface Definition {
   code: string;
@@ -45,7 +46,7 @@ interface Run {
  */
 @Component({
   selector: 'app-automation-admin-page',
-  imports: [TranslatePipe, StatusBadgeComponent, AlertComponent, ButtonDirective, PageHeaderComponent, ListToolbarComponent, PaginationComponent, ...TABLE_IMPORTS],
+  imports: [SkeletonRowComponent, TranslatePipe, StatusBadgeComponent, AlertComponent, ButtonDirective, PageHeaderComponent, ListToolbarComponent, PaginationComponent, ...TABLE_IMPORTS],
   template: `
     <app-page-header [heading]="'admin.automation.title' | t" [subtitle]="'admin.automation.subtitle' | t" class="!mb-0" />
     @if (actions.message(); as text) {
@@ -112,7 +113,13 @@ interface Run {
               </td>
             </tr>
           } @empty {
-            <tr app-table-empty [colSpan]="6">{{ (runs.isLoading() ? 'common.labels.loading' : 'admin.empty') | t }}</tr>
+            @if (runs.isLoading()) {
+              @for (i of [0, 1, 2, 3, 4]; track i) {
+                <tr app-skeleton-row [columns]="6" [index]="i"></tr>
+              }
+            } @else {
+              <tr app-table-empty [colSpan]="6">{{ 'admin.empty' | t }}</tr>
+            }
           }
         </tbody>
       </table>

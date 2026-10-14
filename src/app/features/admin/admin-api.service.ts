@@ -30,6 +30,20 @@ export interface AdminUser {
   lastLoginAt?: string | null;
 }
 
+/** `GET /users/:id/performance`. */
+export interface EmployeePerformance {
+  user: { id: string; fullNameAr: string; fullNameEn: string; email: string; roleCodes: string[]; isActive: boolean; lastLoginAt: string | null };
+  period: { from: string | null; to: string | null };
+  leads: { owned: number; open: number; created: number; converted: number; closed: number; contactAttempts: number; reachedAttempts: number };
+  calls: { total: number; outbound: number; inbound: number; durationSeconds: number; byOutcome: Array<{ outcomeCode: string; count: number }> };
+  meetings: { total: number; completed: number; upcoming: number };
+  visits: { total: number; completed: number };
+  tasks: { open: number; overdue: number; completed: number };
+  /** `wonValue` is absent for roles without financial visibility. */
+  opportunities: { open: number; won: number; lost: number; wonValue?: number };
+  recentActivity: Array<{ id: string; type: string; occurredAt: string; data: Record<string, unknown>; customerId: string | null; opportunityId: string | null; leadId: string | null }>;
+}
+
 export interface RoleGrant {
   code: string;
   scope: 'own' | 'team' | 'all';
@@ -78,8 +92,13 @@ export class AdminApi {
   updateUser(id: string, body: Record<string, unknown>): Observable<AdminUser> {
     return this.api.patch(`users/${id}`, body);
   }
+  /** The reason is optional; it is recorded on the account and in the audit trail when given. */
   deactivate(id: string, reason: string, reassignToId?: string): Observable<unknown> {
-    return this.api.post(`users/${id}/deactivate`, { reason, reassignToId: reassignToId || undefined });
+    return this.api.post(`users/${id}/deactivate`, { reason: reason || undefined, reassignToId: reassignToId || undefined });
+  }
+  /** One employee's activity and results (`users.view_performance`). */
+  performance(id: string, period: { from?: string; to?: string } = {}): Observable<EmployeePerformance> {
+    return this.api.get(`users/${id}/performance`, period);
   }
   activate(id: string): Observable<unknown> {
     return this.api.post(`users/${id}/activate`);

@@ -5,4 +5,6 @@ import type { Customer } from './customer.interface';
 export interface CustomerDetail {
   customer: Customer;
   completeness: CompletenessResult;
+  /** Server verdict: edit permission within record scope, and not merged away (what `PATCH` checks). */
+  canEdit?: boolean;
 }

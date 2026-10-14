@@ -11,10 +11,10 @@ import { RouterLink } from '@angular/router';
   imports: [RouterLink],
   template: `
     <div
-      class="group/stat relative flex h-full flex-col gap-1 rounded-lg border border-border bg-card p-4 shadow-sm transition-[box-shadow,transform,translate,border-color] duration-500 ease-emphasized hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md"
+      class="group/stat relative flex h-full flex-col gap-1.5 rounded-xl border border-border/80 bg-card p-5 shadow-sm transition-[box-shadow,transform,translate] duration-300 ease-premium hover:-translate-y-0.5 hover:shadow-md motion-reduce:hover:translate-y-0"
       [class]="accent()"
     >
-      <p class="text-xs font-medium uppercase tracking-wide text-muted-foreground">{{ label() }}</p>
+      <p class="text-2xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">{{ label() }}</p>
       @if (link()) {
         <a
           [routerLink]="link()"

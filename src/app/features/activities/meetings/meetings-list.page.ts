@@ -16,17 +16,19 @@ import { PageHeaderComponent } from '../../../shared/ui/page-header/page-header.
 import { TABLE_IMPORTS } from '../../../shared/ui/table/table.imports';
 import { userName } from '../../../shared/utils/display-name';
 import { ActivitiesApi, refLabel, type Meeting } from '../activities-api.service';
+import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.component';
+import { ShortcutDirective } from '../../../core/shortcuts/shortcut.directive';
 
 const STATUSES = ['planned', 'confirmed', 'completed', 'cancelled', 'rescheduled', 'no_show'];
 
 /** E12 meetings. */
 @Component({
   selector: 'app-meetings-list-page',
-  imports: [RouterLink, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, AlertComponent, ButtonDirective, PageHeaderComponent, ListToolbarComponent, PaginationComponent, ...TABLE_IMPORTS],
+  imports: [ShortcutDirective, SkeletonRowComponent, RouterLink, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, AlertComponent, ButtonDirective, PageHeaderComponent, ListToolbarComponent, PaginationComponent, ...TABLE_IMPORTS],
   template: `
     <app-page-header [heading]="'act.meetings.title' | t" [subtitle]="'act.meetings.subtitle' | t" class="!mb-0">
       @if (auth.can('meetings.create')) {
-        <a appButton routerLink="new">{{ 'act.meetings.new' | t }}</a>
+        <a appButton routerLink="new" appShortcut="n">{{ 'act.meetings.new' | t }}</a>
       }
     </app-page-header>
     <app-list-toolbar [searchValue]="q() ?? ''" [filters]="filters()" />
@@ -47,7 +49,7 @@ const STATUSES = ['planned', 'confirmed', 'completed', 'cancelled', 'rescheduled
         </thead>
         <tbody appTableBody>
           @for (row of rows(); track row.id) {
-            <tr appTableRow>
+            <tr appTableRow [appRowLink]="row.id">
               <td appTableCell><a class="text-primary hover:underline" [routerLink]="row.id">{{ row.subject }}</a></td>
               <td appTableCell class="tabular whitespace-nowrap">{{ i18n.formatDate(row.scheduledAt, true) }}</td>
               <td appTableCell>{{ customer(row) }}</td>
@@ -56,7 +58,13 @@ const STATUSES = ['planned', 'confirmed', 'completed', 'cancelled', 'rescheduled
               <td appTableCell>{{ owner(row) }}</td>
             </tr>
           } @empty {
-            <tr app-table-empty [colSpan]="6">{{ (result.isLoading() ? 'common.labels.loading' : 'act.empty') | t }}</tr>
+            @if (result.isLoading()) {
+              @for (i of [0, 1, 2, 3, 4]; track i) {
+                <tr app-skeleton-row [columns]="6" [index]="i"></tr>
+              }
+            } @else {
+              <tr app-table-empty [colSpan]="6">{{ 'act.empty' | t }}</tr>
+            }
           }
         </tbody>
       </table>

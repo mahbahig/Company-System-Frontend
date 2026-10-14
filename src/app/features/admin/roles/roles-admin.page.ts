@@ -22,6 +22,9 @@ type ScopeValue = '' | 'own' | 'team' | 'all';
  * System roles can be edited but not renamed by code; changes are audited
  * and apply on the next request.
  */
+/** Roles whose grants come from their definitions (see RolesService FIXED_GRANTS). */
+const FIXED_ROLES = new Set(['system_administrator', 'ceo']);
+
 @Component({
   selector: 'app-roles-admin-page',
   imports: [TranslatePipe, AlertComponent, BadgeComponent, ButtonDirective, DialogComponent, PageHeaderComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, ...TABLE_IMPORTS],
@@ -50,14 +53,22 @@ type ScopeValue = '' | 'own' | 'team' | 'all';
         @if (role.isSystem) {
           <app-badge tone="info">{{ 'admin.roles.system' | t }}</app-badge>
         }
+        @if (fixed()) {
+          <app-badge tone="neutral">{{ 'ux.roles.fixedBadge' | t }}</app-badge>
+        }
         <label class="flex items-center gap-2 pb-2 text-sm"><input type="checkbox" [checked]="activeDraft()" (change)="activeDraft.set($any($event.target).checked)" [disabled]="role.isSystem" /> {{ 'admin.active' | t }}</label>
         <div class="min-w-48">
           <label appLabel for="role-filter">{{ 'admin.roles.filter' | t }}</label>
           <input appInput id="role-filter" dir="ltr" [value]="filter()" (input)="filter.set($any($event.target).value)" />
         </div>
-        <button type="button" appButton [disabled]="actions.busy() || !dirty()" (click)="save()">{{ 'admin.roles.save' | t }}</button>
+        <button type="button" appButton [disabled]="actions.busy() || !dirty() || fixed()" (click)="save()">{{ 'admin.roles.save' | t }}</button>
       }
     </div>
+    @if (fixed()) {
+      <p class="rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
+        {{ (current()?.code === 'ceo' ? 'ux.roles.fixedCeo' : 'ux.roles.fixedAdmin') | t }}
+      </p>
+    }
 
     <app-table-wrapper [label]="'admin.roles.matrix' | t" [attr.aria-busy]="catalogue.isLoading()">
       <table appTable>
@@ -77,7 +88,7 @@ type ScopeValue = '' | 'own' | 'team' | 'all';
                 <div class="flex flex-wrap gap-3 text-sm" role="radiogroup" [attr.aria-label]="p.code">
                   @for (scope of scopes; track scope) {
                     <label class="flex items-center gap-1">
-                      <input type="radio" [name]="'scope-' + p.code" [checked]="(grants()[p.code] ?? '') === scope" (change)="setScope(p.code, scope)" />
+                      <input type="radio" [name]="'scope-' + p.code" [checked]="(grants()[p.code] ?? '') === scope" [disabled]="fixed()" (change)="setScope(p.code, scope)" />
                       {{ 'admin.roles.scopes.' + (scope || 'none') | t }}
                     </label>
                   }
@@ -134,6 +145,8 @@ export class RolesAdminPage {
   protected readonly activeDraft = signal(true);
   protected readonly dirty = signal(false);
   protected readonly current = computed<Role | undefined>(() => this.roles.value()?.find((r) => r.code === this.selected()));
+  /** The administrator (every permission) and the CEO (every business permission) are defined by the system, not edited here. */
+  protected readonly fixed = computed(() => FIXED_ROLES.has(this.current()?.code ?? ''));
   protected readonly visiblePermissions = computed(() => {
     const f = this.filter().trim().toLowerCase();
     return (this.catalogue.value() ?? []).filter((p) => !f || p.code.includes(f));

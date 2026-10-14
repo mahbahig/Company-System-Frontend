@@ -41,7 +41,13 @@
               <td appTableCell class="whitespace-nowrap">{{ reference.label('governorate', row.governorateCode) }}</td>
             </tr>
           } @empty {
-            <tr app-table-empty [colSpan]="5">{{ (unassigned.isLoading() ? 'common.labels.loading' : 'crm.leads.empty') | t }}</tr>
+            @if (unassigned.isLoading()) {
+              @for (i of [0, 1, 2, 3, 4]; track i) {
+                <tr app-skeleton-row [columns]="5" [index]="i"></tr>
+              }
+            } @else {
+              <tr app-table-empty [colSpan]="5">{{ 'crm.leads.empty' | t }}</tr>
+            }
           }
         </tbody>
       </table>

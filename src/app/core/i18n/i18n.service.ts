@@ -127,6 +127,29 @@ export class I18nService {
     }).format(date);
   }
 
+  /** "10 seconds ago", "in 2 days" — for drafts, notifications and other recent moments. */
+  formatRelative(value: string | Date | number | null | undefined, now: number = Date.now()): string {
+    if (value == null || value === '') return '';
+    const time = new Date(value).getTime();
+    if (Number.isNaN(time)) return '';
+    const seconds = Math.round((time - now) / 1000);
+    const steps: Array<[Intl.RelativeTimeFormatUnit, number]> = [
+      ['second', 60],
+      ['minute', 60],
+      ['hour', 24],
+      ['day', 7],
+      ['week', 4.35],
+      ['month', 12],
+      ['year', Number.POSITIVE_INFINITY],
+    ];
+    let amount = seconds;
+    for (const [unit, size] of steps) {
+      if (Math.abs(amount) < size) return new Intl.RelativeTimeFormat(this.intlLocale(), { numeric: 'auto' }).format(Math.round(amount), unit);
+      amount /= size;
+    }
+    return '';
+  }
+
   /** Arabic with Latin digits (Gregorian is ar-EG's default calendar), matching the Next app. */
   private intlLocale(): string {
     return this.locale() === 'ar' ? 'ar-EG-u-nu-latn' : 'en-GB';

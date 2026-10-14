@@ -18,6 +18,7 @@ import { PageHeaderComponent } from '../../../shared/ui/page-header/page-header.
 import { TABLE_IMPORTS } from '../../../shared/ui/table/table.imports';
 import { userName } from '../../../shared/utils/display-name';
 import { HandoffsApi } from '../handoffs-api.service';
+import { DetailSkeletonComponent } from '../../../shared/ui/skeleton/skeleton.component';
 
 const SUBMITTABLE = ['draft', 'returned', 'withdrawn'];
 const DECIDABLE = ['submitted', 'under_review', 'resubmitted', 'clarification_requested'];
@@ -30,7 +31,7 @@ const DECIDABLE = ['submitted', 'under_review', 'resubmitted', 'clarification_re
  */
 @Component({
   selector: 'app-handoff-page',
-  imports: [RouterLink, TranslatePipe, StatusBadgeComponent, CompletenessPanelComponent, DocumentsPanelComponent, UserSelectComponent, AlertComponent, ButtonDirective, PageHeaderComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, ...TABLE_IMPORTS],
+  imports: [DetailSkeletonComponent, RouterLink, TranslatePipe, StatusBadgeComponent, CompletenessPanelComponent, DocumentsPanelComponent, UserSelectComponent, AlertComponent, ButtonDirective, PageHeaderComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, ...TABLE_IMPORTS],
   template: `
     @if (view.error()) {
       <app-alert variant="destructive">{{ i18n.errorText(view.error()) }}</app-alert>
@@ -211,7 +212,7 @@ const DECIDABLE = ['submitted', 'under_review', 'resubmitted', 'clarification_re
         </div>
       </div>
     } @else if (view.isLoading()) {
-      <p class="text-sm text-muted-foreground">{{ 'common.labels.loading' | t }}</p>
+      <app-detail-skeleton [label]="'common.labels.loading' | t" />
     }
   `,
   host: { class: 'flex flex-col gap-6' },

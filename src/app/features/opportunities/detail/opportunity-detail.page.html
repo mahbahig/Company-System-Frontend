@@ -3,15 +3,18 @@
 } @else if (detail.error()) {
   <app-alert variant="destructive">{{ 'errors.db.unexpected' | t }}</app-alert>
 } @else if (opportunity(); as o) {
+  <app-breadcrumbs [items]="crumbs()" />
   <app-page-header [eyebrow]="o.opportunityNo" [heading]="o.name" [subtitle]="customerLabel(o)" class="!mb-0">
+    <app-favorite-toggle type="opportunity" [id]="o.id" />
     @if (canEdit() && o.outcome === 'open') {
       <a appButton variant="outline" routerLink="edit">{{ 'common.actions.edit' | t }}</a>
     }
     @if (canClose() && o.outcome === 'open') {
       <button type="button" appButton variant="outline" (click)="startOutcome('on_hold')">{{ 'crm.opportunities.outcome.on_hold' | t }}</button>
+      <button type="button" appButton variant="outline" (click)="startOutcome('nurture')">{{ 'pipeline.stages.common.nurture' | t }}</button>
       <button type="button" appButton variant="destructive" (click)="startOutcome('cancelled')">{{ 'crm.opportunities.outcome.cancelled' | t }}</button>
     }
-    @if (canClose() && o.outcome === 'on_hold') {
+    @if (canClose() && (o.outcome === 'on_hold' || o.outcome === 'nurture')) {
       <button type="button" appButton (click)="startOutcome('open')">{{ 'crm.opportunities.outcome.open' | t }}</button>
     }
   </app-page-header>
@@ -41,14 +44,51 @@
   @if (outcomeAction(); as action) {
     <app-alert variant="destructive">
       <form class="flex flex-col gap-3" (submit)="submitOutcome($event)">
+        @if (outcomeError(); as text) {
+          <p role="alert" class="text-sm font-medium">{{ text }}</p>
+        }
         <label appLabel for="outcome-reason" required>{{ 'crm.opportunities.transition.reasonNotes' | t }}</label>
         <textarea appTextarea id="outcome-reason" rows="2" [value]="outcomeReason()" (input)="outcomeReason.set($any($event.target).value)"></textarea>
+        @if (action === 'on_hold') {
+          <div class="grid gap-3 sm:grid-cols-3">
+            <div>
+              <label appLabel for="hold-blocker" required>{{ 'crm.opportunities.hold.blocker' | t }}</label>
+              <input appInput id="hold-blocker" class="mt-1.5" [value]="holdBlocker()" (input)="holdBlocker.set($any($event.target).value)" />
+            </div>
+            <div>
+              <label appLabel for="hold-owner" required>{{ 'crm.opportunities.hold.owner' | t }}</label>
+              <app-user-select class="mt-1.5" inputId="hold-owner" [value]="holdOwnerId()" (valueChange)="holdOwnerId.set($event)" />
+            </div>
+            <div>
+              <label appLabel for="hold-review" required>{{ 'crm.opportunities.hold.reviewAt' | t }}</label>
+              <input appInput id="hold-review" type="date" class="mt-1.5" [value]="holdReviewAt()" (input)="holdReviewAt.set($any($event.target).value)" />
+            </div>
+          </div>
+        }
+        @if (action === 'nurture') {
+          <div class="grid gap-3 sm:grid-cols-2">
+            <div>
+              <label appLabel for="nurture-window" required>{{ 'crm.opportunities.nurture.window' | t }}</label>
+              <input appInput id="nurture-window" class="mt-1.5" [value]="nurtureWindow()" (input)="nurtureWindow.set($any($event.target).value)" />
+            </div>
+            <div>
+              <label appLabel for="nurture-follow-up" required>{{ 'crm.opportunities.nurture.followUpAt' | t }}</label>
+              <input appInput id="nurture-follow-up" type="date" class="mt-1.5" [value]="nurtureFollowUpAt()" (input)="nurtureFollowUpAt.set($any($event.target).value)" />
+            </div>
+          </div>
+        }
         <div class="flex gap-2">
-          <button type="submit" appButton [disabled]="outcomeSubmitting() || !outcomeReason().trim()">{{ 'common.actions.save' | t }}</button>
+          <button type="submit" appButton [disabled]="outcomeSubmitting() || !outcomeReady()">{{ 'common.actions.save' | t }}</button>
           <button type="button" appButton variant="outline" (click)="outcomeAction.set(null)">{{ 'common.actions.cancel' | t }}</button>
         </div>
       </form>
     </app-alert>
+  }
+
+  <app-opportunity-workflow-panel [opportunity]="o" (changed)="detail.reload()" />
+
+  @if (showHandover()) {
+    <app-delivery-handover-panel [opportunityId]="o.id" [version]="o.updatedAt" (changed)="detail.reload()" />
   }
 
   <app-opportunity-hub
@@ -175,147 +215,7 @@
     </div>
   </div>
 
-  @if ((canChangeStage() && o.outcome !== 'won' && o.outcome !== 'lost' && o.outcome !== 'cancelled') || ((o.outcome === 'lost' || o.outcome === 'cancelled') && canReopen())) {
-    <section appCard aria-labelledby="transition-heading">
-      <div appCardHeader>
-        <h2 appCardTitle id="transition-heading">{{ 'crm.opportunities.transition.title' | t }}</h2>
-      </div>
-      <div appCardContent>
-        <form class="flex flex-col gap-4" (submit)="submitTransition($event)">
-          @if (transitionError(); as key) {
-            <app-alert variant="destructive">{{ key | t }}</app-alert>
-          }
-          <div class="max-w-xs">
-            <label appLabel for="target-stage">{{ 'crm.opportunities.transition.toStage' | t }}</label>
-            <app-select class="mt-1.5">
-              <select appSelect id="target-stage" [value]="targetStage()" (change)="targetStage.set($any($event.target).value)">
-                <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
-                @for (stage of availableStages(); track stage) {
-                  <option [value]="stage">{{ reference.label('pipeline_stage', stage) }}</option>
-                }
-              </select>
-            </app-select>
-          </div>
-
-          @if (targetStage()) {
-            @if (gates.hasValue()) {
-              <ul class="flex flex-col gap-1.5">
-                @for (check of gates.value().checks; track check.code) {
-                  <li class="flex items-center gap-2 text-sm">
-                    <app-badge [tone]="check.passed ? 'success' : check.severity === 'hard' ? 'danger' : 'warning'">
-                      {{ (check.passed ? 'crm.common.yes' : 'crm.common.no') | t }}
-                    </app-badge>
-                    {{ gateLabel(check) }}
-                  </li>
-                }
-              </ul>
-            }
-
-            @if (isBackwardMove() || isReopen() || targetStage() === 'lost' || targetStage() === 'won') {
-              <div>
-                <label appLabel for="transition-reason">{{ 'crm.opportunities.transition.reasonNotes' | t }}</label>
-                <textarea
-                  appTextarea
-                  id="transition-reason"
-                  rows="2"
-                  class="mt-1.5"
-                  [value]="transitionReason()"
-                  (input)="transitionReason.set($any($event.target).value)"
-                ></textarea>
-              </div>
-            }
-
-            @if (targetStage() === 'lost') {
-              <div class="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label appLabel for="lost-reason" required>{{ 'crm.opportunities.transition.reasonCode' | t }}</label>
-                  <app-select class="mt-1.5">
-                    <select appSelect id="lost-reason" [value]="lostReasonCode()" (change)="lostReasonCode.set($any($event.target).value)">
-                      <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
-                      @for (option of reference.options('loss_reason'); track option.value) {
-                        <option [value]="option.value">{{ option.label }}</option>
-                      }
-                    </select>
-                  </app-select>
-                </div>
-                <div>
-                  <label appLabel for="lost-competitor">{{ 'crm.opportunities.transition.competitor' | t }}</label>
-                  <app-select class="mt-1.5">
-                    <select appSelect id="lost-competitor" [value]="lostCompetitorCode()" (change)="lostCompetitorCode.set($any($event.target).value)">
-                      <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
-                      @for (option of reference.options('competitor'); track option.value) {
-                        <option [value]="option.value">{{ option.label }}</option>
-                      }
-                    </select>
-                  </app-select>
-                </div>
-                <div>
-                  <label appLabel for="lost-competitor-name">{{ 'crm.opportunities.transition.competitorName' | t }}</label>
-                  <input appInput id="lost-competitor-name" class="mt-1.5" [value]="lostCompetitorName()" (input)="lostCompetitorName.set($any($event.target).value)" />
-                </div>
-                <div class="sm:col-span-2">
-                  <label appLabel for="lost-comment">{{ 'crm.opportunities.transition.lostComment' | t }}</label>
-                  <textarea appTextarea id="lost-comment" rows="2" class="mt-1.5" [value]="lostComment()" (input)="lostComment.set($any($event.target).value)"></textarea>
-                </div>
-              </div>
-            }
-
-            @if (gates.hasValue() && !gates.value().canProceed && canOverrideGates()) {
-              <div>
-                <label appLabel for="override-reason">{{ 'crm.opportunities.transition.overrideReason' | t }}</label>
-                <textarea appTextarea id="override-reason" rows="2" class="mt-1.5" [value]="overrideReason()" (input)="overrideReason.set($any($event.target).value)"></textarea>
-              </div>
-            }
-
-            <div>
-              <button
-                type="submit"
-                appButton
-                [disabled]="transitionSubmitting() || (targetStage() === 'lost' && !lostReasonCode()) || (isReopen() && !transitionReason().trim())"
-                [attr.aria-busy]="transitionSubmitting()"
-              >
-                {{ (transitionSubmitting() ? 'crm.opportunities.transition.submitting' : 'crm.opportunities.transition.submit') | t }}
-              </button>
-            </div>
-          }
-        </form>
-      </div>
-    </section>
-  }
-
-  <section appCard aria-labelledby="history-heading">
-    <div appCardHeader>
-      <h2 appCardTitle id="history-heading">{{ 'crm.opportunities.detail.historyTitle' | t }}</h2>
-    </div>
-    <div appCardContent>
-      <app-table-wrapper [label]="'crm.opportunities.detail.historyTitle' | t">
-        <table appTable>
-          <thead appTableHeader>
-            <tr appTableRow>
-              <th appTableHead>{{ 'crm.opportunities.columns.stage' | t }}</th>
-              <th appTableHead>{{ 'crm.common.createdAt' | t }}</th>
-              <th appTableHead>{{ 'crm.opportunities.detail.durationHeader' | t }}</th>
-              <th appTableHead>{{ 'crm.common.owner' | t }}</th>
-              <th appTableHead>{{ 'crm.opportunities.transition.reasonNotes' | t }}</th>
-            </tr>
-          </thead>
-          <tbody appTableBody>
-            @for (entry of o.stageHistory ?? []; track $index) {
-              <tr appTableRow>
-                <td appTableCell><app-badge [tone]="reference.tone('pipeline_stage', entry.toStage)">{{ reference.label('pipeline_stage', entry.toStage) }}</app-badge></td>
-                <td appTableCell class="tabular whitespace-nowrap">{{ i18n.formatDate(entry.enteredAt, true) }}</td>
-                <td appTableCell class="tabular whitespace-nowrap">{{ stageDuration(entry.enteredAt, entry.exitedAt) }}</td>
-                <td appTableCell class="whitespace-nowrap">{{ ref(entry.changedBy) }}</td>
-                <td appTableCell>{{ entry.reason || ('crm.common.notSet' | t) }}</td>
-              </tr>
-            } @empty {
-              <tr app-table-empty [colSpan]="5">{{ 'crm.opportunities.detail.historyEmpty' | t }}</tr>
-            }
-          </tbody>
-        </table>
-      </app-table-wrapper>
-    </div>
-  </section>
+  <app-opportunity-discovery-panel [opportunity]="o" (changed)="detail.reload()" />
 
   <div class="grid gap-6 lg:grid-cols-2">
     <section appCard aria-labelledby="readiness-heading">
@@ -450,5 +350,5 @@
 
   <app-timeline entityType="opportunity" [entityId]="o.id" />
 } @else {
-  <p class="text-sm text-muted-foreground" role="status">{{ 'common.labels.loading' | t }}</p>
+  <app-detail-skeleton [label]="'common.labels.loading' | t" />
 }

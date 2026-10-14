@@ -19,6 +19,7 @@ import { TABLE_IMPORTS } from '../../../shared/ui/table/table.imports';
 import { ActionRunner } from '../../../shared/utils/action-runner';
 import { CatalogApi } from '../../solar/catalog-api.service';
 import { EQUIPMENT_CATEGORIES, type EquipmentItem } from '../../solar/solar.models';
+import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.component';
 
 /**
  * §10 equipment catalog: panels, inverters, batteries, mounting, cabling,
@@ -27,7 +28,7 @@ import { EQUIPMENT_CATEGORIES, type EquipmentItem } from '../../solar/solar.mode
  */
 @Component({
   selector: 'app-equipment-admin-page',
-  imports: [TranslatePipe, EnumLabelPipe, AlertComponent, BadgeComponent, ButtonDirective, DialogComponent, PageHeaderComponent, ListToolbarComponent, PaginationComponent, ...TABLE_IMPORTS, ...FORM_IMPORTS],
+  imports: [SkeletonRowComponent, TranslatePipe, EnumLabelPipe, AlertComponent, BadgeComponent, ButtonDirective, DialogComponent, PageHeaderComponent, ListToolbarComponent, PaginationComponent, ...TABLE_IMPORTS, ...FORM_IMPORTS],
   template: `
     <app-page-header [heading]="'admin.equipment.title' | t" [subtitle]="'admin.equipment.subtitle' | t" class="!mb-0">
       <button type="button" appButton (click)="edit(null)">{{ 'admin.equipment.new' | t }}</button>
@@ -72,7 +73,13 @@ import { EQUIPMENT_CATEGORIES, type EquipmentItem } from '../../solar/solar.mode
               <td appTableCell><button type="button" appButton variant="ghost" size="sm" (click)="edit(item)">{{ 'crm.common.edit' | t }}</button></td>
             </tr>
           } @empty {
-            <tr app-table-empty [colSpan]="8">{{ (data.isLoading() ? 'common.labels.loading' : 'admin.empty') | t }}</tr>
+            @if (data.isLoading()) {
+              @for (i of [0, 1, 2, 3, 4]; track i) {
+                <tr app-skeleton-row [columns]="8" [index]="i"></tr>
+              }
+            } @else {
+              <tr app-table-empty [colSpan]="8">{{ 'admin.empty' | t }}</tr>
+            }
           }
         </tbody>
       </table>
@@ -124,10 +131,12 @@ import { EQUIPMENT_CATEGORIES, type EquipmentItem } from '../../solar/solar.mode
           <label appLabel for="eq-warranty">{{ 'admin.equipment.warranty' | t }}</label>
           <input appInput id="eq-warranty" type="number" min="0" dir="ltr" [value]="d().warrantyYears" (input)="set('warrantyYears', $any($event.target).value)" />
         </div>
-        <div>
-          <label appLabel for="eq-cost">{{ 'admin.equipment.cost' | t }}</label>
-          <input appInput id="eq-cost" type="number" min="0" step="any" dir="ltr" [value]="d().referenceCost" (input)="set('referenceCost', $any($event.target).value)" />
-        </div>
+        @if (canSetCost()) {
+          <div>
+            <label appLabel for="eq-cost">{{ 'admin.equipment.cost' | t }}</label>
+            <input appInput id="eq-cost" type="number" min="0" step="any" dir="ltr" [value]="d().referenceCost" (input)="set('referenceCost', $any($event.target).value)" />
+          </div>
+        }
         <div>
           <label appLabel for="eq-cur">{{ 'admin.equipment.currency' | t }}</label>
           <app-select>
@@ -168,6 +177,8 @@ export class EquipmentAdminPage {
   readonly page = input(1, { transform: (value: unknown) => numberAttribute(value, 1) });
 
   protected readonly showCost = computed(() => this.auth.can('financials.view_cost') || this.auth.can('pricing.manage'));
+  /** Reference costs are pricing (CFO, `pricing.manage`); technical specs are `catalog.manage` (Technical Lead). */
+  protected readonly canSetCost = computed(() => this.auth.can('pricing.manage'));
   protected readonly data = rxResource({ params: () => ({ q: this.q(), category: this.category(), page: this.page() }), stream: ({ params }) => this.api.list({ ...params, includeInactive: true, pageSize: 50 }) });
   protected readonly rows = computed(() => (this.data.hasValue() ? this.data.value().rows : []));
   protected readonly filters = computed<FilterDefinition[]>(() => [
@@ -228,7 +239,7 @@ export class EquipmentAdminPage {
       ratingUnit: d.ratingUnit || undefined,
       unit: d.unit || undefined,
       warrantyYears: num(d.warrantyYears),
-      referenceCost: num(d.referenceCost),
+      ...(this.canSetCost() ? { referenceCost: num(d.referenceCost) } : {}),
       currency: d.currency,
       descriptionAr: d.descriptionAr || undefined,
       descriptionEn: d.descriptionEn || undefined,

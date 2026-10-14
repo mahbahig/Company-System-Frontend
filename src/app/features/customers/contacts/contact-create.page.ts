@@ -2,6 +2,8 @@ import { Component, inject, input, signal } from '@angular/core';
 import { FormField, email, form, required, submit } from '@angular/forms/signals';
 import { Router, RouterLink } from '@angular/router';
 import { LoaderCircle } from 'lucide';
+import { UnsavedChanges, type HasUnsavedChanges } from '../../../core/forms/unsaved-changes';
+import { SaveShortcutDirective } from '../../../core/shortcuts/save-shortcut.directive';
 
 import { ApiError } from '../../../core/api/api-error';
 import { I18nService } from '../../../core/i18n/i18n.service';
@@ -61,7 +63,7 @@ const EMPTY_MODEL: ContactFormModel = {
 /** `/customers/:id/contacts/new` — nested contact create (CONT-01). */
 @Component({
   selector: 'app-contact-create-page',
-  imports: [
+  imports: [SaveShortcutDirective, 
     RouterLink,
     FormField,
     TranslatePipe,
@@ -80,7 +82,15 @@ const EMPTY_MODEL: ContactFormModel = {
   templateUrl: './contact-create.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
-export class ContactCreatePage {
+export class ContactCreatePage implements HasUnsavedChanges {
+  private saved = false;
+  /** Asks before leaving with typed-in input (route change, tab close); quiet once saved. */
+  private readonly unsavedTracking = inject(UnsavedChanges).track(() => this.hasUnsavedChanges());
+
+  hasUnsavedChanges(): boolean {
+    return !this.saved && this.contactForm().dirty();
+  }
+
   private readonly customers = inject(CustomersApi);
   private readonly router = inject(Router);
   protected readonly i18n = inject(I18nService);
@@ -134,6 +144,7 @@ export class ContactCreatePage {
       };
       try {
         await this.save(body);
+        this.saved = true;
         await this.router.navigateByUrl(`/${this.i18n.locale()}/customers/${this.customerId()}`);
       } catch (error) {
         this.errorKey.set(this.messageFor(error));

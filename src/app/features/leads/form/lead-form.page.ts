@@ -1,10 +1,17 @@
-import { Component, computed, effect, inject, input, signal } from '@angular/core';
+import { Component, ElementRef, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
-import { FormField, form, max, min, required } from '@angular/forms/signals';
-import { Router } from '@angular/router';
+import { FormField, form, max, min, required, submit, validate } from '@angular/forms/signals';
+import { Router, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 
 import { ApiError } from '../../../core/api/api-error';
+import { FormDraft } from '../../../core/forms/form-draft';
+import { UnsavedChanges, type HasUnsavedChanges } from '../../../core/forms/unsaved-changes';
+import { SaveShortcutDirective } from '../../../core/shortcuts/save-shortcut.directive';
+import { BreadcrumbsComponent } from '../../../shared/crm/breadcrumbs/breadcrumbs.component';
+import { DraftBannerComponent } from '../../../shared/crm/draft-banner/draft-banner.component';
+import { emailValidator, mobileValidator, phoneValidator } from '../../../shared/utils/contact-validation';
+import { focusFirstInvalid } from '../../../shared/utils/focus-invalid';
 import { I18nService } from '../../../core/i18n/i18n.service';
 import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { ReferenceDataService } from '../../../core/reference/reference-data.service';
@@ -111,6 +118,10 @@ const EMPTY: LeadFormModel = {
   selector: 'app-lead-form-page',
   imports: [
     FormField,
+    RouterLink,
+    SaveShortcutDirective,
+    BreadcrumbsComponent,
+    DraftBannerComponent,
     TranslatePipe,
     PageHeaderComponent,
     AlertComponent,
@@ -128,9 +139,10 @@ const EMPTY: LeadFormModel = {
   templateUrl: './lead-form.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
-export class LeadFormPage {
+export class LeadFormPage implements HasUnsavedChanges {
   private readonly leads = inject(LeadsApi);
   private readonly router = inject(Router);
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   protected readonly i18n = inject(I18nService);
   protected readonly reference = inject(ReferenceDataService);
 
@@ -150,25 +162,74 @@ export class LeadFormPage {
     const status = this.existing.value()?.lead.status;
     return status === 'converted' || status === 'closed';
   });
+  /** Not final, but the server would refuse an edit now (e.g. during the handoff, or another rep's stage). */
+  protected readonly locked = computed(() => !this.readOnly() && this.existing.hasValue() && this.existing.value().canEdit === false);
+  /** Server field errors from the last save, cleared as soon as the field is edited. */
+  private readonly serverErrors = signal<Record<string, string>>({});
+  /** The qualification block is optional detail: collapsed on a new lead until opened (or until it holds values / an error). */
+  protected readonly showQualification = signal(false);
+  protected readonly crumbs = computed(() => [
+    { label: this.i18n.t('navigation.items.leads'), path: '/leads' },
+    ...(this.isEdit() ? [{ label: this.existing.value()?.lead.name ?? '', path: this.id() ? `/leads/${this.id()}` : undefined }] : []),
+    { label: this.i18n.t(this.isEdit() ? 'crm.leads.editTitle' : 'crm.leads.newTitle') },
+  ]);
 
   private readonly model = signal<LeadFormModel>({ ...EMPTY });
   protected readonly leadForm = form(this.model, (path) => {
     required(path.name, { message: 'validation.required' });
     required(path.phone, { message: 'validation.required' });
+    validate(path.phone, mobileValidator);
+    validate(path.altPhone, phoneValidator);
+    validate(path.email, emailValidator);
     required(path.sourceCode, { message: 'validation.required' });
     for (const field of [path.q.avgMonthlyConsumptionKwh, path.q.avgMonthlyBill, path.q.estimatedSizeKwp, path.q.budget]) min(field, 0, { message: 'validation.mustBePositive' });
     min(path.q.interestLevel, 1, { message: 'validation.mustBePositive' });
     max(path.q.interestLevel, 5, { message: 'validation.mustBePositive' });
   });
 
+  /** Unsent input of a NEW lead, kept in this browser only (never sent until Save). */
+  protected readonly draft = new FormDraft<LeadFormModel>('lead.new', this.model, {
+    enabled: () => !this.isEdit(),
+    dirty: () => this.leadForm().dirty(),
+  });
+  private saved = false;
+
   constructor() {
     void this.reference.load();
     effect(() => this.loadIntoForm());
+    inject(UnsavedChanges).track(() => this.hasUnsavedChanges());
+    // Clear a field's server error once the user changes that field.
+    effect(() => {
+      this.model();
+      untracked(() => {
+        const errors = this.serverErrors();
+        const remaining = Object.fromEntries(Object.entries(errors).filter(([field]) => this.valueAt(field) === this.erroredValues[field]));
+        if (Object.keys(remaining).length !== Object.keys(errors).length) this.serverErrors.set(remaining);
+      });
+    });
+  }
+
+  private erroredValues: Record<string, unknown> = {};
+
+  hasUnsavedChanges(): boolean {
+    return !this.saved && !this.readOnly() && this.leadForm().dirty();
+  }
+
+  protected restoreDraft(): void {
+    this.draft.restore((value) => {
+      this.model.set({ ...EMPTY, ...value, q: { ...EMPTY_Q, ...(value.q ?? {}) } });
+      if (Object.values(value.q ?? {}).some((entry) => entry !== null && entry !== '' && entry !== false)) this.showQualification.set(true);
+    });
+  }
+
+  private valueAt(field: string): unknown {
+    return field.split('.').reduce<unknown>((value, key) => (value && typeof value === 'object' ? (value as Record<string, unknown>)[key] : undefined), this.model());
   }
 
   private loadIntoForm(): void {
     const lead = this.existing.value()?.lead;
     if (!lead) return;
+    if (lead.qualification && Object.values(lead.qualification).some((value) => value !== null && value !== undefined && value !== '')) this.showQualification.set(true);
     this.model.set({
       name: lead.name,
       companyName: lead.companyName ?? '',
@@ -207,9 +268,11 @@ export class LeadFormPage {
     });
   }
 
-  protected fieldError(field: 'name' | 'phone' | 'sourceCode'): string | null {
+  /** The first message for a field: the client check once touched, else the server's verdict from the last save. */
+  protected fieldError(field: 'name' | 'phone' | 'altPhone' | 'email' | 'sourceCode'): string | null {
     const state = this.leadForm[field]();
-    return state.touched() ? (state.errors()[0]?.message ?? null) : null;
+    const client = state.touched() ? (state.errors()[0]?.message ?? null) : null;
+    return client ?? this.serverErrors()[field] ?? null;
   }
 
   private toPayload(): LeadFields {
@@ -263,22 +326,39 @@ export class LeadFormPage {
 
   protected async onSubmit(event: Event): Promise<void> {
     event.preventDefault();
+    if (this.leadForm().submitting()) return;
     this.leadForm().markAsTouched();
     if (this.leadForm().invalid()) {
       // Required fields show their own message; out-of-range qualification numbers are reported here.
-      if (this.leadForm.q().invalid()) this.errorKey.set('validation.mustBePositive');
+      if (this.leadForm.q().invalid()) {
+        this.errorKey.set('validation.mustBePositive');
+        this.showQualification.set(true);
+      }
+      focusFirstInvalid(this.host.nativeElement);
       return;
     }
     this.errorKey.set(null);
+    this.serverErrors.set({});
 
-    try {
-      const id = this.id();
-      const lead = id
-        ? await firstValueFrom(this.leads.update(id, this.toPayload()))
-        : await firstValueFrom(this.leads.create(this.toPayload() as CreateLeadPayload));
-      await this.router.navigate(['/', this.i18n.locale(), 'leads', lead.id]);
-    } catch (error) {
-      this.errorKey.set(ApiError.is(error) && this.i18n.has(error.messageKey) ? error.messageKey : 'errors.db.unexpected');
-    }
+    await submit(this.leadForm, async () => {
+      try {
+        const id = this.id();
+        const lead = id
+          ? await firstValueFrom(this.leads.update(id, this.toPayload()))
+          : await firstValueFrom(this.leads.create(this.toPayload() as CreateLeadPayload));
+        this.saved = true;
+        this.draft.clear();
+        await this.router.navigate(['/', this.i18n.locale(), 'leads', lead.id]);
+      } catch (error) {
+        this.errorKey.set(ApiError.is(error) && this.i18n.has(error.messageKey) ? error.messageKey : 'errors.db.unexpected');
+        if (ApiError.is(error) && Object.keys(error.fieldErrors).length) {
+          this.serverErrors.set(error.fieldErrors);
+          this.erroredValues = Object.fromEntries(Object.keys(error.fieldErrors).map((field) => [field, this.valueAt(field)]));
+          if (Object.keys(error.fieldErrors).some((field) => field.startsWith('qualification.'))) this.showQualification.set(true);
+          focusFirstInvalid(this.host.nativeElement);
+        }
+      }
+      return undefined;
+    });
   }
 }

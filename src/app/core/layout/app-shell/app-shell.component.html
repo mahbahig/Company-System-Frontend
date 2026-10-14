@@ -1,10 +1,32 @@
-<!-- Desktop sidebar -->
+<!-- Desktop sidebar: expanded (labels) or collapsed (icons + tooltips); the preference persists. -->
 <aside
-  class="relative hidden w-64 shrink-0 flex-col overflow-hidden border-e border-sidebar-border bg-sidebar lg:flex before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-48 before:[background:radial-gradient(120%_80%_at_20%_0%,hsl(var(--sidebar-accent)/0.18),transparent_70%)]"
+  class="relative hidden shrink-0 flex-col overflow-hidden border-e border-sidebar-border bg-sidebar transition-[width] duration-200 ease-premium lg:flex before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-48 before:[background:radial-gradient(120%_80%_at_20%_0%,hsl(var(--sidebar-accent)/0.18),transparent_70%)]"
+  [class.w-64]="!sidebar.collapsed()"
+  [class.w-16]="sidebar.collapsed()"
 >
-  <app-sidebar-brand />
-  <div class="relative min-h-0 flex-1 overflow-y-auto px-2 pb-4 scroll-area-sidebar">
-    <app-sidebar-nav />
+  <app-sidebar-brand [collapsed]="sidebar.collapsed()" />
+  <div class="relative min-h-0 flex-1 overflow-y-auto overflow-x-hidden pb-4 scroll-area-sidebar" [class.px-2]="!sidebar.collapsed()" [class.px-1.5]="sidebar.collapsed()">
+    <app-sidebar-nav [collapsed]="sidebar.collapsed()" />
+  </div>
+  <div class="relative border-t border-sidebar-border p-2" [class.flex]="sidebar.collapsed()" [class.justify-center]="sidebar.collapsed()">
+    <button
+      type="button"
+      class="flex h-9 items-center gap-3 rounded-md px-2.5 text-sm text-sidebar-foreground/70 transition-[color,background-color] duration-200 ease-premium hover:bg-sidebar-accent/10 hover:text-sidebar-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-accent"
+      [class.w-full]="!sidebar.collapsed()"
+      [attr.aria-label]="(sidebar.collapsed() ? 'ux.sidebar.expand' : 'ux.sidebar.collapse') | t"
+      [attr.aria-expanded]="!sidebar.collapsed()"
+      aria-keyshortcuts="["
+      [appTooltip]="sidebar.collapsed() ? ('ux.sidebar.expandHint' | t) : null"
+      [appTooltipHeading]="sidebar.collapsed() ? ('ux.sidebar.expand' | t) : null"
+      appTooltipSide="end"
+      (click)="sidebar.toggle()"
+    >
+      <app-icon [icon]="sidebar.collapsed() ? expandIcon : collapseIcon" svgClass="size-4 shrink-0 rtl:-scale-x-100" />
+      @if (!sidebar.collapsed()) {
+        <span class="flex-1 truncate text-start">{{ 'ux.sidebar.collapse' | t }}</span>
+        <kbd class="rounded border border-sidebar-border px-1.5 text-2xs text-sidebar-foreground/60" aria-hidden="true">[</kbd>
+      }
+    </button>
   </div>
 </aside>
 
@@ -16,7 +38,7 @@
       type="button"
       tabindex="-1"
       [attr.aria-label]="'common.labels.closeMenu' | t"
-      class="absolute inset-0 bg-black/50"
+      class="absolute inset-0 bg-black/50 animate-fade-in [animation-duration:150ms]"
       (click)="closeDrawer()"
     ></button>
     <div
@@ -25,7 +47,7 @@
       [attr.aria-label]="'common.labels.menu' | t"
       cdkTrapFocus
       [cdkTrapFocusAutoCapture]="true"
-      class="absolute inset-y-0 start-0 flex w-72 flex-col bg-sidebar shadow-xl"
+      class="app-drawer absolute inset-y-0 start-0 flex w-72 max-w-[85vw] flex-col bg-sidebar shadow-xl"
     >
       <div class="flex items-center justify-end px-2 pt-2">
         <button
@@ -61,6 +83,8 @@
       size="icon"
       class="lg:hidden"
       [attr.aria-label]="'common.labels.openMenu' | t"
+      [appTooltip]="'common.labels.openMenu' | t"
+      appTooltipSide="bottom"
       [attr.aria-expanded]="drawerOpen()"
       (click)="openDrawer()"
     >
@@ -84,11 +108,24 @@
     </div>
   </header>
 
+  <!-- relative: the scroll pane is the containing block of absolutely positioned content
+       (e.g. sr-only labels). Otherwise such an element is placed against the viewport at its
+       position deep in the scrolled page and stretches the document, which then shows a
+       second vertical scrollbar next to this one. -->
   <main
     id="main-content"
     tabindex="-1"
-    class="min-h-0 min-w-0 flex-1 overflow-y-auto p-4 focus:outline-none scroll-area sm:p-6"
+    class="relative min-h-0 min-w-0 flex-1 overflow-y-auto p-4 focus:outline-none scroll-area sm:p-6"
   >
+    @if (auth.isReadOnly()) {
+      <p role="note" class="mb-4 rounded-md border border-info/30 bg-info/10 px-3 py-2 text-sm text-info-tint">
+        {{ 'access.readOnlyBanner' | t }}
+      </p>
+    }
     <router-outlet />
   </main>
 </div>
+
+<app-command-palette />
+<app-shortcuts-help />
+<app-confirm-host />

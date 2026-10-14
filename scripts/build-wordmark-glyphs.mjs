@@ -1,14 +1,24 @@
 /**
- * Generates src/app/features/auth/shared/solar-scene/wordmark-typeface.ts: the
- * handful of glyphs the 3D "ECOTECH" wordmark on the sign-in screens needs, in
- * three.js typeface format. The outlines come from Inter — the typeface of
- * ecotecheg.com — so the scene ships a few kilobytes of vectors instead of a
- * whole font file and a runtime font parser.
+ * Generates the ECOTECH logotype's letters from the brand wordmark typeface,
+ * so the app ships a few kilobytes of vectors instead of a font file:
  *
- * opentype.js is only needed to run this script, so it is not a project
- * dependency:
+ * - src/app/shared/ui/brand-wordmark/brand-wordmark-glyphs.ts — SVG paths,
+ *   advances, ink bounds and kerning, for the 2D lockup (logotype and "CRM"
+ *   descriptor) and the spacing of the 3D logotype, so both are set letter
+ *   for letter alike;
+ * - src/app/features/auth/shared/solar-scene/wordmark-typeface.ts — the same
+ *   outlines in three.js typeface format, for the extruded sign-in wordmark.
+ *
+ * Both use a 1000-unit em, so a three.js `size` is the em size.
+ *
+ * The typeface is Archivo Expanded (SIL Open Font License 1.1) at a weight
+ * between the static cuts, instanced from the variable font with fontTools:
+ *   pip install fonttools
+ *   fonttools varLib.instancer "Archivo[wdth,wght].ttf" wdth=125 wght=350 -o ArchivoExpanded-350.ttf
+ * opentype.js is only needed to run this script, so it is not a dependency:
  *   npm install --no-save opentype.js
- *   node scripts/build-wordmark-glyphs.mjs path/to/Inter-SemiBold.ttf
+ *   node scripts/build-wordmark-glyphs.mjs ArchivoExpanded-350.ttf "Archivo Expanded 350"
+ * The name is passed in because an instanced font keeps its parent's names.
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -16,28 +26,26 @@ import { fileURLToPath } from 'node:url';
 import opentype from 'opentype.js';
 
 const WORD = 'ECOTECH';
+/** The product name set after the logotype in the 2D lockup, in the same face. */
+const DESCRIPTOR = 'CRM';
+const EM = 1000;
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const outFile = join(
-  root,
-  'src',
-  'app',
-  'features',
-  'auth',
-  'shared',
-  'solar-scene',
-  'wordmark-typeface.ts',
-);
+const app = join(root, 'src', 'app');
+const svgFile = join(app, 'shared', 'ui', 'brand-wordmark', 'brand-wordmark-glyphs.ts');
+const typefaceFile = join(app, 'features', 'auth', 'shared', 'solar-scene', 'wordmark-typeface.ts');
 
-const [fontPath] = process.argv.slice(2);
+const [fontPath, nameArgument] = process.argv.slice(2);
 if (!fontPath) {
-  console.error('usage: node scripts/build-wordmark-glyphs.mjs <font.ttf>');
+  console.error('usage: node scripts/build-wordmark-glyphs.mjs <font.ttf> ["Display name"]');
   process.exit(1);
 }
 
 const font = opentype.loadSync(fontPath);
-// Same unit conversion as three's TTFLoader: typeface resolution 1000 at 72 pt.
-const scale = 100000 / (font.unitsPerEm * 72);
+const name = nameArgument ?? font.getEnglishName('fullName');
+const copyright = font.getEnglishName('copyright');
+const scale = EM / font.unitsPerEm;
 const units = (value) => Math.round(value * scale);
+const glyphOf = (char) => font.charToGlyph(char);
 
 // Typeface outline syntax (see three's Font): cubic curves are `b`, and every
 // command lists its end point first, then its control point(s).
@@ -55,11 +63,13 @@ const outline = (commands) =>
     })
     .join(' ');
 
-const glyphs = {};
+// The 3D wordmark needs only the logotype's letters; the 2D lockup also sets
+// the descriptor.
+const typefaceGlyphs = {};
 for (const char of new Set(WORD)) {
-  const glyph = font.charToGlyph(char);
+  const glyph = glyphOf(char);
   const box = glyph.getBoundingBox();
-  glyphs[char] = {
+  typefaceGlyphs[char] = {
     ha: units(glyph.advanceWidth),
     x_min: units(box.x1),
     x_max: units(box.x2),
@@ -67,36 +77,95 @@ for (const char of new Set(WORD)) {
   };
 }
 
+const svgGlyphs = {};
+for (const char of new Set(WORD + DESCRIPTOR)) {
+  const glyph = glyphOf(char);
+  const box = glyph.getBoundingBox();
+  svgGlyphs[char] = {
+    advance: units(glyph.advanceWidth),
+    left: units(box.x1),
+    right: units(box.x2),
+    // y down, baseline at 0: what an SVG <path> wants.
+    path: glyph.getPath(0, 0, EM).toPathData(1),
+  };
+}
+
+const kerning = {};
+for (const text of [WORD, DESCRIPTOR]) {
+  for (let index = 1; index < text.length; index++) {
+    const pair = text.slice(index - 1, index + 1);
+    const value = units(font.getKerningValue(glyphOf(pair[0]), glyphOf(pair[1])));
+    if (value !== 0) kerning[pair] = value;
+  }
+}
+
 const head = font.tables.head;
-const data = {
-  glyphs,
-  familyName: font.getEnglishName('fullName'),
+const typeface = {
+  glyphs: typefaceGlyphs,
+  familyName: name,
   ascender: units(font.ascender),
   descender: units(font.descender),
-  underlinePosition: font.tables.post.underlinePosition,
-  underlineThickness: font.tables.post.underlineThickness,
-  boundingBox: { xMin: head.xMin, xMax: head.xMax, yMin: head.yMin, yMax: head.yMax },
-  resolution: 1000,
+  underlinePosition: units(font.tables.post.underlinePosition),
+  underlineThickness: units(font.tables.post.underlineThickness),
+  boundingBox: {
+    xMin: units(head.xMin),
+    xMax: units(head.xMax),
+    yMin: units(head.yMin),
+    yMax: units(head.yMax),
+  },
+  resolution: EM,
   original_font_information: {
-    fullName: font.getEnglishName('fullName'),
-    version: font.getEnglishName('version'),
-    copyright: font.getEnglishName('copyright'),
-    license: font.getEnglishName('license'),
-    licenseURL: font.getEnglishName('licenseURL'),
+    fullName: name,
+    copyright,
+    licenseURL: 'https://openfontlicense.org',
   },
 };
 
-mkdirSync(dirname(outFile), { recursive: true });
+const banner = '// Generated by scripts/build-wordmark-glyphs.mjs — do not edit by hand.';
+const credit = [
+  `Typeface: ${name}, SIL Open Font License 1.1 (https://openfontlicense.org).`,
+  `${copyright}.`,
+].join('\n * ');
+
+mkdirSync(dirname(svgFile), { recursive: true });
 writeFileSync(
-  outFile,
-  `// Generated by scripts/build-wordmark-glyphs.mjs — do not edit by hand.
+  svgFile,
+  `${banner}
+
+/**
+ * The letters of the "${WORD}" logotype and its "${DESCRIPTOR}" descriptor, on a
+ * ${EM}-unit em: SVG paths (y down, baseline at 0), advances, ink bounds and
+ * the font's kerning for the pairs the two words use.
+ *
+ * ${credit}
+ */
+export const BRAND_WORDMARK_GLYPHS = ${JSON.stringify(
+    {
+      unitsPerEm: EM,
+      capHeight: units(font.tables.os2.sCapHeight),
+      glyphs: svgGlyphs,
+      kerning,
+    },
+    null,
+    2,
+  )} as const;
+`,
+);
+
+writeFileSync(
+  typefaceFile,
+  `${banner}
 import type { FontData } from 'three/addons/loaders/FontLoader.js';
 
 /**
- * The glyphs of the 3D "${WORD}" wordmark (${data.familyName}, SIL Open Font
- * License 1.1 — see \`original_font_information\`), in three.js typeface format.
+ * The glyphs of the 3D "${WORD}" wordmark in three.js typeface format, on a
+ * ${EM}-unit em (so a \`size\` is the em size).
+ *
+ * ${credit}
  */
-export const WORDMARK_TYPEFACE: FontData = ${JSON.stringify(data, null, 2)};
+export const WORDMARK_TYPEFACE: FontData = ${JSON.stringify(typeface, null, 2)};
 `,
 );
-console.log(`wordmark: ${Object.keys(glyphs).length} glyphs from ${data.familyName} → ${outFile}`);
+console.log(
+  `wordmark: ${Object.keys(svgGlyphs).length} glyphs from ${name} → ${svgFile}, ${typefaceFile}`,
+);

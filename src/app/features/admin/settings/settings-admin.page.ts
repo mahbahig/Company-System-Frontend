@@ -42,19 +42,22 @@ const CHOICES: Record<string, string[]> = {
 const HIDDEN = new Set(['gates.severityOverrides', 'automation.disabled']);
 
 /**
- * ADM-03 / §21 system settings: approval thresholds, SLAs, distribution,
- * proposal validity, session and MFA policy, pricing defaults… plus the
- * stage-gate severities (§7.6). Every change is audited.
+ * ADM-03 / §21 settings: system configuration (SLAs, distribution, sessions,
+ * MFA, notifications…) edited by the platform administrator, and business
+ * policy (approval thresholds, pricing, financial rules, stage-gate
+ * severities §7.6) edited by the CEO / CFO. Each key is editable only with its
+ * own permission; the API enforces the same split. Every change is audited.
  */
 @Component({
   selector: 'app-settings-admin-page',
   imports: [TranslatePipe, EnumLabelPipe, AlertComponent, BadgeComponent, ButtonDirective, PageHeaderComponent, TabsComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, ...TABLE_IMPORTS],
   template: `
     <app-page-header [heading]="'admin.settings.title' | t" [subtitle]="'admin.settings.subtitle' | t" class="!mb-0">
-      @if (canManage()) {
+      @if (canManage() || canManagePolicy()) {
         <button type="button" appButton [disabled]="actions.busy() || !dirty()" (click)="save()">{{ 'admin.settings.save' | t }}</button>
       }
     </app-page-header>
+    <p class="text-sm text-muted-foreground">{{ 'admin.settings.policyHint' | t }}</p>
     @if (actions.message(); as text) {
       <app-alert>{{ text }}</app-alert>
     }
@@ -87,7 +90,7 @@ const HIDDEN = new Set(['gates.severityOverrides', 'automation.disabled']);
                 <td appTableCell>{{ gate.defaultSeverity | enum: 'gateSeverity' }}</td>
                 <td appTableCell>
                   <app-select>
-                    <select appSelect [attr.aria-label]="'admin.settings.effective' | t" [disabled]="gate.locked || !canManage()" [value]="gateValue(gate)" (change)="setGate(gate, $any($event.target).value)">
+                    <select appSelect [attr.aria-label]="'admin.settings.effective' | t" [disabled]="gate.locked || !mayEdit('gates.severityOverrides')" [value]="gateValue(gate)" (change)="setGate(gate, $any($event.target).value)">
                       @for (severity of ['hard', 'soft', 'off']; track severity) {
                         <option [value]="severity">{{ severity | enum: 'gateSeverity' }}</option>
                       }
@@ -107,18 +110,35 @@ const HIDDEN = new Set(['gates.severityOverrides', 'automation.disabled']);
               @switch (kind(key)) {
                 @case ('boolean') {
                   <label class="flex items-center gap-2 text-sm font-medium">
-                    <input type="checkbox" [disabled]="!canManage()" [checked]="draft()[key]" (change)="set(key, $any($event.target).checked)" />
+                    <input type="checkbox" [disabled]="!mayEdit(key)" [checked]="draft()[key]" (change)="set(key, $any($event.target).checked)" />
                     {{ label(key) }}
                   </label>
                 }
                 @case ('number') {
                   <label appLabel [for]="'s-' + key">{{ label(key) }}</label>
-                  <input appInput type="number" step="any" dir="ltr" [id]="'s-' + key" [disabled]="!canManage()" [value]="draft()[key]" (input)="set(key, num($any($event.target).value))" />
+                  <input
+                    appInput
+                    type="number"
+                    min="0"
+                    step="any"
+                    inputmode="decimal"
+                    dir="ltr"
+                    [id]="'s-' + key"
+                    [disabled]="!mayEdit(key)"
+                    [value]="draft()[key]"
+                    (keydown)="blockSign($event)"
+                    (input)="setNumber(key, $event)"
+                    [attr.aria-invalid]="rejected() === key ? true : null"
+                    [attr.aria-describedby]="rejected() === key ? 's-' + key + '-error' : null"
+                  />
+                  @if (rejected() === key) {
+                    <p [id]="'s-' + key + '-error'" role="alert" class="mt-1 text-sm text-destructive">{{ 'server.validation.notNegative' | t }}</p>
+                  }
                 }
                 @case ('choice') {
                   <label appLabel [for]="'s-' + key">{{ label(key) }}</label>
                   <app-select>
-                    <select appSelect [id]="'s-' + key" [disabled]="!canManage()" [value]="draft()[key]" (change)="set(key, $any($event.target).value)">
+                    <select appSelect [id]="'s-' + key" [disabled]="!mayEdit(key)" [value]="draft()[key]" (change)="set(key, $any($event.target).value)">
                       @for (choice of choices[key]; track choice) {
                         <option [value]="choice">{{ choiceLabel(choice) }}</option>
                       }
@@ -127,19 +147,25 @@ const HIDDEN = new Set(['gates.severityOverrides', 'automation.disabled']);
                 }
                 @case ('list') {
                   <label appLabel [for]="'s-' + key">{{ label(key) }}</label>
-                  <input appInput dir="ltr" [id]="'s-' + key" [disabled]="!canManage()" [value]="listText(key)" (change)="set(key, list($any($event.target).value))" />
+                  <input appInput dir="ltr" [id]="'s-' + key" [disabled]="!mayEdit(key)" [value]="listText(key)" (change)="set(key, list($any($event.target).value))" />
                   <p class="mt-1 text-xs text-muted-foreground">{{ 'admin.users.commaSeparated' | t }}</p>
                 }
                 @case ('map') {
                   <label appLabel [for]="'s-' + key">{{ label(key) }}</label>
-                  <textarea appTextarea rows="3" dir="ltr" class="font-mono text-xs" [id]="'s-' + key" [disabled]="!canManage()" [value]="json(key)" (change)="setJson(key, $any($event.target).value)"></textarea>
+                  <textarea appTextarea rows="3" dir="ltr" class="font-mono text-xs" [id]="'s-' + key" [disabled]="!mayEdit(key)" [value]="json(key)" (change)="setJson(key, $any($event.target).value)"></textarea>
                 }
                 @default {
                   <label appLabel [for]="'s-' + key">{{ label(key) }}</label>
-                  <input appInput dir="ltr" [id]="'s-' + key" [disabled]="!canManage()" [value]="draft()[key]" (input)="set(key, $any($event.target).value)" />
+                  <input appInput dir="ltr" [id]="'s-' + key" [disabled]="!mayEdit(key)" [value]="draft()[key]" (input)="set(key, $any($event.target).value)" />
                 }
               }
-              @if (canManage()) {
+              @if (isPolicy(key)) {
+                <app-badge tone="info" class="mt-1">{{ 'admin.settings.policyBadge' | t }}</app-badge>
+              }
+              @if (isSecurity(key)) {
+                <app-badge tone="warning" class="mt-1">{{ 'ux.settings.securityBadge' | t }}</app-badge>
+              }
+              @if (mayEdit(key)) {
                 <p class="mt-1 font-mono text-[10px] text-muted-foreground" dir="ltr">{{ key }}</p>
               }
             </div>
@@ -159,8 +185,15 @@ export class SettingsAdminPage {
   protected readonly choices = CHOICES;
 
   protected readonly data = rxResource({ stream: () => this.api.get<Record<string, Value>>('settings') });
-  protected readonly gates = rxResource({ params: () => this.auth.canAny(['settings.view', 'settings.manage']), stream: ({ params }) => (params ? this.api.get<Gate[]>('opportunities/gates/catalogue') : of([] as Gate[])) });
+  protected readonly gates = rxResource({ params: () => this.auth.canAny(['settings.view', 'settings.manage', 'settings.manage_policy']), stream: ({ params }) => (params ? this.api.get<Gate[]>('opportunities/gates/catalogue') : of([] as Gate[])) });
+  /** Which keys are business policy (approval limits, pricing, financial rules) — decided by the server. */
+  protected readonly meta = rxResource({ stream: () => this.api.get<{ policyKeys: string[]; securityKeys?: string[] }>('settings/meta') });
   protected readonly canManage = computed(() => this.auth.can('settings.manage'));
+  protected readonly canManagePolicy = computed(() => this.auth.can('settings.manage_policy'));
+  private readonly policyKeys = computed(() => new Set(this.meta.value()?.policyKeys ?? []));
+  /** Sessions, sign-in, MFA, password reset: the System Administrator's alone (`security.manage_settings`). */
+  private readonly securityKeys = computed(() => new Set(this.meta.value()?.securityKeys ?? []));
+  protected readonly canManageSecurity = computed(() => this.auth.can('security.manage_settings'));
   protected readonly draft = signal<Record<string, Value>>({});
   protected readonly changed = signal<Set<string>>(new Set());
   protected readonly dirty = computed(() => this.changed().size > 0);
@@ -212,8 +245,29 @@ export class SettingsAdminPage {
     return this.i18n.has(role) ? this.i18n.t(role) : choice;
   }
 
-  protected num(value: string): number {
-    return value === '' ? 0 : Number(value);
+  /** The number field whose last entry was refused (a negative or non-numeric value). */
+  protected readonly rejected = signal<string | null>(null);
+
+  /** Settings are never negative: the minus sign (and `+`, exponents) cannot even be typed. */
+  protected blockSign(event: KeyboardEvent): void {
+    if (['-', '+', 'e', 'E'].includes(event.key)) event.preventDefault();
+  }
+
+  /**
+   * Takes a number of 0 or more. Anything else — a pasted "-5", text — is
+   * refused: the field goes back to its last value and says why. (The API
+   * refuses negatives too, `validation.notNegative`.)
+   */
+  protected setNumber(key: string, event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const value = input.value === '' ? 0 : Number(input.value);
+    if (input.validity.badInput || !Number.isFinite(value) || value < 0) {
+      input.value = String(this.draft()[key] ?? 0);
+      this.rejected.set(key);
+      return;
+    }
+    if (this.rejected() === key) this.rejected.set(null);
+    this.set(key, value);
   }
 
   protected list(value: string): string[] {
@@ -231,11 +285,35 @@ export class SettingsAdminPage {
   protected setJson(key: string, text: string): void {
     try {
       const parsed = JSON.parse(text) as Record<string, unknown>;
-      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) this.set(key, parsed);
-      else throw new Error('shape');
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('shape');
+      if (hasNegative(parsed)) {
+        this.actions.error.set(this.i18n.t('ux.settings.negativeInMap', { key: this.label(key) }));
+        return;
+      }
+      this.set(key, parsed);
     } catch {
       this.actions.error.set(this.i18n.t('admin.settings.invalidJson', { key }));
     }
+  }
+
+  protected isPolicy(key: string): boolean {
+    return this.policyKeys().has(key);
+  }
+
+  protected isSecurity(key: string): boolean {
+    return this.securityKeys().has(key);
+  }
+
+  /**
+   * The same split the API applies per key: security keys need
+   * `security.manage_settings` (System Administrator), business-policy keys
+   * `settings.manage_policy` (administrator, CEO, CFO), every other key
+   * `settings.manage` (administrator, CEO). Fails closed until the split is known.
+   */
+  protected mayEdit(key: string): boolean {
+    if (!this.meta.hasValue()) return false;
+    if (this.isSecurity(key)) return this.canManageSecurity();
+    return this.isPolicy(key) ? this.canManagePolicy() : this.canManage();
   }
 
   protected set(key: string, value: Value): void {
@@ -264,4 +342,11 @@ export class SettingsAdminPage {
       this.gates.reload();
     });
   }
+}
+
+/** True when a map setting holds a negative (or non-finite) number anywhere. */
+function hasNegative(value: unknown): boolean {
+  if (typeof value === 'number') return !Number.isFinite(value) || value < 0;
+  if (value && typeof value === 'object') return Object.values(value).some(hasNegative);
+  return false;
 }

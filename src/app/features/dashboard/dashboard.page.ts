@@ -17,19 +17,24 @@ import { FinanceDashboardComponent } from '../analytics/dashboards/finance-dashb
 import { MarketingDashboardComponent } from '../analytics/dashboards/marketing-dashboard.component';
 import { OperationalDashboardComponent } from '../analytics/dashboards/operational-dashboard.component';
 import { PersonalDashboardComponent } from '../analytics/dashboards/personal-dashboard.component';
+import { PlatformDashboardComponent } from '../analytics/dashboards/platform-dashboard.component';
 import { SalesDashboardComponent } from '../analytics/dashboards/sales-dashboard.component';
 import type { AnalyticsFilter } from '../analytics/models/analytics-filter.interface';
 import type { DashboardCode } from '../analytics/models/dashboards.interface';
 import { AnalyticsFilterBarComponent } from '../analytics/shared/analytics-filter-bar.component';
+import { QuickAccessComponent } from './quick-access.component';
 
 /**
- * §11 role workspace: the personal dashboard plus every dashboard the user's
- * roles open (executive, sales, marketing, operational, finance), selected by
- * `?view=` so a tab can be bookmarked. Filters live in the URL too.
+ * §11 role workspace: exactly the dashboards the user's roles open, as decided
+ * by the server (`GET /dashboards`) — personal, executive, sales, marketing,
+ * operational, finance, or the administrator's platform dashboard — selected
+ * by `?view=` so a tab can be bookmarked. Filters live in the URL too. Every
+ * signed-in user lands here; a role without dashboards gets a plain notice.
  */
 @Component({
   selector: 'app-dashboard-page',
   imports: [
+    QuickAccessComponent,
     TranslatePipe,
     HeroBannerComponent,
     PageHeaderComponent,
@@ -42,6 +47,7 @@ import { AnalyticsFilterBarComponent } from '../analytics/shared/analytics-filte
     MarketingDashboardComponent,
     OperationalDashboardComponent,
     FinanceDashboardComponent,
+    PlatformDashboardComponent,
     ...CARD_IMPORTS,
   ],
   template: `
@@ -60,6 +66,8 @@ import { AnalyticsFilterBarComponent } from '../analytics/shared/analytics-filte
       }
     </app-hero-banner>
 
+    <app-quick-access />
+
     @if (tabs().length > 1) {
       <app-tabs
         [tabs]="tabs()"
@@ -69,8 +77,12 @@ import { AnalyticsFilterBarComponent } from '../analytics/shared/analytics-filte
       />
     }
 
-    @if (active() !== 'personal') {
+    @if (active() && active() !== 'personal' && active() !== 'platform') {
       <app-analytics-filter-bar [filter]="filter()" />
+    }
+
+    @if (available.hasValue() && !tabs().length) {
+      <p class="text-sm text-muted-foreground">{{ 'dashboard.noDashboards' | t }}</p>
     }
 
     @switch (active()) {
@@ -89,7 +101,10 @@ import { AnalyticsFilterBarComponent } from '../analytics/shared/analytics-filte
       @case ('finance') {
         <app-finance-dashboard [filter]="filter()" />
       }
-      @default {
+      @case ('platform') {
+        <app-platform-dashboard />
+      }
+      @case ('personal') {
         <app-personal-dashboard [filter]="filter()" />
       }
     }
@@ -116,15 +131,17 @@ export class DashboardPage {
   protected readonly available = rxResource({ stream: () => this.analytics.available() });
 
   protected readonly tabs = computed<TabItem[]>(() => {
+    // Fail closed: only the dashboards the server says the role opens (none while loading).
     const codes: DashboardCode[] = this.available.hasValue()
       ? this.available.value().dashboards
-      : ['personal'];
+      : [];
     return codes.map((code) => ({ id: code, label: this.i18n.t(`analytics.tabs.${code}`) }));
   });
 
   protected readonly active = computed(() => {
     const view = this.view();
-    return this.tabs().some((tab) => tab.id === view) ? (view as string) : 'personal';
+    const tabs = this.tabs();
+    return tabs.some((tab) => tab.id === view) ? (view as string) : (tabs[0]?.id ?? null);
   });
 
   protected readonly filter = computed<AnalyticsFilter>(() => ({
@@ -152,7 +169,7 @@ export class DashboardPage {
 
   protected select(view: string): void {
     void this.router.navigate([], {
-      queryParams: { view: view === 'personal' ? null : view },
+      queryParams: { view: view === this.tabs()[0]?.id ? null : view },
       queryParamsHandling: 'merge',
     });
   }

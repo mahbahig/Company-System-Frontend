@@ -18,6 +18,7 @@ import { TABLE_IMPORTS } from '../../../shared/ui/table/table.imports';
 import { ActionRunner } from '../../../shared/utils/action-runner';
 import { userName } from '../../../shared/utils/display-name';
 import { ActivitiesApi, refLabel, type Activity } from '../activities-api.service';
+import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.component';
 
 const CHANNELS = ['whatsapp', 'sms', 'email', 'social', 'customer_request', 'follow_up', 'note', 'other'];
 
@@ -28,7 +29,7 @@ const CHANNELS = ['whatsapp', 'sms', 'email', 'social', 'customer_request', 'fol
  */
 @Component({
   selector: 'app-activity-log-page',
-  imports: [TranslatePipe, EnumLabelPipe, RecordPickerComponent, DialogComponent, AlertComponent, ButtonDirective, PageHeaderComponent, ListToolbarComponent, PaginationComponent, ...TABLE_IMPORTS, ...FORM_IMPORTS],
+  imports: [SkeletonRowComponent, TranslatePipe, EnumLabelPipe, RecordPickerComponent, DialogComponent, AlertComponent, ButtonDirective, PageHeaderComponent, ListToolbarComponent, PaginationComponent, ...TABLE_IMPORTS, ...FORM_IMPORTS],
   template: `
     <app-page-header [heading]="'act.log.title' | t" [subtitle]="'act.log.subtitle' | t" class="!mb-0">
       @if (auth.can('activities.create')) {
@@ -75,7 +76,13 @@ const CHANNELS = ['whatsapp', 'sms', 'email', 'social', 'customer_request', 'fol
               <td appTableCell>{{ owner(row) }}</td>
             </tr>
           } @empty {
-            <tr app-table-empty [colSpan]="6">{{ (result.isLoading() ? 'common.labels.loading' : 'act.empty') | t }}</tr>
+            @if (result.isLoading()) {
+              @for (i of [0, 1, 2, 3, 4]; track i) {
+                <tr app-skeleton-row [columns]="6" [index]="i"></tr>
+              }
+            } @else {
+              <tr app-table-empty [colSpan]="6">{{ 'act.empty' | t }}</tr>
+            }
           }
         </tbody>
       </table>

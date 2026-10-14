@@ -20,6 +20,8 @@ import { TableDirective } from '../../../shared/ui/table/table.directive';
 import { formatPhone, isOverdue } from '../../../shared/utils/format';
 import { LeadsApi } from '../leads-api.service';
 import type { MyLeadsQuery } from '../models/my-leads-query.interface';
+import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.component';
+import { RowLinkDirective } from '../../../shared/ui/table/row-link.directive';
 
 const TABS = ['new', 'assigned', 'self_sourced', 'follow_ups_due', 'nurture'] as const;
 type Tab = (typeof TABS)[number];
@@ -42,6 +44,8 @@ const PRIORITY_TONE: Record<string, 'neutral' | 'info' | 'warning' | 'danger'> =
 @Component({
   selector: 'app-leads-mine-page',
   imports: [
+    RowLinkDirective,
+    SkeletonRowComponent,
     RouterLink,
     TranslatePipe,
     PageHeaderComponent,

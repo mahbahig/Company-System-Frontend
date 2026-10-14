@@ -4,6 +4,7 @@ import { TableEmptyComponent } from './table-empty.component';
 import { TableHeadDirective } from './table-head.directive';
 import { TableHeaderDirective } from './table-header.directive';
 import { TableRowDirective } from './table-row.directive';
+import { RowLinkDirective } from './row-link.directive';
 import { TableWrapperComponent } from './table-wrapper.component';
 import { TableDirective } from './table.directive';
 
@@ -17,4 +18,5 @@ export const TABLE_IMPORTS = [
   TableHeadDirective,
   TableCellDirective,
   TableEmptyComponent,
+  RowLinkDirective,
 ] as const;

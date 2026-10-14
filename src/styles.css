@@ -63,6 +63,8 @@
   --color-brand-sun: hsl(var(--brand-sun));
   --color-brand-leaf: hsl(var(--brand-leaf));
   --color-brand-night: hsl(var(--brand-night));
+  --color-brand-ink: hsl(var(--brand-ink));
+  --color-brand-champagne: hsl(var(--brand-champagne));
 
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
@@ -178,6 +180,10 @@
     --brand-sun: 50 100% 50%; /* #ffd400 — solar yellow, the logo's sun */
     --brand-leaf: 147 95% 23%; /* #037235 — environmental green */
     --brand-night: 197 72% 5%; /* deep petrol night — the dark theme's solar stage */
+    /* The logotype's two finishes: petrol ink on light grounds, champagne
+       white on dark ones (the 3D wordmark wears the same pair). */
+    --brand-ink: 193 73% 15%; /* #0a3440 */
+    --brand-champagne: 39 42% 89%; /* #efe7d8 */
   }
 
   /* Sign-in experience (login, forgot / reset password). It speaks the brand
@@ -463,18 +469,16 @@
   animation: aurora 16s var(--ease-emphasized) infinite;
 }
 
-/* A single light sweep across a surface — used once, on the brand mark. */
-@keyframes sheen {
-  0% {
-    transform: translateX(-150%) skewX(-12deg);
-  }
-  55%,
-  100% {
-    transform: translateX(260%) skewX(-12deg);
+/* The ECOTECH sun in the sidebar turns slowly and continuously — a flat 2D
+   rotation in the page plane (the `rotate` property, no 3D tilt). Stopped by
+   the prefers-reduced-motion rule below. */
+@keyframes brand-spin {
+  to {
+    rotate: 360deg;
   }
 }
-@utility animate-sheen {
-  animation: sheen 7s var(--ease-premium) infinite;
+@utility animate-brand-spin {
+  animation: brand-spin 12s linear infinite;
 }
 
 /* A short, damped shake for a rejected submission — symmetric, so it reads
@@ -603,6 +607,138 @@
   &::-webkit-scrollbar-corner {
     background: transparent;
   }
+}
+
+/* ───────────────────────────────────────────────────────────────────────
+   Interface motion: short (≤ 200 ms), transform/opacity only, and frozen by
+   the reduced-motion rule below. Entrances only — nothing loops except the
+   skeleton pulse, which the reduced-motion rule stops on its first frame.
+   ─────────────────────────────────────────────────────────────────────── */
+
+/* Loading placeholders breathe slowly instead of flashing. */
+@keyframes skeleton-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+@utility animate-skeleton {
+  animation: skeleton-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes tooltip-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@utility animate-tooltip-in {
+  animation: tooltip-in 120ms var(--ease-premium) both;
+}
+
+/* Native modal dialogs (shared dialog, confirmations, palette, shortcuts help). */
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+dialog.app-dialog[open] {
+  animation: dialog-in 180ms var(--ease-premium);
+}
+dialog.app-dialog[open]::backdrop {
+  animation: fade-in 180ms ease-out;
+}
+/* The palette drops from the top edge rather than rising. */
+dialog.app-palette[open] {
+  animation-name: palette-in;
+}
+@keyframes palette-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Drop-down menus and popovers open with a quick settle from their trigger. */
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.cdk-overlay-pane .cdk-menu,
+.cdk-overlay-pane .app-popover {
+  animation: menu-in 140ms var(--ease-premium);
+  transform-origin: top;
+}
+
+/* Mobile navigation drawer slides in from its own edge (mirrored in Arabic). */
+@keyframes drawer-in-ltr {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: none;
+  }
+}
+@keyframes drawer-in-rtl {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: none;
+  }
+}
+.app-drawer {
+  animation: drawer-in-ltr 200ms var(--ease-premium);
+}
+[dir='rtl'] .app-drawer {
+  animation-name: drawer-in-rtl;
+}
+
+/* One label → control rhythm everywhere: a form control placed right after its
+   label always sits the same distance below it (block labels' own margin
+   collapses into this, so pages that already spaced them are unchanged). */
+/* Number fields have no increment / decrement arrows, in every browser: the
+   value is typed (the wheel does not change it either — see InputDirective). */
+input[type='number'] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0;
+}
+
+label[data-slot='label'] + :is(input, select, textarea, app-select, app-record-picker, app-user-select, app-evidence-select, app-gps-capture, div) {
+  margin-top: 0.4375rem;
+}
+
+/* Tooltips never intercept the pointer. */
+.app-tooltip-pane {
+  pointer-events: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

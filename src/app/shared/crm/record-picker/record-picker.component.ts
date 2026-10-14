@@ -50,7 +50,7 @@ interface PickerRow {
           <ul [id]="inputId() + '-list'" role="listbox" class="absolute z-20 mt-1 max-h-64 w-full overflow-y-auto rounded-md border border-border bg-popover p-1 shadow-md">
             @for (row of rows(); track row.id) {
               <li role="option" [attr.aria-selected]="false">
-                <button type="button" class="flex w-full items-center justify-between gap-2 rounded px-2 py-1.5 text-start text-sm hover:bg-accent" (click)="select(row)">
+                <button type="button" class="flex w-full items-center justify-between gap-2 rounded px-2 py-1.5 text-start text-sm hover:bg-secondary" (click)="select(row)">
                   <span class="truncate">{{ row.label }}</span>
                   @if (row.number) {
                     <span class="tabular text-xs text-muted-foreground" dir="ltr">{{ row.number }}</span>

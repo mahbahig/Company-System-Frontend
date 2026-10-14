@@ -1,5 +1,8 @@
-import { Component, inject, input, linkedSignal, signal } from '@angular/core';
+import { Component, computed, inject, input, linkedSignal, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { UnsavedChanges, type HasUnsavedChanges } from '../../../core/forms/unsaved-changes';
+import { SaveShortcutDirective } from '../../../core/shortcuts/save-shortcut.directive';
+import { BreadcrumbsComponent } from '../../../shared/crm/breadcrumbs/breadcrumbs.component';
 
 import { I18nService } from '../../../core/i18n/i18n.service';
 import { TranslatePipe } from '../../../core/i18n/translate.pipe';
@@ -21,13 +24,16 @@ interface Attendee {
   externalRole?: string;
 }
 
+const EMPTY_FORM = { subject: '', scheduledAt: '', endsAt: '', mode: 'in_person', location: '', onlineUrl: '', agenda: '' };
+
 /** E12 schedule a meeting with internal, contact and external attendees. */
 @Component({
   selector: 'app-meeting-form-page',
-  imports: [TranslatePipe, EnumLabelPipe, RecordPickerComponent, UserSelectComponent, AlertComponent, ButtonDirective, PageHeaderComponent, ...CARD_IMPORTS, ...FORM_IMPORTS],
+  imports: [SaveShortcutDirective, BreadcrumbsComponent, TranslatePipe, EnumLabelPipe, RecordPickerComponent, UserSelectComponent, AlertComponent, ButtonDirective, PageHeaderComponent, ...CARD_IMPORTS, ...FORM_IMPORTS],
   template: `
+    <app-breadcrumbs [items]="crumbs()" />
     <app-page-header [heading]="'act.meetings.new' | t" class="!mb-0" />
-    <form appCard class="max-w-3xl" (submit)="save($event)">
+    <form appCard class="max-w-3xl" appSaveShortcut (submit)="save($event)">
       <div appCardContent class="grid gap-4 sm:grid-cols-2">
         @if (actions.error(); as text) {
           <app-alert variant="destructive" class="sm:col-span-2">{{ text }}</app-alert>
@@ -87,13 +93,18 @@ interface Attendee {
           }
           <button type="button" appButton variant="outline" size="sm" class="self-start" (click)="attendees.update((rows) => [...rows, {}])">{{ 'act.fields.addAttendee' | t }}</button>
         </fieldset>
-        <button type="submit" appButton class="self-start" [disabled]="actions.busy() || !form().subject.trim() || !customer() || !form().scheduledAt">{{ 'crm.common.save' | t }}</button>
+        <div class="flex flex-col gap-1.5 sm:col-span-2">
+          <button type="submit" appButton class="self-start" [disabled]="actions.busy() || !form().subject.trim() || !customer() || !form().scheduledAt" [attr.aria-describedby]="missing() ? 'meetings-form-why' : null" aria-keyshortcuts="Control+S Meta+S">{{ (actions.busy() ? 'crm.common.saving' : 'crm.common.save') | t }}</button>
+          @if (missing(); as key) {
+            <p id="meetings-form-why" class="text-xs text-muted-foreground">{{ key | t }}</p>
+          }
+        </div>
       </div>
     </form>
   `,
   host: { class: 'flex flex-col gap-6' },
 })
-export class MeetingFormPage {
+export class MeetingFormPage implements HasUnsavedChanges {
   private readonly api = inject(ActivitiesApi);
   private readonly router = inject(Router);
   protected readonly i18n = inject(I18nService);
@@ -105,7 +116,20 @@ export class MeetingFormPage {
   protected readonly customer = linkedSignal(() => this.customerId() ?? '');
   protected readonly opportunity = linkedSignal(() => this.opportunityId() ?? '');
   protected readonly attendees = signal<Attendee[]>([]);
-  protected readonly form = signal({ subject: '', scheduledAt: '', endsAt: '', mode: 'in_person', location: '', onlineUrl: '', agenda: '' });
+  protected readonly form = signal({ ...EMPTY_FORM });
+
+  private saved = false;
+  protected readonly crumbs = computed(() => [{ label: this.i18n.t('navigation.items.meetings'), path: '/meetings' }, { label: this.i18n.t('act.meetings.new') }]);
+  /** Why Save is unavailable, in words (instead of a silently disabled button). */
+  protected readonly missing = computed(() => (!this.form().subject.trim() || !this.customer() || !this.form().scheduledAt ? 'ux.forms.meetingNeeds' : null));
+
+  constructor() {
+    inject(UnsavedChanges).track(() => this.hasUnsavedChanges());
+  }
+
+  hasUnsavedChanges(): boolean {
+    return !this.saved && (JSON.stringify(this.form()) !== JSON.stringify(EMPTY_FORM) || this.customer() !== (this.customerId() ?? '') || this.opportunity() !== (this.opportunityId() ?? ''));
+  }
 
   protected set(key: string, value: string): void {
     this.form.update((f) => ({ ...f, [key]: value }));
@@ -136,7 +160,10 @@ export class MeetingFormPage {
         attendees: this.attendees().filter((a) => a.userId || a.contactId || a.externalName),
       }),
       null,
-      (meeting) => void this.router.navigate(['/', this.i18n.locale(), 'meetings', meeting.id]),
+      (meeting) => {
+        this.saved = true;
+        void this.router.navigate(['/', this.i18n.locale(), 'meetings', meeting.id]);
+      },
     );
   }
 }

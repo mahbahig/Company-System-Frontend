@@ -2,7 +2,7 @@
 
 <section appCard class="max-w-3xl">
   <div appCardContent>
-    <form class="space-y-5" novalidate (submit)="onSubmit($event)">
+    <form class="space-y-5" novalidate appSaveShortcut (submit)="onSubmit($event)">
       @if (errorKey(); as key) {
         <app-alert variant="destructive">{{ key | t }}</app-alert>
       }

@@ -1,8 +1,15 @@
-import { Component, computed, effect, inject, input, signal } from '@angular/core';
+import { Component, ElementRef, computed, effect, inject, input, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 
 import { ApiError } from '../../../core/api/api-error';
+import { FormDraft } from '../../../core/forms/form-draft';
+import { UnsavedChanges, type HasUnsavedChanges } from '../../../core/forms/unsaved-changes';
+import { SaveShortcutDirective } from '../../../core/shortcuts/save-shortcut.directive';
+import { BreadcrumbsComponent } from '../../../shared/crm/breadcrumbs/breadcrumbs.component';
+import { DraftBannerComponent } from '../../../shared/crm/draft-banner/draft-banner.component';
+import { isValidEmail, isValidMobile, isValidPhone } from '../../../shared/utils/contact-validation';
+import { focusFirstInvalid } from '../../../shared/utils/focus-invalid';
 import { ApiService } from '../../../core/api/api.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { I18nService } from '../../../core/i18n/i18n.service';
@@ -98,15 +105,16 @@ const EMPTY: Model = {
  */
 @Component({
   selector: 'app-customer-form-page',
-  imports: [RouterLink, TranslatePipe, UserSelectComponent, AlertComponent, ButtonDirective, PageHeaderComponent, ...CARD_IMPORTS, ...FORM_IMPORTS],
+  imports: [RouterLink, TranslatePipe, SaveShortcutDirective, BreadcrumbsComponent, DraftBannerComponent, UserSelectComponent, AlertComponent, ButtonDirective, PageHeaderComponent, ...CARD_IMPORTS, ...FORM_IMPORTS],
   template: `
+    <app-breadcrumbs [items]="crumbs()" />
     <app-page-header [heading]="(id() ? 'crm.customers.editTitle' : 'crm.customers.newTitle') | t" class="!mb-0" />
     @if (error(); as text) {
       <app-alert variant="destructive">{{ text }}</app-alert>
     }
 
     @if (duplicates(); as matches) {
-      <section appCard class="border-warning" aria-labelledby="dup-title" role="alert">
+      <section tabindex="-1" appCard class="border-warning focus:outline-none" aria-labelledby="dup-title" role="alert">
         <div appCardHeader>
           <h2 appCardTitle id="dup-title">{{ 'crm.customers.duplicates.title' | t }}</h2>
           <p appCardDescription>{{ 'crm.customers.duplicates.body' | t }}</p>
@@ -147,7 +155,12 @@ const EMPTY: Model = {
       </section>
     }
 
-    <form class="flex flex-col gap-6" (submit)="onSubmit($event)" novalidate>
+    @if (locked()) {
+      <app-alert variant="info">{{ 'ux.forms.notEditable' | t }}</app-alert>
+    } @else {
+    <form class="flex flex-col gap-6" appSaveShortcut (submit)="onSubmit($event)" novalidate>
+      <app-draft-banner [offeredAt]="draft.offered()?.savedAt ?? null" [savedAt]="draft.savedAt()" (restore)="restoreDraft()" (discard)="draft.discard()" />
+      <p class="text-sm text-muted-foreground">{{ 'ux.forms.requiredHint' | t }}</p>
       <section appCard aria-labelledby="cf-identity">
         <div appCardHeader><h2 appCardTitle id="cf-identity">{{ 'crm.customers.sections.identity' | t }}</h2></div>
         <div appCardContent class="grid gap-4 sm:grid-cols-2">
@@ -162,12 +175,18 @@ const EMPTY: Model = {
           </div>
           <div>
             <label appLabel for="cf-contact" [required]="m().kind === 'individual'">{{ 'crm.customers.fields.primaryContactName' | t }}</label>
-            <input appInput id="cf-contact" [value]="m().primaryContactName" (input)="set('primaryContactName', $any($event.target).value)" />
+            <input appInput id="cf-contact" autocomplete="name" [value]="m().primaryContactName" (input)="set('primaryContactName', $any($event.target).value)" [attr.aria-invalid]="problem('primaryContactName') ? true : null" [attr.aria-describedby]="problem('primaryContactName') ? 'cf-contact-error' : null" />
+            @if (problem('primaryContactName'); as key) {
+              <p id="cf-contact-error" class="mt-1 text-sm text-destructive">{{ key | t }}</p>
+            }
           </div>
           @if (m().kind === 'company') {
             <div>
               <label appLabel for="cf-name-ar" required>{{ 'customerForm.nameAr' | t }}</label>
-              <input appInput id="cf-name-ar" dir="rtl" [value]="m().nameAr" (input)="set('nameAr', $any($event.target).value)" />
+              <input appInput id="cf-name-ar" dir="rtl" autocomplete="organization" [value]="m().nameAr" (input)="set('nameAr', $any($event.target).value)" [attr.aria-invalid]="problem('nameAr') ? true : null" [attr.aria-describedby]="problem('nameAr') ? 'cf-name-ar-error' : null" />
+              @if (problem('nameAr'); as key) {
+                <p id="cf-name-ar-error" class="mt-1 text-sm text-destructive">{{ key | t }}</p>
+              }
             </div>
             <div>
               <label appLabel for="cf-name-en">{{ 'customerForm.nameEn' | t }}</label>
@@ -201,24 +220,40 @@ const EMPTY: Model = {
         <div appCardContent class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <div>
             <label appLabel for="cf-mobile" required>{{ 'crm.customers.fields.mobile' | t }}</label>
-            <input appInput id="cf-mobile" type="tel" inputmode="tel" dir="ltr" [value]="m().mobile" (input)="set('mobile', $any($event.target).value)" />
-            <p class="mt-1 text-xs text-muted-foreground">{{ 'crm.customers.hints.mobile' | t }}</p>
+            <input appInput id="cf-mobile" type="tel" inputmode="tel" autocomplete="tel" dir="ltr" placeholder="01012345678" [value]="m().mobile" (input)="set('mobile', $any($event.target).value)" [attr.aria-invalid]="problem('mobile') ? true : null" [attr.aria-describedby]="problem('mobile') ? 'cf-mobile-error' : 'cf-mobile-hint'" />
+            @if (problem('mobile'); as key) {
+              <p id="cf-mobile-error" class="mt-1 text-sm text-destructive">{{ key | t }}</p>
+            } @else {
+              <p id="cf-mobile-hint" class="mt-1 text-xs text-muted-foreground">{{ 'crm.customers.hints.mobile' | t }}</p>
+            }
           </div>
           <div>
             <label appLabel for="cf-landline">{{ 'crm.customers.fields.landline' | t }}</label>
-            <input appInput id="cf-landline" type="tel" dir="ltr" [value]="m().landline" (input)="set('landline', $any($event.target).value)" />
+            <input appInput id="cf-landline" type="tel" inputmode="tel" dir="ltr" placeholder="0223456789" [value]="m().landline" (input)="set('landline', $any($event.target).value)" [attr.aria-invalid]="problem('landline') ? true : null" [attr.aria-describedby]="problem('landline') ? 'cf-landline-error' : null" />
+            @if (problem('landline'); as key) {
+              <p id="cf-landline-error" class="mt-1 text-sm text-destructive">{{ key | t }}</p>
+            }
           </div>
           <div>
             <label appLabel for="cf-wa">{{ 'crm.customers.fields.whatsappNumber' | t }}</label>
-            <input appInput id="cf-wa" type="tel" dir="ltr" [value]="m().whatsappNumber" (input)="set('whatsappNumber', $any($event.target).value)" />
+            <input appInput id="cf-wa" type="tel" inputmode="tel" dir="ltr" placeholder="01012345678" [value]="m().whatsappNumber" (input)="set('whatsappNumber', $any($event.target).value)" [attr.aria-invalid]="problem('whatsappNumber') ? true : null" [attr.aria-describedby]="problem('whatsappNumber') ? 'cf-wa-error' : null" />
+            @if (problem('whatsappNumber'); as key) {
+              <p id="cf-wa-error" class="mt-1 text-sm text-destructive">{{ key | t }}</p>
+            }
           </div>
           <div>
             <label appLabel for="cf-email">{{ 'crm.customers.fields.email' | t }}</label>
-            <input appInput id="cf-email" type="email" dir="ltr" [value]="m().email" (input)="set('email', $any($event.target).value)" />
+            <input appInput id="cf-email" type="email" inputmode="email" autocomplete="email" dir="ltr" placeholder="name@company.com" [value]="m().email" (input)="set('email', $any($event.target).value)" [attr.aria-invalid]="problem('email') ? true : null" [attr.aria-describedby]="problem('email') ? 'cf-email-error' : null" />
+            @if (problem('email'); as key) {
+              <p id="cf-email-error" class="mt-1 text-sm text-destructive">{{ key | t }}</p>
+            }
           </div>
           <div>
             <label appLabel for="cf-web">{{ 'crm.customers.fields.website' | t }}</label>
-            <input appInput id="cf-web" type="url" dir="ltr" [value]="m().website" (input)="set('website', $any($event.target).value)" />
+            <input appInput id="cf-web" type="url" inputmode="url" dir="ltr" placeholder="https://www.example.com" [value]="m().website" (input)="set('website', $any($event.target).value)" [attr.aria-invalid]="problem('website') ? true : null" [attr.aria-describedby]="problem('website') ? 'cf-web-error' : null" />
+            @if (problem('website'); as key) {
+              <p id="cf-web-error" class="mt-1 text-sm text-destructive">{{ key | t }}</p>
+            }
           </div>
         </div>
       </section>
@@ -250,7 +285,10 @@ const EMPTY: Model = {
           </div>
           <div>
             <label appLabel for="cf-maps">{{ 'crm.customers.fields.googleMapsUrl' | t }}</label>
-            <input appInput id="cf-maps" type="url" dir="ltr" [value]="m().googleMapsUrl" (input)="set('googleMapsUrl', $any($event.target).value)" />
+            <input appInput id="cf-maps" type="url" inputmode="url" dir="ltr" placeholder="https://maps.google.com/…" [value]="m().googleMapsUrl" (input)="set('googleMapsUrl', $any($event.target).value)" [attr.aria-invalid]="problem('googleMapsUrl') ? true : null" [attr.aria-describedby]="problem('googleMapsUrl') ? 'cf-maps-error' : null" />
+            @if (problem('googleMapsUrl'); as key) {
+              <p id="cf-maps-error" class="mt-1 text-sm text-destructive">{{ key | t }}</p>
+            }
           </div>
           <div class="sm:col-span-2 lg:col-span-3">
             <label appLabel for="cf-address">{{ 'crm.customers.fields.addressLine' | t }}</label>
@@ -262,7 +300,10 @@ const EMPTY: Model = {
           </div>
           <div>
             <label appLabel for="cf-lng">{{ 'customerForm.longitude' | t }}</label>
-            <input appInput id="cf-lng" type="number" step="any" dir="ltr" [value]="m().longitude" (input)="set('longitude', $any($event.target).value)" />
+            <input appInput id="cf-lng" type="number" step="any" dir="ltr" [value]="m().longitude" (input)="set('longitude', $any($event.target).value)" [attr.aria-invalid]="problem('longitude') ? true : null" [attr.aria-describedby]="problem('longitude') ? 'cf-lng-error' : null" />
+            @if (problem('longitude'); as key) {
+              <p id="cf-lng-error" class="mt-1 text-sm text-destructive">{{ key | t }}</p>
+            }
           </div>
         </div>
       </section>
@@ -272,11 +313,17 @@ const EMPTY: Model = {
         <div appCardContent class="grid gap-4 sm:grid-cols-2">
           <div>
             <label appLabel for="cf-tax">{{ 'crm.customers.fields.taxRegistrationNo' | t }}</label>
-            <input appInput id="cf-tax" dir="ltr" [value]="m().taxRegistrationNo" (input)="set('taxRegistrationNo', $any($event.target).value)" />
+            <input appInput id="cf-tax" dir="ltr" inputmode="numeric" placeholder="123-456-789" [value]="m().taxRegistrationNo" (input)="set('taxRegistrationNo', $any($event.target).value)" [attr.aria-invalid]="problem('taxRegistrationNo') ? true : null" [attr.aria-describedby]="problem('taxRegistrationNo') ? 'cf-tax-error' : null" />
+            @if (problem('taxRegistrationNo'); as key) {
+              <p id="cf-tax-error" class="mt-1 text-sm text-destructive">{{ key | t }}</p>
+            }
           </div>
           <div>
             <label appLabel for="cf-cr">{{ 'crm.customers.fields.commercialRegistrationNo' | t }}</label>
-            <input appInput id="cf-cr" dir="ltr" [value]="m().commercialRegistrationNo" (input)="set('commercialRegistrationNo', $any($event.target).value)" />
+            <input appInput id="cf-cr" dir="ltr" inputmode="numeric" [value]="m().commercialRegistrationNo" (input)="set('commercialRegistrationNo', $any($event.target).value)" [attr.aria-invalid]="problem('commercialRegistrationNo') ? true : null" [attr.aria-describedby]="problem('commercialRegistrationNo') ? 'cf-cr-error' : null" />
+            @if (problem('commercialRegistrationNo'); as key) {
+              <p id="cf-cr-error" class="mt-1 text-sm text-destructive">{{ key | t }}</p>
+            }
           </div>
           <div>
             <label appLabel for="cf-billing">{{ 'customerForm.billingEntity' | t }}</label>
@@ -331,18 +378,21 @@ const EMPTY: Model = {
         </div>
       </section>
 
-      <div class="flex gap-2">
-        <button type="submit" appButton [disabled]="busy() || !valid()">{{ 'crm.common.save' | t }}</button>
-        <a appButton variant="outline" [routerLink]="id() ? ['/', i18n.locale(), 'customers', id()] : ['/', i18n.locale(), 'customers']">{{ 'crm.common.cancel' | t }}</a>
+      <div class="flex flex-wrap items-center gap-3 border-t border-border pt-4">
+        <button type="submit" appButton [disabled]="busy()" aria-keyshortcuts="Control+S Meta+S">{{ (busy() ? 'crm.common.saving' : 'crm.common.save') | t }}</button>
+        <a appButton variant="ghost" [routerLink]="id() ? ['/', i18n.locale(), 'customers', id()] : ['/', i18n.locale(), 'customers']">{{ 'crm.common.cancel' | t }}</a>
+        <span class="hidden text-xs text-muted-foreground sm:inline" aria-hidden="true">{{ 'ux.forms.saveHint' | t }}</span>
       </div>
     </form>
+    }
   `,
   host: { class: 'flex flex-col gap-6' },
 })
-export class CustomerFormPage {
+export class CustomerFormPage implements HasUnsavedChanges {
   private readonly customers = inject(CustomersApi);
   private readonly api = inject(ApiService);
   private readonly router = inject(Router);
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   protected readonly auth = inject(AuthService);
   protected readonly reference = inject(ReferenceDataService);
   protected readonly i18n = inject(I18nService);
@@ -351,6 +401,22 @@ export class CustomerFormPage {
   readonly id = input<string>();
 
   protected readonly m = signal<Model>({ ...EMPTY });
+  /** The values as loaded (or empty), to tell real edits from untouched fields. */
+  private readonly baseline = signal<Model>({ ...EMPTY });
+  /** Client checks are shown after the first save attempt; server field errors until the field changes. */
+  private readonly attempted = signal(false);
+  private readonly serverErrors = signal<Record<string, { key: string; value: string }>>({});
+  /** The server's verdict for an existing customer (edit permission within scope, not merged). */
+  protected readonly locked = signal(false);
+  private saved = false;
+  protected readonly crumbs = computed(() => [
+    { label: this.i18n.t('navigation.items.customers'), path: '/customers' },
+    ...(this.id() ? [{ label: this.i18n.pick(this.baseline().nameAr, this.baseline().nameEn) || this.baseline().primaryContactName, path: `/customers/${this.id()}` }] : []),
+    { label: this.i18n.t(this.id() ? 'crm.customers.editTitle' : 'crm.customers.newTitle') },
+  ]);
+  protected readonly dirty = computed(() => JSON.stringify(this.m()) !== JSON.stringify(this.baseline()));
+  /** Unsent input of a NEW customer, kept in this browser only. */
+  protected readonly draft = new FormDraft<Model>('customer.new', this.m, { enabled: () => !this.id(), dirty: () => this.dirty() });
   protected readonly busy = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly duplicates = signal<DuplicateMatch[] | null>(null);
@@ -372,14 +438,41 @@ export class CustomerFormPage {
       .map((item) => ({ value: item.code, label: this.i18n.pick(item.nameAr, item.nameEn) }));
   });
 
-  protected readonly valid = computed(() => {
+  /** What the API would reject, as `field → i18n key` (same rules as `CreateCustomerDto`). */
+  private readonly clientErrors = computed<Record<string, string>>(() => {
     const m = this.m();
-    const named = m.kind === 'company' ? !!(m.nameAr.trim() || m.nameEn.trim()) : !!m.primaryContactName.trim();
-    return named && !!(m.mobile.trim() || m.landline.trim()) && !!m.latitude === !!m.longitude;
+    const errors: Record<string, string> = {};
+    if (m.kind === 'company' && !m.nameAr.trim() && !m.nameEn.trim()) errors['nameAr'] = 'validation.required';
+    if (m.kind === 'individual' && !m.primaryContactName.trim()) errors['primaryContactName'] = 'validation.required';
+    if (!m.mobile.trim() && !m.landline.trim()) errors['mobile'] = 'validation.phoneRequired';
+    if (!isValidMobile(m.mobile)) errors['mobile'] = 'ux.validation.mobile';
+    if (!isValidPhone(m.landline)) errors['landline'] = 'ux.validation.phone';
+    if (!isValidPhone(m.whatsappNumber)) errors['whatsappNumber'] = 'ux.validation.phone';
+    if (!isValidEmail(m.email)) errors['email'] = 'ux.validation.email';
+    for (const key of ['website', 'googleMapsUrl'] as const) if (m[key].trim() && !/^https?:\/\/\S+$/i.test(m[key].trim())) errors[key] = 'validation.urlInvalid';
+    for (const key of ['taxRegistrationNo', 'commercialRegistrationNo'] as const) if (m[key].trim() && !/^[0-9٠-٩۰-۹-]{6,25}$/.test(m[key].trim())) errors[key] = 'validation.registrationInvalid';
+    if (!!m.latitude !== !!m.longitude) errors['longitude'] = 'validation.coordinatesPaired';
+    return errors;
   });
+
+  /** The message to show under a field, if any. */
+  protected problem(field: string): string | null {
+    const server = this.serverErrors()[field];
+    if (server && server.value === String(this.m()[field as keyof Model] ?? '')) return server.key;
+    return this.attempted() ? (this.clientErrors()[field] ?? null) : null;
+  }
+
+  hasUnsavedChanges(): boolean {
+    return !this.saved && !this.locked() && this.dirty();
+  }
+
+  protected restoreDraft(): void {
+    this.draft.restore((value) => this.m.set({ ...EMPTY, ...value }));
+  }
 
   constructor() {
     void this.reference.load();
+    inject(UnsavedChanges).track(() => this.hasUnsavedChanges());
     effect(() => {
       const id = this.id();
       if (id) void this.loadExisting(id);
@@ -388,8 +481,11 @@ export class CustomerFormPage {
 
   private async loadExisting(id: string): Promise<void> {
     try {
-      const { customer } = await firstValueFrom(this.customers.get(id));
-      this.m.set(this.toModel(customer as Customer & Record<string, unknown>));
+      const { customer, canEdit } = await firstValueFrom(this.customers.get(id));
+      const model = this.toModel(customer as Customer & Record<string, unknown>);
+      this.locked.set(canEdit === false);
+      this.baseline.set(model);
+      this.m.set(model);
     } catch (error) {
       this.error.set(this.i18n.errorText(error));
     }
@@ -414,12 +510,18 @@ export class CustomerFormPage {
 
   protected onSubmit(event: Event): void {
     event.preventDefault();
+    this.attempted.set(true);
+    if (Object.keys(this.clientErrors()).length) {
+      focusFirstInvalid(this.host.nativeElement);
+      return;
+    }
     void this.save(false);
   }
 
   protected async save(confirmDuplicate: boolean): Promise<void> {
     if (this.busy()) return;
     this.busy.set(true);
+    this.serverErrors.set({});
     this.error.set(null);
     const body = this.body();
     try {
@@ -437,8 +539,7 @@ export class CustomerFormPage {
         };
         const { matches } = await firstValueFrom(this.api.post<{ matches: DuplicateMatch[] }>('customers/check-duplicates', probe));
         if (matches.length) {
-          this.duplicates.set(matches);
-          window.scrollTo({ top: 0, behavior: 'smooth' });
+          this.showDuplicates(matches);
           return;
         }
       }
@@ -446,18 +547,34 @@ export class CustomerFormPage {
         ? await firstValueFrom(this.api.patch<{ customer?: Customer; id?: string }>(`customers/${id}`, body))
         : await firstValueFrom(this.api.post<{ customer?: Customer; id?: string }>('customers', { ...body, confirmDuplicate: confirmDuplicate || undefined }));
       const savedId = id ?? result.customer?.id ?? result.id;
+      this.saved = true;
+      this.draft.clear();
       await this.router.navigate(['/', this.i18n.locale(), 'customers', savedId]);
     } catch (error) {
       if (ApiError.is(error) && error.status === 409 && error.messageKey === 'errors.possibleDuplicates') {
         const details = error.details as { matches?: DuplicateMatch[] } | undefined;
-        this.duplicates.set(details?.matches ?? []);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        this.showDuplicates(details?.matches ?? []);
       } else {
         this.error.set(this.i18n.errorText(error));
+        if (ApiError.is(error) && Object.keys(error.fieldErrors).length) {
+          const m = this.m();
+          this.serverErrors.set(Object.fromEntries(Object.entries(error.fieldErrors).map(([field, key]) => [field, { key, value: String(m[field as keyof Model] ?? '') }])));
+          focusFirstInvalid(this.host.nativeElement);
+        }
       }
     } finally {
       this.busy.set(false);
     }
+  }
+
+  /** Shows the possible duplicates and moves focus to them (the main pane, not the window, is the scroll container). */
+  private showDuplicates(matches: DuplicateMatch[]): void {
+    this.duplicates.set(matches);
+    setTimeout(() => {
+      const section = this.host.nativeElement.querySelector<HTMLElement>('section[tabindex="-1"]');
+      section?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+      section?.focus({ preventScroll: true });
+    });
   }
 
   protected async requestAccess(match: DuplicateMatch, type: 'collaboration' | 'transfer'): Promise<void> {

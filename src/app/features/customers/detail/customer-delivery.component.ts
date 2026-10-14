@@ -6,11 +6,12 @@ import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { StatusBadgeComponent } from '../../../shared/crm/status-badge/status-badge.component';
 import { TABLE_IMPORTS } from '../../../shared/ui/table/table.imports';
 import type { Customer360 } from '../models/customer-360.interface';
+import { DetailSkeletonComponent } from '../../../shared/ui/skeleton/skeleton.component';
 
 /** CUST-03 the customer's leads, customer-facing proposals, contracts and projects. */
 @Component({
   selector: 'app-customer-delivery',
-  imports: [RouterLink, TranslatePipe, StatusBadgeComponent, ...TABLE_IMPORTS],
+  imports: [DetailSkeletonComponent, RouterLink, TranslatePipe, StatusBadgeComponent, ...TABLE_IMPORTS],
   template: `
     @if (data(); as d) {
       <section class="flex flex-col gap-3" aria-labelledby="c360-proposals">
@@ -28,7 +29,7 @@ import type { Customer360 } from '../models/customer-360.interface';
             </thead>
             <tbody appTableBody>
               @for (row of d.proposals; track row.id) {
-                <tr appTableRow>
+                <tr appTableRow [appRowLink]="['/', i18n.locale(), 'opportunities', row.opportunityId, 'proposals']">
                   <td appTableCell class="tabular" dir="ltr">
                     <a class="text-primary hover:underline" [routerLink]="['/', i18n.locale(), 'opportunities', row.opportunityId, 'proposals']">{{ row.proposalNo }} v{{ row.versionNo }}</a>
                   </td>
@@ -59,7 +60,7 @@ import type { Customer360 } from '../models/customer-360.interface';
             </thead>
             <tbody appTableBody>
               @for (row of d.contracts; track row.id) {
-                <tr appTableRow>
+                <tr appTableRow [appRowLink]="['/', i18n.locale(), 'contracts', row.id]">
                   <td appTableCell class="tabular" dir="ltr"><a class="text-primary hover:underline" [routerLink]="['/', i18n.locale(), 'contracts', row.id]">{{ row.contractNo }} v{{ row.versionNo }}</a></td>
                   <td appTableCell><app-status-badge enum="contractStatus" [value]="row.status" /></td>
                   <td appTableCell class="tabular text-end">{{ row.value !== undefined ? i18n.formatMoney(row.value) : '—' }}</td>
@@ -88,7 +89,7 @@ import type { Customer360 } from '../models/customer-360.interface';
             </thead>
             <tbody appTableBody>
               @for (row of d.projects; track row.id) {
-                <tr appTableRow>
+                <tr appTableRow [appRowLink]="['/', i18n.locale(), 'projects', row.id]">
                   <td appTableCell class="tabular" dir="ltr"><a class="text-primary hover:underline" [routerLink]="['/', i18n.locale(), 'projects', row.id]">{{ row.projectNo }}</a></td>
                   <td appTableCell>{{ row.name }}</td>
                   <td appTableCell>
@@ -122,7 +123,7 @@ import type { Customer360 } from '../models/customer-360.interface';
             </thead>
             <tbody appTableBody>
               @for (row of d.leads; track row.id) {
-                <tr appTableRow>
+                <tr appTableRow [appRowLink]="['/', i18n.locale(), 'leads', row.id]">
                   <td appTableCell class="tabular" dir="ltr"><a class="text-primary hover:underline" [routerLink]="['/', i18n.locale(), 'leads', row.id]">{{ row.leadNo }}</a></td>
                   <td appTableCell>{{ row.name }}</td>
                   <td appTableCell><app-status-badge enum="leadStatus" [value]="row.status" /></td>
@@ -136,7 +137,7 @@ import type { Customer360 } from '../models/customer-360.interface';
         </app-table-wrapper>
       </section>
     } @else {
-      <p class="text-sm text-muted-foreground" role="status">{{ 'common.labels.loading' | t }}</p>
+      <app-detail-skeleton [label]="'common.labels.loading' | t" />
     }
   `,
   host: { class: 'flex flex-col gap-6' },

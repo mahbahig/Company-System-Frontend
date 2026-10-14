@@ -1,5 +1,8 @@
-import { Component, inject, input, linkedSignal, signal } from '@angular/core';
+import { Component, computed, inject, input, linkedSignal, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { UnsavedChanges, type HasUnsavedChanges } from '../../../core/forms/unsaved-changes';
+import { SaveShortcutDirective } from '../../../core/shortcuts/save-shortcut.directive';
+import { BreadcrumbsComponent } from '../../../shared/crm/breadcrumbs/breadcrumbs.component';
 
 import { I18nService } from '../../../core/i18n/i18n.service';
 import { TranslatePipe } from '../../../core/i18n/translate.pipe';
@@ -14,6 +17,8 @@ import { PageHeaderComponent } from '../../../shared/ui/page-header/page-header.
 import { ActionRunner } from '../../../shared/utils/action-runner';
 import { ActivitiesApi } from '../activities-api.service';
 
+const EMPTY_FORM = { direction: 'outbound', occurredAt: '', phoneNumber: '', durationMinutes: '', purposeCode: '', outcomeCode: '', summary: '', followUpRequired: false, followUpAt: '', nextAction: '' };
+
 /**
  * E11 log a call (mobile-friendly). Linked to a customer, lead or
  * opportunity (prefilled from `?customerId=` etc.); a follow-up creates a
@@ -21,10 +26,11 @@ import { ActivitiesApi } from '../activities-api.service';
  */
 @Component({
   selector: 'app-call-form-page',
-  imports: [TranslatePipe, EnumLabelPipe, RecordPickerComponent, AlertComponent, ButtonDirective, PageHeaderComponent, ...CARD_IMPORTS, ...FORM_IMPORTS],
+  imports: [SaveShortcutDirective, BreadcrumbsComponent, TranslatePipe, EnumLabelPipe, RecordPickerComponent, AlertComponent, ButtonDirective, PageHeaderComponent, ...CARD_IMPORTS, ...FORM_IMPORTS],
   template: `
+    <app-breadcrumbs [items]="crumbs()" />
     <app-page-header [heading]="'act.calls.new' | t" class="!mb-0" />
-    <form appCard class="max-w-3xl" (submit)="save($event)">
+    <form appCard class="max-w-3xl" appSaveShortcut (submit)="save($event)">
       <div appCardContent class="grid gap-4 sm:grid-cols-2">
         @if (actions.error(); as text) {
           <app-alert variant="destructive" class="sm:col-span-2">{{ text }}</app-alert>
@@ -34,8 +40,11 @@ import { ActivitiesApi } from '../activities-api.service';
           <app-record-picker kind="customer" inputId="call-customer" [(value)]="customer" />
         </div>
         <div>
-          <label appLabel for="call-lead">{{ 'act.fields.lead' | t }}</label>
-          <app-record-picker kind="lead" inputId="call-lead" [(value)]="lead" />
+          <label appLabel for="call-lead" required>{{ 'act.fields.lead' | t }}</label>
+          <app-record-picker kind="lead" inputId="call-lead" [(value)]="lead" [attr.aria-invalid]="leadError() ? true : null" />
+          @if (leadError(); as key) {
+            <p id="call-lead-error" class="mt-1 text-sm text-destructive">{{ key | t }}</p>
+          }
         </div>
         <div>
           <label appLabel for="call-opp">{{ 'act.fields.opportunity' | t }}</label>
@@ -66,7 +75,25 @@ import { ActivitiesApi } from '../activities-api.service';
         </div>
         <div>
           <label appLabel for="call-duration">{{ 'act.fields.durationMinutes' | t }}</label>
-          <input appInput id="call-duration" type="number" min="0" dir="ltr" [value]="form().durationMinutes" (input)="set('durationMinutes', $any($event.target).value)" />
+          <input
+            appInput
+            id="call-duration"
+            type="text"
+            inputmode="decimal"
+            autocomplete="off"
+            dir="ltr"
+            placeholder="15"
+            [value]="form().durationMinutes"
+            (input)="set('durationMinutes', $any($event.target).value)"
+            (blur)="durationTouched.set(true)"
+            [attr.aria-invalid]="durationError() ? true : null"
+            [attr.aria-describedby]="durationError() ? 'call-duration-error' : 'call-duration-hint'"
+          />
+          @if (durationError(); as key) {
+            <p id="call-duration-error" class="mt-1 text-sm text-destructive">{{ key | t }}</p>
+          } @else {
+            <p id="call-duration-hint" class="mt-1 text-xs text-muted-foreground">{{ 'ux.forms.durationHint' | t }}</p>
+          }
         </div>
         <div>
           <label appLabel for="call-purpose">{{ 'act.fields.purpose' | t }}</label>
@@ -105,13 +132,18 @@ import { ActivitiesApi } from '../activities-api.service';
             <input appInput id="call-next" [value]="form().nextAction" (input)="set('nextAction', $any($event.target).value)" />
           </div>
         }
-        <button type="submit" appButton class="self-start" [disabled]="actions.busy() || !form().outcomeCode || !(customer() || lead() || opportunity())">{{ 'crm.common.save' | t }}</button>
+        <div class="flex flex-col gap-1.5 sm:col-span-2">
+          <button type="submit" appButton class="self-start" [disabled]="actions.busy() || !!missing()" [attr.aria-describedby]="missing() ? 'calls-form-why' : null" aria-keyshortcuts="Control+S Meta+S">{{ (actions.busy() ? 'crm.common.saving' : 'crm.common.save') | t }}</button>
+          @if (missing(); as key) {
+            <p id="calls-form-why" class="text-xs text-muted-foreground">{{ key | t }}</p>
+          }
+        </div>
       </div>
     </form>
   `,
   host: { class: 'flex flex-col gap-6' },
 })
-export class CallFormPage {
+export class CallFormPage implements HasUnsavedChanges {
   private readonly api = inject(ActivitiesApi);
   private readonly router = inject(Router);
   protected readonly i18n = inject(I18nService);
@@ -126,10 +158,32 @@ export class CallFormPage {
   protected readonly lead = linkedSignal(() => this.leadId() ?? '');
   protected readonly opportunity = linkedSignal(() => this.opportunityId() ?? '');
   protected readonly contact = signal('');
-  protected readonly form = signal({ direction: 'outbound', occurredAt: '', phoneNumber: '', durationMinutes: '', purposeCode: '', outcomeCode: '', summary: '', followUpRequired: false, followUpAt: '', nextAction: '' });
+  protected readonly form = signal({ ...EMPTY_FORM });
+
+  private saved = false;
+  protected readonly crumbs = computed(() => [{ label: this.i18n.t('navigation.items.calls'), path: '/calls' }, { label: this.i18n.t('act.calls.new') }]);
+  /** Why Save is unavailable, in words (instead of a silently disabled button). */
+  /** What still blocks Save, in words: a lead and an outcome are required, and a duration must be a number. */
+  protected readonly missing = computed(() => {
+    if (!this.lead()) return 'ux.forms.callNeedsLead';
+    if (!this.form().outcomeCode) return 'ux.forms.callNeedsOutcome';
+    if (parseMinutes(this.form().durationMinutes) === 'invalid') return 'ux.validation.duration';
+    return null;
+  });
+  protected readonly durationTouched = signal(false);
+  protected readonly attempted = signal(false);
+  protected readonly durationError = computed(() =>
+    (this.durationTouched() || this.attempted()) && parseMinutes(this.form().durationMinutes) === 'invalid' ? 'ux.validation.duration' : null,
+  );
+  protected readonly leadError = computed(() => (this.attempted() && !this.lead() ? 'ux.validation.leadRequired' : null));
+
+  hasUnsavedChanges(): boolean {
+    return !this.saved && (JSON.stringify(this.form()) !== JSON.stringify(EMPTY_FORM) || this.customer() !== (this.customerId() ?? '') || this.lead() !== (this.leadId() ?? '') || this.opportunity() !== (this.opportunityId() ?? ''));
+  }
 
   constructor() {
     void this.reference.load();
+    inject(UnsavedChanges).track(() => this.hasUnsavedChanges());
   }
 
   protected set(key: string, value: unknown): void {
@@ -138,6 +192,8 @@ export class CallFormPage {
 
   protected save(event: Event): void {
     event.preventDefault();
+    this.attempted.set(true);
+    if (this.missing() || this.actions.busy()) return;
     const f = this.form();
     void this.actions.run(
       this.api.createCall({
@@ -148,7 +204,7 @@ export class CallFormPage {
         direction: f.direction,
         occurredAt: f.occurredAt ? new Date(f.occurredAt).toISOString() : undefined,
         phoneNumber: f.phoneNumber || undefined,
-        durationSeconds: f.durationMinutes ? Number(f.durationMinutes) * 60 : undefined,
+        durationSeconds: secondsOf(f.durationMinutes),
         purposeCode: f.purposeCode || undefined,
         outcomeCode: f.outcomeCode,
         summary: f.summary || undefined,
@@ -157,7 +213,34 @@ export class CallFormPage {
         nextAction: f.nextAction || undefined,
       }),
       null,
-      (call) => void this.router.navigate(['/', this.i18n.locale(), 'calls', call.id]),
+      (call) => {
+        this.saved = true;
+        // Back to the calls table, where the new call appears under the list's normal sorting.
+        void this.router.navigate(['/', this.i18n.locale(), 'calls']);
+      },
     );
   }
+}
+
+/**
+ * The duration field is free text: blank (no duration), or minutes as a
+ * plain number — `15`, `2.5` (Arabic-Indic digits and a comma decimal are
+ * accepted) — up to 24 h. Anything else is invalid, and the API re-checks it.
+ */
+function parseMinutes(raw: string): number | null | 'invalid' {
+  const text = raw
+    .trim()
+    .replace(/[٠-٩]/g, (digit) => String('٠١٢٣٤٥٦٧٨٩'.indexOf(digit)))
+    .replace(/[۰-۹]/g, (digit) => String('۰۱۲۳۴۵۶۷۸۹'.indexOf(digit)))
+    .replace(/[,٫]/, '.');
+  if (!text) return null;
+  if (!/^\d+(\.\d{1,2})?$/.test(text)) return 'invalid';
+  const minutes = Number(text);
+  return minutes > 1440 ? 'invalid' : minutes;
+}
+
+/** Minutes → whole seconds for the API (`durationSeconds`). */
+function secondsOf(raw: string): number | undefined {
+  const minutes = parseMinutes(raw);
+  return typeof minutes === 'number' ? Math.round(minutes * 60) : undefined;
 }

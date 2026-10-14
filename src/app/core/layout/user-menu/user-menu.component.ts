@@ -99,6 +99,7 @@ export class UserMenuComponent {
 
   protected async signOut(): Promise<void> {
     await this.auth.logout();
-    await this.router.navigate(['/', this.i18n.locale(), 'login'], { queryParams: { reason: 'signed_out' } });
+    // Straight to the sign-in page — the user knows they just signed out.
+    await this.router.navigate(['/', this.i18n.locale(), 'login']);
   }
 }

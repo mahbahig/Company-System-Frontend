@@ -23,10 +23,12 @@ export class NotificationsService {
     this.recent.set(recent);
   }
 
-  /** Opening the bell marks everything read (same behaviour as the Next app). */
+  /** "Mark all as read" (an explicit action — opening the bell no longer clears what still needs attention). */
   async markAllRead(): Promise<void> {
     if (!this.unreadCount()) return;
+    const now = new Date().toISOString();
     this.unreadCount.set(0);
+    this.recent.update((items) => items.map((item) => (item.readAt ? item : { ...item, readAt: now })));
     await firstValueFrom(this.api.post('notifications/read-all')).catch(() => undefined);
   }
 

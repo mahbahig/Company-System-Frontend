@@ -15,8 +15,10 @@
   <div appCardContent [attr.aria-busy]="result.isLoading()">
     @if (result.error()) {
       <p class="text-sm text-destructive">{{ 'errors.db.unexpected' | t }}</p>
+    } @else if (events().length === 0 && result.isLoading()) {
+      <app-list-skeleton [rows]="4" />
     } @else if (events().length === 0) {
-      <p class="text-sm text-muted-foreground">{{ (result.isLoading() ? 'common.labels.loading' : 'timeline.empty') | t }}</p>
+      <p class="text-sm text-muted-foreground">{{ 'timeline.empty' | t }}</p>
     } @else {
       <ol class="flex flex-col gap-4">
         @for (event of events(); track event.id) {

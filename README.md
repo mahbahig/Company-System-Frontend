@@ -84,7 +84,7 @@ Open http://localhost:4200. Unauthenticated users are redirected to
 | `npm start`         | Dev server (`ng serve`); `prestart` syncs i18n catalogues first.        |
 | `npm run build`     | Production build to `dist/frontend`; `prebuild` syncs i18n first.       |
 | `npm run watch`     | Development build in watch mode.                                        |
-| `npm test`          | Unit tests (`ng test`).                                                 |
+| `npm test`          | Unit tests (`ng test`, Vitest + jsdom); `ng test --watch=false` in CI.  |
 | `npm run i18n:sync` | Regenerate `public/i18n/<locale>.json` from the source catalogues.      |
 
 ## Backend & environment
@@ -109,7 +109,7 @@ in [`FINAL_SRS_FRONTEND.md`](./FINAL_SRS_FRONTEND.md).
 │   └── i18n/                    generated locale catalogues (do not edit — see i18n)
 ├── scripts/
 │   ├── sync-messages.mjs        merges i18n sources → public/i18n
-│   └── build-wordmark-glyphs.mjs  regenerates the sign-in scene's 3D wordmark glyphs
+│   └── build-wordmark-glyphs.mjs  regenerates the ECOTECH logotype's glyphs (2D and 3D)
 ├── src/
 │   ├── main.ts                  standalone bootstrap
 │   ├── index.html
@@ -149,14 +149,15 @@ in [`FINAL_SRS_FRONTEND.md`](./FINAL_SRS_FRONTEND.md).
 Every page lives under a locale prefix (`/:locale/...`, e.g. `/en/customers`).
 Public, sign-in, and authenticated routes are separated by guards, and each
 authenticated page declares a `data.permission` that gates it in the UI (the API
-re-checks everything server-side).
+re-checks everything server-side). Which role opens which page is documented in
+[`../Backend/docs/ACCESS_CONTROL.md`](../Backend/docs/ACCESS_CONTROL.md).
 
 | Guard             | Purpose                                                      |
 | ----------------- | ------------------------------------------------------------ |
 | `localeGuard`     | Validates / normalises the `:locale` segment.                |
 | `authGuard`       | Requires an authenticated session for the app shell.         |
 | `guestGuard`      | Keeps signed-in users out of login / password pages.         |
-| `permissionGuard` | Enforces each route's `data.permission` on activation.       |
+| `permissionGuard` | Enforces `data.permission` (any of) and `data.requiresAll` (every) on each route level; fails closed. |
 
 Feature areas (all lazy-loaded under the authenticated app shell):
 
@@ -216,13 +217,23 @@ exposed as `bg-brand-*` / `text-brand-*`). The sign-in screens apply the
 `.auth-theme` class, which re-points the shared token names at that palette, so
 every primitive inside them follows without per-page overrides.
 
+The company name is a **logotype**, not text: "ECOTECH" set in Archivo Expanded
+(a wide grotesque, weight 350, SIL OFL) with its own tracking and optical
+spacing (`shared/ui/brand-wordmark/brand-wordmark.config.ts`).
+`<app-brand-wordmark>` draws it as inline SVG from the font's outlines — no web
+font — sized by cap height (`class="h-[0.5625rem]"`); with `text` it sets the
+"CRM" descriptor in the same face. Its two finishes are `text-brand-ink` and
+`text-brand-champagne`. The sign-in scene's 3D wordmark uses the same letters
+and the same layout function, so the two match letter for letter.
+
 ## Sign-in experience
 
 Login, forgot-password and reset-password are children of one layout route
 (`features/auth/shared/auth-layout.component`), so they share an interactive
 Three.js scene — a shader-driven sun with a turning crown of rays and the
-"ECOTECH" wordmark as extruded 3D type (petrol lacquer and gold by day,
-platinum and gold by night) — that stays mounted while moving between them.
+"ECOTECH" logotype as extruded 3D type (deep petrol ink by day, champagne
+white by night, each letter traced by a champagne hairline) — that stays
+mounted while moving between them.
 On wide screens the page is one layer: a sky filling the whole viewport, with
 twinkling stars and meteors streaking across it at random, and on it the sun
 (left, full height, pinned while the form scrolls) and the form — no panel
@@ -252,10 +263,11 @@ between them. On narrow screens the sun is a compact hero with its own sky.
   sky holds still with no meteors. Measured, the star sky adds no noticeable CPU
   or frame-time cost over the sun scene. Leaving the sign-in screens disposes
   every GPU resource and both WebGL contexts.
-- **Wordmark glyphs** — `wordmark-typeface.ts` holds just the five Inter glyphs
-  the wordmark needs. It is generated; to change the font or word, run
-  `npm install --no-save opentype.js` then
-  `node scripts/build-wordmark-glyphs.mjs path/to/font.ttf`.
+- **Logotype glyphs** — `brand-wordmark-glyphs.ts` (2D) and
+  `wordmark-typeface.ts` (3D) hold just the letters the logotype and its
+  descriptor need. Both are generated from one font file; the header of
+  `scripts/build-wordmark-glyphs.mjs` says how to instance the weight and
+  rerun it.
 
 ## Decorative 3D
 
@@ -306,7 +318,17 @@ no 3D on purpose: those are work surfaces.
   can refresh-and-retry before the error surfaces to the caller.
 - **Navigation** — `core/navigation` declares the sidebar menu; an item appears
   only when the user holds its permission *and* a route for its path exists, so
-  registering a feature route is what adds it to the sidebar.
+  registering a feature route is what adds it to the sidebar. Links built in code
+  (dashboard cards, exception drill-downs) go through `NavigationService.canOpen()`.
+- **Access checks** — `AuthService.can()` / `canAny()` fail closed: no user, an
+  unknown scope, or a write permission for a read-only profile (`isReadOnly`) all
+  return false. Give every child route (`new`, `:id/edit`, …) its own
+  `data.permission`; prefer server-computed `permissions` flags on detail
+  responses for record-level buttons. When the backend `Permission` enum changes,
+  update `core/auth/permission-code.ts` and regenerate
+  `src/testing/role-permissions.ts` (role × permission fixtures for specs) with
+  `node scripts/generate-role-fixtures.mjs` after building the backend;
+  `core/navigation/role-access.spec.ts` holds the role × URL matrix.
 - **Titles** — `TranslatedTitleStrategy` localises the browser tab title from each
   route's `title` key.
 

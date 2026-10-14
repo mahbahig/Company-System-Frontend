@@ -14,7 +14,7 @@ import { TranslatePipe } from '../../../core/i18n/translate.pipe';
       <span aria-hidden="true" class="ms-1 text-destructive">*</span>
       <span class="sr-only"> ({{ 'common.labels.required' | t }})</span>
     }`,
-  host: { class: 'text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-60' },
+  host: { 'data-slot': 'label', class: 'text-sm font-medium leading-none text-foreground peer-disabled:cursor-not-allowed peer-disabled:opacity-60' },
 })
 export class LabelComponent {
   readonly required = input(false, { transform: booleanAttribute });

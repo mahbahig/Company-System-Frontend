@@ -4,12 +4,14 @@
 @if (data.value(); as d) {
   @let c = d.contract;
   @let perms = d.permissions;
-  <app-page-header [eyebrow]="c.contractNo + ' · v' + c.versionNo" [heading]="customerName()" [subtitle]="'contracts.fromProposal' | t: { version: c.proposalVersion }">
+  <app-breadcrumbs [items]="crumbs()" />
+  <app-page-header [eyebrow]="c.contractNo + ' · v' + c.versionNo" [heading]="customerName()" [subtitle]="'contracts.fromProposal' | t: { version: c.proposalVersion }" class="!mb-0">
     <app-status-badge enum="contractStatus" [value]="c.status" />
-    @if (opportunityId()) {
+    <app-favorite-toggle type="contract" [id]="c.id" />
+    @if (opportunityId() && navigation.canOpen('/opportunities/' + opportunityId())) {
       <a appButton variant="outline" [routerLink]="['/', i18n.locale(), 'opportunities', opportunityId()]">{{ 'handoffs.backToOpportunity' | t }}</a>
     }
-    @if (c.projectId) {
+    @if (c.projectId && navigation.canOpen('/projects/' + c.projectId)) {
       <a appButton [routerLink]="['/', i18n.locale(), 'projects', c.projectId]">{{ 'contracts.openProject' | t }}</a>
     }
   </app-page-header>
@@ -111,6 +113,40 @@
         </div>
       </form>
 
+      <section appCard aria-labelledby="ct-confirmations">
+        <div appCardHeader class="flex flex-row items-center justify-between">
+          <h2 appCardTitle id="ct-confirmations">{{ 'contracts.workflow.confirmations' | t }}</h2>
+          <app-badge tone="outline">{{ 'contracts.workflow.version' | t: { version: c.versionNo } }}</app-badge>
+        </div>
+        <div appCardContent class="flex flex-col gap-3 text-sm">
+          <p class="flex items-center gap-2">
+            <app-badge [tone]="scopeConfirmed() ? 'success' : 'warning'">{{ (scopeConfirmed() ? 'crm.common.yes' : 'crm.common.no') | t }}</app-badge>
+            {{ 'pipeline.requirements.contract_scope_confirmed' | t }}
+            @if (c.technicalBaseline) {
+              <span class="text-xs text-muted-foreground">({{ 'contracts.workflow.baseline' | t: { version: c.technicalBaseline.technicalProposalVersion } }})</span>
+            }
+          </p>
+          <p class="flex items-center gap-2">
+            <app-badge [tone]="termsVerified() ? 'success' : 'warning'">{{ (termsVerified() ? 'crm.common.yes' : 'crm.common.no') | t }}</app-badge>
+            {{ 'pipeline.requirements.payment_terms_verified' | t }}
+          </p>
+          @if ((perms.canConfirmScope && !scopeConfirmed()) || (perms.canVerifyPaymentTerms && !termsVerified())) {
+            <div class="flex flex-wrap items-end gap-2">
+              <input appInput class="min-w-56 flex-1" [attr.aria-label]="'pipeline.reason' | t" [placeholder]="'contracts.workflow.note' | t" [value]="confirmationNote()" (input)="confirmationNote.set($any($event.target).value)" />
+              @if (perms.canConfirmScope && !scopeConfirmed()) {
+                <button type="button" appButton size="sm" variant="outline" [disabled]="actions.busy()" (click)="confirm('scope')">{{ 'contracts.workflow.confirmScope' | t }}</button>
+              }
+              @if (perms.canVerifyPaymentTerms && !termsVerified()) {
+                <button type="button" appButton size="sm" variant="outline" [disabled]="actions.busy()" (click)="confirm('terms')">{{ 'contracts.workflow.verifyTerms' | t }}</button>
+              }
+            </div>
+          }
+          @if (c.signedDocumentId) {
+            <p class="text-xs text-muted-foreground">{{ 'contracts.workflow.signedEvidence' | t }}</p>
+          }
+        </div>
+      </section>
+
       @if (perms.canSignCustomer || perms.canSignCompany) {
         <form appCard aria-labelledby="ct-sign" (submit)="sign($event)">
           <div appCardHeader><h2 appCardTitle id="ct-sign">{{ 'contracts.recordSignature' | t }}</h2></div>
@@ -128,7 +164,21 @@
               <label appLabel for="sg-at">{{ 'contracts.signedAt' | t }}</label>
               <input appInput id="sg-at" type="date" dir="ltr" [value]="signature().signedAt" (change)="setSignature('signedAt', $any($event.target).value)" />
             </div>
-            <button type="submit" appButton class="self-end" [disabled]="actions.busy() || !signature().signatoryName.trim()">{{ 'contracts.sign' | t }}</button>
+            @if (signature().party === 'company') {
+              <div class="sm:col-span-2">
+                <label appLabel for="sg-document" required>{{ 'contracts.workflow.signedDocument' | t }}</label>
+                <app-evidence-select inputId="sg-document" entityType="contract" [entityId]="id()" [categories]="['signed_contract', 'contract']" [value]="signature().signedDocumentId" (valueChange)="setSignature('signedDocumentId', $event)" />
+              </div>
+            }
+            <p class="text-xs text-muted-foreground sm:col-span-2">{{ 'contracts.workflow.signsVersion' | t: { version: c.versionNo } }}</p>
+            <button
+              type="submit"
+              appButton
+              class="self-end"
+              [disabled]="actions.busy() || !signature().signatoryName.trim() || (signature().party === 'company' && !signature().signedDocumentId)"
+            >
+              {{ 'contracts.sign' | t }}
+            </button>
           </div>
         </form>
       }
@@ -180,5 +230,5 @@
     </div>
   </div>
 } @else if (data.isLoading()) {
-  <p class="text-sm text-muted-foreground">{{ 'common.labels.loading' | t }}</p>
+  <app-detail-skeleton [label]="'common.labels.loading' | t" />
 }

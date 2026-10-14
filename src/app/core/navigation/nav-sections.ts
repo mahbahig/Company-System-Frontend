@@ -49,7 +49,7 @@ export const NAV_SECTIONS: readonly NavSection[] = [
   {
     labelKey: 'overview',
     items: [
-      { labelKey: 'dashboard', path: '/dashboard', icon: LayoutDashboard, permission: 'dashboards.view_own' },
+      { labelKey: 'dashboard', path: '/dashboard', icon: LayoutDashboard, permission: null },
       { labelKey: 'executiveDashboard', path: '/dashboard/executive', icon: Gauge, permission: 'dashboards.view_executive' },
       { labelKey: 'approvals', path: '/approvals', icon: CircleCheck, permission: 'approvals.view' },
       { labelKey: 'exceptions', path: '/exceptions', icon: ShieldAlert, permission: ['exceptions.view', 'data.view_quality'] },
@@ -61,7 +61,13 @@ export const NAV_SECTIONS: readonly NavSection[] = [
       { labelKey: 'leads', path: '/leads', icon: UserRound, permission: 'leads.view' },
       { labelKey: 'customers', path: '/customers', icon: Users, permission: 'customers.view' },
       { labelKey: 'opportunities', path: '/opportunities', icon: Target, permission: 'opportunities.view' },
-      { labelKey: 'pipeline', path: '/pipeline', icon: KanbanSquare, permission: 'opportunities.view' },
+      {
+        labelKey: 'pipeline',
+        path: '/pipeline',
+        icon: KanbanSquare,
+        permission: ['opportunities.change_stage', 'opportunities.approve_stage', 'dashboards.view_company', 'dashboards.view_executive'],
+        requiresAll: ['opportunities.view'],
+      },
       { labelKey: 'campaigns', path: '/campaigns', icon: Megaphone, permission: 'campaigns.view' },
     ],
   },
@@ -80,7 +86,7 @@ export const NAV_SECTIONS: readonly NavSection[] = [
     items: [
       { labelKey: 'handoffs', path: '/handoffs', icon: ArrowRightLeft, permission: 'handoffs.view' },
       { labelKey: 'assessments', path: '/assessments', icon: ClipboardCheck, permission: 'assessments.view' },
-      { labelKey: 'proposals', path: '/proposals', icon: FileText, permission: ['combined_proposals.view', 'technical_proposals.view', 'financial_proposals.view'] },
+      { labelKey: 'proposals', path: '/proposals', icon: FileText, permission: 'combined_proposals.view' },
       { labelKey: 'contracts', path: '/contracts', icon: FileSignature, permission: 'contracts.view' },
       { labelKey: 'projects', path: '/projects', icon: FolderKanban, permission: 'projects.view' },
     ],
@@ -97,17 +103,17 @@ export const NAV_SECTIONS: readonly NavSection[] = [
   {
     labelKey: 'administration',
     items: [
-      { labelKey: 'users', path: '/admin/users', icon: UserCog, permission: 'administration.manage_users' },
+      { labelKey: 'users', path: '/admin/users', icon: UserCog, permission: ['administration.manage_users', 'users.view_performance'] },
       { labelKey: 'roles', path: '/admin/roles', icon: Shield, permission: 'security.manage_roles' },
       { labelKey: 'teams', path: '/admin/teams', icon: UsersRound, permission: 'administration.manage_teams' },
       { labelKey: 'referenceData', path: '/admin/reference-data', icon: Database, permission: 'settings.manage' },
-      { labelKey: 'equipment', path: '/admin/equipment', icon: SunMedium, permission: ['pricing.manage', 'settings.manage'] },
+      { labelKey: 'equipment', path: '/admin/equipment', icon: SunMedium, permission: ['catalog.manage', 'pricing.manage'] },
       { labelKey: 'rules', path: '/admin/rules', icon: ListChecks, permission: 'settings.view' },
       { labelKey: 'intakeForms', path: '/admin/intake-forms', icon: ClipboardList, permission: 'settings.manage' },
-      { labelKey: 'settings', path: '/admin/settings', icon: Settings, permission: 'settings.view' },
+      { labelKey: 'settings', path: '/admin/settings', icon: Settings, permission: ['settings.view', 'settings.manage_policy'] },
       { labelKey: 'automation', path: '/admin/automation', icon: Workflow, permission: 'automation.manage' },
       { labelKey: 'integrations', path: '/admin/integrations', icon: Plug, permission: 'integrations.manage' },
-      { labelKey: 'auditLog', path: '/admin/audit', icon: ScrollText, permission: 'audit.view' },
+      { labelKey: 'auditLog', path: '/admin/audit', icon: ScrollText, permission: ['audit.view', 'audit.view_security'] },
     ],
   },
 ];

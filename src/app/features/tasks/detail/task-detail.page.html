@@ -4,7 +4,7 @@
   <app-alert variant="destructive">{{ 'errors.db.unexpected' | t }}</app-alert>
 } @else if (task(); as task) {
   <app-page-header class="!mb-0" [heading]="task.title" [subtitle]="task.description">
-    @if (auth.can('tasks.edit') && task.status !== 'done' && task.status !== 'cancelled') {
+    @if (canAct() && isPlanner()) {
       <a appButton variant="outline" [routerLink]="['..', task.id, 'edit']">{{ 'crm.common.edit' | t }}</a>
     }
   </app-page-header>
@@ -68,9 +68,11 @@
           <button type="button" appButton [disabled]="busy()" (click)="showComplete.set(!showComplete()); showCancel.set(false)">
             {{ 'crm.tasks.actions.complete' | t }}
           </button>
-          <button type="button" appButton variant="destructive" [disabled]="busy()" (click)="showCancel.set(!showCancel()); showComplete.set(false)">
-            {{ 'crm.tasks.actions.cancel' | t }}
-          </button>
+          @if (isPlanner()) {
+            <button type="button" appButton variant="destructive" [disabled]="busy()" (click)="showCancel.set(!showCancel()); showComplete.set(false)">
+              {{ 'crm.tasks.actions.cancel' | t }}
+            </button>
+          }
         </div>
 
         @if (showComplete()) {
@@ -120,5 +122,5 @@
     </div>
   </div>
 } @else {
-  <p class="text-sm text-muted-foreground" role="status">{{ 'common.labels.loading' | t }}</p>
+  <app-detail-skeleton [label]="'common.labels.loading' | t" />
 }

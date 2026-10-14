@@ -6,4 +6,6 @@ export interface LeadDetail {
   lead: Lead;
   completeness: CompletenessResult;
   slaState: Lead['slaState'];
+  /** Server verdict: edit permission in record scope at this stage (what `PATCH /leads/:id` checks). */
+  canEdit?: boolean;
 }

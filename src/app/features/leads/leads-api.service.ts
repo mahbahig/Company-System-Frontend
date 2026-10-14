@@ -16,6 +16,9 @@ import type { LeadListQuery } from './models/lead-list-query.interface';
 import type { LeadTimelineEvent } from './models/lead-timeline-event.interface';
 import type { Lead } from './models/lead.interface';
 import type { LogAttemptPayload } from './models/log-attempt.interface';
+import type { IdentityDecisionPayload } from './models/identity-decision.interface';
+import type { QualificationPayload } from './models/qualification-payload.interface';
+import type { WorkflowView } from '../../shared/crm/pipeline-tracker/workflow-view.interface';
 import type { MyLeadsQuery } from './models/my-leads-query.interface';
 import type { QuickAddLeadPayload } from './models/quick-add-lead.interface';
 
@@ -52,8 +55,37 @@ export class LeadsApi {
     return this.api.post<Lead>(`leads/${id}/attempts`, payload);
   }
 
-  qualify(id: string): Observable<Lead> {
-    return this.api.post<Lead>(`leads/${id}/qualify`);
+  qualify(id: string, payload: QualificationPayload): Observable<Lead> {
+    return this.api.post<Lead>(`leads/${id}/qualify`, payload);
+  }
+
+  /** L0–L5 tracker: stage, history, requirements, blockers, control. */
+  workflow(id: string): Observable<WorkflowView> {
+    return this.api.get<WorkflowView>(`leads/${id}/workflow`);
+  }
+
+  transition(id: string, action: 'start_identity_review' | 'log_two_way_contact', reason?: string): Observable<Lead> {
+    return this.api.post<Lead>(`leads/${id}/transition`, reason ? { action, reason } : { action });
+  }
+
+  identityReview(id: string, payload: IdentityDecisionPayload): Observable<Lead> {
+    return this.api.post<Lead>(`leads/${id}/identity-review`, payload);
+  }
+
+  submitHandoff(id: string, payload: { toUserId?: string; needSummary: string; recommendedNextAction: string; appointmentAt?: string; customerExpectations?: string }): Observable<Lead> {
+    return this.api.post<Lead>(`leads/${id}/handoff`, payload);
+  }
+
+  acceptHandoff(id: string, payload: { firstAction: string; firstActionAt: string }): Observable<Lead> {
+    return this.api.post<Lead>(`leads/${id}/handoff/accept`, payload);
+  }
+
+  returnHandoff(id: string, reason: string): Observable<Lead> {
+    return this.api.post<Lead>(`leads/${id}/handoff/return`, { reason });
+  }
+
+  reassignHandoff(id: string, payload: { toUserId: string; reason: string }): Observable<Lead> {
+    return this.api.post<Lead>(`leads/${id}/handoff/reassign`, payload);
   }
 
   close(id: string, payload: CloseLeadPayload): Observable<Lead> {

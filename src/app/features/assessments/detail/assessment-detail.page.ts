@@ -18,6 +18,7 @@ import { BomEditorComponent } from '../../solar/editors/bom-editor.component';
 import { DesignEditorComponent } from '../../solar/editors/design-editor.component';
 import type { BomItem, SystemDesign } from '../../solar/solar.models';
 import { AssessmentsApi, type AssessmentVersion } from '../assessments-api.service';
+import { DetailSkeletonComponent } from '../../../shared/ui/skeleton/skeleton.component';
 
 const MONTHS = 12;
 const FIELD_GROUPS = {
@@ -35,7 +36,7 @@ type Group = keyof typeof FIELD_GROUPS;
  */
 @Component({
   selector: 'app-assessment-detail-page',
-  imports: [RouterLink, TranslatePipe, StatusBadgeComponent, DocumentsPanelComponent, AlertComponent, ButtonDirective, PageHeaderComponent, DesignEditorComponent, BomEditorComponent, ...CARD_IMPORTS, ...FORM_IMPORTS],
+  imports: [DetailSkeletonComponent, RouterLink, TranslatePipe, StatusBadgeComponent, DocumentsPanelComponent, AlertComponent, ButtonDirective, PageHeaderComponent, DesignEditorComponent, BomEditorComponent, ...CARD_IMPORTS, ...FORM_IMPORTS],
   template: `
     @if (detail.error()) {
       <app-alert variant="destructive">{{ i18n.errorText(detail.error()) }}</app-alert>
@@ -178,7 +179,7 @@ type Group = keyof typeof FIELD_GROUPS;
 
       <app-documents-panel entityType="assessment" [entityId]="id()" />
     } @else if (detail.isLoading()) {
-      <p class="text-sm text-muted-foreground">{{ 'common.labels.loading' | t }}</p>
+      <app-detail-skeleton [label]="'common.labels.loading' | t" />
     }
   `,
   host: { class: 'flex flex-col gap-6' },

@@ -22,30 +22,35 @@
 }
 
 <ul class="flex flex-col divide-y divide-border rounded-md border border-border" [attr.aria-busy]="result.isLoading()">
-  @for (row of rows(); track row.id) {
-    <li>
-      <a
-        [routerLink]="link(row.actionUrl)"
-        (click)="onOpen(row.id, row.readAt)"
-        class="flex items-start justify-between gap-3 px-4 py-3 outline-none hover:bg-secondary/60 focus-visible:ring-2 focus-visible:ring-ring"
-      >
-        <span class="flex min-w-0 flex-1 flex-col gap-1">
-          <span class="flex flex-wrap items-center gap-2">
-            @if (!row.readAt) {
-              <span aria-hidden="true" class="inline-block size-2 shrink-0 rounded-full bg-primary"></span>
-            }
-            <span class="text-sm" [class.font-semibold]="!row.readAt" [class.font-medium]="row.readAt">
-              {{ i18n.pick(row.titleAr, row.titleEn) }}
-            </span>
-            @if (row.isCritical) {
-              <app-badge tone="danger">{{ 'notifications.critical' | t }}</app-badge>
-            }
-          </span>
-          @if (i18n.pick(row.bodyAr, row.bodyEn); as body) {
-            <span class="text-sm text-muted-foreground">{{ body }}</span>
+  @for (entry of entries(); track entry.row.id) {
+    @let row = entry.row;
+    <li class="flex items-start gap-3 px-4 py-3 transition-colors hover:bg-secondary/40" [class.bg-primary/5]="!row.readAt">
+      <div class="flex min-w-0 flex-1 flex-col gap-1">
+        <p class="flex flex-wrap items-center gap-2">
+          @if (!row.readAt) {
+            <span aria-hidden="true" class="inline-block size-2 shrink-0 rounded-full bg-primary"></span>
+            <span class="sr-only">{{ 'ux.notifications.unread' | t }}</span>
           }
-          <span class="text-2xs text-muted-foreground">{{ i18n.formatDate(row.createdAt, true) }}</span>
-        </span>
+          <span class="text-sm" [class.font-semibold]="!row.readAt" [class.font-medium]="row.readAt">
+            {{ i18n.pick(row.titleAr, row.titleEn) }}
+          </span>
+          @if (row.isCritical) {
+            <app-badge tone="danger">{{ 'notifications.critical' | t }}</app-badge>
+          }
+        </p>
+        @if (i18n.pick(row.bodyAr, row.bodyEn); as body) {
+          <p class="text-sm text-muted-foreground">{{ body }}</p>
+        }
+        <p class="text-2xs text-muted-foreground">
+          <time [attr.datetime]="row.createdAt" [appTooltip]="i18n.formatDate(row.createdAt, true)">{{ i18n.formatRelative(row.createdAt) }}</time>
+        </p>
+      </div>
+      <div class="flex shrink-0 items-center gap-1">
+        @if (entry.target; as target) {
+          <a appButton size="sm" [variant]="entry.action === 'review' ? 'default' : 'outline'" [routerLink]="target.commands" [queryParams]="target.queryParams" (click)="onOpen(row.id, row.readAt)">
+            {{ 'ux.notifications.actions.' + entry.action | t }}
+          </a>
+        }
         @if (!row.readAt) {
           <button
             type="button"
@@ -54,11 +59,12 @@
             size="icon"
             (click)="markRead(row.id, $event)"
             [attr.aria-label]="'notifications.markRead' | t"
+            [appTooltip]="'notifications.markRead' | t"
           >
             <app-icon [icon]="checkIcon" />
           </button>
         }
-      </a>
+      </div>
     </li>
   } @empty {
     @if (!result.isLoading()) {
@@ -66,7 +72,7 @@
         {{ (unreadOnly() ? 'notifications.emptyFiltered' : 'notifications.empty') | t }}
       </li>
     } @else {
-      <li class="px-4 py-10 text-center text-sm text-muted-foreground">{{ 'common.labels.loading' | t }}</li>
+      <li class="px-4 py-6"><app-list-skeleton [rows]="5" /></li>
     }
   }
 </ul>

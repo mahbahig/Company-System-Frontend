@@ -28,5 +28,8 @@ export interface CurrentUser {
   manager: UserRef | null;
   /** Widest scope per granted permission; absent = not granted. */
   permissions: Partial<Record<PermissionCode, Scope>>;
+  /** Holds the platform-administrator role — a UI hint only, never business authority. */
   isAdmin: boolean;
+  /** Read-only access profile: the UI offers no change at all (the API refuses them anyway). */
+  isReadOnly?: boolean;
 }

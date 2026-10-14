@@ -1,10 +1,14 @@
-import { Component, computed, effect, inject, input, signal } from '@angular/core';
+import { Component, ElementRef, computed, effect, inject, input, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { FormField, form, maxLength, required, submit } from '@angular/forms/signals';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { firstValueFrom, of } from 'rxjs';
 
 import { ApiError } from '../../../core/api/api-error';
+import { UnsavedChanges, type HasUnsavedChanges } from '../../../core/forms/unsaved-changes';
+import { SaveShortcutDirective } from '../../../core/shortcuts/save-shortcut.directive';
+import { BreadcrumbsComponent } from '../../../shared/crm/breadcrumbs/breadcrumbs.component';
+import { focusFirstInvalid } from '../../../shared/utils/focus-invalid';
 import { AuthService } from '../../../core/auth/auth.service';
 import { I18nService } from '../../../core/i18n/i18n.service';
 import { TranslatePipe } from '../../../core/i18n/translate.pipe';
@@ -40,6 +44,9 @@ const EMPTY_MODEL: TaskFormModel = {
 @Component({
   selector: 'app-task-form-page',
   imports: [
+    RouterLink,
+    SaveShortcutDirective,
+    BreadcrumbsComponent,
     RecordPickerComponent,
     FormField,
     TranslatePipe,
@@ -57,9 +64,10 @@ const EMPTY_MODEL: TaskFormModel = {
   templateUrl: './task-form.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
-export class TaskFormPage {
+export class TaskFormPage implements HasUnsavedChanges {
   private readonly tasksApi = inject(TasksApi);
   private readonly router = inject(Router);
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   protected readonly auth = inject(AuthService);
   protected readonly i18n = inject(I18nService);
   protected readonly reference = inject(ReferenceDataService);
@@ -87,8 +95,20 @@ export class TaskFormPage {
     maxLength(path.description, 4000);
   });
 
+  private saved = false;
+  protected readonly crumbs = computed(() => [
+    { label: this.i18n.t('navigation.items.tasks'), path: '/tasks' },
+    ...(this.existing.value() ? [{ label: this.existing.value()!.title, path: `/tasks/${this.id()}` }] : []),
+    { label: this.i18n.t(this.editing() ? 'crm.tasks.editTitle' : 'crm.tasks.newTitle') },
+  ]);
+
+  hasUnsavedChanges(): boolean {
+    return !this.saved && this.taskForm().dirty();
+  }
+
   constructor() {
     void this.reference.load();
+    inject(UnsavedChanges).track(() => this.hasUnsavedChanges());
     effect(() => {
       const customerId = this.customerId();
       const opportunityId = this.opportunityId();
@@ -124,8 +144,13 @@ export class TaskFormPage {
 
   protected async onSubmit(event: Event): Promise<void> {
     event.preventDefault();
+    if (this.taskForm().submitting()) return;
     this.errorKey.set(null);
     this.taskForm().markAsTouched();
+    if (this.taskForm().invalid()) {
+      focusFirstInvalid(this.host.nativeElement);
+      return;
+    }
 
     const value = this.model();
     const dueAt = fromDatetimeLocal(value.dueAt);
@@ -174,6 +199,7 @@ export class TaskFormPage {
   }
 
   private async navigateToDetail(id: string): Promise<void> {
+    this.saved = true;
     await this.router.navigate(['/', this.i18n.locale(), 'tasks', id]);
   }
 

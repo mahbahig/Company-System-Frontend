@@ -1,6 +1,14 @@
 import { Component, computed, effect, inject, input, signal } from '@angular/core';
+import { BadgeComponent } from '../../../shared/ui/badge/badge.component';
+import { EvidenceSelectComponent } from '../../../shared/crm/evidence-select/evidence-select.component';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
+import { ApiError } from '../../../core/api/api-error';
+import { NavigationService } from '../../../core/navigation/navigation.service';
+import { trackRecentView } from '../../../core/records/track-recent-view';
+import { BreadcrumbsComponent } from '../../../shared/crm/breadcrumbs/breadcrumbs.component';
+import { FavoriteToggleComponent } from '../../../shared/crm/favorite-toggle/favorite-toggle.component';
+import { DetailSkeletonComponent } from '../../../shared/ui/skeleton/skeleton.component';
 
 import { I18nService } from '../../../core/i18n/i18n.service';
 import { TranslatePipe } from '../../../core/i18n/translate.pipe';
@@ -25,13 +33,14 @@ import { ContractsApi } from '../contracts-api.service';
  */
 @Component({
   selector: 'app-contract-detail-page',
-  imports: [RouterLink, TranslatePipe, StatusBadgeComponent, CompletenessPanelComponent, DetailItemComponent, DocumentsPanelComponent, AlertComponent, ButtonDirective, PageHeaderComponent, ...CARD_IMPORTS, ...FORM_IMPORTS],
+  imports: [BreadcrumbsComponent, FavoriteToggleComponent, DetailSkeletonComponent, EvidenceSelectComponent, BadgeComponent, RouterLink, TranslatePipe, StatusBadgeComponent, CompletenessPanelComponent, DetailItemComponent, DocumentsPanelComponent, AlertComponent, ButtonDirective, PageHeaderComponent, ...CARD_IMPORTS, ...FORM_IMPORTS],
   templateUrl: './contract-detail.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
 export class ContractDetailPage {
   protected readonly api = inject(ContractsApi);
   protected readonly i18n = inject(I18nService);
+  protected readonly navigation = inject(NavigationService);
   protected readonly actions = new ActionRunner(this.i18n);
 
   readonly id = input.required<string>();
@@ -42,7 +51,11 @@ export class ContractDetailPage {
 
   protected readonly form = signal({ contractDate: '', validUntil: '', scope: '', specialTerms: '', notes: '', changeReason: '' });
   protected readonly signatories = signal<Array<{ party: 'customer' | 'company'; name: string; title?: string; email?: string }>>([]);
-  protected readonly signature = signal({ party: 'customer' as 'customer' | 'company', signatoryName: '', signatoryTitle: '', signedAt: '' });
+  protected readonly signature = signal({ party: 'customer' as 'customer' | 'company', signatoryName: '', signatoryTitle: '', signedAt: '', signedDocumentId: '' });
+  protected readonly confirmationNote = signal('');
+  /** A confirmation counts only for the contract version it was given on. */
+  protected readonly scopeConfirmed = computed(() => !!this.contract() && this.contract()!.scopeConfirmation?.versionNo === this.contract()!.versionNo);
+  protected readonly termsVerified = computed(() => !!this.contract() && this.contract()!.paymentTermsVerification?.versionNo === this.contract()!.versionNo);
   protected readonly terminateReason = signal('');
 
   protected readonly opportunityId = computed(() => {
@@ -54,7 +67,19 @@ export class ContractDetailPage {
     return customer && typeof customer === 'object' ? this.i18n.pick(customer.nameAr, customer.nameEn) : '';
   });
 
+  protected readonly notFound = computed(() => {
+    const error = this.data.error();
+    return ApiError.is(error) && (error.status === 404 || error.status === 400);
+  });
+  /** Contracts / <customer> / <contract no.>: the customer is context only. */
+  protected readonly crumbs = computed(() => [
+    { label: this.i18n.t('navigation.items.contracts'), path: '/contracts' },
+    { label: this.customerName() },
+    { label: this.contract()?.contractNo ?? '' },
+  ]);
+
   constructor() {
+    trackRecentView('contract', () => this.id(), () => (this.contract() ? 'loaded' : this.notFound() ? 'missing' : 'pending'));
     effect(() => {
       const c = this.contract();
       if (!c) return;
@@ -110,10 +135,25 @@ export class ContractDetailPage {
     event.preventDefault();
     const s = this.signature();
     void this.actions.run(
-      this.api.sign(this.id(), { party: s.party, signatoryName: s.signatoryName.trim(), signatoryTitle: s.signatoryTitle.trim() || undefined, signedAt: s.signedAt ? new Date(s.signedAt).toISOString() : undefined }),
+      this.api.sign(this.id(), {
+        party: s.party,
+        signatoryName: s.signatoryName.trim(),
+        signatoryTitle: s.signatoryTitle.trim() || undefined,
+        signedAt: s.signedAt ? new Date(s.signedAt).toISOString() : undefined,
+        versionNo: this.contract()!.versionNo,
+        signedDocumentId: s.party === 'company' ? s.signedDocumentId || undefined : undefined,
+      }),
       'contracts.signed',
       this.reload,
     );
+  }
+
+  protected confirm(kind: 'scope' | 'terms'): void {
+    const note = this.confirmationNote().trim() || undefined;
+    void this.actions.run(kind === 'scope' ? this.api.confirmScope(this.id(), note) : this.api.verifyPaymentTerms(this.id(), note), 'prop.saved', () => {
+      this.confirmationNote.set('');
+      this.reload();
+    });
   }
 
   protected toggleDocument(code: string, received: boolean): void {

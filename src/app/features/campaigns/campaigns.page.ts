@@ -15,6 +15,7 @@ import { FORM_IMPORTS } from '../../shared/ui/form/form.imports';
 import { PageHeaderComponent } from '../../shared/ui/page-header/page-header.component';
 import { TABLE_IMPORTS } from '../../shared/ui/table/table.imports';
 import { ActionRunner } from '../../shared/utils/action-runner';
+import { SkeletonRowComponent } from '../../shared/ui/skeleton/skeleton.component';
 
 interface CampaignAd {
   code: string;
@@ -62,7 +63,7 @@ interface Draft {
  */
 @Component({
   selector: 'app-campaigns-page',
-  imports: [RouterLink, TranslatePipe, AlertComponent, ButtonDirective, DialogComponent, PageHeaderComponent, ...TABLE_IMPORTS, ...FORM_IMPORTS],
+  imports: [SkeletonRowComponent, RouterLink, TranslatePipe, AlertComponent, ButtonDirective, DialogComponent, PageHeaderComponent, ...TABLE_IMPORTS, ...FORM_IMPORTS],
   template: `
     <app-page-header [heading]="'campaigns.title' | t" [subtitle]="'campaigns.subtitle' | t" class="!mb-0">
       @if (auth.can('reports.view')) {
@@ -112,7 +113,13 @@ interface Draft {
               }
             </tr>
           } @empty {
-            <tr app-table-empty [colSpan]="8">{{ (data.isLoading() ? 'common.labels.loading' : 'campaigns.empty') | t }}</tr>
+            @if (data.isLoading()) {
+              @for (i of [0, 1, 2, 3, 4]; track i) {
+                <tr app-skeleton-row [columns]="8" [index]="i"></tr>
+              }
+            } @else {
+              <tr app-table-empty [colSpan]="8">{{ 'campaigns.empty' | t }}</tr>
+            }
           }
         </tbody>
       </table>

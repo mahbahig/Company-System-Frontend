@@ -16,13 +16,14 @@ import { TABLE_IMPORTS } from '../../../shared/ui/table/table.imports';
 import { ReferenceDataService } from '../../../core/reference/reference-data.service';
 import { OpportunitiesApi } from '../../opportunities/opportunities-api.service';
 import { ProposalsApi } from '../proposals-api.service';
+import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.component';
 
 const STATUSES = ['draft', 'pending_approval', 'approved', 'released', 'sent', 'presented', 'under_negotiation', 'revision_requested', 'accepted', 'rejected', 'expired', 'superseded'];
 
 /** All combined proposals in the user's scope — the PM's assembly queue, Finance's approvals and Sales' released inbox. */
 @Component({
   selector: 'app-proposals-list-page',
-  imports: [RouterLink, TranslatePipe, StatusBadgeComponent, AlertComponent, BadgeComponent, PageHeaderComponent, ListToolbarComponent, PaginationComponent, ...TABLE_IMPORTS],
+  imports: [SkeletonRowComponent, RouterLink, TranslatePipe, StatusBadgeComponent, AlertComponent, BadgeComponent, PageHeaderComponent, ListToolbarComponent, PaginationComponent, ...TABLE_IMPORTS],
   template: `
     <app-page-header [heading]="'prop.listTitle' | t" [subtitle]="'prop.listSubtitle' | t" class="!mb-0" />
     <app-list-toolbar [searchValue]="q() ?? ''" [filters]="filters()" [toggles]="toggles()" />
@@ -49,7 +50,7 @@ const STATUSES = ['draft', 'pending_approval', 'approved', 'released', 'sent', '
           </thead>
           <tbody appTableBody>
             @for (row of opportunityRows(); track row.id) {
-              <tr appTableRow>
+              <tr appTableRow [appRowLink]="['/', i18n.locale(), 'opportunities', row.id, 'proposals']">
                 <td appTableCell>
                   <span class="tabular me-2 text-muted-foreground" dir="ltr">{{ row.opportunityNo }}</span>
                   <a class="font-medium text-primary hover:underline" [routerLink]="['/', i18n.locale(), 'opportunities', row.id, 'proposals']">{{ row.name }}</a>
@@ -67,7 +68,13 @@ const STATUSES = ['draft', 'pending_approval', 'approved', 'released', 'sent', '
                 </td>
               </tr>
             } @empty {
-              <tr app-table-empty [colSpan]="4">{{ (opportunities.isLoading() ? 'common.labels.loading' : 'prop.noOpportunities') | t }}</tr>
+              @if (opportunities.isLoading()) {
+                @for (i of [0, 1, 2, 3, 4]; track i) {
+                  <tr app-skeleton-row [columns]="4" [index]="i"></tr>
+                }
+              } @else {
+                <tr app-table-empty [colSpan]="4">{{ 'prop.noOpportunities' | t }}</tr>
+              }
             }
           </tbody>
         </table>
@@ -89,7 +96,7 @@ const STATUSES = ['draft', 'pending_approval', 'approved', 'released', 'sent', '
         </thead>
         <tbody appTableBody>
           @for (row of rows(); track row.id) {
-            <tr appTableRow>
+            <tr appTableRow [appRowLink]="['combined', row.id]">
               <td appTableCell class="tabular whitespace-nowrap">
                 <a class="text-primary hover:underline" [routerLink]="['combined', row.id]" dir="ltr">{{ row.proposalNo }}</a>
                 @if (row.isFinal) {
@@ -103,7 +110,13 @@ const STATUSES = ['draft', 'pending_approval', 'approved', 'released', 'sent', '
               <td appTableCell class="tabular whitespace-nowrap">{{ i18n.formatDate(row.validUntil) || '—' }}</td>
             </tr>
           } @empty {
-            <tr app-table-empty [colSpan]="6">{{ (result.isLoading() ? 'common.labels.loading' : 'prop.emptyVersions') | t }}</tr>
+            @if (result.isLoading()) {
+              @for (i of [0, 1, 2, 3, 4]; track i) {
+                <tr app-skeleton-row [columns]="6" [index]="i"></tr>
+              }
+            } @else {
+              <tr app-table-empty [colSpan]="6">{{ 'prop.emptyVersions' | t }}</tr>
+            }
           }
         </tbody>
       </table>

@@ -1,9 +1,16 @@
 import { Component, computed, effect, inject, input, signal } from '@angular/core';
+import { EvidenceSelectComponent } from '../../../shared/crm/evidence-select/evidence-select.component';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 
+import { ApiError } from '../../../core/api/api-error';
 import { ApiService } from '../../../core/api/api.service';
+import { NavigationService } from '../../../core/navigation/navigation.service';
+import { trackRecentView } from '../../../core/records/track-recent-view';
+import { BreadcrumbsComponent } from '../../../shared/crm/breadcrumbs/breadcrumbs.component';
+import { FavoriteToggleComponent } from '../../../shared/crm/favorite-toggle/favorite-toggle.component';
+import { DetailSkeletonComponent } from '../../../shared/ui/skeleton/skeleton.component';
 import { I18nService } from '../../../core/i18n/i18n.service';
 import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { CompletenessPanelComponent } from '../../../shared/crm/completeness-panel/completeness-panel.component';
@@ -32,7 +39,7 @@ import { ProposalsApi } from '../proposals-api.service';
  */
 @Component({
   selector: 'app-combined-proposal-page',
-  imports: [RouterLink, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, CompletenessPanelComponent, DetailItemComponent, DocumentsPanelComponent, UserSelectComponent, AlertComponent, BadgeComponent, ButtonDirective, PageHeaderComponent, ...CARD_IMPORTS, ...FORM_IMPORTS],
+  imports: [BreadcrumbsComponent, FavoriteToggleComponent, DetailSkeletonComponent, EvidenceSelectComponent, RouterLink, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, CompletenessPanelComponent, DetailItemComponent, DocumentsPanelComponent, UserSelectComponent, AlertComponent, BadgeComponent, ButtonDirective, PageHeaderComponent, ...CARD_IMPORTS, ...FORM_IMPORTS],
   templateUrl: './combined-proposal.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
@@ -40,6 +47,7 @@ export class CombinedProposalPage {
   protected readonly api = inject(ProposalsApi);
   private readonly http = inject(ApiService);
   protected readonly i18n = inject(I18nService);
+  protected readonly navigation = inject(NavigationService);
   protected readonly actions = new ActionRunner(this.i18n);
 
   readonly id = input.required<string>();
@@ -50,7 +58,9 @@ export class CombinedProposalPage {
 
   protected readonly texts = signal({ title: '', introduction: '', customerNotes: '', terms: '', templateCode: 'standard', language: 'ar' });
   protected readonly attachId = signal('');
-  protected readonly delivery = signal({ channel: 'meeting', at: '', recipients: '', presenterId: '', notes: '' });
+  protected readonly delivery = signal({ channel: 'meeting', at: '', recipients: '', presenterId: '', notes: '', nextFollowUpAt: '' });
+  /** O8 acceptance: the exact version, the evidence type and the document attached to this version. */
+  protected readonly acceptance = signal({ evidenceType: 'signed_quotation', documentId: '', acceptedAt: '', contractingParty: '', signatoryName: '', signatoryTitle: '', purchaseOrderNo: '' });
   protected readonly response = signal({ response: 'accepted', feedback: '', questions: '', requestedModifications: '', nextAction: '', nextActionAt: '' });
   protected readonly shareForm = signal({ channel: 'email' as 'email' | 'whatsapp' | 'portal', recipients: '', expiresInDays: 14, message: '' });
   protected readonly shareResult = signal<{ url: string; expiresAt: string } | null>(null);
@@ -60,7 +70,23 @@ export class CombinedProposalPage {
     return String(opp?.id ?? opp?._id ?? this.proposal()?.opportunityId ?? '');
   });
 
+  protected readonly notFound = computed(() => {
+    const error = this.data.error();
+    return ApiError.is(error) && (error.status === 404 || error.status === 400);
+  });
+  /** Proposals / <opportunity> / <proposal no. · version>. */
+  protected readonly crumbs = computed(() => {
+    const d = this.data.value();
+    const p = this.proposal();
+    return [
+      { label: this.i18n.t('navigation.items.proposals'), path: '/proposals' },
+      { label: d?.opportunity.name ?? '', path: this.opportunityId() ? `/opportunities/${this.opportunityId()}` : undefined },
+      { label: p ? `${p.proposalNo} · v${p.versionNo}` : '' },
+    ];
+  });
+
   constructor() {
+    trackRecentView('proposal', () => this.id(), () => (this.proposal() ? 'loaded' : this.notFound() ? 'missing' : 'pending'));
     effect(() => {
       const p = this.proposal();
       if (!p) return;
@@ -103,8 +129,32 @@ export class CombinedProposalPage {
         recipients: d.recipients.split('\n').map((line) => line.trim()).filter(Boolean),
         presenterIds: d.presenterId ? [d.presenterId] : undefined,
         notes: d.notes.trim() || undefined,
+        nextFollowUpAt: new Date(d.nextFollowUpAt).toISOString(),
       }),
       'prop.delivered',
+      this.reload,
+    );
+  }
+
+  protected setAcceptance(key: string, value: string): void {
+    this.acceptance.update((a) => ({ ...a, [key]: value }));
+  }
+
+  protected accept(event: Event, versionNo: number): void {
+    event.preventDefault();
+    const a = this.acceptance();
+    void this.actions.run(
+      this.api.accept(this.id(), {
+        acceptedVersionNo: versionNo,
+        evidenceType: a.evidenceType as 'signed_quotation',
+        documentId: a.documentId,
+        acceptedAt: new Date(a.acceptedAt).toISOString(),
+        contractingParty: a.contractingParty.trim(),
+        signatoryName: a.signatoryName.trim(),
+        signatoryTitle: a.signatoryTitle.trim() || undefined,
+        purchaseOrderNo: a.purchaseOrderNo.trim() || undefined,
+      }),
+      'prop.acceptance.recorded',
       this.reload,
     );
   }

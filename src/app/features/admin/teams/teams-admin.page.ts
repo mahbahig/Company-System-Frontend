@@ -15,13 +15,14 @@ import { TABLE_IMPORTS } from '../../../shared/ui/table/table.imports';
 import { ActionRunner } from '../../../shared/utils/action-runner';
 import { userName } from '../../../shared/utils/display-name';
 import { AdminApi, type Team } from '../admin-api.service';
+import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.component';
 
 const idOf = (value: string | { id: string } | null | undefined): string => (!value ? '' : typeof value === 'string' ? value : value.id);
 
 /** USER-02 sales / delivery teams: manager, members and region (team scope for RBAC and dashboards). */
 @Component({
   selector: 'app-teams-admin-page',
-  imports: [TranslatePipe, UserSelectComponent, AlertComponent, BadgeComponent, ButtonDirective, DialogComponent, PageHeaderComponent, ...TABLE_IMPORTS, ...FORM_IMPORTS],
+  imports: [SkeletonRowComponent, TranslatePipe, UserSelectComponent, AlertComponent, BadgeComponent, ButtonDirective, DialogComponent, PageHeaderComponent, ...TABLE_IMPORTS, ...FORM_IMPORTS],
   template: `
     <app-page-header [heading]="'admin.teams.title' | t" [subtitle]="'admin.teams.subtitle' | t" class="!mb-0">
       <button type="button" appButton (click)="edit(null)">{{ 'admin.teams.new' | t }}</button>
@@ -55,7 +56,13 @@ const idOf = (value: string | { id: string } | null | undefined): string => (!va
               <td appTableCell><button type="button" appButton variant="ghost" size="sm" (click)="edit(team)">{{ 'crm.common.edit' | t }}</button></td>
             </tr>
           } @empty {
-            <tr app-table-empty [colSpan]="6">{{ (data.isLoading() ? 'common.labels.loading' : 'admin.empty') | t }}</tr>
+            @if (data.isLoading()) {
+              @for (i of [0, 1, 2, 3, 4]; track i) {
+                <tr app-skeleton-row [columns]="6" [index]="i"></tr>
+              }
+            } @else {
+              <tr app-table-empty [colSpan]="6">{{ 'admin.empty' | t }}</tr>
+            }
           }
         </tbody>
       </table>

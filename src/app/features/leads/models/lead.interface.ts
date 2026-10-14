@@ -25,7 +25,8 @@ export interface Lead {
   ownerId: UserRef | string | null;
   teamId?: string | null;
   assignedAt?: string | null;
-  status: 'new' | 'contacted' | 'qualified' | 'nurture' | 'converted' | 'closed';
+  /** L0–L5: new → identity_review → contacting → qualifying → handoff_pending → conversion (+ nurture / converted / closed). */
+  status: 'new' | 'identity_review' | 'contacting' | 'qualifying' | 'handoff_pending' | 'conversion' | 'nurture' | 'converted' | 'closed';
   priority: 'low' | 'normal' | 'high' | 'urgent';
   qualification?: Qualification;
   estimatedValue?: number;

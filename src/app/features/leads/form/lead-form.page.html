@@ -1,3 +1,4 @@
+<app-breadcrumbs [items]="crumbs()" />
 <app-page-header
   [heading]="(isEdit() ? 'crm.leads.editTitle' : 'crm.leads.newTitle') | t"
   [subtitle]="existing.value()?.lead?.leadNo ?? ''"
@@ -6,8 +7,12 @@
 
 @if (readOnly()) {
   <app-alert variant="destructive">{{ 'crm.leads.close.readOnlyNotice' | t }}</app-alert>
+} @else if (locked()) {
+  <app-alert variant="info">{{ 'ux.forms.leadLocked' | t }}</app-alert>
 } @else {
-  <form class="flex flex-col gap-6" novalidate (submit)="onSubmit($event)">
+  <form class="flex flex-col gap-6" novalidate appSaveShortcut (submit)="onSubmit($event)">
+    <app-draft-banner [offeredAt]="draft.offered()?.savedAt ?? null" [savedAt]="draft.savedAt()" (restore)="restoreDraft()" (discard)="draft.discard()" />
+    <p class="text-sm text-muted-foreground">{{ 'ux.forms.requiredHint' | t }}</p>
     @if (errorKey(); as key) {
       <app-alert variant="destructive">{{ key | t }}</app-alert>
     }
@@ -17,14 +22,14 @@
       <div appCardContent class="grid gap-5 sm:grid-cols-2">
         <div>
           <label appLabel for="lf-name" class="mb-1.5 block" required>{{ 'crm.leads.fields.personOrCompanyName' | t }}</label>
-          <input appInput id="lf-name" [formField]="leadForm.name" [attr.aria-invalid]="fieldError('name') ? true : null" />
+          <input appInput id="lf-name" autocomplete="name" [formField]="leadForm.name" [attr.aria-invalid]="fieldError('name') ? true : null" [attr.aria-describedby]="fieldError('name') ? 'lf-name-error' : null" />
           @if (fieldError('name'); as key) {
-            <p class="mt-1 text-sm text-destructive">{{ key | t }}</p>
+            <p id="lf-name-error" class="mt-1 text-sm text-destructive">{{ key | t }}</p>
           }
         </div>
         <div>
           <label appLabel for="lf-company" class="mb-1.5 block">{{ 'completeness.items.company' | t }}</label>
-          <input appInput id="lf-company" [formField]="leadForm.companyName" />
+          <input appInput id="lf-company" autocomplete="organization" [formField]="leadForm.companyName" />
         </div>
         <div>
           <label appLabel for="lf-contact" class="mb-1.5 block">{{ 'crm.leads.fields.contactPersonName' | t }}</label>
@@ -60,18 +65,58 @@
       <div appCardContent class="grid gap-5 sm:grid-cols-2">
         <div>
           <label appLabel for="lf-phone" class="mb-1.5 block" required>{{ 'crm.leads.fields.phone' | t }}</label>
-          <input appInput id="lf-phone" dir="ltr" [formField]="leadForm.phone" [attr.aria-invalid]="fieldError('phone') ? true : null" />
+          <input
+            appInput
+            id="lf-phone"
+            type="tel"
+            inputmode="tel"
+            autocomplete="tel"
+            dir="ltr"
+            placeholder="01012345678"
+            [formField]="leadForm.phone"
+            [attr.aria-invalid]="fieldError('phone') ? true : null"
+            [attr.aria-describedby]="fieldError('phone') ? 'lf-phone-error' : 'lf-phone-hint'"
+          />
           @if (fieldError('phone'); as key) {
-            <p class="mt-1 text-sm text-destructive">{{ key | t }}</p>
+            <p id="lf-phone-error" class="mt-1 text-sm text-destructive">{{ key | t }}</p>
+          } @else {
+            <p id="lf-phone-hint" class="mt-1 text-xs text-muted-foreground">{{ 'ux.forms.mobileHint' | t }}</p>
           }
         </div>
         <div>
           <label appLabel for="lf-altphone" class="mb-1.5 block">{{ 'crm.leads.fields.altPhone' | t }}</label>
-          <input appInput id="lf-altphone" dir="ltr" [formField]="leadForm.altPhone" />
+          <input
+            appInput
+            id="lf-altphone"
+            type="tel"
+            inputmode="tel"
+            dir="ltr"
+            placeholder="0223456789"
+            [formField]="leadForm.altPhone"
+            [attr.aria-invalid]="fieldError('altPhone') ? true : null"
+            [attr.aria-describedby]="fieldError('altPhone') ? 'lf-altphone-error' : null"
+          />
+          @if (fieldError('altPhone'); as key) {
+            <p id="lf-altphone-error" class="mt-1 text-sm text-destructive">{{ key | t }}</p>
+          }
         </div>
         <div>
           <label appLabel for="lf-email" class="mb-1.5 block">{{ 'crm.leads.fields.email' | t }}</label>
-          <input appInput id="lf-email" type="email" dir="ltr" [formField]="leadForm.email" />
+          <input
+            appInput
+            id="lf-email"
+            type="email"
+            inputmode="email"
+            autocomplete="email"
+            dir="ltr"
+            placeholder="name@company.com"
+            [formField]="leadForm.email"
+            [attr.aria-invalid]="fieldError('email') ? true : null"
+            [attr.aria-describedby]="fieldError('email') ? 'lf-email-error' : null"
+          />
+          @if (fieldError('email'); as key) {
+            <p id="lf-email-error" class="mt-1 text-sm text-destructive">{{ key | t }}</p>
+          }
         </div>
       </div>
     </section>
@@ -135,17 +180,30 @@
         </div>
         <div>
           <label appLabel for="lf-value" class="mb-1.5 block">{{ 'crm.leads.fields.estimatedValue' | t }}</label>
-          <input appInput id="lf-value" type="number" dir="ltr" [formField]="leadForm.estimatedValue" />
+          <input appInput id="lf-value" type="number" inputmode="decimal" dir="ltr" placeholder="250000" [formField]="leadForm.estimatedValue" />
         </div>
       </div>
     </section>
 
     <section appCard aria-labelledby="qualification-heading">
-      <div appCardHeader>
-        <h2 appCardTitle id="qualification-heading">{{ 'crm.leads.sections.qualification' | t }}</h2>
-        <p class="text-sm text-muted-foreground">{{ 'crm.leads.qualification.hint' | t }}</p>
+      <div appCardHeader class="flex flex-row flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 appCardTitle id="qualification-heading">{{ 'crm.leads.sections.qualification' | t }}</h2>
+          <p class="text-sm text-muted-foreground">{{ 'crm.leads.qualification.hint' | t }}</p>
+        </div>
+        <button
+          type="button"
+          appButton
+          variant="ghost"
+          size="sm"
+          aria-controls="lead-qualification-fields"
+          [attr.aria-expanded]="showQualification()"
+          (click)="showQualification.set(!showQualification())"
+        >
+          {{ (showQualification() ? 'ux.forms.hideOptional' : 'ux.forms.showOptional') | t }}
+        </button>
       </div>
-      <div appCardContent class="grid gap-5 sm:grid-cols-2">
+      <div appCardContent id="lead-qualification-fields" class="grid gap-5 sm:grid-cols-2" [hidden]="!showQualification()">
         <div>
           <label appLabel for="lq-consumption" class="mb-1.5 block">{{ 'crm.leads.qualification.avgMonthlyConsumptionKwh' | t }}</label>
           <input appInput id="lq-consumption" type="number" dir="ltr" [formField]="leadForm.q.avgMonthlyConsumptionKwh" />
@@ -263,10 +321,12 @@
       </div>
     </section>
 
-    <div>
-      <button type="submit" appButton [disabled]="leadForm().submitting()">
+    <div class="flex flex-wrap items-center gap-3 border-t border-border pt-4">
+      <button type="submit" appButton [disabled]="leadForm().submitting()" aria-keyshortcuts="Control+S Meta+S">
         {{ (leadForm().submitting() ? 'crm.common.saving' : 'crm.common.save') | t }}
       </button>
+      <a appButton variant="ghost" [routerLink]="id() ? ['/', i18n.locale(), 'leads', id()] : ['/', i18n.locale(), 'leads']">{{ 'crm.common.cancel' | t }}</a>
+      <span class="hidden text-xs text-muted-foreground sm:inline" aria-hidden="true">{{ 'ux.forms.saveHint' | t }}</span>
     </div>
   </form>
 }

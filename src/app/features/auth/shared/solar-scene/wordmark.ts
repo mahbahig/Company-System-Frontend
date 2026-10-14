@@ -20,11 +20,12 @@ import {
   WORDMARK_VERTEX,
   WORDMARK_VERTEX_PARS,
 } from './shaders/wordmark.glsl';
+import { BRAND_WORDMARK_GLYPHS } from '../../../../shared/ui/brand-wordmark/brand-wordmark-glyphs';
+import { BRAND_WORDMARK } from '../../../../shared/ui/brand-wordmark/brand-wordmark.config';
+import { layoutBrandWordmark } from '../../../../shared/ui/brand-wordmark/layout-brand-wordmark';
 import { SOLAR_SCENE } from './solar-scene.config';
 import { WORDMARK_TYPEFACE } from './wordmark-typeface';
 
-/** Height of the capitals in font units — the top of every letter in "ECOTECH". */
-const CAP_HEIGHT = 1010;
 /** Where the light band waits between passes: far off the letters. */
 const SWEEP_PARKED = 1e4;
 /** How far past the outer letters the band starts and ends, so it enters and leaves unseen. */
@@ -33,16 +34,18 @@ const SWEEP_MARGIN = 0.8;
 const REVEAL_OVERSHOOT = 1.15;
 
 /**
- * "ECOTECH" as real extruded type (Inter, the brand typeface), one mesh per
- * letter so the letters can stand up one after another when the scene opens
- * and carry a slow wave afterwards.
+ * The ECOTECH logotype as real extruded type — the brand wordmark's letters
+ * (Archivo Expanded) set exactly as the 2D logotype is — one mesh per letter
+ * so the letters can stand up one after another when the scene opens and
+ * carry a slow wave afterwards.
  *
- * - Faces: clear-coated lacquer — deep brand petrol by day, platinum by night.
- * - An inset chamfer in polished gold, which traces a fine gold line round
- *   every letter seen from the front; the walls behind it stay plain.
- * - A band of light glides across the letters every few seconds.
- * - A mirrored copy below the floor line, fading with depth, stands the type
- *   on an implied glossy floor.
+ * - Faces: satin — deep petrol ink by day, champagne white by night.
+ * - An inset chamfer in brushed champagne metal, which traces a hairline
+ *   round every letter seen from the front; the walls behind it are a deep
+ *   green-petrol.
+ * - A soft band of light glides across the letters every few seconds.
+ * - A faint mirrored copy below the floor line, fading with depth, stands the
+ *   type on an implied polished floor.
  */
 export class Wordmark {
   /** Sits on the floor line; the letters stand on it and reflect in it. */
@@ -71,15 +74,23 @@ export class Wordmark {
     uWallMetalness: { value: 0 },
     uWallRoughness: { value: 0 },
     uFaceShade: { value: new Vector2() },
-    uCapHeight: { value: (CAP_HEIGHT / WORDMARK_TYPEFACE.resolution) * SOLAR_SCENE.wordmark.size },
+    uCapHeight: {
+      value:
+        (BRAND_WORDMARK_GLYPHS.capHeight / BRAND_WORDMARK_GLYPHS.unitsPerEm) *
+        SOLAR_SCENE.wordmark.size,
+    },
   };
   private readonly sweepSpan: number;
 
   constructor(look: SceneLook) {
-    const { text, size, tracking, depth, bevel, curveSegments, floor } = SOLAR_SCENE.wordmark;
+    const { size, depth, bevel, curveSegments, floor } = SOLAR_SCENE.wordmark;
     const font = new Font(WORDMARK_TYPEFACE);
-    const unit = size / WORDMARK_TYPEFACE.resolution;
-    const spacing = tracking * size;
+    const em = BRAND_WORDMARK_GLYPHS.unitsPerEm;
+    const { letters, left, right } = layoutBrandWordmark(
+      BRAND_WORDMARK.text,
+      BRAND_WORDMARK.tracking.large,
+    );
+    const middle = (left + right) / 2;
     const extrude = {
       depth,
       curveSegments,
@@ -91,26 +102,20 @@ export class Wordmark {
     };
 
     // ExtrudeGeometry's groups: 0 = front/back faces, 1 = walls and bevels.
-    const centres: number[] = [];
-    let cursor = 0;
-    for (const char of text) {
-      const metrics = WORDMARK_TYPEFACE.glyphs[char];
-      const centre = ((metrics.x_min + metrics.x_max) / 2) * unit;
+    for (const { char, glyph, x } of letters) {
+      // Pivot each letter on the middle of its own baseline, so it stands up in
+      // place; the word is centred on its ink, not its advances.
+      const centre = (glyph.left + glyph.right) / 2 / em;
       const geometry = new ExtrudeGeometry(font.generateShapes(char, size), extrude);
-      // Pivot each letter on the middle of its own baseline, so it stands up in place.
-      geometry.translate(-centre, 0, -depth / 2);
+      geometry.translate(-centre * size, 0, -depth / 2);
+      const letter = new Mesh(geometry, [this.face, this.rim]);
+      const reflection = new Mesh(geometry, [this.reflectedFace, this.reflectedRim]);
+      letter.position.x = reflection.position.x = (x + centre - middle) * size;
       this.geometries.push(geometry);
-      this.glyphs.push(new Mesh(geometry, [this.face, this.rim]));
-      this.reflections.push(new Mesh(geometry, [this.reflectedFace, this.reflectedRim]));
-      centres.push(cursor + centre);
-      cursor += metrics.ha * unit + spacing;
+      this.glyphs.push(letter);
+      this.reflections.push(reflection);
     }
-    const width = cursor - spacing;
-    this.glyphs.forEach((glyph, index) => {
-      glyph.position.x = centres[index] - width / 2;
-      this.reflections[index].position.x = glyph.position.x;
-    });
-    this.sweepSpan = width / 2 + SWEEP_MARGIN;
+    this.sweepSpan = ((right - left) / 2) * size + SWEEP_MARGIN;
 
     // The mirror image: the same letters, flipped through the floor plane.
     const reflection = new Group();
@@ -189,8 +194,8 @@ export class Wordmark {
   }
 
   /**
-   * Splices the light band into a material — plus the lacquer shading for
-   * faces, the gold-chamfer split for the rim, and the depth fade for the
+   * Splices the light band into a material — plus the shading for
+   * faces, the chamfer split for the rim, and the depth fade for the
    * mirrored copy.
    */
   private decorate(material: MeshPhysicalMaterial, part: 'face' | 'rim', reflected = false): void {
