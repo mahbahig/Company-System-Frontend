@@ -101,25 +101,28 @@ export const SOLAR_SCENE = {
     spring: { frequency: 3.8, damping: 0.72 },
   },
 
+  /**
+   * The extruded logotype. Its letters and their spacing are the shared brand
+   * wordmark's (`BRAND_WORDMARK`, Archivo Expanded), set at the large tracking.
+   */
   wordmark: {
-    text: 'ECOTECH',
-    size: 0.44,
-    /** Letter-spacing in em — generous tracking reads as a crafted logotype. */
-    tracking: 0.34,
-    depth: 0.13,
+    /** Em size — the wide letters span the lockup at a modest, refined height. */
+    size: 0.54,
+    /** A slim slab: letters cut from plate, not blocks. */
+    depth: 0.075,
     /**
      * The bevel is inset (cut inside the glyph outline rather than added to
-     * it), so the letters keep their weight and gain a fine gold chamfer.
+     * it), so the letters keep their weight and gain a hairline chamfer.
      */
-    bevel: { thickness: 0.018, size: 0.011, segments: 3 },
-    curveSegments: 12,
+    bevel: { thickness: 0.012, size: 0.0055, segments: 3 },
+    curveSegments: 16,
     /** The floor line the letters stand on — also the mirror plane of their reflection. */
-    floor: [0, -1.34, 0.5],
+    floor: [0, -1.3, 0.5],
     /** Resting height of the baseline above the floor. */
     lift: 0.045,
-    float: { amplitude: 0.022, speed: 0.55, tilt: 0.012, sway: 0.02 },
-    /** A slow wave that runs through the letters one after another. */
-    wave: { amplitude: 0.011, speed: 0.9, lag: 0.5 },
+    float: { amplitude: 0.018, speed: 0.55, tilt: 0.01, sway: 0.018 },
+    /** A slow, barely there wave that runs through the letters one after another. */
+    wave: { amplitude: 0.0045, speed: 0.9, lag: 0.5 },
     /** On first show the letters stand up one by one, from lying flat. */
     reveal: { delay: 0.25, stagger: 0.09, duration: 1.2 },
     /** A band of light that glides across the letters every `period` seconds, from `delay`. */
@@ -167,8 +170,10 @@ export const SOLAR_SCENE = {
   /**
    * Per-theme lighting and materials. Light: a daylight stage — glows are
    * painted over the sky with normal blending (additive light would vanish
-   * into it), and the letters are deep petrol lacquer with gold chamfers.
-   * Dark: a petrol night — glows add light, and the letters are platinum.
+   * into it), and the letters are deep petrol ink in a satin finish. Dark: a
+   * petrol night — glows add light, and the letters are champagne-white satin
+   * metal. In both, a champagne hairline traces each letter and the walls are
+   * a deep green-petrol: the only hint of the renewable green.
    */
   looks: {
     light: {
@@ -190,18 +195,20 @@ export const SOLAR_SCENE = {
       },
       wordmark: {
         face: {
-          color: 0x01506a,
-          metalness: 0.1,
-          roughness: 0.36,
-          clearcoat: 1,
-          clearcoatRoughness: 0.05,
+          color: 0x042e3a,
+          metalness: 0.15,
+          roughness: 0.4,
+          clearcoat: 0.3,
+          clearcoatRoughness: 0.3,
+          /** Less studio reflection, so the ink stays deep rather than greying. */
+          envMapIntensity: 0.5,
         },
         /** Face brightness at the baseline and at the cap line. */
-        faceShade: [0.55, 1.2],
-        chamfer: { color: 0xf7cf6c, metalness: 1, roughness: 0.18 },
-        wall: { color: 0x01303f, metalness: 0.2, roughness: 0.5 },
-        sweep: { color: 0xfff1cc, strength: 0.75 },
-        reflection: 0.16,
+        faceShade: [0.8, 1],
+        chamfer: { color: 0xe2c99a, metalness: 1, roughness: 0.22 },
+        wall: { color: 0x0b3a36, metalness: 0.35, roughness: 0.5 },
+        sweep: { color: 0xfff6e4, strength: 0.42 },
+        reflection: 0.1,
       },
       dust: { warm: 0xf2a900, cool: 0x0b7593, opacity: 0.42 },
       orbits: { line: 0x0a6a86, glint: 0xffad00, glintCore: 0xfff3c4 },
@@ -225,17 +232,18 @@ export const SOLAR_SCENE = {
       },
       wordmark: {
         face: {
-          color: 0xf3f5f6,
-          metalness: 0.55,
-          roughness: 0.26,
-          clearcoat: 1,
-          clearcoatRoughness: 0.12,
+          color: 0xefe7d8,
+          metalness: 0.4,
+          roughness: 0.32,
+          clearcoat: 0.5,
+          clearcoatRoughness: 0.2,
+          envMapIntensity: 1,
         },
-        faceShade: [0.78, 1.08],
-        chamfer: { color: 0xf7cf6c, metalness: 1, roughness: 0.18 },
-        wall: { color: 0x2b373c, metalness: 0.7, roughness: 0.4 },
-        sweep: { color: 0xffffff, strength: 0.8 },
-        reflection: 0.14,
+        faceShade: [0.88, 1.04],
+        chamfer: { color: 0xdcc8a2, metalness: 1, roughness: 0.28 },
+        wall: { color: 0x14403d, metalness: 0.55, roughness: 0.42 },
+        sweep: { color: 0xfff8ee, strength: 0.48 },
+        reflection: 0.1,
       },
       dust: { warm: 0xfff6d8, cool: 0x37bfdc, opacity: 0.75 },
       orbits: { line: 0x37bfdc, glint: 0xffd400, glintCore: 0xffffff },

@@ -2,58 +2,60 @@
 import type { FontData } from 'three/addons/loaders/FontLoader.js';
 
 /**
- * The glyphs of the 3D "ECOTECH" wordmark (Inter SemiBold, SIL Open Font
- * License 1.1 — see `original_font_information`), in three.js typeface format.
+ * The glyphs of the 3D "ECOTECH" wordmark in three.js typeface format, on a
+ * 1000-unit em (so a `size` is the em size).
+ *
+ * Typeface: Archivo Expanded 350, SIL Open Font License 1.1 (https://openfontlicense.org).
+ * Copyright 2020 The Archivo Project Authors (https://github.com/Omnibus-Type/Archivo).
  */
 export const WORDMARK_TYPEFACE: FontData = {
   "glyphs": {
     "E": {
-      "ha": 841,
-      "x_min": 102,
-      "x_max": 761,
-      "o": "m 761 0 l 102 0 l 102 1010 l 758 1010 l 758 858 l 283 858 l 283 585 l 723 585 l 723 435 l 283 435 l 283 153 l 761 153 l 761 0 z"
+      "ha": 870,
+      "x_min": 110,
+      "x_max": 790,
+      "o": "m 790 0 l 110 0 l 110 686 l 782 686 l 782 603 l 209 603 l 209 394 l 726 394 l 726 310 l 209 310 l 209 84 l 790 84 l 790 0 z"
     },
     "C": {
-      "ha": 1023,
-      "x_min": 70,
-      "x_max": 959,
-      "o": "m 532 -14 l 532 -14 q 295 48 399 -14 q 130 226 191 110 q 70 505 70 342 l 70 505 q 131 784 70 668 q 296 962 191 901 q 532 1024 401 1024 l 532 1024 q 687 1001 615 1024 q 816 932 760 977 q 909 822 873 887 q 958 674 946 757 l 958 674 l 776 674 q 746 754 767 720 q 692 813 724 789 q 621 849 661 837 q 535 862 581 862 l 535 862 q 388 820 452 862 q 288 699 324 779 q 252 505 252 619 l 252 505 q 288 309 252 389 q 389 189 325 230 q 534 149 453 149 l 534 149 q 620 161 580 149 q 692 198 660 174 q 746 257 724 222 q 776 336 768 292 l 776 336 l 959 336 q 915 200 949 264 q 825 89 880 137 q 695 14 769 41 q 532 -14 622 -14 z"
+      "ha": 952,
+      "x_min": 81,
+      "x_max": 873,
+      "o": "m 490 -12 l 490 -12 q 265 29 356 -12 q 127 150 173 70 q 81 343 81 229 l 81 343 q 187 606 81 513 q 487 698 292 698 l 487 698 q 688 669 601 698 q 824 582 775 640 q 872 435 872 523 l 872 435 l 775 435 q 739 539 775 499 q 637 597 702 578 q 485 615 572 615 l 485 615 q 328 587 396 615 q 221 501 259 558 q 182 356 182 444 l 182 356 l 182 332 q 221 184 182 241 q 330 99 260 126 q 490 72 399 72 l 490 72 q 642 91 577 72 q 742 149 706 109 q 777 251 777 189 l 777 251 l 873 251 q 824 105 873 163 q 689 17 775 46 q 490 -12 603 -12 z"
     },
     "O": {
-      "ha": 1067,
-      "x_min": 70,
-      "x_max": 998,
-      "o": "m 534 -14 l 534 -14 q 296 48 401 -14 q 131 226 191 110 q 70 505 70 342 l 70 505 q 131 784 70 668 q 296 962 191 901 q 534 1024 401 1024 l 534 1024 q 771 962 667 1024 q 937 784 876 901 q 998 505 998 668 l 998 505 q 937 225 998 342 q 771 48 876 109 q 534 -14 667 -14 z m 534 149 l 534 149 q 680 190 616 149 q 779 310 743 231 q 815 505 815 390 l 815 505 q 779 700 815 621 q 680 821 743 780 q 534 862 616 862 l 534 862 q 388 821 452 862 q 288 700 324 779 q 252 505 252 620 l 252 505 q 288 311 252 390 q 388 190 324 231 q 534 149 452 149 z"
+      "ha": 1025,
+      "x_min": 81,
+      "x_max": 945,
+      "o": "m 513 -12 l 513 -12 q 282 29 379 -12 q 133 149 185 69 q 81 343 81 228 l 81 343 q 133 539 81 460 q 282 658 185 617 q 513 698 379 698 l 513 698 q 744 658 647 698 q 893 539 841 617 q 945 343 945 460 l 945 343 q 893 149 945 228 q 744 29 841 69 q 513 -12 647 -12 z m 513 72 l 513 72 q 643 87 583 72 q 748 134 703 102 q 819 215 793 165 q 844 333 844 264 l 844 333 l 844 355 q 819 473 844 423 q 748 554 793 522 q 643 600 703 585 q 513 615 583 615 l 513 615 q 383 600 443 615 q 278 554 323 585 q 207 473 232 522 q 182 355 182 423 l 182 355 l 182 333 q 207 215 182 264 q 278 134 232 165 q 383 87 323 102 q 513 72 443 72 z"
     },
     "T": {
-      "ha": 917,
-      "x_min": 56,
-      "x_max": 861,
-      "o": "m 368 858 l 56 858 l 56 1010 l 861 1010 l 861 858 l 549 858 l 549 0 l 368 0 l 368 858 z"
+      "ha": 779,
+      "x_min": 28,
+      "x_max": 751,
+      "o": "m 439 0 l 340 0 l 340 600 l 28 600 l 28 686 l 751 686 l 751 600 l 439 600 l 439 0 z"
     },
     "H": {
-      "ha": 1036,
-      "x_min": 102,
-      "x_max": 934,
-      "o": "m 283 0 l 102 0 l 102 1010 l 283 1010 l 283 593 l 753 593 l 753 1010 l 934 1010 l 934 0 l 753 0 l 753 440 l 283 440 l 283 0 z"
+      "ha": 941,
+      "x_min": 110,
+      "x_max": 831,
+      "o": "m 209 0 l 110 0 l 110 686 l 209 686 l 209 394 l 732 394 l 732 686 l 831 686 l 831 0 l 732 0 l 732 307 l 209 307 l 209 0 z"
     }
   },
-  "familyName": "Inter SemiBold",
-  "ascender": 1345,
-  "descender": -335,
-  "underlinePosition": -331,
-  "underlineThickness": 173,
+  "familyName": "Archivo Expanded 350",
+  "ascender": 878,
+  "descender": -210,
+  "underlinePosition": -148,
+  "underlineThickness": 44,
   "boundingBox": {
-    "xMin": -1580,
-    "xMax": 5290,
-    "yMin": -677,
-    "yMax": 2275
+    "xMin": -271,
+    "xMax": 1678,
+    "yMin": -392,
+    "yMax": 1084
   },
   "resolution": 1000,
   "original_font_information": {
-    "fullName": "Inter SemiBold",
-    "version": "Version 4.001;git-66647c0bb",
-    "copyright": "Copyright 2016 The Inter Project Authors (https://github.com/rsms/inter)",
+    "fullName": "Archivo Expanded 350",
+    "copyright": "Copyright 2020 The Archivo Project Authors (https://github.com/Omnibus-Type/Archivo)",
     "licenseURL": "https://openfontlicense.org"
   }
 };

@@ -31,7 +31,6 @@ import type { LoginModel } from './login-model.interface';
 import type { LoginNotice } from './login-notice.interface';
 
 const NOTICES: Record<string, LoginNotice> = {
-  signed_out: { key: 'auth.login.signedOutNotice', variant: 'default' },
   password_changed: { key: 'account.password.signInAgain', variant: 'default' },
   signin_required: { key: 'auth.login.sessionExpiredNotice', variant: 'default' },
   account_inactive: { key: 'auth.errors.accountInactive', variant: 'destructive' },

@@ -1,6 +1,6 @@
 /**
  * Additions spliced into the wordmark's MeshPhysicalMaterial shaders (via
- * `onBeforeCompile`): a gold chamfer on otherwise plain letter walls, a
+ * `onBeforeCompile`): a champagne chamfer on otherwise plain letter walls, a
  * travelling band of light and, for the mirrored copy, a reflection that
  * fades out with depth below the floor.
  */
@@ -41,7 +41,7 @@ export const WORDMARK_FRAGMENT_PARS = /* glsl */ `
 /**
  * For the walls-and-bevel material (whose own colour is the chamfer's): bevel
  * facets that still face forwards keep it, the walls take the wall finish —
- * so from the front each letter is traced by a fine gold line, not a gold slab.
+ * so from the front each letter is traced by a fine metal line, not a metal slab.
  * Runs after `metalnessmap_fragment`.
  */
 export const CHAMFER_FRAGMENT = /* glsl */ `
@@ -52,7 +52,7 @@ export const CHAMFER_FRAGMENT = /* glsl */ `
 `;
 
 /**
- * For the faces: lacquer that deepens towards the baseline and lifts towards
+ * For the faces: a finish that deepens towards the baseline and lifts towards
  * the cap line, as if lit from above. Runs after `metalnessmap_fragment`.
  */
 export const FACE_FRAGMENT = /* glsl */ `
