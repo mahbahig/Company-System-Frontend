@@ -1,7 +1,9 @@
 /** `POST /leads/:id/attempts` payload, mirrors `LogAttemptSchema`. */
 export interface LogAttemptPayload {
-  reached: boolean;
+  channel: 'call' | 'whatsapp' | 'sms' | 'email' | 'visit' | 'other';
+  outcome: 'reached' | 'no_answer' | 'busy' | 'wrong_number' | 'callback_requested' | 'message_left' | 'opted_out';
   notes?: string;
-  nextFollowUpAt?: string;
+  /** Required unless the outcome is terminal (reached, wrong number, opted out). */
+  nextAttemptAt?: string;
   nextAction?: string;
 }

@@ -18,6 +18,7 @@ import { ActionRunner } from '../../../shared/utils/action-runner';
 import { userName } from '../../../shared/utils/display-name';
 import type { CostLine, FinancingOption, PaymentMilestone, Person } from '../proposals.models';
 import { ProposalsApi } from '../proposals-api.service';
+import { DetailSkeletonComponent } from '../../../shared/ui/skeleton/skeleton.component';
 
 const COST_CATEGORIES = ['equipment', 'installation', 'engineering', 'transport', 'permits', 'other'];
 
@@ -30,7 +31,7 @@ const COST_CATEGORIES = ['equipment', 'installation', 'engineering', 'transport'
  */
 @Component({
   selector: 'app-financial-proposal-page',
-  imports: [RouterLink, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, CompletenessPanelComponent, DetailItemComponent, AlertComponent, ButtonDirective, PageHeaderComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, ...TABLE_IMPORTS],
+  imports: [DetailSkeletonComponent, RouterLink, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, CompletenessPanelComponent, DetailItemComponent, AlertComponent, ButtonDirective, PageHeaderComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, ...TABLE_IMPORTS],
   templateUrl: './financial-proposal.page.html',
   host: { class: 'flex flex-col gap-6' },
 })

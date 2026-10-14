@@ -1,5 +1,7 @@
 import type { Routes } from '@angular/router';
 
+import { unsavedChangesGuard } from '../../core/forms/unsaved-changes';
+
 /** `/:locale/opportunities/...` — lazy-loaded pages of the opportunities feature. */
 export const OPPORTUNITIES_ROUTES: Routes = [
   {
@@ -11,6 +13,7 @@ export const OPPORTUNITIES_ROUTES: Routes = [
     path: 'new',
     title: 'crm.opportunities.newTitle',
     data: { permission: 'opportunities.create' },
+    canDeactivate: [unsavedChangesGuard],
     loadComponent: () => import('./form/opportunity-form.page').then((m) => m.OpportunityFormPage),
   },
   {
@@ -40,6 +43,7 @@ export const OPPORTUNITIES_ROUTES: Routes = [
     path: ':id/edit',
     title: 'crm.opportunities.editTitle',
     data: { permission: 'opportunities.edit' },
+    canDeactivate: [unsavedChangesGuard],
     loadComponent: () => import('./form/opportunity-form.page').then((m) => m.OpportunityFormPage),
   },
 ];

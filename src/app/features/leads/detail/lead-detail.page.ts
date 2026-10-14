@@ -29,26 +29,43 @@ import { StatusPageComponent } from '../../errors/status-page.component';
 import { asUserRef } from '../../../shared/utils/display-name';
 import { formatPhone } from '../../../shared/utils/format';
 import { LeadsApi } from '../leads-api.service';
+import type { CloseLeadPayload } from '../models/close-lead.interface';
+import type { LogAttemptPayload } from '../models/log-attempt.interface';
+import { LeadWorkflowPanelComponent } from './lead-workflow-panel.component';
+import { trackRecentView } from '../../../core/records/track-recent-view';
+import { BreadcrumbsComponent } from '../../../shared/crm/breadcrumbs/breadcrumbs.component';
+import { FavoriteToggleComponent } from '../../../shared/crm/favorite-toggle/favorite-toggle.component';
+import { InlineEditComponent } from '../../../shared/crm/inline-edit/inline-edit.component';
+import { DetailSkeletonComponent } from '../../../shared/ui/skeleton/skeleton.component';
+import { isValidEmail } from '../../../shared/utils/contact-validation';
 import type { Lead } from '../models/lead.interface';
 
 interface AttemptModel {
-  reached: boolean;
+  channel: LogAttemptPayload['channel'];
+  outcome: LogAttemptPayload['outcome'];
   notes: string;
-  nextFollowUpAt: string;
+  nextAttemptAt: string;
   nextAction: string;
 }
 
+/** Outcomes that end the attempt sequence (no next attempt needed). */
+const TERMINAL_OUTCOMES = new Set(['reached', 'wrong_number', 'opted_out']);
+
 interface CloseModel {
-  reason: 'unqualified' | 'invalid' | 'duplicate' | 'nurture' | '';
+  reason: CloseLeadPayload['reason'] | '';
   comment: string;
   nurtureFollowUpAt: string;
   qualityCode: string;
 }
 
-/** Lead detail: contact log, qualification, close/reopen, completeness. */
+/** Lead detail: the L0–L5 tracker and actions, contact attempts, close / nurture / reopen, completeness. */
 @Component({
   selector: 'app-lead-detail-page',
   imports: [
+    BreadcrumbsComponent,
+    FavoriteToggleComponent,
+    InlineEditComponent,
+    DetailSkeletonComponent,
     UserSelectComponent,
     RouterLink,
     FormField,
@@ -69,6 +86,7 @@ interface CloseModel {
     SelectComponent,
     SelectDirective,
     TextareaDirective,
+    LeadWorkflowPanelComponent,
   ],
   templateUrl: './lead-detail.page.html',
   host: { class: 'flex flex-col gap-6' },
@@ -97,8 +115,17 @@ export class LeadDetailPage {
     const status = this.lead()?.status;
     return (status === 'closed' || status === 'nurture') && this.auth.can('leads.reopen');
   });
-  protected readonly canQualify = computed(() => !this.isFinal() && this.lead()?.status !== 'qualified' && this.auth.can('leads.edit'));
   protected readonly canClose = computed(() => !this.isFinal() && this.auth.can('leads.close'));
+  /** The server's verdict for THIS lead at its current stage (permission, scope, not in handoff / final). */
+  protected readonly canEdit = computed(() => !!this.detail.value()?.canEdit);
+  protected readonly crumbs = computed(() => [
+    { label: this.i18n.t('navigation.items.leads'), path: '/leads' },
+    { label: this.lead()?.name ?? '' },
+  ]);
+  protected readonly saveEmail = (email: string) => this.leads.update(this.id(), { email });
+  protected readonly saveFollowUp = (date: string) => this.leads.update(this.id(), { nextFollowUpAt: date });
+  protected readonly emailCheck = (value: string) => (!value ? 'validation.required' : isValidEmail(value) ? null : 'ux.validation.email');
+  protected readonly requiredCheck = (value: string) => (value ? null : 'validation.required');
   /** Assign / reassign from the lead itself (the bank lead does not need to be qualified first). */
   protected readonly canAssign = computed(() => !this.isFinal() && this.auth.can('leads.assign'));
   protected readonly assignOwner = signal('');
@@ -115,25 +142,32 @@ export class LeadDetailPage {
   protected readonly actionMessage = signal<string | null>(null);
 
   // --- Contact attempt ------------------------------------------------------
-  private readonly attemptModel = signal<AttemptModel>({ reached: false, notes: '', nextFollowUpAt: '', nextAction: '' });
-  protected readonly attemptForm = form(this.attemptModel);
+  private readonly attemptModel = signal<AttemptModel>({ channel: 'call', outcome: 'no_answer', notes: '', nextAttemptAt: '', nextAction: '' });
+  protected readonly attemptForm = form(this.attemptModel, (path) => {
+    required(path.nextAttemptAt, { message: 'validation.required', when: ({ valueOf }) => !TERMINAL_OUTCOMES.has(valueOf(path.outcome)) });
+  });
+  protected readonly attemptChannels: LogAttemptPayload['channel'][] = ['call', 'whatsapp', 'sms', 'email', 'visit', 'other'];
+  protected readonly attemptOutcomes: LogAttemptPayload['outcome'][] = ['reached', 'no_answer', 'busy', 'callback_requested', 'message_left', 'wrong_number', 'opted_out'];
 
   protected async submitAttempt(event: Event): Promise<void> {
     event.preventDefault();
+    this.attemptForm().markAsTouched();
+    if (this.attemptForm().invalid()) return;
     this.actionError.set(null);
     const value = this.attemptModel();
     try {
       await firstValueFrom(
         this.leads.logAttempt(this.id(), {
-          reached: value.reached,
+          channel: value.channel,
+          outcome: value.outcome,
           notes: value.notes || undefined,
-          nextFollowUpAt: value.nextFollowUpAt || undefined,
+          nextAttemptAt: value.nextAttemptAt ? new Date(value.nextAttemptAt).toISOString() : undefined,
           nextAction: value.nextAction || undefined,
         }),
       );
       this.actionMessage.set('crm.leads.attempt.logged');
       this.showAttemptForm.set(false);
-      this.attemptModel.set({ reached: false, notes: '', nextFollowUpAt: '', nextAction: '' });
+      this.attemptModel.set({ channel: 'call', outcome: 'no_answer', notes: '', nextAttemptAt: '', nextAction: '' });
       this.detail.reload();
     } catch (error) {
       this.actionError.set(this.errorKey(error));
@@ -165,23 +199,12 @@ export class LeadDetailPage {
     }
   }
 
-  // --- Qualify ----------------------------------------------------------------
-  protected async qualify(): Promise<void> {
-    this.actionError.set(null);
-    try {
-      await firstValueFrom(this.leads.qualify(this.id()));
-      this.actionMessage.set('crm.leads.qualify.done');
-      this.detail.reload();
-    } catch (error) {
-      this.actionError.set(this.errorKey(error));
-    }
-  }
-
   // --- Close ------------------------------------------------------------------
   private readonly closeModel = signal<CloseModel>({ reason: '', comment: '', nurtureFollowUpAt: '', qualityCode: '' });
   protected readonly closeForm = form(this.closeModel, (path) => {
     required(path.reason, { message: 'validation.required' });
     required(path.nurtureFollowUpAt, { message: 'validation.required', when: ({ valueOf }) => valueOf(path.reason) === 'nurture' });
+    required(path.comment, { message: 'validation.reasonRequired', when: ({ valueOf }) => valueOf(path.reason) === 'other' });
   });
   protected readonly closeIsNurture = computed(() => this.closeModel().reason === 'nurture');
 
@@ -194,7 +217,7 @@ export class LeadDetailPage {
     try {
       await firstValueFrom(
         this.leads.close(this.id(), {
-          reason: value.reason as 'unqualified' | 'invalid' | 'duplicate' | 'nurture',
+          reason: value.reason as CloseLeadPayload['reason'],
           comment: value.comment || undefined,
           nurtureFollowUpAt: value.reason === 'nurture' ? value.nurtureFollowUpAt || undefined : undefined,
           qualityCode: value.qualityCode || undefined,
@@ -236,5 +259,6 @@ export class LeadDetailPage {
 
   constructor() {
     void this.reference.load();
+    trackRecentView('lead', () => this.id(), () => (this.lead() ? 'loaded' : this.notFound() ? 'missing' : 'pending'));
   }
 }

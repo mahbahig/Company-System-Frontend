@@ -4,6 +4,7 @@ import { Router, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 
 import { ApiError } from '../../../core/api/api-error';
+import { AuthService } from '../../../core/auth/auth.service';
 import { I18nService } from '../../../core/i18n/i18n.service';
 import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { ReferenceDataService } from '../../../core/reference/reference-data.service';
@@ -72,6 +73,7 @@ const CONVERSION_GATES = ['qualified', 'convert'];
 })
 export class LeadConvertPage {
   private readonly leads = inject(LeadsApi);
+  protected readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   protected readonly i18n = inject(I18nService);
   protected readonly reference = inject(ReferenceDataService);
@@ -111,7 +113,8 @@ export class LeadConvertPage {
     if (!this.detail.hasValue()) return [];
     return this.detail.value().completeness.missing.filter((item) => !item.satisfied && item.level === 'gate' && CONVERSION_GATES.includes(item.gate ?? ''));
   });
-  protected readonly notQualified = computed(() => this.lead()?.status !== 'qualified');
+  /** L5: conversion follows the Sales Representative's acceptance of the handoff. */
+  protected readonly notQualified = computed(() => this.lead()?.status !== 'conversion');
 
   /** Primary contact the server will create: decision maker, else contact person, else the lead name. */
   protected readonly contactName = computed(() => {

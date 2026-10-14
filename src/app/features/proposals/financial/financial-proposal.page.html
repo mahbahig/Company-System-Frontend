@@ -235,5 +235,5 @@
     </div>
   </div>
 } @else if (data.isLoading()) {
-  <p class="text-sm text-muted-foreground">{{ 'common.labels.loading' | t }}</p>
+  <app-detail-skeleton [label]="'common.labels.loading' | t" />
 }

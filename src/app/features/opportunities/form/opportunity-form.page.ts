@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, input, signal } from '@angular/core';
+import { Component, ElementRef, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { FormField, form, maxLength, min, required, submit } from '@angular/forms/signals';
 import { Router, RouterLink } from '@angular/router';
@@ -6,6 +6,12 @@ import { Search } from 'lucide';
 import { firstValueFrom } from 'rxjs';
 
 import { ApiError } from '../../../core/api/api-error';
+import { FormDraft } from '../../../core/forms/form-draft';
+import { UnsavedChanges, type HasUnsavedChanges } from '../../../core/forms/unsaved-changes';
+import { SaveShortcutDirective } from '../../../core/shortcuts/save-shortcut.directive';
+import { BreadcrumbsComponent } from '../../../shared/crm/breadcrumbs/breadcrumbs.component';
+import { DraftBannerComponent } from '../../../shared/crm/draft-banner/draft-banner.component';
+import { focusFirstInvalid } from '../../../shared/utils/focus-invalid';
 import { AuthService } from '../../../core/auth/auth.service';
 import { I18nService } from '../../../core/i18n/i18n.service';
 import { TranslatePipe } from '../../../core/i18n/translate.pipe';
@@ -43,6 +49,9 @@ type CustomerOption = { id: string; customerNo: string; nameAr?: string; nameEn?
   imports: [
     FormField,
     RouterLink,
+    SaveShortcutDirective,
+    BreadcrumbsComponent,
+    DraftBannerComponent,
     TranslatePipe,
     PageHeaderComponent,
     AlertComponent,
@@ -62,18 +71,21 @@ type CustomerOption = { id: string; customerNo: string; nameAr?: string; nameEn?
   templateUrl: './opportunity-form.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
-export class OpportunityFormPage {
+export class OpportunityFormPage implements HasUnsavedChanges {
   private readonly opportunitiesApi = inject(OpportunitiesApi);
   private readonly customersApi = inject(CustomersApi);
   private readonly sitesApi = inject(SitesLookupApi);
   private readonly usersApi = inject(UsersLookupApi);
   private readonly router = inject(Router);
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly auth = inject(AuthService);
   protected readonly i18n = inject(I18nService);
   protected readonly reference = inject(ReferenceDataService);
 
   /** Route param; present only on the edit route. */
   readonly id = input<string>();
+  /** `?customerId=` from a customer page's "New opportunity": prefills the customer (create only). */
+  readonly customerId = input<string>();
 
   protected readonly searchIcon = Search;
   protected readonly isEdit = computed(() => !!this.id());
@@ -124,8 +136,50 @@ export class OpportunityFormPage {
     maxLength(path.notes, 4000, { message: 'validation.tooLong' });
   });
 
+  /** Unsent input of a NEW opportunity, kept in this browser only. */
+  protected readonly draft = new FormDraft<{ model: OpportunityFormModel; customer: CustomerOption | null }>(
+    'opportunity.new',
+    computed(() => ({ model: this.model(), customer: this.selectedCustomer() })),
+    { enabled: () => !this.isEdit(), dirty: () => this.opportunityForm().dirty() },
+  );
+  private saved = false;
+  protected readonly crumbs = computed(() => {
+    const existing = this.existing.value()?.opportunity;
+    return [
+      { label: this.i18n.t('navigation.items.opportunities'), path: '/opportunities' },
+      ...(existing ? [{ label: existing.name, path: `/opportunities/${existing.id}` }] : []),
+      { label: this.i18n.t(this.isEdit() ? 'crm.opportunities.editTitle' : 'crm.opportunities.newTitle') },
+    ];
+  });
+
+  hasUnsavedChanges(): boolean {
+    return !this.saved && this.opportunityForm().dirty();
+  }
+
+  protected restoreDraft(): void {
+    this.draft.restore((value) => {
+      this.model.set({ ...EMPTY_OPPORTUNITY_FORM, ...value.model });
+      this.selectedCustomer.set(value.customer);
+    });
+  }
+
   constructor() {
     void this.reference.load();
+    inject(UnsavedChanges).track(() => this.hasUnsavedChanges());
+    // Smart default: a "New opportunity" started from a customer page arrives with that customer.
+    // It is read through the scoped API, so only a customer this user can open is prefilled.
+    effect(() => {
+      const customerId = this.customerId();
+      if (!customerId || this.isEdit()) return;
+      untracked(() => {
+        if (this.model().customerId) return;
+        void firstValueFrom(this.customersApi.get(customerId))
+          .then(({ customer }) => {
+            if (!this.model().customerId) this.pickCustomer(customer);
+          })
+          .catch(() => undefined);
+      });
+    });
     // Populate the form once the existing opportunity loads (edit route only).
     effect(() => {
       const detail = this.existing.value();
@@ -179,9 +233,14 @@ export class OpportunityFormPage {
 
   protected async onSubmit(event: Event): Promise<void> {
     event.preventDefault();
+    if (this.opportunityForm().submitting()) return;
     this.serverError.set(null);
     this.serverFieldErrors.set({});
     this.opportunityForm().markAsTouched();
+    if (this.opportunityForm().invalid()) {
+      focusFirstInvalid(this.host.nativeElement);
+      return;
+    }
     await submit(this.opportunityForm, async () => {
       await this.save(false);
       return undefined;
@@ -204,6 +263,8 @@ export class OpportunityFormPage {
         : await firstValueFrom(
             this.opportunitiesApi.create({ ...fields, customerId: value.customerId, ownerId: value.ownerId || undefined, confirmDuplicate } as CreateOpportunityPayload),
           );
+      this.saved = true;
+      this.draft.clear();
       await this.router.navigateByUrl(`/${this.i18n.locale()}/opportunities/${saved.id}`);
     } catch (error: unknown) {
       if (ApiError.is(error)) {
@@ -214,6 +275,7 @@ export class OpportunityFormPage {
         }
         this.serverFieldErrors.set(error.fieldErrors);
         this.serverError.set(this.i18n.has(error.messageKey) ? error.messageKey : 'errors.unexpected');
+        if (Object.keys(error.fieldErrors).length) focusFirstInvalid(this.host.nativeElement);
       } else {
         this.serverError.set('errors.unexpected');
       }

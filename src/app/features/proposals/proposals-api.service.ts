@@ -41,7 +41,8 @@ export class ProposalsApi {
   submitTechnical(id: string): Observable<TechnicalProposal> {
     return this.api.post(`technical-proposals/${id}/submit`);
   }
-  decideTechnical(id: string, body: { decision: 'approve' | 'return'; reason?: string }): Observable<TechnicalProposal> {
+  /** O3: approve, approve with (recorded) conditions, reject with findings (never costed or quoted), or return for rework. */
+  decideTechnical(id: string, body: { decision: 'approve' | 'approve_with_conditions' | 'reject' | 'return'; reason?: string; conditions?: string }): Observable<TechnicalProposal> {
     return this.api.post(`technical-proposals/${id}/decide`, body);
   }
 
@@ -96,11 +97,19 @@ export class ProposalsApi {
   submitCombined(id: string): Observable<CombinedProposal> {
     return this.api.post(`combined-proposals/${id}/submit`);
   }
-  deliver(id: string, body: { channel: string; at?: string; recipients: string[]; presenterIds?: string[]; notes?: string }): Observable<CombinedProposal> {
+  /** O5 → O6: the exact version, recipients, channel, timestamp and the next follow-up are kept. */
+  deliver(id: string, body: { channel: string; at?: string; recipients: string[]; presenterIds?: string[]; notes?: string; nextFollowUpAt: string }): Observable<CombinedProposal> {
     return this.api.post(`combined-proposals/${id}/deliver`, body);
   }
   feedback(id: string, body: { response: string; feedback?: string; questions?: string; requestedModifications?: string; nextAction?: string; nextActionAt?: string }): Observable<CombinedProposal> {
     return this.api.post(`combined-proposals/${id}/feedback`, body);
+  }
+  /** O8: the customer accepted this exact version, proven by evidence attached to it. */
+  accept(
+    id: string,
+    body: { acceptedVersionNo: number; evidenceType: 'signed_quotation' | 'written_acceptance' | 'purchase_order' | 'approved_equivalent'; documentId: string; acceptedAt: string; contractingParty: string; signatoryName: string; signatoryTitle?: string; purchaseOrderNo?: string; approvalId?: string },
+  ): Observable<CombinedProposal> {
+    return this.api.post(`combined-proposals/${id}/accept`, body);
   }
   markFinal(id: string): Observable<CombinedProposal> {
     return this.api.post(`combined-proposals/${id}/final`);

@@ -20,6 +20,7 @@ import { DesignEditorComponent } from '../../solar/editors/design-editor.compone
 import type { BomItem, SystemDesign } from '../../solar/solar.models';
 import type { Person } from '../proposals.models';
 import { ProposalsApi } from '../proposals-api.service';
+import { DetailSkeletonComponent } from '../../../shared/ui/skeleton/skeleton.component';
 
 /**
  * TPROP-01..05 technical proposal version. Only the assigned technical team
@@ -28,7 +29,7 @@ import { ProposalsApi } from '../proposals-api.service';
  */
 @Component({
   selector: 'app-technical-proposal-page',
-  imports: [RouterLink, TranslatePipe, StatusBadgeComponent, CompletenessPanelComponent, DocumentsPanelComponent, AlertComponent, ButtonDirective, PageHeaderComponent, DesignEditorComponent, BomEditorComponent, ...CARD_IMPORTS, ...FORM_IMPORTS],
+  imports: [DetailSkeletonComponent, RouterLink, TranslatePipe, StatusBadgeComponent, CompletenessPanelComponent, DocumentsPanelComponent, AlertComponent, ButtonDirective, PageHeaderComponent, DesignEditorComponent, BomEditorComponent, ...CARD_IMPORTS, ...FORM_IMPORTS],
   template: `
     @if (data.error()) {
       <app-alert variant="destructive">{{ i18n.errorText(data.error()) }}</app-alert>
@@ -105,10 +106,15 @@ import { ProposalsApi } from '../proposals-api.service';
               <div appCardContent class="flex flex-col gap-3">
                 <label appLabel for="tp-reason">{{ 'prop.decisionReason' | t }}</label>
                 <textarea appTextarea id="tp-reason" rows="2" [value]="reason()" (input)="reason.set($any($event.target).value)"></textarea>
-                <div class="flex gap-2">
+                <label appLabel for="tp-conditions">{{ 'prop.feasibility.conditions' | t }}</label>
+                <textarea appTextarea id="tp-conditions" rows="2" [value]="conditions()" (input)="conditions.set($any($event.target).value)"></textarea>
+                <div class="flex flex-wrap gap-2">
                   <button type="button" appButton [disabled]="actions.busy()" (click)="actions.run(api.decideTechnical(id(), { decision: 'approve' }), 'prop.decided', reload)">{{ 'prop.approve' | t }}</button>
-                  <button type="button" appButton variant="destructive" [disabled]="actions.busy() || !reason().trim()" (click)="actions.run(api.decideTechnical(id(), { decision: 'return', reason: reason().trim() }), 'prop.decided', reload)">{{ 'prop.returnVersion' | t }}</button>
+                  <button type="button" appButton variant="outline" [disabled]="actions.busy() || !conditions().trim()" (click)="actions.run(api.decideTechnical(id(), { decision: 'approve_with_conditions', conditions: conditions().trim() }), 'prop.decided', reload)">{{ 'prop.feasibility.approveWithConditions' | t }}</button>
+                  <button type="button" appButton variant="outline" [disabled]="actions.busy() || !reason().trim()" (click)="actions.run(api.decideTechnical(id(), { decision: 'return', reason: reason().trim() }), 'prop.decided', reload)">{{ 'prop.returnVersion' | t }}</button>
+                  <button type="button" appButton variant="destructive" [disabled]="actions.busy() || !reason().trim()" (click)="actions.run(api.decideTechnical(id(), { decision: 'reject', reason: reason().trim() }), 'prop.decided', reload)">{{ 'prop.feasibility.reject' | t }}</button>
                 </div>
+                <p class="text-xs text-muted-foreground">{{ 'prop.feasibility.rejectHint' | t }}</p>
               </div>
             </section>
           }
@@ -131,7 +137,7 @@ import { ProposalsApi } from '../proposals-api.service';
         </div>
       </div>
     } @else if (data.isLoading()) {
-      <p class="text-sm text-muted-foreground">{{ 'common.labels.loading' | t }}</p>
+      <app-detail-skeleton [label]="'common.labels.loading' | t" />
     }
   `,
   host: { class: 'flex flex-col gap-6' },
@@ -151,6 +157,7 @@ export class TechnicalProposalPage {
   protected readonly bom = signal<BomItem[]>([]);
   protected readonly warranties = signal('');
   protected readonly reason = signal('');
+  protected readonly conditions = signal('');
   protected readonly reload = () => this.data.reload();
   protected readonly proposal = computed(() => this.data.value()?.proposal);
 

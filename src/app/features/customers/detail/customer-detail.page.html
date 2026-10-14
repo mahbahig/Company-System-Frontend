@@ -3,12 +3,14 @@
 } @else if (detail.error()) {
   <app-alert variant="destructive">{{ i18n.errorText(detail.error()) }}</app-alert>
 } @else if (customer(); as customer) {
+  <app-breadcrumbs [items]="crumbs()" />
   <app-page-header
     class="!mb-0"
     [eyebrow]="customer.customerNo"
     [heading]="displayName()"
     [subtitle]="i18n.pick(customer.nameAr, customer.nameEn) ? (customer.primaryContactName ?? '') : ''"
   >
+    <app-favorite-toggle type="customer" [id]="id()" />
     @if (canEdit()) {
       <a appButton variant="outline" size="sm" [routerLink]="['edit']">{{ 'crm.common.edit' | t }}</a>
     }
@@ -16,6 +18,8 @@
       <a appButton size="sm" [routerLink]="['/', i18n.locale(), 'opportunities', 'new']" [queryParams]="{ customerId: id() }">{{ 'crm.opportunities.new' | t }}</a>
     }
   </app-page-header>
+
+  <app-customer-workflow-panel [customerId]="id()" [version]="customer.updatedAt" (changed)="detail.reload()" />
 
   <div class="flex flex-wrap gap-2" role="group" [attr.aria-label]="'customer360.quickActions' | t">
     @if (auth.can('calls.create')) {
@@ -88,11 +92,24 @@
                 }
               </div>
               <div appDetailItem [label]="'crm.customers.fields.email' | t">
-                @if (customer.email) {
-                  <a dir="ltr" class="hover:underline" [href]="'mailto:' + customer.email">{{ customer.email }}</a>
-                } @else {
-                  {{ 'crm.common.notSet' | t }}
-                }
+                <app-inline-edit
+                  type="email"
+                  hasContent
+                  [label]="'crm.customers.fields.email' | t"
+                  [value]="customer.email"
+                  [editable]="canEdit()"
+                  placeholder="name@company.com"
+                  [maxLength]="200"
+                  [validate]="emailCheck"
+                  [save]="saveEmail"
+                  (saved)="detail.reload()"
+                >
+                  @if (customer.email) {
+                    <a dir="ltr" class="hover:underline" [href]="'mailto:' + customer.email">{{ customer.email }}</a>
+                  } @else {
+                    {{ 'crm.common.notSet' | t }}
+                  }
+                </app-inline-edit>
               </div>
               <div appDetailItem [label]="'crm.customers.fields.website' | t">
                 @if (customer.website) {
@@ -129,7 +146,16 @@
               <dl class="flex flex-col gap-4">
                 <div appDetailItem [label]="'crm.common.owner' | t">{{ ownerName() }}</div>
                 <div appDetailItem [label]="'crm.customers.fields.nextFollowUpAt' | t">
-                  <span class="tabular">{{ i18n.formatDate(customer.nextFollowUpAt, true) || ('crm.common.notSet' | t) }}</span>
+                  <app-inline-edit
+                    type="date"
+                    [label]="'crm.customers.fields.nextFollowUpAt' | t"
+                    [value]="customer.nextFollowUpAt"
+                    [display]="i18n.formatDate(customer.nextFollowUpAt, true)"
+                    [editable]="canEdit()"
+                    [validate]="requiredCheck"
+                    [save]="saveFollowUp"
+                    (saved)="detail.reload()"
+                  />
                 </div>
                 <div appDetailItem [label]="'crm.common.createdAt' | t"><span class="tabular">{{ i18n.formatDate(customer.createdAt, true) }}</span></div>
                 <div appDetailItem [label]="'crm.common.updatedAt' | t"><span class="tabular">{{ i18n.formatDate(customer.updatedAt, true) }}</span></div>
@@ -144,94 +170,114 @@
       </div>
 
 
-      <div class="flex flex-col gap-3">
-        <div class="flex items-center justify-between gap-3">
-          <h2 id="contacts-heading" class="text-lg font-semibold">{{ 'crm.customers.detail.contactsTitle' | t }}</h2>
-          @if (auth.can('contacts.create')) {
-            <a appButton variant="outline" size="sm" [routerLink]="['contacts', 'new']">{{ 'crm.contacts.new' | t }}</a>
-          }
-        </div>
-        <app-table-wrapper [label]="'crm.customers.detail.contactsTitle' | t">
-          <table appTable>
-            <thead appTableHeader>
-              <tr appTableRow>
-                <th appTableHead>{{ 'crm.contacts.columns.name' | t }}</th>
-                <th appTableHead>{{ 'crm.contacts.columns.jobTitle' | t }}</th>
-                <th appTableHead>{{ 'crm.contacts.columns.mobile' | t }}</th>
-                <th appTableHead>{{ 'crm.contacts.columns.email' | t }}</th>
-                <th appTableHead>{{ 'crm.contacts.columns.decisionRole' | t }}</th>
-              </tr>
-            </thead>
-            <tbody appTableBody>
-              @for (contact of contacts.value() ?? []; track contact.id) {
+      @if (auth.can('contacts.view')) {
+        <div class="flex flex-col gap-3">
+          <div class="flex items-center justify-between gap-3">
+            <h2 id="contacts-heading" class="text-lg font-semibold">{{ 'crm.customers.detail.contactsTitle' | t }}</h2>
+            @if (auth.can('contacts.create')) {
+              <a appButton variant="outline" size="sm" [routerLink]="['contacts', 'new']">{{ 'crm.contacts.new' | t }}</a>
+            }
+          </div>
+          <app-table-wrapper [label]="'crm.customers.detail.contactsTitle' | t">
+            <table appTable>
+              <thead appTableHeader>
                 <tr appTableRow>
-                  <td appTableCell>
-                    <span class="font-medium">{{ contact.fullName }}</span>
-                    @if (contact.isPrimary) {
-                      <app-badge tone="info" class="ms-2">{{ 'crm.contacts.primary' | t }}</app-badge>
-                    }
-                  </td>
-                  <td appTableCell>{{ contact.jobTitle || ('crm.common.notSet' | t) }}</td>
-                  <td appTableCell class="tabular" dir="ltr">
-                    @if (contact.mobile) {
-                      <a class="hover:underline" [href]="'tel:' + contact.mobile">{{ formatPhone(contact.mobile) }}</a>
-                    } @else {
-                      {{ 'crm.common.notSet' | t }}
-                    }
-                  </td>
-                  <td appTableCell dir="ltr">{{ contact.email || ('crm.common.notSet' | t) }}</td>
-                  <td appTableCell>{{ reference.label('contact_role', contact.roleCode) }}</td>
+                  <th appTableHead>{{ 'crm.contacts.columns.name' | t }}</th>
+                  <th appTableHead>{{ 'crm.contacts.columns.jobTitle' | t }}</th>
+                  <th appTableHead>{{ 'crm.contacts.columns.mobile' | t }}</th>
+                  <th appTableHead>{{ 'crm.contacts.columns.email' | t }}</th>
+                  <th appTableHead>{{ 'crm.contacts.columns.decisionRole' | t }}</th>
                 </tr>
-              } @empty {
-                <tr app-table-empty [colSpan]="5">{{ (contacts.isLoading() ? 'common.labels.loading' : 'crm.customers.detail.contactsEmpty') | t }}</tr>
-              }
-            </tbody>
-          </table>
-        </app-table-wrapper>
-      </div>
+              </thead>
+              <tbody appTableBody>
+                @for (contact of contacts.value() ?? []; track contact.id) {
+                  <tr appTableRow>
+                    <td appTableCell>
+                      <span class="font-medium">{{ contact.fullName }}</span>
+                      @if (contact.isPrimary) {
+                        <app-badge tone="info" class="ms-2">{{ 'crm.contacts.primary' | t }}</app-badge>
+                      }
+                    </td>
+                    <td appTableCell>{{ contact.jobTitle || ('crm.common.notSet' | t) }}</td>
+                    <td appTableCell class="tabular" dir="ltr">
+                      @if (contact.mobile) {
+                        <a class="hover:underline" [href]="'tel:' + contact.mobile">{{ formatPhone(contact.mobile) }}</a>
+                      } @else {
+                        {{ 'crm.common.notSet' | t }}
+                      }
+                    </td>
+                    <td appTableCell dir="ltr">{{ contact.email || ('crm.common.notSet' | t) }}</td>
+                    <td appTableCell>{{ reference.label('contact_role', contact.roleCode) }}</td>
+                  </tr>
+                } @empty {
+                  @if (contacts.isLoading()) {
+                    @for (i of [0, 1, 2, 3, 4]; track i) {
+                      <tr app-skeleton-row [columns]="5" [index]="i"></tr>
+                    }
+                  } @else {
+                    <tr app-table-empty [colSpan]="5">{{ 'crm.customers.detail.contactsEmpty' | t }}</tr>
+                  }
+                }
+              </tbody>
+            </table>
+          </app-table-wrapper>
+        </div>
+      }
 
 
-      <div class="flex flex-col gap-3">
-        <div class="flex items-center justify-between gap-3">
-          <h2 id="sites-heading" class="text-lg font-semibold">{{ 'crm.customers.detail.sitesTitle' | t }}</h2>
-          @if (auth.can('sites.create')) {
-            <a appButton variant="outline" size="sm" [routerLink]="['sites', 'new']">{{ 'crm.customers.detail.newSite' | t }}</a>
-          }
-        </div>
-        <app-table-wrapper [label]="'crm.customers.detail.sitesTitle' | t">
-          <table appTable>
-            <thead appTableHeader>
-              <tr appTableRow>
-                <th appTableHead>{{ 'crm.sites.columns.siteNo' | t }}</th>
-                <th appTableHead>{{ 'crm.sites.columns.name' | t }}</th>
-                <th appTableHead>{{ 'crm.sites.columns.governorate' | t }}</th>
-                <th appTableHead>{{ 'crm.sites.columns.type' | t }}</th>
-                <th appTableHead class="!text-center">{{ 'crm.sites.columns.area' | t }}</th>
-              </tr>
-            </thead>
-            <tbody appTableBody>
-              @for (site of sites.value() ?? []; track site.id) {
+      @if (auth.can('sites.view')) {
+        <div class="flex flex-col gap-3">
+          <div class="flex items-center justify-between gap-3">
+            <h2 id="sites-heading" class="text-lg font-semibold">{{ 'crm.customers.detail.sitesTitle' | t }}</h2>
+            @if (auth.can('sites.create')) {
+              <a appButton variant="outline" size="sm" [routerLink]="['sites', 'new']">{{ 'crm.customers.detail.newSite' | t }}</a>
+            }
+          </div>
+          <app-table-wrapper [label]="'crm.customers.detail.sitesTitle' | t">
+            <table appTable>
+              <thead appTableHeader>
                 <tr appTableRow>
-                  <td appTableCell class="tabular whitespace-nowrap font-medium" dir="ltr">
-                    <a
-                      [routerLink]="['sites', site.id, 'edit']"
-                      class="text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    >
-                      {{ site.siteNo }}
-                    </a>
-                  </td>
-                  <td appTableCell>{{ site.name }}</td>
-                  <td appTableCell class="whitespace-nowrap">{{ reference.label('governorate', site.governorateCode) }}</td>
-                  <td appTableCell class="whitespace-nowrap">{{ reference.label('site_type', site.siteTypeCode) }}</td>
-                  <td appTableCell class="tabular text-center">{{ site.availableAreaM2 ?? ('crm.common.notSet' | t) }}</td>
+                  <th appTableHead>{{ 'crm.sites.columns.siteNo' | t }}</th>
+                  <th appTableHead>{{ 'crm.sites.columns.name' | t }}</th>
+                  <th appTableHead>{{ 'crm.sites.columns.governorate' | t }}</th>
+                  <th appTableHead>{{ 'crm.sites.columns.type' | t }}</th>
+                  <th appTableHead class="!text-center">{{ 'crm.sites.columns.area' | t }}</th>
                 </tr>
-              } @empty {
-                <tr app-table-empty [colSpan]="5">{{ (sites.isLoading() ? 'common.labels.loading' : 'crm.customers.detail.sitesEmpty') | t }}</tr>
-              }
-            </tbody>
-          </table>
-        </app-table-wrapper>
-      </div>
+              </thead>
+              <tbody appTableBody>
+                @for (site of sites.value() ?? []; track site.id) {
+                  <tr appTableRow>
+                    <td appTableCell class="tabular whitespace-nowrap font-medium" dir="ltr">
+                      @if (auth.can('sites.edit')) {
+                        <a
+                          [routerLink]="['sites', site.id, 'edit']"
+                          class="text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          {{ site.siteNo }}
+                        </a>
+                      } @else {
+                        {{ site.siteNo }}
+                      }
+                    </td>
+                    <td appTableCell>{{ site.name }}</td>
+                    <td appTableCell class="whitespace-nowrap">{{ reference.label('governorate', site.governorateCode) }}</td>
+                    <td appTableCell class="whitespace-nowrap">{{ reference.label('site_type', site.siteTypeCode) }}</td>
+                    <td appTableCell class="tabular text-center">{{ site.availableAreaM2 ?? ('crm.common.notSet' | t) }}</td>
+                  </tr>
+                } @empty {
+                  @if (sites.isLoading()) {
+                    @for (i of [0, 1, 2, 3, 4]; track i) {
+                      <tr app-skeleton-row [columns]="5" [index]="i"></tr>
+                    }
+                  } @else {
+                    <tr app-table-empty [colSpan]="5">{{ 'crm.customers.detail.sitesEmpty' | t }}</tr>
+                  }
+                }
+              </tbody>
+            </table>
+          </app-table-wrapper>
+        </div>
+      }
     }
     @case ('opportunities') {
       @if (canViewOpportunities()) {
@@ -251,7 +297,7 @@
               </thead>
               <tbody appTableBody>
                 @for (opportunity of opportunities.value()?.rows ?? []; track opportunity.id) {
-                  <tr appTableRow>
+                  <tr appTableRow [appRowLink]="['/', i18n.locale(), 'opportunities', opportunity.id]">
                     <td appTableCell class="tabular whitespace-nowrap font-medium" dir="ltr"><a class="text-primary hover:underline" [routerLink]="['/', i18n.locale(), 'opportunities', opportunity.id]">{{ opportunity.opportunityNo }}</a></td>
                     <td appTableCell>{{ opportunity.name }}</td>
                     <td appTableCell>
@@ -262,7 +308,13 @@
                     <td appTableCell class="whitespace-nowrap">{{ userName(opportunity.ownerId) }}</td>
                   </tr>
                 } @empty {
-                  <tr app-table-empty [colSpan]="6">{{ (opportunities.isLoading() ? 'common.labels.loading' : 'crm.customers.detail.opportunitiesEmpty') | t }}</tr>
+                  @if (opportunities.isLoading()) {
+                    @for (i of [0, 1, 2, 3, 4]; track i) {
+                      <tr app-skeleton-row [columns]="6" [index]="i"></tr>
+                    }
+                  } @else {
+                    <tr app-table-empty [colSpan]="6">{{ 'crm.customers.detail.opportunitiesEmpty' | t }}</tr>
+                  }
                 }
               </tbody>
             </table>
@@ -324,5 +376,5 @@
     </form>
   </app-dialog>
 } @else {
-  <p class="text-sm text-muted-foreground" role="status">{{ 'common.labels.loading' | t }}</p>
+  <app-detail-skeleton [label]="'common.labels.loading' | t" [summary]="6" />
 }

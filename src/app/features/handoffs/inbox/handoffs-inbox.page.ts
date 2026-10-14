@@ -13,11 +13,12 @@ import { TabsComponent } from '../../../shared/ui/tabs/tabs.component';
 import type { TabItem } from '../../../shared/ui/tabs/tab-item.interface';
 import { userName } from '../../../shared/utils/display-name';
 import { HandoffsApi, type Handoff, type HandoffOpportunityRef } from '../handoffs-api.service';
+import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.component';
 
 /** §11.3 PM / Technical Lead handoff inbox (Accept / Return / Clarify), with SLA highlighting (HAND-08). */
 @Component({
   selector: 'app-handoffs-inbox-page',
-  imports: [RouterLink, TranslatePipe, StatusBadgeComponent, AlertComponent, PageHeaderComponent, TabsComponent, PaginationComponent, ...TABLE_IMPORTS],
+  imports: [SkeletonRowComponent, RouterLink, TranslatePipe, StatusBadgeComponent, AlertComponent, PageHeaderComponent, TabsComponent, PaginationComponent, ...TABLE_IMPORTS],
   template: `
     <app-page-header [heading]="'handoffs.inboxTitle' | t" [subtitle]="'handoffs.inboxSubtitle' | t" class="!mb-0" />
     <app-tabs [tabs]="tabs" [active]="activeView()" (activeChange)="select($event)" [label]="'handoffs.inboxTitle' | t" />
@@ -41,7 +42,7 @@ import { HandoffsApi, type Handoff, type HandoffOpportunityRef } from '../handof
         </thead>
         <tbody appTableBody>
           @for (row of rows(); track row.id) {
-            <tr appTableRow>
+            <tr appTableRow [appRowLink]="opp(row) ? ['/', i18n.locale(), 'opportunities', opp(row)!.id, 'handoff'] : null">
               <td appTableCell class="tabular whitespace-nowrap font-medium">
                 @if (opp(row); as o) {
                   <a [routerLink]="['/', i18n.locale(), 'opportunities', o.id, 'handoff']" class="text-primary hover:underline" dir="ltr">{{ row.handoffNo }}</a>
@@ -56,7 +57,13 @@ import { HandoffsApi, type Handoff, type HandoffOpportunityRef } from '../handof
               <td appTableCell class="tabular text-center">{{ row.resubmissionCount }}</td>
             </tr>
           } @empty {
-            <tr app-table-empty [colSpan]="8">{{ (result.isLoading() ? 'common.labels.loading' : 'handoffs.inboxEmpty') | t }}</tr>
+            @if (result.isLoading()) {
+              @for (i of [0, 1, 2, 3, 4]; track i) {
+                <tr app-skeleton-row [columns]="8" [index]="i"></tr>
+              }
+            } @else {
+              <tr app-table-empty [colSpan]="8">{{ 'handoffs.inboxEmpty' | t }}</tr>
+            }
           }
         </tbody>
       </table>

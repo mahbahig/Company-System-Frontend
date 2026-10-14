@@ -1,4 +1,5 @@
 import { Component, computed, effect, inject, input, signal } from '@angular/core';
+import { CustomerWorkflowPanelComponent } from './customer-workflow-panel.component';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { Title } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
@@ -17,6 +18,12 @@ import { FORM_IMPORTS } from '../../../shared/ui/form/form.imports';
 import { StatCardComponent } from '../../../shared/ui/stat-card/stat-card.component';
 import { TabsComponent } from '../../../shared/ui/tabs/tabs.component';
 import { ActionRunner } from '../../../shared/utils/action-runner';
+import { trackRecentView } from '../../../core/records/track-recent-view';
+import { BreadcrumbsComponent } from '../../../shared/crm/breadcrumbs/breadcrumbs.component';
+import { FavoriteToggleComponent } from '../../../shared/crm/favorite-toggle/favorite-toggle.component';
+import { InlineEditComponent } from '../../../shared/crm/inline-edit/inline-edit.component';
+import { DetailSkeletonComponent } from '../../../shared/ui/skeleton/skeleton.component';
+import { isValidEmail } from '../../../shared/utils/contact-validation';
 import type { Customer360 } from '../models/customer-360.interface';
 import { CustomerActivitiesComponent } from './customer-activities.component';
 import { CustomerDeliveryComponent } from './customer-delivery.component';
@@ -46,6 +53,8 @@ import { OpportunitiesApi } from '../../opportunities/opportunities-api.service'
 import { StatusPageComponent } from '../../errors/status-page.component';
 import { CustomersApi } from '../customers-api.service';
 import { SitesApi } from '../sites/sites-api.service';
+import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.component';
+import { RowLinkDirective } from '../../../shared/ui/table/row-link.directive';
 
 /**
  * Customer 360 (first slice): details, assignment, completeness, contacts
@@ -54,6 +63,13 @@ import { SitesApi } from '../sites/sites-api.service';
 @Component({
   selector: 'app-customer-detail-page',
   imports: [
+    RowLinkDirective,
+    BreadcrumbsComponent,
+    FavoriteToggleComponent,
+    InlineEditComponent,
+    DetailSkeletonComponent,
+    SkeletonRowComponent,
+    CustomerWorkflowPanelComponent,
     RouterLink,
     TranslatePipe,
     PageHeaderComponent,
@@ -106,8 +122,15 @@ export class CustomerDetailPage {
   protected readonly formatPhone = formatPhone;
 
   protected readonly detail = rxResource({ params: () => this.id(), stream: ({ params }) => this.customers.get(params) });
-  protected readonly contacts = rxResource({ params: () => this.id(), stream: ({ params }) => this.customers.contacts(params) });
-  protected readonly sites = rxResource({ params: () => this.id(), stream: ({ params }) => this.sitesApi.list(params) });
+  // Contacts and sites load only for roles that read them (no request the API would refuse).
+  protected readonly contacts = rxResource({
+    params: () => (this.auth.can('contacts.view') ? this.id() : undefined),
+    stream: ({ params }) => this.customers.contacts(params),
+  });
+  protected readonly sites = rxResource({
+    params: () => (this.auth.can('sites.view') ? this.id() : undefined),
+    stream: ({ params }) => this.sitesApi.list(params),
+  });
   protected readonly opportunities = rxResource({
     params: () => (this.auth.can('opportunities.view') ? this.id() : undefined),
     stream: ({ params }) => this.opportunitiesApi.list({ customerId: params, pageSize: 50 }),
@@ -127,7 +150,16 @@ export class CustomerDetailPage {
     return owner ? this.i18n.pick(owner.fullNameAr, owner.fullNameEn) : this.i18n.t('crm.common.unassigned');
   });
   protected readonly canViewOpportunities = computed(() => this.auth.can('opportunities.view'));
-  protected readonly canEdit = computed(() => this.auth.can('customers.edit'));
+  /** The server's verdict for THIS customer (permission in record scope, not merged) — also gates inline edits. */
+  protected readonly canEdit = computed(() => (this.detail.hasValue() ? !!this.detail.value().canEdit : false));
+  protected readonly crumbs = computed(() => [
+    { label: this.i18n.t('navigation.items.customers'), path: '/customers' },
+    { label: this.displayName() || (this.customer()?.customerNo ?? '') },
+  ]);
+  protected readonly saveEmail = (email: string) => this.customers.update(this.id(), { email: email || undefined });
+  protected readonly saveFollowUp = (date: string) => this.customers.update(this.id(), { nextFollowUpAt: date || undefined });
+  protected readonly emailCheck = (value: string) => (!value ? 'validation.required' : isValidEmail(value) ? null : 'ux.validation.email');
+  protected readonly requiredCheck = (value: string) => (value ? null : 'validation.required');
   protected readonly canChangeStatus = computed(() => this.auth.canAny(['customers.edit', 'customers.archive', 'customers.blacklist']));
   protected readonly actions = new ActionRunner(this.i18n);
 
@@ -140,8 +172,13 @@ export class CustomerDetailPage {
     return [
       { id: 'overview', label: this.i18n.t('customer360.tabs.overview') },
       ...(this.canViewOpportunities() ? [{ id: 'opportunities', label: this.i18n.t('customer360.tabs.opportunities'), count: v ? v.opportunities.length : null }] : []),
-      { id: 'delivery', label: this.i18n.t('customer360.tabs.delivery'), count: v ? v.proposals.length + v.contracts.length + v.projects.length : null },
-      { id: 'activities', label: this.i18n.t('customer360.tabs.activities') },
+      // Sections the role reads nothing from are not offered (the API returns them empty anyway).
+      ...(this.auth.canAny(['combined_proposals.view', 'contracts.view', 'projects.view', 'leads.view'])
+        ? [{ id: 'delivery', label: this.i18n.t('customer360.tabs.delivery'), count: v ? v.proposals.length + v.contracts.length + v.projects.length : null }]
+        : []),
+      ...(this.auth.canAny(['activities.view', 'calls.view', 'meetings.view', 'visits.view', 'tasks.view'])
+        ? [{ id: 'activities', label: this.i18n.t('customer360.tabs.activities') }]
+        : []),
       ...(this.auth.can('files.view') ? [{ id: 'documents', label: this.i18n.t('customer360.tabs.documents'), count: v ? v.summary.documents : null }] : []),
       { id: 'timeline', label: this.i18n.t('customer360.tabs.timeline') },
     ];
@@ -183,6 +220,7 @@ export class CustomerDetailPage {
 
   constructor() {
     void this.reference.load();
+    trackRecentView('customer', () => this.id(), () => (this.customer() ? 'loaded' : this.notFound() ? 'missing' : 'pending'));
     // "<name> · <number> · EcoTech CRM", like the Next page metadata.
     effect(() => {
       const customer = this.customer();

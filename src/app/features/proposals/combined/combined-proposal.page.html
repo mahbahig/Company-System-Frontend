@@ -4,12 +4,16 @@
 @if (data.value(); as d) {
   @let p = d.proposal;
   @let perms = d.permissions;
-  <app-page-header [eyebrow]="p.proposalNo + ' · v' + p.versionNo" [heading]="p.title || d.opportunity.name" [subtitle]="d.opportunity.opportunityNo">
+  <app-breadcrumbs [items]="crumbs()" />
+  <app-page-header [eyebrow]="p.proposalNo + ' · v' + p.versionNo" [heading]="p.title || d.opportunity.name" [subtitle]="d.opportunity.opportunityNo" class="!mb-0">
     <app-status-badge enum="combinedProposalStatus" [value]="p.status" />
     @if (p.isFinal) {
       <app-badge tone="success">{{ 'prop.final' | t }}</app-badge>
     }
-    <a appButton variant="outline" [routerLink]="['/', i18n.locale(), 'opportunities', opportunityId(), 'proposals']" [queryParams]="{ tab: 'register' }">{{ 'prop.workspaceTitle' | t }}</a>
+    <app-favorite-toggle type="proposal" [id]="id()" />
+    @if (navigation.canOpen('/opportunities/' + opportunityId() + '/proposals')) {
+      <a appButton variant="outline" [routerLink]="['/', i18n.locale(), 'opportunities', opportunityId(), 'proposals']" [queryParams]="{ tab: 'register' }">{{ 'prop.workspaceTitle' | t }}</a>
+    }
   </app-page-header>
 
   @if (actions.message(); as text) {
@@ -149,7 +153,11 @@
                 <input appInput id="dv-notes" [value]="delivery().notes" (input)="setDelivery('notes', $any($event.target).value)" />
               </div>
             </div>
-            <button type="submit" appButton class="self-start" [disabled]="actions.busy() || !delivery().recipients.trim()">{{ 'prop.deliver' | t }}</button>
+            <div>
+              <label appLabel for="dv-follow-up" required>{{ 'prop.acceptance.nextFollowUpAt' | t }}</label>
+              <input appInput id="dv-follow-up" type="datetime-local" dir="ltr" [value]="delivery().nextFollowUpAt" (change)="setDelivery('nextFollowUpAt', $any($event.target).value)" />
+            </div>
+            <button type="submit" appButton class="self-start" [disabled]="actions.busy() || !delivery().recipients.trim() || !delivery().nextFollowUpAt">{{ 'prop.deliver' | t }}</button>
           </div>
         </form>
       }
@@ -183,9 +191,7 @@
             </div>
             <div class="flex flex-wrap gap-2 sm:col-span-2">
               <button type="submit" appButton [disabled]="actions.busy()">{{ 'prop.recordFeedback' | t }}</button>
-              @if (perms.canMarkFinal) {
-                <button type="button" appButton variant="outline" [disabled]="actions.busy()" (click)="actions.run(api.markFinal(id()), 'prop.markedFinal', reload)">{{ 'prop.markFinal' | t }}</button>
-              }
+
               @if (perms.canRequestRevision) {
                 <a appButton variant="ghost" [routerLink]="['/', i18n.locale(), 'opportunities', opportunityId(), 'proposals']" [queryParams]="{ tab: 'revisions' }">{{ 'prop.revision.request' | t }}</a>
               }
@@ -228,6 +234,55 @@
 
       @if (perms.canRequestResend) {
         <button type="button" appButton variant="outline" class="self-start" [disabled]="actions.busy()" (click)="actions.run(api.requestResend(id()), 'prop.submitted', reload)">{{ 'prop.requestResend' | t }}</button>
+      }
+
+      @if (perms.canMarkFinal && !p.isFinal) {
+        <form appCard aria-labelledby="cp-accept" (submit)="accept($event, p.versionNo)">
+          <div appCardHeader><h2 appCardTitle id="cp-accept">{{ 'prop.acceptance.title' | t: { version: p.versionNo } }}</h2></div>
+          <div appCardContent class="grid gap-4 sm:grid-cols-2">
+            <p class="text-xs text-muted-foreground sm:col-span-2">{{ 'prop.acceptance.hint' | t }}</p>
+            <div>
+              <label appLabel for="ac-type" required>{{ 'prop.acceptance.evidenceType' | t }}</label>
+              <app-select>
+                <select appSelect id="ac-type" [value]="acceptance().evidenceType" (change)="setAcceptance('evidenceType', $any($event.target).value)">
+                  @for (type of ['signed_quotation', 'written_acceptance', 'purchase_order']; track type) {
+                    <option [value]="type">{{ 'prop.acceptance.types.' + type | t }}</option>
+                  }
+                </select>
+              </app-select>
+            </div>
+            <div>
+              <label appLabel for="ac-document" required>{{ 'prop.acceptance.document' | t }}</label>
+              <app-evidence-select inputId="ac-document" entityType="combined_proposal" [entityId]="id()" [categories]="['acceptance_evidence', 'purchase_order']" [value]="acceptance().documentId" (valueChange)="setAcceptance('documentId', $event)" />
+            </div>
+            <div>
+              <label appLabel for="ac-at" required>{{ 'prop.acceptance.acceptedAt' | t }}</label>
+              <input appInput id="ac-at" type="date" dir="ltr" [value]="acceptance().acceptedAt" (change)="setAcceptance('acceptedAt', $any($event.target).value)" />
+            </div>
+            <div>
+              <label appLabel for="ac-party" required>{{ 'prop.acceptance.contractingParty' | t }}</label>
+              <input appInput id="ac-party" [value]="acceptance().contractingParty" (input)="setAcceptance('contractingParty', $any($event.target).value)" />
+            </div>
+            <div>
+              <label appLabel for="ac-signatory" required>{{ 'prop.acceptance.signatoryName' | t }}</label>
+              <input appInput id="ac-signatory" [value]="acceptance().signatoryName" (input)="setAcceptance('signatoryName', $any($event.target).value)" />
+            </div>
+            @if (acceptance().evidenceType === 'purchase_order') {
+              <div>
+                <label appLabel for="ac-po" required>{{ 'prop.acceptance.purchaseOrderNo' | t }}</label>
+                <input appInput id="ac-po" [value]="acceptance().purchaseOrderNo" (input)="setAcceptance('purchaseOrderNo', $any($event.target).value)" />
+              </div>
+            }
+            <button
+              type="submit"
+              appButton
+              class="self-end"
+              [disabled]="actions.busy() || !acceptance().documentId || !acceptance().acceptedAt || !acceptance().contractingParty.trim() || !acceptance().signatoryName.trim() || (acceptance().evidenceType === 'purchase_order' && !acceptance().purchaseOrderNo.trim())"
+            >
+              {{ 'prop.acceptance.submit' | t }}
+            </button>
+          </div>
+        </form>
       }
 
       @if (p.deliveries.length || p.feedback.length) {
@@ -275,5 +330,5 @@
     </div>
   </div>
 } @else if (data.isLoading()) {
-  <p class="text-sm text-muted-foreground">{{ 'common.labels.loading' | t }}</p>
+  <app-detail-skeleton [label]="'common.labels.loading' | t" />
 }

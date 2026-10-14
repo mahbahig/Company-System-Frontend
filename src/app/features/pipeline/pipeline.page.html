@@ -41,10 +41,10 @@
           class="flex min-h-16 flex-col gap-2"
         >
           @for (card of column.cards; track card.id) {
-            <li cdkDrag [cdkDragData]="card.id">
+            <li cdkDrag [cdkDragData]="card.id" [cdkDragDisabled]="!canChangeStage()">
               <a
-                [routerLink]="['/opportunities', card.id]"
-                class="block rounded-md border border-border bg-card p-3 transition-colors hover:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                [routerLink]="['/', i18n.locale(), 'opportunities', card.id]"
+                class="block rounded-md border border-border bg-card p-3 transition-colors hover:border-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <p class="tabular text-2xs text-muted-foreground" dir="ltr">{{ card.opportunityNo }}</p>
                 <p class="mt-0.5 line-clamp-2 text-sm font-medium">{{ card.name }}</p>

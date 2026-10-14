@@ -1,10 +1,13 @@
+<app-breadcrumbs [items]="crumbs()" />
 <app-page-header [heading]="(isEdit() ? 'crm.opportunities.editTitle' : 'crm.opportunities.newTitle') | t" class="!mb-0" />
 
 @if (existing.error()) {
   <app-alert variant="destructive">{{ 'errors.db.unexpected' | t }}</app-alert>
 }
 
-<form class="flex flex-col gap-6" novalidate (submit)="onSubmit($event)">
+<form class="flex flex-col gap-6" novalidate appSaveShortcut (submit)="onSubmit($event)">
+  <app-draft-banner [offeredAt]="draft.offered()?.savedAt ?? null" [savedAt]="draft.savedAt()" (restore)="restoreDraft()" (discard)="draft.discard()" />
+  <p class="text-sm text-muted-foreground">{{ 'ux.forms.requiredHint' | t }}</p>
   @if (serverError(); as key) {
     <app-alert variant="destructive">{{ key | t }}</app-alert>
   }
@@ -259,10 +262,11 @@
     </div>
   </section>
 
-  <div class="flex gap-2">
-    <button type="submit" appButton [disabled]="opportunityForm().submitting()" [attr.aria-busy]="opportunityForm().submitting()">
+  <div class="flex flex-wrap items-center gap-3 border-t border-border pt-4">
+    <button type="submit" appButton [disabled]="opportunityForm().submitting()" [attr.aria-busy]="opportunityForm().submitting()" aria-keyshortcuts="Control+S Meta+S">
       {{ (opportunityForm().submitting() ? 'common.actions.saving' : 'common.actions.save') | t }}
     </button>
-    <a appButton variant="outline" routerLink="..">{{ 'common.actions.cancel' | t }}</a>
+    <a appButton variant="ghost" routerLink="..">{{ 'common.actions.cancel' | t }}</a>
+    <span class="hidden text-xs text-muted-foreground sm:inline" aria-hidden="true">{{ 'ux.forms.saveHint' | t }}</span>
   </div>
 </form>

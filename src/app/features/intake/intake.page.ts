@@ -17,6 +17,7 @@ import { CARD_IMPORTS } from '../../shared/ui/card/card.imports';
 import { FORM_IMPORTS } from '../../shared/ui/form/form.imports';
 import { PageHeaderComponent } from '../../shared/ui/page-header/page-header.component';
 import { IntakeApi, type IntakeFieldDef, type IntakeFieldValue } from './intake-api.service';
+import { DetailSkeletonComponent } from '../../shared/ui/skeleton/skeleton.component';
 
 interface Draft {
   value: unknown;
@@ -31,7 +32,7 @@ interface Draft {
  */
 @Component({
   selector: 'app-intake-page',
-  imports: [RouterLink, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, CompletenessPanelComponent, AlertComponent, BadgeComponent, ButtonDirective, PageHeaderComponent, ...CARD_IMPORTS, ...FORM_IMPORTS],
+  imports: [DetailSkeletonComponent, RouterLink, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, CompletenessPanelComponent, AlertComponent, BadgeComponent, ButtonDirective, PageHeaderComponent, ...CARD_IMPORTS, ...FORM_IMPORTS],
   template: `
     @if (view.error()) {
       <app-alert variant="destructive">{{ i18n.errorText(view.error()) }}</app-alert>
@@ -143,7 +144,7 @@ interface Draft {
         </div>
       </div>
     } @else if (view.isLoading()) {
-      <p class="text-sm text-muted-foreground">{{ 'common.labels.loading' | t }}</p>
+      <app-detail-skeleton [label]="'common.labels.loading' | t" />
     }
   `,
   host: { class: 'flex flex-col gap-6' },

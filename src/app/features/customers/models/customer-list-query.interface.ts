@@ -6,6 +6,8 @@ export interface CustomerListQuery {
   governorate?: string;
   mine?: boolean;
   overdue?: boolean;
+  /** Profile completion past its due date (Exception Center drill-down). */
+  enrichmentOverdue?: boolean;
   page?: number;
   pageSize?: number;
   missing?: string;

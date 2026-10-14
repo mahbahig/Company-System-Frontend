@@ -40,13 +40,32 @@ export interface Contract {
   terminationReason?: string | null;
   projectId?: string | null;
   createdAt?: string;
+  legalName?: string;
+  exclusions?: string;
+  warranty?: string;
+  delivery?: string;
+  /** D4 confirmations, each bound to the contract version it confirms. */
+  scopeConfirmation?: { versionNo: number; by: string; at: string; note?: string } | null;
+  paymentTermsVerification?: { versionNo: number; by: string; at: string; note?: string } | null;
+  technicalBaseline?: { technicalProposalId: string; technicalProposalVersion: number } | null;
+  sentVersionNo?: number | null;
+  signedDocumentId?: string | null;
 }
 
 export interface ContractDetail {
   contract: Contract;
   approvals: Array<{ id: string; approvalNo: string; status: string }>;
   completeness: CompletenessResult;
-  permissions: { canEdit: boolean; canSubmit: boolean; canSend: boolean; canSignCustomer: boolean; canSignCompany: boolean; canTerminate: boolean };
+  permissions: {
+    canEdit: boolean;
+    canSubmit: boolean;
+    canSend: boolean;
+    canSignCustomer: boolean;
+    canSignCompany: boolean;
+    canTerminate: boolean;
+    canConfirmScope?: boolean;
+    canVerifyPaymentTerms?: boolean;
+  };
 }
 
 export type { Person };
@@ -80,7 +99,16 @@ export class ContractsApi {
   send(id: string): Observable<Contract> {
     return this.api.post(`contracts/${id}/send`);
   }
-  sign(id: string, body: { party: 'customer' | 'company'; signedAt?: string; signatoryName: string; signatoryTitle?: string }): Observable<Contract> {
+  /** D4: the Technical Lead confirms the scope matches the approved baseline (this version). */
+  confirmScope(id: string, note?: string): Observable<Contract> {
+    return this.api.post(`contracts/${id}/confirm-scope`, note ? { note } : {});
+  }
+  /** D4: Finance verifies the payment terms (this version). */
+  verifyPaymentTerms(id: string, note?: string): Observable<Contract> {
+    return this.api.post(`contracts/${id}/verify-payment-terms`, note ? { note } : {});
+  }
+  /** Every party signs the same version; the company signature attaches the signed document (the Won evidence). */
+  sign(id: string, body: { party: 'customer' | 'company'; signedAt?: string; signatoryName: string; signatoryTitle?: string; versionNo: number; signedDocumentId?: string }): Observable<Contract> {
     return this.api.post(`contracts/${id}/signatures`, body);
   }
   terminate(id: string, reason: string): Observable<Contract> {

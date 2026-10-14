@@ -10,6 +10,7 @@ import { DecorComponent } from '../../shared/decor/decor.component';
 import { AlertComponent } from '../../shared/ui/alert/alert.component';
 import { ButtonDirective } from '../../shared/ui/button/button.directive';
 import { IconComponent } from '../../shared/ui/icon/icon.component';
+import { DetailSkeletonComponent } from '../../shared/ui/skeleton/skeleton.component';
 
 interface SharedProposal {
   proposalNo: string;
@@ -31,7 +32,7 @@ interface SharedProposal {
  */
 @Component({
   selector: 'app-public-proposal-page',
-  imports: [TranslatePipe, AlertComponent, ButtonDirective, IconComponent, DecorComponent],
+  imports: [DetailSkeletonComponent, TranslatePipe, AlertComponent, ButtonDirective, IconComponent, DecorComponent],
   template: `
     <!-- What the customer sees of the company: slow ribbons of light behind
          the proposal card. Decorative only, beneath everything. -->
@@ -97,7 +98,7 @@ interface SharedProposal {
           {{ 'publicProposal.download' | t }}
         </button>
       } @else {
-        <p class="text-sm text-muted-foreground" role="status">{{ 'common.labels.loading' | t }}</p>
+        <app-detail-skeleton [label]="'common.labels.loading' | t" />
       }
     </main>
   `,

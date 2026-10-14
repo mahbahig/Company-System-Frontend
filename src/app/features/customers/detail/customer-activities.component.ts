@@ -7,6 +7,7 @@ import { ReferenceDataService } from '../../../core/reference/reference-data.ser
 import { StatusBadgeComponent } from '../../../shared/crm/status-badge/status-badge.component';
 import { TABLE_IMPORTS } from '../../../shared/ui/table/table.imports';
 import type { Customer360 } from '../models/customer-360.interface';
+import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.component';
 
 interface Row {
   id: string;
@@ -21,7 +22,7 @@ interface Row {
 /** CUST-03 recent calls, meetings, visits and logged interactions, plus open tasks. */
 @Component({
   selector: 'app-customer-activities',
-  imports: [RouterLink, TranslatePipe, StatusBadgeComponent, ...TABLE_IMPORTS],
+  imports: [SkeletonRowComponent, RouterLink, TranslatePipe, StatusBadgeComponent, ...TABLE_IMPORTS],
   template: `
     <section class="flex flex-col gap-3" aria-labelledby="c360-acts">
       <h2 id="c360-acts" class="text-lg font-semibold">{{ 'customer360.recentActivity' | t }}</h2>
@@ -37,7 +38,7 @@ interface Row {
           </thead>
           <tbody appTableBody>
             @for (row of rows(); track row.kind + row.id) {
-              <tr appTableRow>
+              <tr appTableRow [appRowLink]="row.link">
                 <td appTableCell class="tabular whitespace-nowrap">{{ i18n.formatDate(row.at, true) }}</td>
                 <td appTableCell>{{ 'customer360.kinds.' + row.kind | t }}</td>
                 <td appTableCell>
@@ -56,7 +57,13 @@ interface Row {
                 </td>
               </tr>
             } @empty {
-              <tr app-table-empty [colSpan]="4">{{ (data() ? 'customer360.none' : 'common.labels.loading') | t }}</tr>
+              @if (data()) {
+                <tr app-table-empty [colSpan]="4">{{ 'customer360.none' | t }}</tr>
+              } @else {
+                @for (i of [0, 1, 2, 3, 4]; track i) {
+                  <tr app-skeleton-row [columns]="4" [index]="i"></tr>
+                }
+              }
             }
           </tbody>
         </table>
@@ -76,7 +83,7 @@ interface Row {
           </thead>
           <tbody appTableBody>
             @for (task of data()?.tasks ?? []; track task.id) {
-              <tr appTableRow>
+              <tr appTableRow [appRowLink]="['/', i18n.locale(), 'tasks', task.id]">
                 <td appTableCell><a class="text-primary hover:underline" [routerLink]="['/', i18n.locale(), 'tasks', task.id]">{{ task.title }}</a></td>
                 <td appTableCell class="tabular whitespace-nowrap">{{ i18n.formatDate(task.dueAt, true) || '—' }}</td>
                 <td appTableCell><app-status-badge enum="taskStatus" [value]="task.status" /></td>

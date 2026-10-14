@@ -3,7 +3,11 @@ import { rxResource } from '@angular/core/rxjs-interop';
 import { FormField, form, required } from '@angular/forms/signals';
 import { RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
+import { ShortcutDirective } from '../../../core/shortcuts/shortcut.directive';
 import { SavedViewsBarComponent } from '../../../shared/crm/saved-views/saved-views-bar.component';
+import { ColumnPickerComponent } from '../../../shared/crm/table-columns/column-picker.component';
+import { TableColumns, type ColumnDef } from '../../../shared/crm/table-columns/table-columns';
+import { TableSkeletonComponent } from '../../../shared/ui/skeleton/skeleton.component';
 import { UserSelectComponent } from '../../../shared/crm/user-select/user-select.component';
 
 import { ApiError } from '../../../core/api/api-error';
@@ -34,6 +38,7 @@ import { asUserRef } from '../../../shared/utils/display-name';
 import { daysSince, formatPhone, isOverdue } from '../../../shared/utils/format';
 import { LeadsApi } from '../leads-api.service';
 import type { Lead } from '../models/lead.interface';
+import { RowLinkDirective } from '../../../shared/ui/table/row-link.directive';
 
 const flag = (value: string | undefined) => value === '1';
 const SLA_TONE: Record<string, 'success' | 'warning' | 'danger' | 'neutral'> = {
@@ -50,6 +55,25 @@ const PRIORITY_TONE: Record<string, 'neutral' | 'info' | 'warning' | 'danger'> =
   urgent: 'danger',
 };
 
+/** Lead Bank columns (all shown by default); the lead number always stays. */
+const LEAD_COLUMNS: ColumnDef[] = [
+  { id: 'leadNo', labelKey: 'crm.leads.columns.leadNo', locked: true },
+  { id: 'name', labelKey: 'crm.leads.columns.name' },
+  { id: 'phone', labelKey: 'crm.leads.columns.phone' },
+  { id: 'source', labelKey: 'crm.leads.columns.source' },
+  { id: 'campaign', labelKey: 'crm.leads.columns.campaign' },
+  { id: 'urgency', labelKey: 'crm.leads.columns.urgency' },
+  { id: 'customerType', labelKey: 'crm.leads.columns.customerType' },
+  { id: 'governorate', labelKey: 'crm.leads.columns.governorate' },
+  { id: 'owner', labelKey: 'crm.common.owner' },
+  { id: 'status', labelKey: 'crm.leads.columns.status' },
+  { id: 'lastActivity', labelKey: 'crm.leads.columns.lastActivity' },
+  { id: 'followUp', labelKey: 'crm.leads.columns.followUp' },
+  { id: 'sla', labelKey: 'crm.leads.columns.slaStatus' },
+  { id: 'leadAge', labelKey: 'crm.leads.columns.leadAge' },
+  { id: 'completeness', labelKey: 'crm.leads.columns.completeness' },
+];
+
 interface AssignModel {
   ownerId: string;
   reason: string;
@@ -59,6 +83,7 @@ interface AssignModel {
 @Component({
   selector: 'app-leads-list-page',
   imports: [
+    RowLinkDirective,
     UserSelectComponent,
     SavedViewsBarComponent,
     RouterLink,
@@ -81,6 +106,9 @@ interface AssignModel {
     TableHeadDirective,
     TableCellDirective,
     TableEmptyComponent,
+    TableSkeletonComponent,
+    ColumnPickerComponent,
+    ShortcutDirective,
   ],
   templateUrl: './leads-list.page.html',
   host: { class: 'flex flex-col gap-6' },
@@ -107,6 +135,9 @@ export class LeadsListPage {
   readonly page = input(1, { transform: (value: unknown) => numberAttribute(value, 1) });
 
   protected readonly formatPhone = formatPhone;
+  protected readonly columns = new TableColumns('lead_bank', LEAD_COLUMNS);
+  /** Visible columns plus the selection column (assigners only). */
+  protected readonly columnCount = computed(() => this.columns.count() + (this.auth.can('leads.assign') ? 1 : 0));
 
   protected readonly result = rxResource({
     params: () => ({
@@ -181,6 +212,7 @@ export class LeadsListPage {
   protected readonly assignError = signal<string | null>(null);
   protected readonly assignDone = signal(false);
   protected readonly assignOverride = signal(false);
+  protected readonly assigning = signal(false);
 
   private readonly assignModel = signal<AssignModel>({ ownerId: '', reason: '' });
   protected readonly assignForm = form(this.assignModel, (path) => {
@@ -207,8 +239,9 @@ export class LeadsListPage {
   protected async onAssignSubmit(event: Event): Promise<void> {
     event.preventDefault();
     this.assignForm().markAsTouched();
-    if (this.assignForm().invalid()) return;
+    if (this.assignForm().invalid() || this.assigning()) return;
     this.assignError.set(null);
+    this.assigning.set(true);
     try {
       await firstValueFrom(
         this.leads.assign({ leadIds: [...this.selected()], ownerId: this.assignModel().ownerId, reason: this.assignModel().reason, overrideCapacity: this.assignOverride() || undefined }),
@@ -220,6 +253,8 @@ export class LeadsListPage {
       this.result.reload();
     } catch (error) {
       this.assignError.set(ApiError.is(error) && this.i18n.has(error.messageKey) ? error.messageKey : 'errors.db.unexpected');
+    } finally {
+      this.assigning.set(false);
     }
   }
 

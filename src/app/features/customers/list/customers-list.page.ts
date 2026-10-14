@@ -1,7 +1,11 @@
 import { Component, computed, inject, input, numberAttribute } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
+import { ShortcutDirective } from '../../../core/shortcuts/shortcut.directive';
 import { SavedViewsBarComponent } from '../../../shared/crm/saved-views/saved-views-bar.component';
+import { ColumnPickerComponent } from '../../../shared/crm/table-columns/column-picker.component';
+import { TableColumns, type ColumnDef } from '../../../shared/crm/table-columns/table-columns';
+import { TableSkeletonComponent } from '../../../shared/ui/skeleton/skeleton.component';
 
 import { AuthService } from '../../../core/auth/auth.service';
 import { ButtonDirective } from '../../../shared/ui/button/button.directive';
@@ -27,13 +31,28 @@ import { asUserRef } from '../../../shared/utils/display-name';
 import { formatPhone, isOverdue } from '../../../shared/utils/format';
 import { CustomersApi } from '../customers-api.service';
 import type { Customer } from '../models/customer.interface';
+import { RowLinkDirective } from '../../../shared/ui/table/row-link.directive';
 
 const flag = (value: string | undefined) => value === '1';
+
+/** Customer list columns; the customer number always stays. */
+const CUSTOMER_COLUMNS: ColumnDef[] = [
+  { id: 'customerNo', labelKey: 'crm.customers.columns.customerNo', locked: true },
+  { id: 'name', labelKey: 'crm.customers.columns.name' },
+  { id: 'status', labelKey: 'crm.customers.columns.status' },
+  { id: 'category', labelKey: 'crm.customers.columns.category' },
+  { id: 'governorate', labelKey: 'crm.customers.columns.governorate' },
+  { id: 'mobile', labelKey: 'crm.customers.columns.mobile' },
+  { id: 'openOpportunities', labelKey: 'crm.customers.columns.openOpportunities' },
+  { id: 'owner', labelKey: 'crm.customers.columns.owner' },
+  { id: 'followUp', labelKey: 'crm.customers.columns.followUp' },
+];
 
 /** Customers list — same columns, filters and quick filters as the Next page. */
 @Component({
   selector: 'app-customers-list-page',
   imports: [
+    RowLinkDirective,
     SavedViewsBarComponent,
     ButtonDirective,
     RouterLink,
@@ -51,6 +70,9 @@ const flag = (value: string | undefined) => value === '1';
     TableHeadDirective,
     TableCellDirective,
     TableEmptyComponent,
+    TableSkeletonComponent,
+    ColumnPickerComponent,
+    ShortcutDirective,
   ],
   templateUrl: './customers-list.page.html',
   host: { class: 'flex flex-col gap-6' },
@@ -68,11 +90,13 @@ export class CustomersListPage {
   readonly governorate = input<string>();
   readonly mine = input<string>();
   readonly overdue = input<string>();
+  readonly enrichmentOverdue = input<string>();
   /** Data-quality drill-down: `phone` or `governorate`. */
   readonly missing = input<string>();
   readonly page = input(1, { transform: (value: unknown) => numberAttribute(value, 1) });
 
   protected readonly formatPhone = formatPhone;
+  protected readonly columns = new TableColumns('customers', CUSTOMER_COLUMNS);
 
   protected readonly result = rxResource({
     params: () => ({
@@ -83,6 +107,7 @@ export class CustomersListPage {
       governorate: this.governorate(),
       mine: flag(this.mine()) || undefined,
       overdue: flag(this.overdue()) || undefined,
+      enrichmentOverdue: flag(this.enrichmentOverdue()) || undefined,
       page: this.page(),
     }),
     stream: ({ params }) => this.customers.list(params),
@@ -90,7 +115,7 @@ export class CustomersListPage {
 
   protected readonly rows = computed(() => (this.result.hasValue() ? this.result.value().rows : []));
   protected readonly hasFilters = computed(
-    () => !!(this.q() || this.status() || this.category() || this.governorate() || flag(this.mine()) || flag(this.overdue())),
+    () => !!(this.q() || this.status() || this.category() || this.governorate() || flag(this.mine()) || flag(this.overdue()) || flag(this.enrichmentOverdue())),
   );
 
   protected readonly filters = computed<FilterDefinition[]>(() => [
@@ -102,6 +127,7 @@ export class CustomersListPage {
   protected readonly toggles = computed<ToggleDefinition[]>(() => [
     { name: 'mine', label: this.i18n.t('crm.filters.onlyMine'), checked: flag(this.mine()) },
     { name: 'overdue', label: this.i18n.t('crm.filters.followUpOverdue'), checked: flag(this.overdue()) },
+    { name: 'enrichmentOverdue', label: this.i18n.t('ux.filters.enrichmentOverdue'), checked: flag(this.enrichmentOverdue()) },
   ]);
 
   constructor() {

@@ -2,6 +2,10 @@ import { Component, computed, inject, input, numberAttribute } from '@angular/co
 import { rxResource } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { SavedViewsBarComponent } from '../../../shared/crm/saved-views/saved-views-bar.component';
+import { ShortcutDirective } from '../../../core/shortcuts/shortcut.directive';
+import { ColumnPickerComponent } from '../../../shared/crm/table-columns/column-picker.component';
+import { TableColumns, type ColumnDef } from '../../../shared/crm/table-columns/table-columns';
+import { TableSkeletonComponent } from '../../../shared/ui/skeleton/skeleton.component';
 
 import { AuthService } from '../../../core/auth/auth.service';
 import { I18nService } from '../../../core/i18n/i18n.service';
@@ -26,14 +30,32 @@ import { TableDirective } from '../../../shared/ui/table/table.directive';
 import { asUserRef } from '../../../shared/utils/display-name';
 import { OpportunitiesApi } from '../opportunities-api.service';
 import type { Opportunity } from '../models/opportunity.interface';
+import { RowLinkDirective } from '../../../shared/ui/table/row-link.directive';
 
 const flag = (value: string | undefined) => value === '1';
+
+/** Opportunity list columns; the opportunity number always stays. */
+const OPPORTUNITY_COLUMNS: ColumnDef[] = [
+  { id: 'opportunityNo', labelKey: 'crm.opportunities.columns.opportunityNo', locked: true },
+  { id: 'name', labelKey: 'crm.opportunities.columns.name' },
+  { id: 'customer', labelKey: 'crm.opportunities.columns.customer' },
+  { id: 'stage', labelKey: 'crm.opportunities.columns.stage' },
+  { id: 'probability', labelKey: 'crm.opportunities.columns.probability' },
+  { id: 'estimatedValue', labelKey: 'crm.opportunities.columns.estimatedValue' },
+  { id: 'expectedCloseDate', labelKey: 'crm.opportunities.columns.expectedCloseDate' },
+  { id: 'owner', labelKey: 'crm.opportunities.columns.owner' },
+  { id: 'health', labelKey: 'crm.opportunities.health.title' },
+];
 
 /** Opportunities list — filters, "collaborating on me" toggle, same anatomy as the customers list. */
 @Component({
   selector: 'app-opportunities-list-page',
   imports: [
+    RowLinkDirective,
     SavedViewsBarComponent,
+    ColumnPickerComponent,
+    TableSkeletonComponent,
+    ShortcutDirective,
     RouterLink,
     TranslatePipe,
     PageHeaderComponent,
@@ -59,6 +81,7 @@ export class OpportunitiesListPage {
   protected readonly i18n = inject(I18nService);
   protected readonly reference = inject(ReferenceDataService);
   protected readonly auth = inject(AuthService);
+  protected readonly columns = new TableColumns('opportunities', OPPORTUNITY_COLUMNS);
 
   // Query params (bound by the router).
   readonly q = input<string>();

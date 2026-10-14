@@ -34,7 +34,7 @@
     </thead>
     <tbody appTableBody>
       @for (row of rows(); track row.id) {
-        <tr appTableRow>
+        <tr appTableRow [appRowLink]="['/', i18n.locale(), 'leads', row.id]">
           <td appTableCell class="tabular whitespace-nowrap font-medium">
             <a [routerLink]="['/', i18n.locale(), 'leads', row.id]" class="text-primary underline-offset-4 hover:underline" dir="ltr">
               {{ row.leadNo }}
@@ -73,7 +73,9 @@
         @if (!result.isLoading()) {
           <tr app-table-empty [colSpan]="7">{{ 'crm.leads.empty' | t }}</tr>
         } @else {
-          <tr app-table-empty [colSpan]="7">{{ 'common.labels.loading' | t }}</tr>
+          @for (i of [0, 1, 2, 3, 4]; track i) {
+            <tr app-skeleton-row [columns]="7" [index]="i"></tr>
+          }
         }
       }
     </tbody>

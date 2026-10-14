@@ -11,4 +11,13 @@ export interface Qualification {
   decisionMakerName?: string;
   decisionMakerRole?: string;
   requirements?: string;
+  /** L3 facts recorded on the lead. */
+  useCase?: string;
+  contactRole?: string;
+  verificationState?: 'unverified' | 'pending' | 'verified';
+  decisionMakerStatus?: 'decision_maker' | 'influencer' | 'unknown';
+  constraints?: string;
+  /** The recorded L3 outcome and conversation summary. */
+  outcome?: 'qualified' | 'nurture' | 'disqualified' | 'escalated';
+  conversationSummary?: string;
 }

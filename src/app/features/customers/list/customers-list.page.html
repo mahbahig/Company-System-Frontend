@@ -1,11 +1,13 @@
-<!-- The New-customer action returns with the customer form (no links to pages that do not exist yet). -->
 <app-page-header [heading]="'crm.customers.title' | t" [subtitle]="'crm.customers.subtitle' | t" class="!mb-0">
   @if (auth.can('customers.create')) {
-    <a appButton routerLink="new">{{ 'crm.customers.new' | t }}</a>
+    <a appButton routerLink="new" appShortcut="n">{{ 'crm.customers.new' | t }}</a>
   }
 </app-page-header>
 
-<app-saved-views-bar list="customers" />
+<div class="flex flex-wrap items-start justify-between gap-2">
+  <app-saved-views-bar list="customers" />
+  <app-column-picker [columns]="columns" />
+</div>
 
 <app-list-toolbar
   [searchValue]="q() ?? ''"
@@ -22,72 +24,109 @@
   <table appTable>
     <thead appTableHeader>
       <tr appTableRow>
-        <th appTableHead>{{ 'crm.customers.columns.customerNo' | t }}</th>
-        <th appTableHead>{{ 'crm.customers.columns.name' | t }}</th>
-        <th appTableHead>{{ 'crm.customers.columns.status' | t }}</th>
-        <th appTableHead>{{ 'crm.customers.columns.category' | t }}</th>
-        <th appTableHead>{{ 'crm.customers.columns.governorate' | t }}</th>
-        <th appTableHead>{{ 'crm.customers.columns.mobile' | t }}</th>
-        <th appTableHead class="!text-center">{{ 'crm.customers.columns.openOpportunities' | t }}</th>
-        <th appTableHead>{{ 'crm.customers.columns.owner' | t }}</th>
-        <th appTableHead>{{ 'crm.customers.columns.followUp' | t }}</th>
+        @if (columns.show('customerNo')) {
+          <th appTableHead>{{ 'crm.customers.columns.customerNo' | t }}</th>
+        }
+        @if (columns.show('name')) {
+          <th appTableHead>{{ 'crm.customers.columns.name' | t }}</th>
+        }
+        @if (columns.show('status')) {
+          <th appTableHead>{{ 'crm.customers.columns.status' | t }}</th>
+        }
+        @if (columns.show('category')) {
+          <th appTableHead>{{ 'crm.customers.columns.category' | t }}</th>
+        }
+        @if (columns.show('governorate')) {
+          <th appTableHead>{{ 'crm.customers.columns.governorate' | t }}</th>
+        }
+        @if (columns.show('mobile')) {
+          <th appTableHead>{{ 'crm.customers.columns.mobile' | t }}</th>
+        }
+        @if (columns.show('openOpportunities')) {
+          <th appTableHead class="!text-center">{{ 'crm.customers.columns.openOpportunities' | t }}</th>
+        }
+        @if (columns.show('owner')) {
+          <th appTableHead>{{ 'crm.customers.columns.owner' | t }}</th>
+        }
+        @if (columns.show('followUp')) {
+          <th appTableHead>{{ 'crm.customers.columns.followUp' | t }}</th>
+        }
       </tr>
     </thead>
     <tbody appTableBody>
       @for (row of rows(); track row.id) {
-        <tr appTableRow>
-          <td appTableCell class="tabular whitespace-nowrap font-medium">
-            <a
-              [routerLink]="row.id"
-              class="text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              dir="ltr"
-            >
-              {{ row.customerNo }}
-            </a>
-          </td>
-          <td appTableCell>
-            <span class="font-medium">{{ displayName(row) }}</span>
-            @if (contactLine(row)) {
-              <span class="block text-xs text-muted-foreground">{{ contactLine(row) }}</span>
-            }
-          </td>
-          <td appTableCell>
-            <app-badge [tone]="reference.tone('customer_status', row.statusCode)">{{ reference.label('customer_status', row.statusCode) }}</app-badge>
-          </td>
-          <td appTableCell class="whitespace-nowrap">{{ reference.label('customer_category', row.categoryCode) }}</td>
-          <td appTableCell class="whitespace-nowrap">{{ reference.label('governorate', row.governorateCode) }}</td>
-          <td appTableCell class="tabular whitespace-nowrap" dir="ltr">
-            @if (row.mobile) {
+        <tr appTableRow [appRowLink]="row.id">
+          @if (columns.show('customerNo')) {
+            <td appTableCell class="tabular whitespace-nowrap font-medium">
               <a
-                [href]="'tel:' + row.mobile"
-                class="underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                [routerLink]="row.id"
+                class="text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                dir="ltr"
               >
-                {{ formatPhone(row.mobile) }}
+                {{ row.customerNo }}
               </a>
-            } @else {
-              {{ 'crm.common.notSet' | t }}
-            }
-          </td>
-          <td appTableCell class="tabular text-center">{{ row.openOpportunityCount }}</td>
-          <td appTableCell class="whitespace-nowrap">{{ ownerName(row) }}</td>
-          <td appTableCell class="whitespace-nowrap">
-            @if (row.nextFollowUpAt) {
-              <span class="tabular" [class.font-medium]="overdueDate(row.nextFollowUpAt)" [class.text-destructive]="overdueDate(row.nextFollowUpAt)">
-                {{ i18n.formatDate(row.nextFollowUpAt) }}
-              </span>
-            } @else {
-              {{ 'crm.common.notSet' | t }}
-            }
-          </td>
+            </td>
+          }
+          @if (columns.show('name')) {
+            <td appTableCell>
+              <span class="font-medium">{{ displayName(row) }}</span>
+              @if (contactLine(row)) {
+                <span class="block text-xs text-muted-foreground">{{ contactLine(row) }}</span>
+              }
+            </td>
+          }
+          @if (columns.show('status')) {
+            <td appTableCell>
+              <app-badge [tone]="reference.tone('customer_status', row.statusCode)">{{ reference.label('customer_status', row.statusCode) }}</app-badge>
+            </td>
+          }
+          @if (columns.show('category')) {
+            <td appTableCell class="whitespace-nowrap">{{ reference.label('customer_category', row.categoryCode) }}</td>
+          }
+          @if (columns.show('governorate')) {
+            <td appTableCell class="whitespace-nowrap">{{ reference.label('governorate', row.governorateCode) }}</td>
+          }
+          @if (columns.show('mobile')) {
+            <td appTableCell class="tabular whitespace-nowrap" dir="ltr">
+              @if (row.mobile) {
+                <a
+                  [href]="'tel:' + row.mobile"
+                  class="underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  {{ formatPhone(row.mobile) }}
+                </a>
+              } @else {
+                {{ 'crm.common.notSet' | t }}
+              }
+            </td>
+          }
+          @if (columns.show('openOpportunities')) {
+            <td appTableCell class="tabular text-center">{{ row.openOpportunityCount }}</td>
+          }
+          @if (columns.show('owner')) {
+            <td appTableCell class="whitespace-nowrap">{{ ownerName(row) }}</td>
+          }
+          @if (columns.show('followUp')) {
+            <td appTableCell class="whitespace-nowrap">
+              @if (row.nextFollowUpAt) {
+                <span class="tabular" [class.font-medium]="overdueDate(row.nextFollowUpAt)" [class.text-destructive]="overdueDate(row.nextFollowUpAt)">
+                  {{ i18n.formatDate(row.nextFollowUpAt) }}
+                </span>
+              } @else {
+                {{ 'crm.common.notSet' | t }}
+              }
+            </td>
+          }
         </tr>
       } @empty {
         @if (!result.isLoading()) {
-          <tr app-table-empty [colSpan]="9">{{ (hasFilters() ? 'crm.customers.emptyFiltered' : 'crm.customers.empty') | t }}</tr>
-        } @else {
-          <tr app-table-empty [colSpan]="9">{{ 'common.labels.loading' | t }}</tr>
+          <tr app-table-empty [colSpan]="columns.count()">{{ (hasFilters() ? 'crm.customers.emptyFiltered' : 'crm.customers.empty') | t }}</tr>
         }
       }
     </tbody>
+    @if (result.isLoading() && rows().length === 0) {
+      <tbody app-table-skeleton [columns]="columns.count()"></tbody>
+    }
   </table>
 </app-table-wrapper>
 

@@ -1,6 +1,13 @@
 import { Component, computed, effect, inject, input, signal } from '@angular/core';
+import { ProjectWorkflowPanelComponent } from './project-workflow-panel.component';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { Router, RouterLink } from '@angular/router';
+import { ApiError } from '../../../core/api/api-error';
+import { NavigationService } from '../../../core/navigation/navigation.service';
+import { trackRecentView } from '../../../core/records/track-recent-view';
+import { BreadcrumbsComponent } from '../../../shared/crm/breadcrumbs/breadcrumbs.component';
+import { FavoriteToggleComponent } from '../../../shared/crm/favorite-toggle/favorite-toggle.component';
+import { DetailSkeletonComponent } from '../../../shared/ui/skeleton/skeleton.component';
 
 import { I18nService } from '../../../core/i18n/i18n.service';
 import { TranslatePipe } from '../../../core/i18n/translate.pipe';
@@ -23,7 +30,7 @@ import { userName } from '../../../shared/utils/display-name';
 import type { Person } from '../../proposals/proposals.models';
 import { ProjectsApi } from '../projects-api.service';
 
-const PHASES = ['planning', 'procurement', 'installation', 'testing_commissioning', 'handover'];
+const PHASES = ['planning', 'procurement', 'installation', 'testing_commissioning', 'customer_acceptance', 'warranty_service'];
 
 /**
  * PROJ-01..10 project: everything inherited from the contract (no re-entry),
@@ -33,7 +40,7 @@ const PHASES = ['planning', 'procurement', 'installation', 'testing_commissionin
  */
 @Component({
   selector: 'app-project-detail-page',
-  imports: [RouterLink, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, CompletenessPanelComponent, DetailItemComponent, DocumentsPanelComponent, AlertComponent, BadgeComponent, ButtonDirective, PageHeaderComponent, TabsComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, ...TABLE_IMPORTS],
+  imports: [BreadcrumbsComponent, FavoriteToggleComponent, DetailSkeletonComponent, ProjectWorkflowPanelComponent, RouterLink, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, CompletenessPanelComponent, DetailItemComponent, DocumentsPanelComponent, AlertComponent, BadgeComponent, ButtonDirective, PageHeaderComponent, TabsComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, ...TABLE_IMPORTS],
   templateUrl: './project-detail.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
@@ -41,6 +48,7 @@ export class ProjectDetailPage {
   protected readonly api = inject(ProjectsApi);
   private readonly router = inject(Router);
   protected readonly i18n = inject(I18nService);
+  protected readonly navigation = inject(NavigationService);
   protected readonly actions = new ActionRunner(this.i18n);
 
   readonly id = input.required<string>();
@@ -51,12 +59,14 @@ export class ProjectDetailPage {
   protected readonly project = computed(() => this.data.value()?.project);
   protected readonly reload = () => this.data.reload();
 
+  /** Payment milestones only reach roles with financial visibility (the API omits them otherwise). */
   protected readonly tabs = computed<TabItem[]>(() =>
-    ['overview', 'plan', 'procurement', 'payments', 'commissioning', 'handover', 'updates', 'documents'].map((id) => ({ id, label: this.i18n.t(`projects.tabs.${id}`) })),
+    ['delivery', 'overview', 'plan', 'procurement', 'payments', 'commissioning', 'handover', 'updates', 'documents']
+      .filter((id) => id !== 'payments' || this.project()?.payments !== undefined)
+      .map((id) => ({ id, label: this.i18n.t(`projects.tabs.${id}`) })),
   );
-  protected readonly active = computed(() => (this.tabs().some((t) => t.id === this.tab()) ? (this.tab() as string) : 'overview'));
+  protected readonly active = computed(() => (this.tabs().some((t) => t.id === this.tab()) ? (this.tab() as string) : 'delivery'));
 
-  protected readonly statusForm = signal({ status: '', reason: '' });
   protected readonly plan = signal({ startDate: '', targetEndDate: '', progress: 0 });
   protected readonly milestone = signal({ title: '', phaseCode: 'planning', dueAt: '' });
   protected readonly procurement = signal({ description: '', model: '', quantity: 1, supplier: '', poNumber: '', expectedAt: '' });
@@ -71,8 +81,19 @@ export class ProjectDetailPage {
     const c = this.project()?.customerId;
     return c && typeof c === 'object' ? this.i18n.pick(c.nameAr, c.nameEn) : '';
   });
+  protected readonly notFound = computed(() => {
+    const error = this.data.error();
+    return ApiError.is(error) && (error.status === 404 || error.status === 400);
+  });
+  /** Projects / <customer> / <project>: the customer is context only (its record scope is not the project's). */
+  protected readonly crumbs = computed(() => [
+    { label: this.i18n.t('navigation.items.projects'), path: '/projects' },
+    { label: this.customerName() },
+    { label: this.project()?.name ?? '' },
+  ]);
 
   constructor() {
+    trackRecentView('project', () => this.id(), () => (this.project() ? 'loaded' : this.notFound() ? 'missing' : 'pending'));
     effect(() => {
       const p = this.project();
       if (!p) return;
@@ -106,14 +127,6 @@ export class ProjectDetailPage {
 
   protected iso(date: string): string | undefined {
     return date ? new Date(`${date}T12:00:00`).toISOString() : undefined;
-  }
-
-  protected changeStatus(): void {
-    const s = this.statusForm();
-    void this.actions.run(this.api.status(this.id(), { status: s.status, reason: s.reason.trim() || undefined }), 'prop.saved', () => {
-      this.statusForm.set({ status: '', reason: '' });
-      this.reload();
-    });
   }
 
   protected savePlan(): void {

@@ -38,7 +38,7 @@
         </thead>
         <tbody appTableBody>
           @for (row of technical.value()?.rows ?? []; track row.id) {
-            <tr appTableRow>
+            <tr appTableRow [appRowLink]="['/', i18n.locale(), 'proposals', 'technical', row.id]">
               <td appTableCell class="tabular whitespace-nowrap"><a class="text-primary hover:underline" [routerLink]="['/', i18n.locale(), 'proposals', 'technical', row.id]" dir="ltr">{{ row.number }}</a></td>
               <td appTableCell class="tabular">v{{ row.versionNo }}</td>
               <td appTableCell><app-status-badge enum="technicalProposalStatus" [value]="row.status" /></td>
@@ -90,7 +90,7 @@
         </thead>
         <tbody appTableBody>
           @for (row of financial.value()?.rows ?? []; track row.id) {
-            <tr appTableRow>
+            <tr appTableRow [appRowLink]="['/', i18n.locale(), 'proposals', 'financial', row.id]">
               <td appTableCell class="tabular whitespace-nowrap"><a class="text-primary hover:underline" [routerLink]="['/', i18n.locale(), 'proposals', 'financial', row.id]" dir="ltr">{{ row.number }}</a></td>
               <td appTableCell class="tabular">v{{ row.versionNo }}</td>
               <td appTableCell><app-status-badge enum="financialProposalStatus" [value]="row.status" /></td>
@@ -176,7 +176,7 @@
         </thead>
         <tbody appTableBody>
           @for (row of combined.value()?.rows ?? []; track row.id) {
-            <tr appTableRow>
+            <tr appTableRow [appRowLink]="['/', i18n.locale(), 'proposals', 'combined', row.id]">
               <td appTableCell class="tabular whitespace-nowrap">
                 <a class="text-primary hover:underline" [routerLink]="['/', i18n.locale(), 'proposals', 'combined', row.id]" dir="ltr">{{ row.proposalNo }}</a>
                 @if (row.isFinal) {
@@ -224,7 +224,7 @@
         </thead>
         <tbody appTableBody>
           @for (row of register.value()?.rows ?? []; track row.versionNo) {
-            <tr appTableRow>
+            <tr appTableRow [appRowLink]="['/', i18n.locale(), 'proposals', 'combined', rowId(row)]">
               <td appTableCell><input type="checkbox" [attr.aria-label]="('prop.compare' | t) + ' v' + row.versionNo" [checked]="compareIds().includes(rowId(row))" (change)="toggleCompare(row)" /></td>
               <td appTableCell class="tabular whitespace-nowrap"><a class="text-primary hover:underline" [routerLink]="['/', i18n.locale(), 'proposals', 'combined', rowId(row)]" dir="ltr">{{ row.proposalNo }} v{{ row.versionNo }}</a></td>
               <td appTableCell class="tabular whitespace-nowrap">{{ i18n.formatDate(row.firstSentAt) || '—' }}</td>
@@ -301,7 +301,7 @@
         </thead>
         <tbody appTableBody>
           @for (row of revisions.value()?.rows ?? []; track row.id) {
-            <tr appTableRow>
+            <tr appTableRow [appRowLink]="row.resultingProposalId ? ['/', i18n.locale(), 'proposals', 'combined', row.resultingProposalId] : null">
               <td appTableCell class="tabular whitespace-nowrap">{{ i18n.formatDate(row.createdAt, true) }}</td>
               <td appTableCell>{{ row.type | enum: 'revisionType' }}</td>
               <td appTableCell class="max-w-md">{{ row.details }}</td>
