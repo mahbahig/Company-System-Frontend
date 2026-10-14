@@ -17,6 +17,7 @@ import { PageHeaderComponent } from '../../shared/ui/page-header/page-header.com
 import { TABLE_IMPORTS } from '../../shared/ui/table/table.imports';
 import { ActionRunner } from '../../shared/utils/action-runner';
 import { ImportsApi, type ImportRow } from './imports-api.service';
+import { SkeletonRowComponent } from '../../shared/ui/skeleton/skeleton.component';
 
 const ROW_FILTERS = ['', 'valid', 'duplicate', 'invalid', 'imported', 'linked', 'skipped'];
 
@@ -27,7 +28,7 @@ const ROW_FILTERS = ['', 'valid', 'duplicate', 'invalid', 'imported', 'linked', 
  */
 @Component({
   selector: 'app-import-job-page',
-  imports: [TranslatePipe, EnumLabelPipe, StatusBadgeComponent, UserSelectComponent, AlertComponent, ButtonDirective, PageHeaderComponent, PaginationComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, ...TABLE_IMPORTS],
+  imports: [SkeletonRowComponent, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, UserSelectComponent, AlertComponent, ButtonDirective, PageHeaderComponent, PaginationComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, ...TABLE_IMPORTS],
   template: `
     @if (job.error()) {
       <app-alert variant="destructive">{{ i18n.errorText(job.error()) }}</app-alert>
@@ -183,7 +184,13 @@ const ROW_FILTERS = ['', 'valid', 'duplicate', 'invalid', 'imported', 'linked', 
                 </td>
               </tr>
             } @empty {
-              <tr app-table-empty [colSpan]="5">{{ (rows.isLoading() ? 'common.labels.loading' : 'imports.noRows') | t }}</tr>
+              @if (rows.isLoading()) {
+                @for (i of [0, 1, 2, 3, 4]; track i) {
+                  <tr app-skeleton-row [columns]="5" [index]="i"></tr>
+                }
+              } @else {
+                <tr app-table-empty [colSpan]="5">{{ 'imports.noRows' | t }}</tr>
+              }
             }
           </tbody>
         </table>

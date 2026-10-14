@@ -1,6 +1,6 @@
 <app-page-header [heading]="'crm.tasks.title' | t" [subtitle]="'crm.tasks.subtitle' | t" class="!mb-0">
   @if (auth.can('tasks.create')) {
-    <a appButton routerLink="new"><app-icon [icon]="addIcon" />{{ 'crm.tasks.new' | t }}</a>
+    <a appButton routerLink="new" appShortcut="n"><app-icon [icon]="addIcon" />{{ 'crm.tasks.new' | t }}</a>
   }
 </app-page-header>
 
@@ -48,7 +48,7 @@
     </thead>
     <tbody appTableBody>
       @for (row of rows(); track row.id) {
-        <tr appTableRow>
+        <tr appTableRow [appRowLink]="row.id">
           <td appTableCell class="font-medium">
             <a
               [routerLink]="row.id"
@@ -77,7 +77,9 @@
         @if (!result.isLoading()) {
           <tr app-table-empty [colSpan]="5">{{ (hasFilters() ? 'crm.tasks.emptyFiltered' : 'crm.tasks.empty') | t }}</tr>
         } @else {
-          <tr app-table-empty [colSpan]="5">{{ 'common.labels.loading' | t }}</tr>
+          @for (i of [0, 1, 2, 3, 4]; track i) {
+            <tr app-skeleton-row [columns]="5" [index]="i"></tr>
+          }
         }
       }
     </tbody>

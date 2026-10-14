@@ -1,7 +1,9 @@
+<app-breadcrumbs [items]="crumbs()" />
 <app-page-header class="!mb-0" [heading]="(editing() ? 'crm.tasks.editTitle' : 'crm.tasks.newTitle') | t" />
 
 <section appCard class="max-w-2xl">
-  <form appCardContent class="flex flex-col gap-5" novalidate (submit)="onSubmit($event)">
+  <form appCardContent class="flex flex-col gap-5" novalidate appSaveShortcut (submit)="onSubmit($event)">
+    <p class="text-sm text-muted-foreground">{{ 'ux.forms.requiredHint' | t }}</p>
     @if (errorKey(); as key) {
       <app-alert variant="destructive">{{ key | t }}</app-alert>
     }
@@ -76,14 +78,16 @@
       </div>
     }
 
-    <div class="flex gap-2">
-      <button type="submit" appButton [disabled]="taskForm().submitting()" [attr.aria-busy]="taskForm().submitting()">
+    <div class="flex flex-wrap items-center gap-3 border-t border-border pt-4">
+      <button type="submit" appButton [disabled]="taskForm().submitting()" [attr.aria-busy]="taskForm().submitting()" aria-keyshortcuts="Control+S Meta+S">
         @if (taskForm().submitting()) {
           {{ 'crm.common.saving' | t }}
         } @else {
           {{ 'crm.common.save' | t }}
         }
       </button>
+      <a appButton variant="ghost" [routerLink]="editing() ? ['/', i18n.locale(), 'tasks', id()] : ['/', i18n.locale(), 'tasks']">{{ 'crm.common.cancel' | t }}</a>
+      <span class="hidden text-xs text-muted-foreground sm:inline" aria-hidden="true">{{ 'ux.forms.saveHint' | t }}</span>
     </div>
   </form>
 </section>

@@ -1,0 +1,57 @@
+{
+  "server": {
+    "errors": {
+      "readOnlyProfile": "Your access profile is read-only — changes are not allowed.",
+      "cannotApproveOwnWork": "You prepared this work, so it needs an independent reviewer.",
+      "cannotChangeOwnRoles": "You cannot change your own roles. Ask another administrator.",
+      "roleGrantNotAllowed": "This permission cannot be given to this role (platform administrators hold no business authority; read-only profiles hold no write access).",
+      "technicalAcceptanceRequired": "The Technical Lead's technical acceptance is required first.",
+      "assigneeOutOfScope": "You can only assign to members of your own team."
+    }
+  },
+  "analytics": {
+    "tabs": {
+      "platform": "Platform"
+    },
+    "platform": {
+      "title": "Platform health",
+      "subtitle": "Accounts, sessions, automation and security — no business data.",
+      "activeUsers": "Active accounts",
+      "inactiveUsers": "Deactivated accounts",
+      "lockedUsers": "Locked accounts",
+      "pendingPasswordChange": "Awaiting password change",
+      "activeSessions": "Active sessions",
+      "failedAutomations": "Failed automations",
+      "succeededAutomations": "Automations run (24 h)",
+      "failedLogins": "Failed sign-ins (24 h)",
+      "securityEvents": "Security events (24 h)",
+      "integrationKeys": "Active integration keys"
+    },
+    "personal": {
+      "myProjects": "My projects",
+      "activeProjects": "Active projects",
+      "delayedProjects": "Delayed projects",
+      "milestonesDue": "My milestones due this week"
+    }
+  },
+  "dashboard": {
+    "noDashboards": "No dashboard is assigned to your role. Use the menu to open your work."
+  },
+  "projects": {
+    "recordTechnicalAcceptance": "Record technical acceptance",
+    "technicallyAccepted": "Technically accepted",
+    "technicalAcceptancePending": "Awaiting the Technical Lead's acceptance"
+  },
+  "admin": {
+    "settings": {
+      "policyBadge": "Business policy",
+      "policyHint": "Security settings (sessions, sign-in, MFA) are changed by the System Administrator only. Approval limits, pricing and financial rules are set by the CEO / CFO; the CEO and the administrator change the other settings."
+    },
+    "audit": {
+      "securityScope": "Security log: sign-ins, accounts, roles, configuration and integrations."
+    }
+  },
+  "access": {
+    "readOnlyBanner": "Read-only access — you can view and filter, but not change anything."
+  }
+}

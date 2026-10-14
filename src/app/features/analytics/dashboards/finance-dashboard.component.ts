@@ -14,11 +14,12 @@ import { TABLE_IMPORTS } from '../../../shared/ui/table/table.imports';
 import { AnalyticsApi } from '../analytics-api.service';
 import type { AnalyticsFilter } from '../models/analytics-filter.interface';
 import { formatKpi } from '../shared/kpi-format';
+import { DashboardSkeletonComponent } from '../../../shared/ui/skeleton/skeleton.component';
 
 /** DASH-05 finance dashboard: approvals, discount distribution, margins, contract values and the payment schedule. */
 @Component({
   selector: 'app-finance-dashboard',
-  imports: [RouterLink, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, AlertComponent, BarListComponent, ...CARD_IMPORTS, ...TABLE_IMPORTS],
+  imports: [DashboardSkeletonComponent, RouterLink, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, AlertComponent, BarListComponent, ...CARD_IMPORTS, ...TABLE_IMPORTS],
   template: `
     @if (data.error()) {
       <app-alert variant="destructive">{{ i18n.errorText(data.error()) }}</app-alert>
@@ -75,7 +76,7 @@ import { formatKpi } from '../shared/kpi-format';
             </thead>
             <tbody appTableBody>
               @for (row of d.margins; track $index) {
-                <tr appTableRow>
+                <tr appTableRow [appRowLink]="row.id ? ['/', i18n.locale(), 'proposals', 'financial', row.id] : null">
                   <td appTableCell class="tabular whitespace-nowrap" dir="ltr">
                     @if (row.id) {
                       <a class="text-primary hover:underline" [routerLink]="['/', i18n.locale(), 'proposals', 'financial', row.id]">{{ row.number }} v{{ row.versionNo }}</a>
@@ -140,7 +141,7 @@ import { formatKpi } from '../shared/kpi-format';
         </section>
       </div>
     } @else if (data.isLoading()) {
-      <p class="text-sm text-muted-foreground">{{ 'common.labels.loading' | t }}</p>
+      <app-dashboard-skeleton [label]="'common.labels.loading' | t" />
     }
   `,
   host: { class: 'flex flex-col gap-6' },

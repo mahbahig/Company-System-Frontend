@@ -7,12 +7,16 @@ import { Check, CheckCheck } from 'lucide';
 import { I18nService } from '../../core/i18n/i18n.service';
 import { TranslatePipe } from '../../core/i18n/translate.pipe';
 import { NotificationsService } from '../../core/notifications/notifications.service';
+import { NavigationService } from '../../core/navigation/navigation.service';
+import { notificationAction, notificationTarget } from '../../core/notifications/notification-action';
+import { TooltipDirective } from '../../shared/ui/tooltip/tooltip.directive';
 import { PaginationComponent } from '../../shared/crm/pagination/pagination.component';
 import { AlertComponent } from '../../shared/ui/alert/alert.component';
 import { BadgeComponent } from '../../shared/ui/badge/badge.component';
 import { ButtonDirective } from '../../shared/ui/button/button.directive';
 import { IconComponent } from '../../shared/ui/icon/icon.component';
 import { PageHeaderComponent } from '../../shared/ui/page-header/page-header.component';
+import { ListSkeletonComponent } from '../../shared/ui/skeleton/skeleton.component';
 
 const flag = (value: string | undefined) => value === '1';
 
@@ -28,7 +32,7 @@ const flag = (value: string | undefined) => value === '1';
  */
 @Component({
   selector: 'app-notifications-list-page',
-  imports: [RouterLink, FormField, TranslatePipe, PageHeaderComponent, PaginationComponent, AlertComponent, BadgeComponent, ButtonDirective, IconComponent],
+  imports: [TooltipDirective, ListSkeletonComponent, RouterLink, FormField, TranslatePipe, PageHeaderComponent, PaginationComponent, AlertComponent, BadgeComponent, ButtonDirective, IconComponent],
   templateUrl: './notifications-list.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
@@ -36,6 +40,7 @@ export class NotificationsListPage {
   private readonly notifications = inject(NotificationsService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly navigation = inject(NavigationService);
   protected readonly i18n = inject(I18nService);
 
   readonly unread = input<string>();
@@ -52,6 +57,14 @@ export class NotificationsListPage {
   });
 
   protected readonly rows = computed(() => (this.result.hasValue() ? this.result.value().rows : []));
+  /** Each row with its next step — a link only when the route guard would let this user open it. */
+  protected readonly entries = computed(() =>
+    this.rows().map((row) => ({
+      row,
+      action: notificationAction(row),
+      target: notificationTarget(row.actionUrl, this.i18n.locale(), (path) => this.navigation.canOpen(path)),
+    })),
+  );
 
   protected readonly toggleModel = linkedSignal(() => ({ unreadOnly: this.unreadOnly() }));
   protected readonly toggleForm = form(this.toggleModel);
@@ -82,9 +95,4 @@ export class NotificationsListPage {
     void this.notifications.markRead([id]).then(() => this.result.reload());
   }
 
-  protected link(actionUrl: string | undefined): string[] | null {
-    if (!actionUrl) return null;
-    const path = actionUrl.startsWith('/') ? actionUrl : `/${actionUrl}`;
-    return [`/${this.i18n.locale()}${path}`];
-  }
 }

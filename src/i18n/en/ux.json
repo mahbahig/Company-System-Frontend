@@ -1,0 +1,415 @@
+{
+  "ux": {
+    "sidebar": {
+      "navLabel": "Main navigation",
+      "collapse": "Collapse sidebar",
+      "expand": "Expand sidebar",
+      "expandHint": "Show page names (shortcut: [)"
+    },
+    "breadcrumbs": {
+      "label": "Breadcrumb"
+    },
+    "palette": {
+      "title": "Command palette",
+      "trigger": "Search or jump to…",
+      "inputLabel": "Search records, pages and commands",
+      "placeholder": "Search customers, leads, projects… or type a command",
+      "results": "Results",
+      "empty": "Nothing found for “{query}”.",
+      "emptyIdle": "Type to search records, pages and commands.",
+      "count": "{count} results",
+      "searchAll": "See all results for “{query}”",
+      "hintMove": "to move",
+      "hintOpen": "to open",
+      "hintClose": "to close",
+      "groups": {
+        "favorites": "Favorites",
+        "recent": "Recently viewed",
+        "create": "Create",
+        "pages": "Go to",
+        "actions": "Actions",
+        "searchAll": "Search",
+        "records": {
+          "customer": "Customers",
+          "contact": "Contacts",
+          "lead": "Leads",
+          "opportunity": "Opportunities",
+          "proposal": "Proposals",
+          "contract": "Contracts",
+          "project": "Projects"
+        }
+      },
+      "actions": {
+        "darkTheme": "Switch to the dark theme",
+        "lightTheme": "Switch to the light theme",
+        "language": "Switch the language to {language}"
+      }
+    },
+    "create": {
+      "lead": "New lead",
+      "quickLead": "Quick-add a lead",
+      "customer": "New customer",
+      "opportunity": "New opportunity",
+      "task": "New task",
+      "call": "Log a call",
+      "meeting": "Schedule a meeting",
+      "visit": "Plan a site visit"
+    },
+    "shortcuts": {
+      "title": "Keyboard shortcuts",
+      "then": "then",
+      "palette": "Open the command palette",
+      "search": "Search",
+      "help": "Show keyboard shortcuts",
+      "sidebar": "Collapse or expand the sidebar",
+      "save": "Save the form",
+      "pageAction": "Page action",
+      "typingNote": "Single-key shortcuts are paused while you type in a field. Only actions you can use on the current page are listed.",
+      "groups": {
+        "general": "General",
+        "navigation": "Go to",
+        "page": "On this page"
+      }
+    },
+    "unsaved": {
+      "title": "You have unsaved changes",
+      "message": "Your changes haven't been saved yet. If you leave now, they will be lost.",
+      "stay": "Stay",
+      "discard": "Discard changes"
+    },
+    "drafts": {
+      "offer": "You have an unsaved draft from {when}. Continue editing this draft?",
+      "restore": "Restore draft",
+      "discard": "Discard",
+      "saved": "Draft saved {when}",
+      "justNow": "just now"
+    },
+    "favorites": {
+      "add": "Add to favorites",
+      "remove": "Remove from favorites"
+    },
+    "columns": {
+      "button": "Columns",
+      "heading": "Show columns",
+      "customized": "customized",
+      "always": "Always shown",
+      "reset": "Reset to default",
+      "done": "Done"
+    },
+    "inlineEdit": {
+      "edit": "Edit {field}",
+      "saved": "Saved"
+    },
+    "validation": {
+      "mobile": "Enter a valid Egyptian mobile number, e.g. 01012345678 (or an international number with its country code).",
+      "phone": "Enter a valid phone number, e.g. 01012345678 or 0223456789.",
+      "email": "Enter a valid e-mail address, e.g. name@company.com.",
+      "duration": "Enter the duration in minutes as a number (e.g. 5 or 2.5), up to 1440.",
+      "leadRequired": "Lead is required."
+    },
+    "forms": {
+      "requiredHint": "Fields marked * are required.",
+      "mobileHint": "Egyptian mobile, e.g. 01012345678.",
+      "showOptional": "Show details (optional)",
+      "hideOptional": "Hide details",
+      "saveHint": "Ctrl + S to save",
+      "leadLocked": "This lead cannot be edited at its current stage (for example while it is handed off to Sales, or when another person owns that stage).",
+      "notEditable": "You can view this record but not change it.",
+      "callNeeds": "Choose an outcome and link the call to a customer, lead or opportunity to save it.",
+      "meetingNeeds": "Enter a subject, choose the customer and set the date and time to save the meeting.",
+      "visitNeeds": "Choose the customer and set the date and time to save the visit.",
+      "durationHint": "Minutes, e.g. 5 or 2.5.",
+      "callNeedsLead": "Choose the lead this call was about.",
+      "callNeedsOutcome": "Choose the call outcome."
+    },
+    "notifications": {
+      "unread": "Unread",
+      "actions": {
+        "review": "Review",
+        "openTask": "Open task",
+        "open": "Open"
+      }
+    },
+    "savedViews": {
+      "delete": "Delete this view",
+      "deleteTitle": "Delete this saved view?",
+      "deleteMessage": "“{name}” will be removed for everyone it is shared with. The records themselves are not affected."
+    },
+    "search": {
+      "count": "{count} results for “{query}” — only records you can open are shown."
+    },
+    "dashboard": {
+      "quickAccess": "Pick up where you left off",
+      "favorites": "Favorites",
+      "recent": "Recently viewed",
+      "create": "Create",
+      "emptyFavorites": "Star a customer, lead, opportunity, contract or project to keep it here.",
+      "emptyRecent": "Records you open will appear here.",
+      "openPalette": "Search everything"
+    },
+    "calls": {
+      "facts": "Call details",
+      "related": "Related records",
+      "noSummary": "No summary was recorded for this call.",
+      "seconds": "{count} sec",
+      "minutes": "{count} min"
+    },
+    "password": {
+      "show": "Show password",
+      "hide": "Hide password",
+      "ruleMatch": "Both new passwords match",
+      "signOutNote": "Changing your password signs you out on every device, including this one. Sign in again with the new password."
+    },
+    "reports": {
+      "exportable": "Exportable"
+    },
+    "performance": {
+      "title": "Performance & activity",
+      "period": "Period",
+      "periods": {
+        "30d": "Last 30 days",
+        "90d": "Last 90 days",
+        "year": "This year",
+        "all": "All time"
+      },
+      "groups": {
+        "leads": "Leads",
+        "calls": "Calls",
+        "meetings": "Meetings",
+        "visits": "Site visits",
+        "tasks": "Tasks",
+        "deals": "Opportunities"
+      },
+      "metrics": {
+        "leadsOwned": "Leads assigned",
+        "leadsOpen": "Open leads",
+        "leadsConverted": "Converted",
+        "contactAttempts": "Contact attempts",
+        "reached": "{count} reached",
+        "inPeriod": "Created in this period",
+        "now": "Right now",
+        "callsTotal": "Calls logged",
+        "callsOutbound": "Outbound",
+        "inbound": "{count} inbound",
+        "talkTime": "Talk time",
+        "hours": "hours",
+        "avgCall": "Average call",
+        "minutes": "minutes",
+        "meetingsTotal": "Meetings",
+        "meetingsCompleted": "Held",
+        "meetingsUpcoming": "Upcoming",
+        "visitsTotal": "Visits",
+        "visitsCompleted": "Completed",
+        "tasksOpen": "Open tasks",
+        "tasksOverdue": "Overdue",
+        "tasksCompleted": "Completed",
+        "dealsOpen": "Open",
+        "dealsWon": "Won",
+        "dealsLost": "Lost",
+        "wonValue": "Won value"
+      },
+      "callOutcomes": "Calls by outcome",
+      "recent": "Recent activity",
+      "recentHint": "The latest actions this employee recorded.",
+      "noActivity": "No activity recorded in this period.",
+      "openOpportunity": "Open opportunity",
+      "openLead": "Open lead",
+      "openCustomer": "Open customer"
+    },
+    "users": {
+      "directorySubtitle": "Employees and their roles. Open a person to see their performance and recent activity.",
+      "reasonOptional": "Reason (optional)",
+      "reasonPlaceholder": "e.g. Left the company"
+    },
+    "approvalLimits": {
+      "title": "Approval limits",
+      "subtitle": "The numbers the approval matrix uses: who approves which discount, margin, payment terms and contract value, and how fast.",
+      "readOnly": "Your role can view this value but not change it.",
+      "discard": "Discard changes",
+      "back": "Back to approvals",
+      "saved": "Approval limits saved.",
+      "errors": {
+        "number": "Enter a number, e.g. 15 or 12.5.",
+        "integer": "Enter a whole number of hours.",
+        "range": "Enter a value from {min} to {max}.",
+        "min": "Enter {min} or more."
+      },
+      "units": {
+        "pct": "%",
+        "egp": "EGP",
+        "hours": "hours"
+      },
+      "sections": {
+        "discounts": {
+          "title": "Discount authority",
+          "description": "The largest discount each approver may grant. Above the Sales Manager ceiling the CFO approves; above the CFO ceiling, the CEO."
+        },
+        "margins": {
+          "title": "Margin and payment terms",
+          "description": "Proposals below the margin floor go to the CEO; a down payment below the minimum goes to Finance."
+        },
+        "values": {
+          "title": "Value thresholds",
+          "description": "Contracts above the CEO threshold need the CEO; financial proposals above the Finance threshold need Finance validation."
+        },
+        "timing": {
+          "title": "Response time",
+          "description": "How long an approver has to decide, and how early they are reminded."
+        }
+      },
+      "help": {
+        "approval_discount_salesManagerMaxPct": "Discounts up to this percentage are approved by the Sales Manager.",
+        "approval_discount_cfoMaxPct": "Discounts up to this percentage are approved by the CFO; anything higher by the CEO. Cannot be lower than the Sales Manager ceiling.",
+        "approval_marginFloorPct": "A proposal with a margin below this needs the CEO.",
+        "approval_paymentTerms_minDownPaymentPct": "A down payment below this needs Finance approval.",
+        "approval_contract_ceoAboveValue": "Contracts and proposals above this value need the CEO.",
+        "financialProposal_financeValidationAboveValue": "Financial proposals above this value need an extra Finance validation.",
+        "approval_slaHours": "Hours an approver has to decide before the request is overdue.",
+        "approval_reminderBeforeHours": "Remind the approver this many hours before the deadline."
+      }
+    },
+    "exceptions": {
+      "noAccess": "Your role cannot open the records behind this count.",
+      "fromCenter": "Showing records from the Exceptions Center: {name}."
+    },
+    "filters": {
+      "enrichmentOverdue": "Profile completion overdue"
+    },
+    "settings": {
+      "securityBadge": "Security — System Administrator only",
+      "negativeInMap": "{key}: negative numbers are not allowed. Use 0 or more."
+    },
+    "roles": {
+      "fixedBadge": "Fixed by the system",
+      "fixedAdmin": "The System Administrator always holds every permission. Its grants are defined by the system and cannot be edited.",
+      "fixedCeo": "The CEO always holds every business permission (no security administration). Its grants are defined by the system and cannot be edited."
+    }
+  },
+  "navigation": {
+    "descriptions": {
+      "dashboard": "Your workload and key numbers at a glance.",
+      "executiveDashboard": "Company-wide performance for leadership.",
+      "approvals": "Requests waiting for your decision.",
+      "exceptions": "Overdue, stuck and incomplete records to fix.",
+      "leads": "Inquiries to identify, contact and qualify.",
+      "customers": "Manage customer records and information.",
+      "opportunities": "Deals from discovery to signature.",
+      "pipeline": "Opportunities on a board, by stage.",
+      "campaigns": "Marketing campaigns and their results.",
+      "tasks": "Your to-dos and follow-ups.",
+      "calls": "Logged calls and their outcomes.",
+      "meetings": "Scheduled and held meetings.",
+      "visits": "Site visits with check-in and check-out.",
+      "activities": "Every customer contact in one log.",
+      "handoffs": "Technical requests waiting for a decision.",
+      "assessments": "Site surveys and technical assessments.",
+      "proposals": "Customer proposals and their versions.",
+      "contracts": "Contracts, versions and signatures.",
+      "projects": "Delivery from planning to warranty.",
+      "reports": "Reports and exports.",
+      "imports": "Import records from spreadsheets.",
+      "duplicates": "Possible duplicate records to review.",
+      "ownership": "Requests to change a record's owner.",
+      "users": "User accounts and access.",
+      "roles": "Roles and their permissions.",
+      "teams": "Teams and their members.",
+      "referenceData": "Lists used across the system.",
+      "equipment": "Panels, inverters and other equipment.",
+      "rules": "Required data for each stage.",
+      "intakeForms": "Technical intake questionnaires.",
+      "settings": "System and business settings.",
+      "automation": "Automated rules and their runs.",
+      "integrations": "API keys and connected systems.",
+      "auditLog": "Who changed what, and when."
+    }
+  },
+  "timeline": {
+    "groups": {
+      "deal": "Deal",
+      "proposal": "Proposals",
+      "contract": "Contract",
+      "handover": "Handover",
+      "project": "Project",
+      "activity": "Activities"
+    },
+    "events": {
+      "generic": "Record updated",
+      "activity_customer_request": "Customer request logged",
+      "activity_email": "E-mail logged",
+      "activity_follow_up": "Follow-up logged",
+      "activity_note": "Note added",
+      "activity_other": "Activity logged",
+      "activity_sms": "SMS logged",
+      "activity_social": "Social media contact logged",
+      "activity_whatsapp": "WhatsApp message logged",
+      "assessment_started": "Site survey started",
+      "assessment_approved": "Site survey accepted",
+      "assessment_returned": "Site survey returned for changes",
+      "combined_proposal_created": "Customer proposal created",
+      "contract_created": "Contract created",
+      "contract_new_version": "Contract changed — version {version} created",
+      "contract_status_changed": "Contract moved from {from} to {to}",
+      "customer_collaborator_added": "Collaborator added to the customer",
+      "customer_collaborator_removed": "Collaborator removed from the customer",
+      "customer_duplicate_keep_separate": "Possible duplicate kept as a separate customer",
+      "customer_duplicate_link_as_branch": "Possible duplicate linked as a branch",
+      "customer_duplicate_review_later": "Possible duplicate set aside for review",
+      "customer_enrichment_overdue": "Customer profile completion is overdue",
+      "customer_inquiry_linked": "New inquiry linked to this customer",
+      "customer_merged": "Customer records merged",
+      "customer_ownership_requested": "Ownership change requested",
+      "customer_ownership_request_approved": "Ownership change approved",
+      "customer_ownership_request_rejected": "Ownership change rejected",
+      "customer_verification_recorded": "Customer verification recorded",
+      "customer_lifecycle_changed": "Customer moved from {from} to {to}",
+      "financial_proposal_created": "Costing created",
+      "financial_proposal_approved": "Costing approved",
+      "financial_proposal_returned": "Costing returned for changes",
+      "information_requested_customer": "Information requested from the customer",
+      "information_requested_internal": "Information requested from a colleague",
+      "lead_linked_to_existing": "Lead linked to an existing record",
+      "lead_reactivated": "Lead reactivated",
+      "lead_repeat_inquiry": "The same contact asked again",
+      "lead_stage_changed": "Lead moved from {from} to {to}",
+      "lead_identity_reviewed": "Lead identity reviewed",
+      "lead_merged": "Lead merged with a duplicate",
+      "lead_handoff_submitted": "Lead handed off to Sales",
+      "lead_handoff_accepted": "Sales accepted the lead",
+      "lead_handoff_returned": "Sales returned the lead",
+      "negotiation_logged": "Negotiation round logged",
+      "negotiation_outcome": "Negotiation outcome recorded",
+      "project_created": "Project created",
+      "project_status_changed": "Project moved from {from} to {to}",
+      "project_milestone_done": "Project milestone completed",
+      "project_delayed": "Project delay recorded",
+      "project_commissioned": "System commissioned",
+      "project_handover": "Project handed over to the customer",
+      "project_customer_update": "Update sent to the customer",
+      "proposal_released": "Proposal released",
+      "proposal_sent": "Proposal sent to the customer",
+      "proposal_presented": "Proposal presented to the customer",
+      "proposal_viewed": "The customer viewed the proposal",
+      "proposal_feedback": "Customer feedback on the proposal",
+      "proposal_accepted": "The customer accepted the proposal",
+      "proposal_expired": "Proposal expired",
+      "proposal_revision_requested": "Proposal revision requested",
+      "proposal_revision_completed": "Proposal revision completed",
+      "proposal_revision_rejected": "Proposal revision request declined",
+      "technical_proposal_created": "Technical proposal created",
+      "technical_proposal_approved": "Technical proposal approved",
+      "technical_proposal_returned": "Technical proposal returned for changes",
+      "deal_stage_changed": "Deal moved from {from} to {to}",
+      "deal_finance_hold_changed": "Finance hold changed",
+      "handover_submitted": "Delivery handover submitted",
+      "handover_accepted": "Delivery handover accepted",
+      "handover_returned": "Delivery handover returned with missing items",
+      "change_request_decided": "Change request decided",
+      "approval_invalidated": "An approval expired after a material change"
+    }
+  },
+  "server": {
+    "errors": {
+      "favoritesLimitReached": "You have reached the maximum of 50 favorites. Remove one to add another."
+    }
+  }
+}

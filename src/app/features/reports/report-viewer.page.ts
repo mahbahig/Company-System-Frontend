@@ -15,6 +15,7 @@ import { TABLE_IMPORTS } from '../../shared/ui/table/table.imports';
 import { ActionRunner } from '../../shared/utils/action-runner';
 import { AnalyticsFilterBarComponent } from '../analytics/shared/analytics-filter-bar.component';
 import { ReportsApi, type ReportColumn, type ReportQuery } from './reports-api.service';
+import { SkeletonRowComponent } from '../../shared/ui/skeleton/skeleton.component';
 
 /**
  * RPT-02/03 one report: the same filters as the dashboards (from the URL),
@@ -24,7 +25,7 @@ import { ReportsApi, type ReportColumn, type ReportQuery } from './reports-api.s
  */
 @Component({
   selector: 'app-report-viewer-page',
-  imports: [RouterLink, TranslatePipe, AlertComponent, ButtonDirective, PageHeaderComponent, AnalyticsFilterBarComponent, ...TABLE_IMPORTS],
+  imports: [SkeletonRowComponent, RouterLink, TranslatePipe, AlertComponent, ButtonDirective, PageHeaderComponent, AnalyticsFilterBarComponent, ...TABLE_IMPORTS],
   template: `
     <app-page-header [heading]="title()" [subtitle]="subtitle()" class="!mb-0">
       <a appButton variant="ghost" [routerLink]="['/', i18n.locale(), 'reports']">{{ 'reports.back' | t }}</a>
@@ -58,7 +59,13 @@ import { ReportsApi, type ReportColumn, type ReportQuery } from './reports-api.s
               }
             </tr>
           } @empty {
-            <tr app-table-empty [colSpan]="columns().length || 1">{{ (data.isLoading() ? 'common.labels.loading' : 'reports.noRows') | t }}</tr>
+            @if (data.isLoading()) {
+              @for (i of [0, 1, 2, 3, 4]; track i) {
+                <tr app-skeleton-row [columns]="columns().length || 1" [index]="i"></tr>
+              }
+            } @else {
+              <tr app-table-empty [colSpan]="columns().length || 1">{{ 'reports.noRows' | t }}</tr>
+            }
           }
         </tbody>
       </table>

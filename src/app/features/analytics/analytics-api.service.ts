@@ -3,8 +3,8 @@ import type { Observable } from 'rxjs';
 
 import { ApiService } from '../../core/api/api.service';
 import type { AnalyticsFilter } from './models/analytics-filter.interface';
-import type { DashboardCode, ExecutiveDashboard, FinanceDashboard, MarketingDashboard, OperationalDashboard, PersonalDashboard, SalesDashboard } from './models/dashboards.interface';
-import type { DataQualityDashboard, ExceptionDetail, ExceptionSummary, SearchHit } from './models/exceptions.interface';
+import type { DashboardCode, ExecutiveDashboard, FinanceDashboard, MarketingDashboard, OperationalDashboard, PersonalDashboard, PlatformDashboard, SalesDashboard } from './models/dashboards.interface';
+import type { DataQualityDashboard, ExceptionSummary, SearchHit } from './models/exceptions.interface';
 import type { KpiMap } from './models/kpi-value.interface';
 
 /** Typed client for dashboards, KPIs, the Exception Center, data quality and global search. */
@@ -14,6 +14,10 @@ export class AnalyticsApi {
 
   available(): Observable<{ dashboards: DashboardCode[] }> {
     return this.api.get('dashboards');
+  }
+
+  platform(): Observable<PlatformDashboard> {
+    return this.api.get('dashboards/platform');
   }
 
   personal(filter: AnalyticsFilter): Observable<PersonalDashboard> {
@@ -46,10 +50,6 @@ export class AnalyticsApi {
 
   exceptions(filter: AnalyticsFilter = {}): Observable<{ scope: string; items: ExceptionSummary[]; total: number }> {
     return this.api.get('exceptions', { ...filter });
-  }
-
-  exception(code: string): Observable<ExceptionDetail> {
-    return this.api.get(`exceptions/${code}`);
   }
 
   exceptionBadge(): Observable<{ count: number }> {

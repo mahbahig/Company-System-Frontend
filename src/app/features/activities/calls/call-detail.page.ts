@@ -1,68 +1,165 @@
-import { Component, inject, input } from '@angular/core';
+import { Component, computed, inject, input } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
+import { ArrowDownLeft, ArrowUpRight, Clock, Phone, type IconNode } from 'lucide';
 
 import { I18nService } from '../../../core/i18n/i18n.service';
 import { TranslatePipe } from '../../../core/i18n/translate.pipe';
+import { NavigationService } from '../../../core/navigation/navigation.service';
 import { ReferenceDataService } from '../../../core/reference/reference-data.service';
+import { BreadcrumbsComponent } from '../../../shared/crm/breadcrumbs/breadcrumbs.component';
 import { DetailItemComponent } from '../../../shared/crm/detail-item/detail-item.component';
 import { EnumLabelPipe } from '../../../shared/crm/status-badge/enum-label.pipe';
 import { AlertComponent } from '../../../shared/ui/alert/alert.component';
+import { BadgeComponent } from '../../../shared/ui/badge/badge.component';
 import { CARD_IMPORTS } from '../../../shared/ui/card/card.imports';
+import { IconComponent } from '../../../shared/ui/icon/icon.component';
 import { PageHeaderComponent } from '../../../shared/ui/page-header/page-header.component';
+import { DetailSkeletonComponent } from '../../../shared/ui/skeleton/skeleton.component';
 import { userName } from '../../../shared/utils/display-name';
 import { formatPhone } from '../../../shared/utils/format';
-import { ActivitiesApi, refId, refLabel } from '../activities-api.service';
+import { ActivitiesApi, refId, refLabel, type Call } from '../activities-api.service';
 
-/** E11 one logged call with its links and follow-up. */
+/**
+ * E11 one logged call: outcome and direction up front, the call's facts, the
+ * records it belongs to (links only where this user can open them), and the
+ * summary / follow-up — one card, grouped into clear sections.
+ */
 @Component({
   selector: 'app-call-detail-page',
-  imports: [RouterLink, TranslatePipe, EnumLabelPipe, DetailItemComponent, AlertComponent, PageHeaderComponent, ...CARD_IMPORTS],
+  imports: [RouterLink, TranslatePipe, EnumLabelPipe, BreadcrumbsComponent, DetailItemComponent, AlertComponent, BadgeComponent, IconComponent, PageHeaderComponent, DetailSkeletonComponent, ...CARD_IMPORTS],
   template: `
     @if (data.error()) {
       <app-alert variant="destructive">{{ i18n.errorText(data.error()) }}</app-alert>
     }
     @if (data.value(); as c) {
-      <app-page-header [heading]="'act.calls.detail' | t" [subtitle]="i18n.formatDate(c.occurredAt, true)" />
-      <section appCard class="max-w-3xl">
-        <dl appCardContent class="grid gap-4 sm:grid-cols-2">
-          <div appDetailItem [label]="'act.columns.direction' | t">{{ c.direction | enum: 'callDirection' }}</div>
-          <div appDetailItem [label]="'act.columns.outcome' | t">{{ reference.label('call_outcome', c.outcomeCode) }}</div>
-          <div appDetailItem [label]="'act.fields.purpose' | t">{{ c.purposeCode ? reference.label('call_purpose', c.purposeCode) : '—' }}</div>
-          <div appDetailItem [label]="'act.columns.phone' | t"><span class="tabular" dir="ltr">{{ c.phoneNumber ? formatPhone(c.phoneNumber) : '—' }}</span></div>
-          <div appDetailItem [label]="'act.fields.durationMinutes' | t"><span class="tabular">{{ c.durationSeconds ? i18n.formatNumber(c.durationSeconds / 60) : '—' }}</span></div>
-          <div appDetailItem [label]="'act.columns.owner' | t">{{ name(c.ownerId) }}</div>
-          @if (refId(c.customerId)) {
-            <div appDetailItem [label]="'act.fields.customer' | t"><a class="text-primary hover:underline" [routerLink]="['/', i18n.locale(), 'customers', refId(c.customerId)]">{{ label(c.customerId) }}</a></div>
-          }
-          @if (refId(c.leadId)) {
-            <div appDetailItem [label]="'act.fields.lead' | t"><a class="text-primary hover:underline" [routerLink]="['/', i18n.locale(), 'leads', refId(c.leadId)]">{{ label(c.leadId) }}</a></div>
-          }
-          @if (refId(c.opportunityId)) {
-            <div appDetailItem [label]="'act.fields.opportunity' | t"><a class="text-primary hover:underline" [routerLink]="['/', i18n.locale(), 'opportunities', refId(c.opportunityId)]">{{ label(c.opportunityId) }}</a></div>
-          }
-          <div appDetailItem [label]="'act.columns.followUp' | t"><span class="tabular">{{ i18n.formatDate(c.followUpAt, true) || '—' }}</span></div>
+      <app-breadcrumbs [items]="crumbs()" />
+      <app-page-header [heading]="'act.calls.detail' | t" [subtitle]="i18n.formatDate(c.occurredAt, true)" class="!mb-0" />
+
+      <article appCard class="max-w-4xl overflow-hidden" aria-labelledby="call-summary-heading">
+        <div class="flex flex-col gap-4 border-b border-border/70 bg-muted/30 px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-7">
+          <div class="flex items-center gap-4">
+            <span class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary" aria-hidden="true">
+              <app-icon [icon]="directionIcon(c)" svgClass="size-5" />
+            </span>
+            <div class="min-w-0">
+              <h2 id="call-summary-heading" class="text-base font-semibold leading-snug">{{ reference.label('call_outcome', c.outcomeCode) }}</h2>
+              <p class="mt-0.5 text-sm text-muted-foreground">{{ c.direction | enum: 'callDirection' }} · {{ name(c.ownerId) }}</p>
+            </div>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            @if (duration(c); as length) {
+              <app-badge tone="outline"><app-icon [icon]="clockIcon" svgClass="size-3" />{{ length }}</app-badge>
+            }
+            @if (c.followUpAt) {
+              <app-badge tone="info">{{ 'act.columns.followUp' | t }}: {{ i18n.formatDate(c.followUpAt, true) }}</app-badge>
+            }
+          </div>
+        </div>
+
+        <section appCardContent aria-labelledby="call-facts" class="border-b border-border/70">
+          <h3 id="call-facts" class="mb-4 text-2xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">{{ 'ux.calls.facts' | t }}</h3>
+          <dl class="grid gap-x-8 gap-y-5 sm:grid-cols-2 lg:grid-cols-3">
+            <div appDetailItem [label]="'act.columns.when' | t"><span class="tabular">{{ i18n.formatDate(c.occurredAt, true) }}</span></div>
+            <div appDetailItem [label]="'act.columns.direction' | t">{{ c.direction | enum: 'callDirection' }}</div>
+            <div appDetailItem [label]="'act.fields.durationMinutes' | t"><span class="tabular">{{ c.durationSeconds ? i18n.formatNumber(c.durationSeconds / 60) : '—' }}</span></div>
+            <div appDetailItem [label]="'act.columns.phone' | t">
+              @if (c.phoneNumber) {
+                <a class="tabular inline-flex items-center gap-1.5 hover:underline" dir="ltr" [href]="'tel:' + c.phoneNumber"><app-icon [icon]="phoneIcon" svgClass="size-3.5 text-muted-foreground" />{{ formatPhone(c.phoneNumber) }}</a>
+              } @else {
+                —
+              }
+            </div>
+            <div appDetailItem [label]="'act.fields.purpose' | t">{{ c.purposeCode ? reference.label('call_purpose', c.purposeCode) : '—' }}</div>
+            <div appDetailItem [label]="'act.columns.owner' | t">{{ name(c.ownerId) }}</div>
+          </dl>
+        </section>
+
+        @if (refId(c.leadId) || refId(c.customerId) || refId(c.opportunityId)) {
+          <section appCardContent aria-labelledby="call-links" class="border-b border-border/70">
+            <h3 id="call-links" class="mb-4 text-2xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">{{ 'ux.calls.related' | t }}</h3>
+            <dl class="grid gap-x-8 gap-y-5 sm:grid-cols-2 lg:grid-cols-3">
+              @if (refId(c.leadId)) {
+                <div appDetailItem [label]="'act.fields.lead' | t">
+                  @if (canOpen('/leads/' + refId(c.leadId))) {
+                    <a class="text-primary hover:underline" [routerLink]="['/', i18n.locale(), 'leads', refId(c.leadId)]">{{ label(c.leadId) }}</a>
+                  } @else {
+                    {{ label(c.leadId) }}
+                  }
+                </div>
+              }
+              @if (refId(c.customerId)) {
+                <div appDetailItem [label]="'act.fields.customer' | t">
+                  @if (canOpen('/customers/' + refId(c.customerId))) {
+                    <a class="text-primary hover:underline" [routerLink]="['/', i18n.locale(), 'customers', refId(c.customerId)]">{{ label(c.customerId) }}</a>
+                  } @else {
+                    {{ label(c.customerId) }}
+                  }
+                </div>
+              }
+              @if (refId(c.opportunityId)) {
+                <div appDetailItem [label]="'act.fields.opportunity' | t">
+                  @if (canOpen('/opportunities/' + refId(c.opportunityId))) {
+                    <a class="text-primary hover:underline" [routerLink]="['/', i18n.locale(), 'opportunities', refId(c.opportunityId)]">{{ label(c.opportunityId) }}</a>
+                  } @else {
+                    {{ label(c.opportunityId) }}
+                  }
+                </div>
+              }
+            </dl>
+          </section>
+        }
+
+        <section appCardContent aria-labelledby="call-notes">
+          <h3 id="call-notes" class="mb-3 text-2xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">{{ 'act.fields.summary' | t }}</h3>
           @if (c.summary) {
-            <div appDetailItem class="sm:col-span-2" [label]="'act.fields.summary' | t"><p class="whitespace-pre-line">{{ c.summary }}</p></div>
+            <p class="max-w-prose whitespace-pre-line text-sm leading-relaxed text-foreground">{{ c.summary }}</p>
+          } @else {
+            <p class="text-sm text-muted-foreground">{{ 'ux.calls.noSummary' | t }}</p>
           }
-        </dl>
-      </section>
+        </section>
+      </article>
+    } @else if (data.isLoading()) {
+      <app-detail-skeleton [label]="'common.labels.loading' | t" />
     }
   `,
   host: { class: 'flex flex-col gap-6' },
 })
 export class CallDetailPage {
   private readonly api = inject(ActivitiesApi);
+  private readonly navigation = inject(NavigationService);
   protected readonly i18n = inject(I18nService);
   protected readonly reference = inject(ReferenceDataService);
   protected readonly formatPhone = formatPhone;
   protected readonly refId = refId;
+  protected readonly clockIcon = Clock;
+  protected readonly phoneIcon = Phone;
 
   readonly id = input.required<string>();
   protected readonly data = rxResource({ params: () => this.id(), stream: ({ params }) => this.api.call(params) });
+  protected readonly crumbs = computed(() => [
+    { label: this.i18n.t('navigation.items.calls'), path: '/calls' },
+    { label: this.data.value() ? this.i18n.formatDate(this.data.value()!.occurredAt, true) : '' },
+  ]);
 
   constructor() {
     void this.reference.load();
+  }
+
+  protected directionIcon(call: Call): IconNode {
+    return call.direction === 'inbound' ? ArrowDownLeft : ArrowUpRight;
+  }
+
+  /** "12 min" (or "45 s") for the header badge; null when unknown. */
+  protected duration(call: Call): string | null {
+    if (!call.durationSeconds) return null;
+    return call.durationSeconds < 60
+      ? this.i18n.t('ux.calls.seconds', { count: call.durationSeconds })
+      : this.i18n.t('ux.calls.minutes', { count: this.i18n.formatNumber(call.durationSeconds / 60, { maximumFractionDigits: 1 }) });
+  }
+
+  protected canOpen(path: string): boolean {
+    return this.navigation.canOpen(path);
   }
 
   protected label(value: Parameters<typeof refLabel>[1]): string {

@@ -29,6 +29,7 @@ import { isOverdue } from '../../../shared/utils/format';
 import { TasksApi } from '../tasks-api.service';
 import type { TaskStatus } from '../models/task.interface';
 import { FormField } from '@angular/forms/signals';
+import { DetailSkeletonComponent } from '../../../shared/ui/skeleton/skeleton.component';
 const STATUS_TONE: Record<TaskStatus, BadgeTone> = {
   open: 'neutral',
   in_progress: 'info',
@@ -41,6 +42,7 @@ const STATUS_TONE: Record<TaskStatus, BadgeTone> = {
 @Component({
   selector: 'app-task-detail-page',
   imports: [
+    DetailSkeletonComponent,
     RouterLink,
     TranslatePipe,
     PageHeaderComponent,
@@ -106,6 +108,19 @@ export class TaskDetailPage {
     return (
       !!task && task.status !== 'done' && task.status !== 'cancelled' && this.auth.can('tasks.edit')
     );
+  });
+  /**
+   * Re-planning and cancelling belong to the task's planner — its creator, the
+   * assignee of a system task, or a holder of `tasks.assign` (the API checks
+   * the scope); an assignee only starts and completes it.
+   */
+  protected readonly isPlanner = computed(() => {
+    const task = this.task();
+    const me = this.auth.user()?.id;
+    if (!task || !me) return false;
+    const creator = task.createdBy ? asUserRef(task.createdBy)?.id ?? String(task.createdBy) : null;
+    const assignee = asUserRef(task.assigneeId)?.id ?? String(task.assigneeId);
+    return creator === me || (!creator && assignee === me) || this.auth.can('tasks.assign');
   });
 
   private readonly completeModel = signal({ completionNotes: '' });

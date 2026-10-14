@@ -18,6 +18,7 @@ import { TabsComponent } from '../../../shared/ui/tabs/tabs.component';
 import type { TabItem } from '../../../shared/ui/tabs/tab-item.interface';
 import { userName } from '../../../shared/utils/display-name';
 import { ApprovalsApi, type Approval } from '../approvals-api.service';
+import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.component';
 
 const TYPES = ['discount', 'margin_floor', 'payment_terms', 'financial_proposal', 'combined_proposal_release', 'contract_value', 'ownership_transfer', 'ownership_collaboration', 'gate_override', 'expired_proposal_resend', 'customer_merge'];
 const STATUSES = ['pending', 'approved', 'rejected', 'returned', 'expired', 'escalated'];
@@ -25,9 +26,12 @@ const STATUSES = ['pending', 'approved', 'rejected', 'returned', 'expired', 'esc
 /** APPR-03 approval inbox: waiting for me (incl. delegated), requested by me, decided by me, all in scope. */
 @Component({
   selector: 'app-approvals-list-page',
-  imports: [RouterLink, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, AlertComponent, ButtonDirective, PageHeaderComponent, TabsComponent, ListToolbarComponent, PaginationComponent, ...TABLE_IMPORTS],
+  imports: [SkeletonRowComponent, RouterLink, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, AlertComponent, ButtonDirective, PageHeaderComponent, TabsComponent, ListToolbarComponent, PaginationComponent, ...TABLE_IMPORTS],
   template: `
     <app-page-header [heading]="'approvals.title' | t" [subtitle]="'approvals.subtitle' | t" class="!mb-0">
+      @if (auth.can('settings.manage_policy')) {
+        <a appButton variant="outline" routerLink="limits">{{ 'ux.approvalLimits.title' | t }}</a>
+      }
       @if (auth.can('approvals.decide')) {
         <a appButton variant="outline" routerLink="delegations">{{ 'approvals.delegations.title' | t }}</a>
       }
@@ -54,7 +58,7 @@ const STATUSES = ['pending', 'approved', 'rejected', 'returned', 'expired', 'esc
         </thead>
         <tbody appTableBody>
           @for (row of rows(); track row.id) {
-            <tr appTableRow>
+            <tr appTableRow [appRowLink]="row.id">
               <td appTableCell class="tabular whitespace-nowrap font-medium"><a [routerLink]="row.id" class="text-primary hover:underline" dir="ltr">{{ row.approvalNo }}</a></td>
               <td appTableCell class="whitespace-nowrap">{{ row.type | enum: 'approvalType' }}</td>
               <td appTableCell>
@@ -73,7 +77,13 @@ const STATUSES = ['pending', 'approved', 'rejected', 'returned', 'expired', 'esc
               <td appTableCell class="tabular whitespace-nowrap" [class.text-destructive]="isOverdue(row)">{{ i18n.formatDate(row.dueAt, true) }}</td>
             </tr>
           } @empty {
-            <tr app-table-empty [colSpan]="6">{{ (result.isLoading() ? 'common.labels.loading' : 'approvals.empty') | t }}</tr>
+            @if (result.isLoading()) {
+              @for (i of [0, 1, 2, 3, 4]; track i) {
+                <tr app-skeleton-row [columns]="6" [index]="i"></tr>
+              }
+            } @else {
+              <tr app-table-empty [colSpan]="6">{{ 'approvals.empty' | t }}</tr>
+            }
           }
         </tbody>
       </table>

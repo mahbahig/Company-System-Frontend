@@ -1,6 +1,7 @@
 import { Component, computed, inject, input, numberAttribute, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
-import type { Observable } from 'rxjs';
+import { RouterLink } from '@angular/router';
+import { of, type Observable } from 'rxjs';
 
 import { AuthService } from '../../../core/auth/auth.service';
 import { I18nService } from '../../../core/i18n/i18n.service';
@@ -19,7 +20,8 @@ import { FORM_IMPORTS } from '../../../shared/ui/form/form.imports';
 import { PageHeaderComponent } from '../../../shared/ui/page-header/page-header.component';
 import { TABLE_IMPORTS } from '../../../shared/ui/table/table.imports';
 import { ActionRunner } from '../../../shared/utils/action-runner';
-import { AdminApi, type AdminUser } from '../admin-api.service';
+import { AdminApi, type AdminUser, type Role } from '../admin-api.service';
+import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.component';
 
 interface Draft {
   email: string;
@@ -63,18 +65,28 @@ const EMPTY: Draft = {
 
 const idOf = (value: string | { id: string } | null | undefined): string => (!value ? '' : typeof value === 'string' ? value : value.id);
 
+/** Built-in roles, for the directory's role filter when role definitions are not readable (CEO). */
+const ROLE_CODES = ['system_administrator', 'ceo', 'read_only_executive', 'sales_manager', 'sales_representative', 'telesales', 'marketing', 'project_manager', 'technical_lead', 'technical_proposal_engineer', 'financial_proposal_manager', 'installation_crew'];
+
 /**
  * USER-01..05 user administration: profile, roles, teams, manager,
  * territories (governorates), lead capacity and availability; deactivation
  * revokes sessions and can move all open work to another user; temporary
  * passwords and forced sign-out.
+ *
+ * Two audiences, one page: account administrators (`administration.manage_users`,
+ * System Administrator only) get every action; the CEO (`users.view_performance`)
+ * gets the read-only directory — no create / edit / deactivate / reset / sign-out —
+ * and opens each employee's performance page. Every row opens that page.
  */
 @Component({
   selector: 'app-users-admin-page',
-  imports: [TranslatePipe, EnumLabelPipe, UserSelectComponent, AlertComponent, BadgeComponent, ButtonDirective, DialogComponent, PageHeaderComponent, ListToolbarComponent, PaginationComponent, ...TABLE_IMPORTS, ...FORM_IMPORTS],
+  imports: [RouterLink, SkeletonRowComponent, TranslatePipe, EnumLabelPipe, UserSelectComponent, AlertComponent, BadgeComponent, ButtonDirective, DialogComponent, PageHeaderComponent, ListToolbarComponent, PaginationComponent, ...TABLE_IMPORTS, ...FORM_IMPORTS],
   template: `
-    <app-page-header [heading]="'admin.users.title' | t" [subtitle]="'admin.users.subtitle' | t" class="!mb-0">
-      <button type="button" appButton (click)="edit(null)">{{ 'admin.users.new' | t }}</button>
+    <app-page-header [heading]="'admin.users.title' | t" [subtitle]="(canManage() ? 'admin.users.subtitle' : 'ux.users.directorySubtitle') | t" class="!mb-0">
+      @if (canManage()) {
+        <button type="button" appButton (click)="edit(null)">{{ 'admin.users.new' | t }}</button>
+      }
     </app-page-header>
     @if (actions.message(); as text) {
       <app-alert>{{ text }}</app-alert>
@@ -98,14 +110,16 @@ const idOf = (value: string | { id: string } | null | undefined): string => (!va
             <th appTableHead>{{ 'admin.users.capacity' | t }}</th>
             <th appTableHead>{{ 'admin.users.lastLogin' | t }}</th>
             <th appTableHead>{{ 'admin.users.status' | t }}</th>
-            <th appTableHead><span class="sr-only">{{ 'admin.actions' | t }}</span></th>
+            @if (canManage()) {
+              <th appTableHead><span class="sr-only">{{ 'admin.actions' | t }}</span></th>
+            }
           </tr>
         </thead>
         <tbody appTableBody>
           @for (u of rows(); track u.id) {
-            <tr appTableRow>
+            <tr appTableRow [appRowLink]="u.id">
               <td appTableCell>
-                <span class="font-medium">{{ i18n.pick(u.fullNameAr, u.fullNameEn) }}</span>
+                <a [routerLink]="u.id" class="font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">{{ i18n.pick(u.fullNameAr, u.fullNameEn) }}</a>
                 <span class="block text-xs text-muted-foreground" dir="ltr">{{ u.email }}</span>
               </td>
               <td appTableCell class="text-xs">{{ roleNames(u.roleCodes) }}</td>
@@ -121,13 +135,14 @@ const idOf = (value: string | { id: string } | null | undefined): string => (!va
                   <app-badge tone="warning" class="ms-1">{{ u.availability.status | enum: 'availabilityStatus' }}</app-badge>
                 }
               </td>
+              @if (canManage()) {
               <td appTableCell>
                 <div class="flex flex-wrap gap-1">
                   <button type="button" appButton variant="ghost" size="sm" (click)="edit(u)">{{ 'crm.common.edit' | t }}</button>
                   @if (u.isActive) {
                     <button type="button" appButton variant="ghost" size="sm" (click)="startDeactivate(u)">{{ 'admin.users.deactivate' | t }}</button>
                     <button type="button" appButton variant="ghost" size="sm" [disabled]="actions.busy()" (click)="reset(u)">{{ 'admin.users.resetPassword' | t }}</button>
-                    @if (auth.user()?.isAdmin) {
+                    @if (auth.can('administration.manage_users')) {
                       <button type="button" appButton variant="ghost" size="sm" [disabled]="actions.busy()" (click)="run(api.forceLogout(u.id), 'admin.users.loggedOut')">{{ 'admin.users.forceLogout' | t }}</button>
                     }
                   } @else {
@@ -135,9 +150,16 @@ const idOf = (value: string | { id: string } | null | undefined): string => (!va
                   }
                 </div>
               </td>
+              }
             </tr>
           } @empty {
-            <tr app-table-empty [colSpan]="7">{{ (data.isLoading() ? 'common.labels.loading' : 'admin.empty') | t }}</tr>
+            @if (data.isLoading()) {
+              @for (i of [0, 1, 2, 3, 4]; track i) {
+                <tr app-skeleton-row [columns]="canManage() ? 7 : 6" [index]="i"></tr>
+              }
+            } @else {
+              <tr app-table-empty [colSpan]="canManage() ? 7 : 6">{{ 'admin.empty' | t }}</tr>
+            }
           }
         </tbody>
       </table>
@@ -183,8 +205,12 @@ const idOf = (value: string | { id: string } | null | undefined): string => (!va
           <label appLabel for="u-dept">{{ 'admin.users.department' | t }}</label>
           <input appInput id="u-dept" [value]="d().department" (input)="set('department', $any($event.target).value)" />
         </div>
-        <fieldset class="sm:col-span-2">
+        <!-- Nobody changes their own roles (separation of duties); the API refuses it too. -->
+        <fieldset class="sm:col-span-2" [disabled]="editingSelf()">
           <legend class="mb-1 text-sm font-medium">{{ 'admin.users.roles' | t }} *</legend>
+          @if (editingSelf()) {
+            <p class="mb-1 text-xs text-muted-foreground">{{ 'server.errors.cannotChangeOwnRoles' | t }}</p>
+          }
           <div class="grid gap-1 sm:grid-cols-2">
             @for (role of roles.value() ?? []; track role.code) {
               <label class="flex items-center gap-2 text-sm"><input type="checkbox" [checked]="d().roleCodes.includes(role.code)" (change)="toggle('roleCodes', role.code, $any($event.target).checked)" /> {{ i18n.pick(role.nameAr, role.nameEn) }}</label>
@@ -276,10 +302,10 @@ const idOf = (value: string | { id: string } | null | undefined): string => (!va
           <app-user-select inputId="dz-reassign" [(value)]="reassignTo" />
         </div>
         <div>
-          <label appLabel for="dz-reason" required>{{ 'handoffs.reason' | t }}</label>
-          <input appInput id="dz-reason" [value]="reason()" (input)="reason.set($any($event.target).value)" />
+          <label appLabel for="dz-reason">{{ 'ux.users.reasonOptional' | t }}</label>
+          <input appInput id="dz-reason" maxlength="300" [placeholder]="'ux.users.reasonPlaceholder' | t" [value]="reason()" (input)="reason.set($any($event.target).value)" />
         </div>
-        <button type="submit" appButton variant="destructive" class="self-start" [disabled]="actions.busy() || !reason().trim()">{{ 'admin.users.deactivate' | t }}</button>
+        <button type="submit" appButton variant="destructive" fullWidth size="lg" [disabled]="actions.busy()">{{ (actions.busy() ? 'crm.common.saving' : 'admin.users.deactivate') | t }}</button>
       </form>
     </app-dialog>
   `,
@@ -298,16 +324,27 @@ export class UsersAdminPage {
   readonly page = input(1, { transform: (value: unknown) => numberAttribute(value, 1) });
 
   protected readonly data = rxResource({ params: () => ({ q: this.q(), role: this.role(), active: this.active(), page: this.page() }), stream: ({ params }) => this.api.users(params) });
-  protected readonly roles = rxResource({ stream: () => this.api.roles() });
+  /** Account administration (System Administrator); the CEO reads the directory only. */
+  protected readonly canManage = computed(() => this.auth.can('administration.manage_users'));
+  /** Role definitions are security data: loaded only for account administrators (others read role names from i18n). */
+  protected readonly roles = rxResource({ params: () => (this.canManage() ? true : undefined), stream: ({ params }) => (params ? this.api.roles() : of([] as Role[])) });
   protected readonly teams = rxResource({ stream: () => this.api.teams() });
   protected readonly rows = computed(() => (this.data.hasValue() ? this.data.value().rows : []));
   protected readonly filters = computed<FilterDefinition[]>(() => [
-    { name: 'role', label: this.i18n.t('admin.users.roles'), options: (this.roles.value() ?? []).map((r) => ({ value: r.code, label: this.i18n.pick(r.nameAr, r.nameEn) })), value: this.role() ?? '' },
+    {
+      name: 'role',
+      label: this.i18n.t('admin.users.roles'),
+      options: this.canManage()
+        ? (this.roles.value() ?? []).map((r) => ({ value: r.code, label: this.i18n.pick(r.nameAr, r.nameEn) }))
+        : ROLE_CODES.map((code) => ({ value: code, label: this.i18n.t(`enums.roleCode.${code}`) })),
+      value: this.role() ?? '',
+    },
     { name: 'active', label: this.i18n.t('admin.users.status'), options: [{ value: 'true', label: this.i18n.t('admin.active') }, { value: 'false', label: this.i18n.t('admin.inactive') }], value: this.active() ?? '' },
   ]);
 
   protected readonly editorOpen = signal(false);
   protected readonly editing = signal<string | null>(null);
+  protected readonly editingSelf = computed(() => !!this.editing() && this.editing() === this.auth.user()?.id);
   protected readonly d = signal<Draft>({ ...EMPTY });
   protected readonly secret = signal<string | null>(null);
   protected readonly valid = computed(() => {
@@ -388,7 +425,7 @@ export class UsersAdminPage {
       jobTitleEn: d.jobTitleEn || undefined,
       mobile: d.mobile || undefined,
       department: d.department || undefined,
-      roleCodes: d.roleCodes,
+      ...(this.editingSelf() ? {} : { roleCodes: d.roleCodes }),
       teamIds: d.teamIds,
       managerId: d.managerId || null,
       territories: d.territories,

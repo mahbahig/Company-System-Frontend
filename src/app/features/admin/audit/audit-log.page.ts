@@ -15,6 +15,7 @@ import { ButtonDirective } from '../../../shared/ui/button/button.directive';
 import { FORM_IMPORTS } from '../../../shared/ui/form/form.imports';
 import { PageHeaderComponent } from '../../../shared/ui/page-header/page-header.component';
 import { TABLE_IMPORTS } from '../../../shared/ui/table/table.imports';
+import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.component';
 
 interface AuditEntry {
   id: string;
@@ -37,7 +38,7 @@ interface AuditEntry {
  */
 @Component({
   selector: 'app-audit-log-page',
-  imports: [TranslatePipe, EnumLabelPipe, StatusBadgeComponent, UserSelectComponent, AlertComponent, ButtonDirective, PageHeaderComponent, PaginationComponent, ...TABLE_IMPORTS, ...FORM_IMPORTS],
+  imports: [SkeletonRowComponent, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, UserSelectComponent, AlertComponent, ButtonDirective, PageHeaderComponent, PaginationComponent, ...TABLE_IMPORTS, ...FORM_IMPORTS],
   template: `
     <app-page-header [heading]="'admin.audit.title' | t" [subtitle]="'admin.audit.subtitle' | t" class="!mb-0" />
     <form class="grid gap-3 rounded-lg border border-border bg-card p-4 sm:grid-cols-2 lg:grid-cols-4" (submit)="apply($event)" [attr.aria-label]="'admin.audit.filters' | t">
@@ -130,7 +131,13 @@ interface AuditEntry {
               <td appTableCell><app-status-badge enum="auditSeverity" [value]="row.severity" /></td>
             </tr>
           } @empty {
-            <tr app-table-empty [colSpan]="6">{{ (data.isLoading() ? 'common.labels.loading' : 'admin.empty') | t }}</tr>
+            @if (data.isLoading()) {
+              @for (i of [0, 1, 2, 3, 4]; track i) {
+                <tr app-skeleton-row [columns]="6" [index]="i"></tr>
+              }
+            } @else {
+              <tr app-table-empty [colSpan]="6">{{ 'admin.empty' | t }}</tr>
+            }
           }
         </tbody>
       </table>

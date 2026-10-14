@@ -15,11 +15,12 @@ import type { AnalyticsFilter } from '../models/analytics-filter.interface';
 import type { CampaignRow } from '../models/dashboards.interface';
 import { KpiGridComponent } from '../shared/kpi-grid.component';
 import { percent } from '../shared/kpi-format';
+import { DashboardSkeletonComponent } from '../../../shared/ui/skeleton/skeleton.component';
 
 /** DASH-03 / MKT-01..04 marketing dashboard with first-touch campaign attribution. */
 @Component({
   selector: 'app-marketing-dashboard',
-  imports: [TranslatePipe, AlertComponent, KpiGridComponent, BarListComponent, ...CARD_IMPORTS, ...TABLE_IMPORTS],
+  imports: [DashboardSkeletonComponent, TranslatePipe, AlertComponent, KpiGridComponent, BarListComponent, ...CARD_IMPORTS, ...TABLE_IMPORTS],
   template: `
     @if (data.error()) {
       <app-alert variant="destructive">{{ i18n.errorText(data.error()) }}</app-alert>
@@ -87,7 +88,7 @@ import { percent } from '../shared/kpi-format';
         </section>
       </div>
     } @else if (data.isLoading()) {
-      <p class="text-sm text-muted-foreground">{{ 'common.labels.loading' | t }}</p>
+      <app-dashboard-skeleton [label]="'common.labels.loading' | t" />
     }
   `,
   host: { class: 'flex flex-col gap-6' },

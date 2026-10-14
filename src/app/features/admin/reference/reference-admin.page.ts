@@ -16,6 +16,7 @@ import { FORM_IMPORTS } from '../../../shared/ui/form/form.imports';
 import { PageHeaderComponent } from '../../../shared/ui/page-header/page-header.component';
 import { TABLE_IMPORTS } from '../../../shared/ui/table/table.imports';
 import { ActionRunner } from '../../../shared/utils/action-runner';
+import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.component';
 
 /** Lists editable here; campaigns have their own page (they carry budgets and ads). */
 const TYPES = [
@@ -55,7 +56,7 @@ const TYPES = [
  */
 @Component({
   selector: 'app-reference-admin-page',
-  imports: [TranslatePipe, AlertComponent, BadgeComponent, ButtonDirective, DialogComponent, PageHeaderComponent, ...TABLE_IMPORTS, ...FORM_IMPORTS],
+  imports: [SkeletonRowComponent, TranslatePipe, AlertComponent, BadgeComponent, ButtonDirective, DialogComponent, PageHeaderComponent, ...TABLE_IMPORTS, ...FORM_IMPORTS],
   template: `
     <app-page-header [heading]="'admin.reference.title' | t" [subtitle]="'admin.reference.subtitle' | t" class="!mb-0">
       <button type="button" appButton (click)="edit(null)">{{ 'admin.reference.new' | t }}</button>
@@ -107,7 +108,13 @@ const TYPES = [
               <td appTableCell><button type="button" appButton variant="ghost" size="sm" (click)="edit(item)">{{ 'crm.common.edit' | t }}</button></td>
             </tr>
           } @empty {
-            <tr app-table-empty [colSpan]="7">{{ (items.isLoading() ? 'common.labels.loading' : 'admin.empty') | t }}</tr>
+            @if (items.isLoading()) {
+              @for (i of [0, 1, 2, 3, 4]; track i) {
+                <tr app-skeleton-row [columns]="7" [index]="i"></tr>
+              }
+            } @else {
+              <tr app-table-empty [colSpan]="7">{{ 'admin.empty' | t }}</tr>
+            }
           }
         </tbody>
       </table>

@@ -20,6 +20,7 @@ import { PageHeaderComponent } from '../../../shared/ui/page-header/page-header.
 import { TABLE_IMPORTS } from '../../../shared/ui/table/table.imports';
 import { ActionRunner } from '../../../shared/utils/action-runner';
 import { userName } from '../../../shared/utils/display-name';
+import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.component';
 
 interface CustomerSide {
   id: string;
@@ -59,7 +60,7 @@ interface Comparison {
  */
 @Component({
   selector: 'app-duplicates-page',
-  imports: [RouterLink, TranslatePipe, StatusBadgeComponent, AlertComponent, ButtonDirective, PageHeaderComponent, ListToolbarComponent, PaginationComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, ...TABLE_IMPORTS],
+  imports: [SkeletonRowComponent, RouterLink, TranslatePipe, StatusBadgeComponent, AlertComponent, ButtonDirective, PageHeaderComponent, ListToolbarComponent, PaginationComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, ...TABLE_IMPORTS],
   template: `
     <app-page-header [heading]="'admin.duplicates.title' | t" [subtitle]="'admin.duplicates.subtitle' | t" class="!mb-0" />
     @if (actions.message(); as text) {
@@ -96,7 +97,13 @@ interface Comparison {
               <td appTableCell><button type="button" appButton variant="outline" size="sm" (click)="open(s)">{{ 'admin.duplicates.compare' | t }}</button></td>
             </tr>
           } @empty {
-            <tr app-table-empty [colSpan]="5">{{ (data.isLoading() ? 'common.labels.loading' : 'admin.duplicates.empty') | t }}</tr>
+            @if (data.isLoading()) {
+              @for (i of [0, 1, 2, 3, 4]; track i) {
+                <tr app-skeleton-row [columns]="5" [index]="i"></tr>
+              }
+            } @else {
+              <tr app-table-empty [colSpan]="5">{{ 'admin.duplicates.empty' | t }}</tr>
+            }
           }
         </tbody>
       </table>

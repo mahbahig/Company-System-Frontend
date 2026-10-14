@@ -5,10 +5,6 @@ export interface ExceptionSummary {
   route: string;
 }
 
-export interface ExceptionDetail extends ExceptionSummary {
-  rows: Array<Record<string, unknown> & { id?: string; _id?: string }>;
-}
-
 export interface DataQualityItem {
   code: string;
   count: number;

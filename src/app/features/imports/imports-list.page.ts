@@ -15,11 +15,12 @@ import { PageHeaderComponent } from '../../shared/ui/page-header/page-header.com
 import { TABLE_IMPORTS } from '../../shared/ui/table/table.imports';
 import { ActionRunner } from '../../shared/utils/action-runner';
 import { ImportsApi } from './imports-api.service';
+import { SkeletonRowComponent } from '../../shared/ui/skeleton/skeleton.component';
 
 /** DUP-10 bulk import of leads / customers from CSV or Excel. */
 @Component({
   selector: 'app-imports-list-page',
-  imports: [RouterLink, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, AlertComponent, ButtonDirective, PageHeaderComponent, PaginationComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, ...TABLE_IMPORTS],
+  imports: [SkeletonRowComponent, RouterLink, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, AlertComponent, ButtonDirective, PageHeaderComponent, PaginationComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, ...TABLE_IMPORTS],
   template: `
     <app-page-header [heading]="'imports.title' | t" [subtitle]="'imports.subtitle' | t" class="!mb-0" />
     <form appCard class="max-w-3xl" (submit)="upload($event)" aria-labelledby="imp-new">
@@ -63,7 +64,7 @@ import { ImportsApi } from './imports-api.service';
         </thead>
         <tbody appTableBody>
           @for (job of rows(); track job.id) {
-            <tr appTableRow>
+            <tr appTableRow [appRowLink]="job.id">
               <td appTableCell><a class="tabular text-primary hover:underline" [routerLink]="job.id">{{ job.jobNo }}</a></td>
               <td appTableCell>{{ job.entity | enum: 'importEntity' }}</td>
               <td appTableCell class="max-w-56 truncate" dir="ltr">{{ job.fileName }}</td>
@@ -72,7 +73,13 @@ import { ImportsApi } from './imports-api.service';
               <td appTableCell class="tabular whitespace-nowrap">{{ i18n.formatDate(job.createdAt, true) }}</td>
             </tr>
           } @empty {
-            <tr app-table-empty [colSpan]="6">{{ (jobs.isLoading() ? 'common.labels.loading' : 'imports.empty') | t }}</tr>
+            @if (jobs.isLoading()) {
+              @for (i of [0, 1, 2, 3, 4]; track i) {
+                <tr app-skeleton-row [columns]="6" [index]="i"></tr>
+              }
+            } @else {
+              <tr app-table-empty [colSpan]="6">{{ 'imports.empty' | t }}</tr>
+            }
           }
         </tbody>
       </table>

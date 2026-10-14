@@ -16,6 +16,7 @@ import { FORM_IMPORTS } from '../../../shared/ui/form/form.imports';
 import { PageHeaderComponent } from '../../../shared/ui/page-header/page-header.component';
 import { TABLE_IMPORTS } from '../../../shared/ui/table/table.imports';
 import { ActionRunner } from '../../../shared/utils/action-runner';
+import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.component';
 
 interface IntegrationKey {
   id: string;
@@ -52,7 +53,7 @@ interface Status {
  */
 @Component({
   selector: 'app-integrations-admin-page',
-  imports: [RouterLink, TranslatePipe, AlertComponent, BadgeComponent, ButtonDirective, PageHeaderComponent, PaginationComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, ...TABLE_IMPORTS],
+  imports: [SkeletonRowComponent, RouterLink, TranslatePipe, AlertComponent, BadgeComponent, ButtonDirective, PageHeaderComponent, PaginationComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, ...TABLE_IMPORTS],
   template: `
     <app-page-header [heading]="'admin.integrations.title' | t" [subtitle]="'admin.integrations.subtitle' | t" class="!mb-0" />
     @if (actions.message(); as text) {
@@ -152,7 +153,13 @@ interface Status {
               </td>
             </tr>
           } @empty {
-            <tr app-table-empty [colSpan]="7">{{ (keys.isLoading() ? 'common.labels.loading' : 'admin.empty') | t }}</tr>
+            @if (keys.isLoading()) {
+              @for (i of [0, 1, 2, 3, 4]; track i) {
+                <tr app-skeleton-row [columns]="7" [index]="i"></tr>
+              }
+            } @else {
+              <tr app-table-empty [colSpan]="7">{{ 'admin.empty' | t }}</tr>
+            }
           }
         </tbody>
       </table>
@@ -185,7 +192,13 @@ interface Status {
               </td>
             </tr>
           } @empty {
-            <tr app-table-empty [colSpan]="4">{{ (inbound.isLoading() ? 'common.labels.loading' : 'admin.empty') | t }}</tr>
+            @if (inbound.isLoading()) {
+              @for (i of [0, 1, 2, 3, 4]; track i) {
+                <tr app-skeleton-row [columns]="4" [index]="i"></tr>
+              }
+            } @else {
+              <tr app-table-empty [colSpan]="4">{{ 'admin.empty' | t }}</tr>
+            }
           }
         </tbody>
       </table>

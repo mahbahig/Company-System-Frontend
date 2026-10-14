@@ -3,6 +3,7 @@ import { rxResource } from '@angular/core/rxjs-interop';
 
 import { AuthService } from '../../../core/auth/auth.service';
 import { I18nService } from '../../../core/i18n/i18n.service';
+import { NavigationService } from '../../../core/navigation/navigation.service';
 import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { ReferenceDataService } from '../../../core/reference/reference-data.service';
 import { BarListComponent } from '../../../shared/crm/bar-list/bar-list.component';
@@ -15,11 +16,12 @@ import { AnalyticsApi } from '../analytics-api.service';
 import type { AnalyticsFilter } from '../models/analytics-filter.interface';
 import { KpiGridComponent } from '../shared/kpi-grid.component';
 import { percent } from '../shared/kpi-format';
+import { DashboardSkeletonComponent } from '../../../shared/ui/skeleton/skeleton.component';
 
 /** DASH-01 executive dashboard. */
 @Component({
   selector: 'app-executive-dashboard',
-  imports: [TranslatePipe, AlertComponent, StatCardComponent, KpiGridComponent, BarListComponent, ...CARD_IMPORTS, ...TABLE_IMPORTS],
+  imports: [DashboardSkeletonComponent, TranslatePipe, AlertComponent, StatCardComponent, KpiGridComponent, BarListComponent, ...CARD_IMPORTS, ...TABLE_IMPORTS],
   template: `
     @if (data.error()) {
       <app-alert variant="destructive">{{ i18n.errorText(data.error()) }}</app-alert>
@@ -30,9 +32,9 @@ import { percent } from '../shared/kpi-format';
       <div class="grid gap-4 sm:grid-cols-3 lg:grid-cols-6">
         <app-stat-card [label]="'analytics.executive.proposals' | t" [value]="n(d.counts['proposals'])" />
         <app-stat-card [label]="'analytics.executive.negotiations' | t" [value]="n(d.counts['negotiations'])" />
-        <app-stat-card [label]="'analytics.executive.contracts' | t" [value]="n(d.counts['contracts'])" [link]="link('/contracts')" />
-        <app-stat-card [label]="'analytics.executive.pendingApprovals' | t" [value]="n(d.counts['pendingApprovals'])" [tone]="d.counts['pendingApprovals'] ? 'warning' : 'neutral'" [link]="link('/approvals')" />
-        <app-stat-card [label]="'analytics.executive.stagnant' | t" [value]="n(d.counts['stagnant'])" [tone]="d.counts['stagnant'] ? 'danger' : 'neutral'" [link]="link('/exceptions')" />
+        <app-stat-card [label]="'analytics.executive.contracts' | t" [value]="n(d.counts['contracts'])" [link]="openable('/contracts')" />
+        <app-stat-card [label]="'analytics.executive.pendingApprovals' | t" [value]="n(d.counts['pendingApprovals'])" [tone]="d.counts['pendingApprovals'] ? 'warning' : 'neutral'" [link]="openable('/approvals')" />
+        <app-stat-card [label]="'analytics.executive.stagnant' | t" [value]="n(d.counts['stagnant'])" [tone]="d.counts['stagnant'] ? 'danger' : 'neutral'" [link]="openable('/exceptions')" />
         <app-stat-card [label]="'analytics.executive.visits' | t" [value]="n(d.counts['siteVisitsCompleted'])" [hint]="'analytics.executive.upcoming' | t: { count: d.counts['siteVisitsUpcoming'] }" />
       </div>
 
@@ -86,7 +88,7 @@ import { percent } from '../shared/kpi-format';
         </app-table-wrapper>
       </section>
     } @else if (data.isLoading()) {
-      <p class="text-sm text-muted-foreground">{{ 'common.labels.loading' | t }}</p>
+      <app-dashboard-skeleton [label]="'common.labels.loading' | t" />
     }
   `,
   host: { class: 'flex flex-col gap-6' },
@@ -96,6 +98,7 @@ export class ExecutiveDashboardComponent {
   private readonly auth = inject(AuthService);
   private readonly reference = inject(ReferenceDataService);
   protected readonly i18n = inject(I18nService);
+  private readonly navigation = inject(NavigationService);
 
   readonly filter = input<AnalyticsFilter>({});
 
@@ -129,6 +132,11 @@ export class ExecutiveDashboardComponent {
 
   protected pct(value: number | null): string {
     return percent(this.i18n, value);
+  }
+
+  /** A drill-down link only into an area the role can open (same rule as the route guard). */
+  protected openable(path: string): string | undefined {
+    return this.navigation.canOpen(path) ? this.link(path.split('?')[0]) : undefined;
   }
 
   protected link(path: string): string {

@@ -15,13 +15,14 @@ import { FORM_IMPORTS } from '../../../shared/ui/form/form.imports';
 import { PageHeaderComponent } from '../../../shared/ui/page-header/page-header.component';
 import { userName } from '../../../shared/utils/display-name';
 import { ApprovalsApi } from '../approvals-api.service';
+import { DetailSkeletonComponent } from '../../../shared/ui/skeleton/skeleton.component';
 
 const MONEY_HINT = /(price|value|cost|amount|total|discountAmount|margin(?!Pct))/i;
 
 /** APPR-01/02: one approval request — the figures behind it, the comment thread and the decision (reason mandatory to reject or return). */
 @Component({
   selector: 'app-approval-detail-page',
-  imports: [RouterLink, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, DetailItemComponent, AlertComponent, ButtonDirective, PageHeaderComponent, ...CARD_IMPORTS, ...FORM_IMPORTS],
+  imports: [DetailSkeletonComponent, RouterLink, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, DetailItemComponent, AlertComponent, ButtonDirective, PageHeaderComponent, ...CARD_IMPORTS, ...FORM_IMPORTS],
   template: `
     @if (data.error()) {
       <app-alert variant="destructive">{{ i18n.errorText(data.error()) }}</app-alert>
@@ -145,7 +146,7 @@ const MONEY_HINT = /(price|value|cost|amount|total|discountAmount|margin(?!Pct))
         </div>
       </div>
     } @else if (data.isLoading()) {
-      <p class="text-sm text-muted-foreground">{{ 'common.labels.loading' | t }}</p>
+      <app-detail-skeleton [label]="'common.labels.loading' | t" />
     }
   `,
   host: { class: 'flex flex-col gap-6' },

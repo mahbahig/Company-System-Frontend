@@ -17,15 +17,17 @@ import { TABLE_IMPORTS } from '../../../shared/ui/table/table.imports';
 import { userName } from '../../../shared/utils/display-name';
 import { formatPhone } from '../../../shared/utils/format';
 import { ActivitiesApi, refLabel, type Call } from '../activities-api.service';
+import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.component';
+import { ShortcutDirective } from '../../../core/shortcuts/shortcut.directive';
 
 /** E11 call log. */
 @Component({
   selector: 'app-calls-list-page',
-  imports: [RouterLink, TranslatePipe, EnumLabelPipe, AlertComponent, ButtonDirective, PageHeaderComponent, ListToolbarComponent, PaginationComponent, ...TABLE_IMPORTS],
+  imports: [ShortcutDirective, SkeletonRowComponent, RouterLink, TranslatePipe, EnumLabelPipe, AlertComponent, ButtonDirective, PageHeaderComponent, ListToolbarComponent, PaginationComponent, ...TABLE_IMPORTS],
   template: `
     <app-page-header [heading]="'act.calls.title' | t" [subtitle]="'act.calls.subtitle' | t" class="!mb-0">
       @if (auth.can('calls.create')) {
-        <a appButton routerLink="new">{{ 'act.calls.new' | t }}</a>
+        <a appButton routerLink="new" appShortcut="n">{{ 'act.calls.new' | t }}</a>
       }
     </app-page-header>
     <app-list-toolbar [searchValue]="q() ?? ''" [filters]="filters()" />
@@ -47,7 +49,7 @@ import { ActivitiesApi, refLabel, type Call } from '../activities-api.service';
         </thead>
         <tbody appTableBody>
           @for (row of rows(); track row.id) {
-            <tr appTableRow>
+            <tr appTableRow [appRowLink]="row.id">
               <td appTableCell class="tabular whitespace-nowrap"><a class="text-primary hover:underline" [routerLink]="row.id">{{ i18n.formatDate(row.occurredAt, true) }}</a></td>
               <td appTableCell>{{ row.direction | enum: 'callDirection' }}</td>
               <td appTableCell>{{ withWhom(row) }}</td>
@@ -57,7 +59,13 @@ import { ActivitiesApi, refLabel, type Call } from '../activities-api.service';
               <td appTableCell class="tabular whitespace-nowrap">{{ i18n.formatDate(row.followUpAt) || '—' }}</td>
             </tr>
           } @empty {
-            <tr app-table-empty [colSpan]="7">{{ (result.isLoading() ? 'common.labels.loading' : 'act.empty') | t }}</tr>
+            @if (result.isLoading()) {
+              @for (i of [0, 1, 2, 3, 4]; track i) {
+                <tr app-skeleton-row [columns]="7" [index]="i"></tr>
+              }
+            } @else {
+              <tr app-table-empty [colSpan]="7">{{ 'act.empty' | t }}</tr>
+            }
           }
         </tbody>
       </table>

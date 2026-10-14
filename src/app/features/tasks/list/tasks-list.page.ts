@@ -29,6 +29,9 @@ import { asUserRef } from '../../../shared/utils/display-name';
 import { isOverdue } from '../../../shared/utils/format';
 import { TasksApi } from '../tasks-api.service';
 import type { Task, TaskStatus, TaskView } from '../models/task.interface';
+import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.component';
+import { ShortcutDirective } from '../../../core/shortcuts/shortcut.directive';
+import { RowLinkDirective } from '../../../shared/ui/table/row-link.directive';
 
 const VIEWS: TaskView[] = ['mine', 'team', 'overdue', 'today', 'upcoming', 'all'];
 const STATUSES: TaskStatus[] = ['open', 'in_progress', 'waiting', 'done', 'cancelled'];
@@ -44,6 +47,9 @@ const STATUS_TONE: Record<TaskStatus, BadgeTone> = {
 @Component({
   selector: 'app-tasks-list-page',
   imports: [
+    RowLinkDirective,
+    ShortcutDirective,
+    SkeletonRowComponent,
     SavedViewsBarComponent,
     RouterLink,
     TranslatePipe,

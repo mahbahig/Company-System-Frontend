@@ -1,6 +1,6 @@
 import type { KpiMap, KpiValue } from './kpi-value.interface';
 
-export type DashboardCode = 'personal' | 'executive' | 'sales' | 'marketing' | 'operational' | 'finance';
+export type DashboardCode = 'personal' | 'executive' | 'sales' | 'marketing' | 'operational' | 'finance' | 'platform';
 
 export interface FunnelRow {
   stage: string;
@@ -117,13 +117,24 @@ export interface FinanceDashboard {
   kpis: KpiValue[];
 }
 
+/** The personal workspace; a section is `null` when the user's role does not work with that area. */
 export interface PersonalDashboard {
   scope: string;
-  leads: Record<string, number>;
-  followUpsDue: number;
-  tasks: { open: number; overdue: number; today: number };
-  opportunities: { open: number; pipelineValue: number; withoutNextAction: number };
-  approvalsPending: number;
-  upcomingVisits: number;
+  leads: Record<string, number> | null;
+  followUpsDue: number | null;
+  tasks: { open: number; overdue: number; today: number } | null;
+  opportunities: { open: number; pipelineValue: number; withoutNextAction: number } | null;
+  approvalsPending: number | null;
+  upcomingVisits: number | null;
+  projects: { active: number; delayed: number; milestonesDueThisWeek: number } | null;
   kpis: KpiMap;
+}
+
+/** The System Administrator's platform dashboard — counts only, no business data. */
+export interface PlatformDashboard {
+  users: { active: number; inactive: number; locked: number; pendingPasswordChange: number };
+  activeSessions: number;
+  automation: { failed: number; succeededLast24h: number };
+  security: { failedLoginsLast24h: number; eventsLast24h: number };
+  integrations: { activeKeys: number };
 }

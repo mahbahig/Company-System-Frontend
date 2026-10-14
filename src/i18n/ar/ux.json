@@ -1,0 +1,415 @@
+{
+  "ux": {
+    "sidebar": {
+      "navLabel": "التنقل الرئيسي",
+      "collapse": "طي الشريط الجانبي",
+      "expand": "توسيع الشريط الجانبي",
+      "expandHint": "إظهار أسماء الصفحات (الاختصار: [)"
+    },
+    "breadcrumbs": {
+      "label": "مسار التنقل"
+    },
+    "palette": {
+      "title": "لوحة الأوامر",
+      "trigger": "ابحث أو انتقل إلى…",
+      "inputLabel": "ابحث في السجلات والصفحات والأوامر",
+      "placeholder": "ابحث عن عملاء أو عملاء محتملين أو مشروعات… أو اكتب أمرًا",
+      "results": "النتائج",
+      "empty": "لا توجد نتائج لـ «{query}».",
+      "emptyIdle": "اكتب للبحث في السجلات والصفحات والأوامر.",
+      "count": "{count} نتيجة",
+      "searchAll": "عرض كل النتائج لـ «{query}»",
+      "hintMove": "للتنقل",
+      "hintOpen": "للفتح",
+      "hintClose": "للإغلاق",
+      "groups": {
+        "favorites": "المفضلة",
+        "recent": "شوهدت مؤخرًا",
+        "create": "إنشاء",
+        "pages": "انتقال إلى",
+        "actions": "إجراءات",
+        "searchAll": "البحث",
+        "records": {
+          "customer": "العملاء",
+          "contact": "جهات الاتصال",
+          "lead": "العملاء المحتملون",
+          "opportunity": "الفرص",
+          "proposal": "العروض",
+          "contract": "العقود",
+          "project": "المشروعات"
+        }
+      },
+      "actions": {
+        "darkTheme": "التبديل إلى المظهر الداكن",
+        "lightTheme": "التبديل إلى المظهر الفاتح",
+        "language": "تغيير اللغة إلى {language}"
+      }
+    },
+    "create": {
+      "lead": "عميل محتمل جديد",
+      "quickLead": "إضافة سريعة لعميل محتمل",
+      "customer": "عميل جديد",
+      "opportunity": "فرصة جديدة",
+      "task": "مهمة جديدة",
+      "call": "تسجيل مكالمة",
+      "meeting": "جدولة اجتماع",
+      "visit": "تخطيط زيارة ميدانية"
+    },
+    "shortcuts": {
+      "title": "اختصارات لوحة المفاتيح",
+      "then": "ثم",
+      "palette": "فتح لوحة الأوامر",
+      "search": "البحث",
+      "help": "عرض اختصارات لوحة المفاتيح",
+      "sidebar": "طي الشريط الجانبي أو توسيعه",
+      "save": "حفظ النموذج",
+      "pageAction": "إجراء في الصفحة",
+      "typingNote": "تتوقف الاختصارات ذات المفتاح الواحد أثناء الكتابة في حقل. لا تظهر إلا الإجراءات المتاحة لك في الصفحة الحالية.",
+      "groups": {
+        "general": "عام",
+        "navigation": "انتقال إلى",
+        "page": "في هذه الصفحة"
+      }
+    },
+    "unsaved": {
+      "title": "لديك تغييرات غير محفوظة",
+      "message": "لم تُحفظ تغييراتك بعد. إذا غادرت الآن فستفقدها.",
+      "stay": "البقاء",
+      "discard": "تجاهل التغييرات"
+    },
+    "drafts": {
+      "offer": "لديك مسودة غير محفوظة من {when}. هل تريد متابعة تحرير هذه المسودة؟",
+      "restore": "استعادة المسودة",
+      "discard": "تجاهل",
+      "saved": "حُفظت المسودة {when}",
+      "justNow": "الآن"
+    },
+    "favorites": {
+      "add": "إضافة إلى المفضلة",
+      "remove": "إزالة من المفضلة"
+    },
+    "columns": {
+      "button": "الأعمدة",
+      "heading": "إظهار الأعمدة",
+      "customized": "مخصّصة",
+      "always": "تظهر دائمًا",
+      "reset": "استعادة الافتراضي",
+      "done": "تم"
+    },
+    "inlineEdit": {
+      "edit": "تعديل {field}",
+      "saved": "تم الحفظ"
+    },
+    "validation": {
+      "mobile": "أدخل رقم هاتف محمول مصريًا صحيحًا، مثل 01012345678 (أو رقمًا دوليًا برمز الدولة).",
+      "phone": "أدخل رقم هاتف صحيحًا، مثل 01012345678 أو 0223456789.",
+      "email": "أدخل بريدًا إلكترونيًا صحيحًا، مثل name@company.com.",
+      "duration": "أدخل المدة بالدقائق كرقم (مثل 5 أو 2.5) بحد أقصى 1440.",
+      "leadRequired": "العميل المحتمل مطلوب."
+    },
+    "forms": {
+      "requiredHint": "الحقول المميزة بعلامة * إلزامية.",
+      "mobileHint": "رقم محمول مصري، مثل 01012345678.",
+      "showOptional": "إظهار التفاصيل (اختياري)",
+      "hideOptional": "إخفاء التفاصيل",
+      "saveHint": "Ctrl + S للحفظ",
+      "leadLocked": "لا يمكن تعديل هذا العميل المحتمل في مرحلته الحالية (مثلًا أثناء تسليمه إلى المبيعات، أو عندما تكون المرحلة مسؤولية شخص آخر).",
+      "notEditable": "يمكنك عرض هذا السجل دون تغييره.",
+      "callNeeds": "لحفظ المكالمة اختر النتيجة واربطها بعميل أو عميل محتمل أو فرصة.",
+      "meetingNeeds": "لحفظ الاجتماع أدخل الموضوع واختر العميل وحدد التاريخ والوقت.",
+      "visitNeeds": "لحفظ الزيارة اختر العميل وحدد التاريخ والوقت.",
+      "durationHint": "بالدقائق، مثل 5 أو 2.5.",
+      "callNeedsLead": "اختر العميل المحتمل الذي تخصه هذه المكالمة.",
+      "callNeedsOutcome": "اختر نتيجة المكالمة."
+    },
+    "notifications": {
+      "unread": "غير مقروء",
+      "actions": {
+        "review": "مراجعة",
+        "openTask": "فتح المهمة",
+        "open": "فتح"
+      }
+    },
+    "savedViews": {
+      "delete": "حذف هذا العرض",
+      "deleteTitle": "حذف هذا العرض المحفوظ؟",
+      "deleteMessage": "سيُحذف «{name}» لدى كل من شوركه معهم. لا تتأثر السجلات نفسها."
+    },
+    "search": {
+      "count": "{count} نتيجة لـ «{query}» — تظهر فقط السجلات التي يمكنك فتحها."
+    },
+    "dashboard": {
+      "quickAccess": "تابع من حيث توقفت",
+      "favorites": "المفضلة",
+      "recent": "شوهدت مؤخرًا",
+      "create": "إنشاء",
+      "emptyFavorites": "ميّز عميلًا أو عميلًا محتملًا أو فرصة أو عقدًا أو مشروعًا بنجمة ليظهر هنا.",
+      "emptyRecent": "ستظهر هنا السجلات التي تفتحها.",
+      "openPalette": "ابحث في كل شيء"
+    },
+    "calls": {
+      "facts": "تفاصيل المكالمة",
+      "related": "السجلات المرتبطة",
+      "noSummary": "لم يُسجَّل ملخص لهذه المكالمة.",
+      "seconds": "{count} ث",
+      "minutes": "{count} د"
+    },
+    "password": {
+      "show": "إظهار كلمة المرور",
+      "hide": "إخفاء كلمة المرور",
+      "ruleMatch": "تطابق كلمتي المرور الجديدتين",
+      "signOutNote": "تغيير كلمة المرور يُسجّل خروجك من جميع الأجهزة، ومنها هذا الجهاز. سجّل الدخول مجددًا بكلمة المرور الجديدة."
+    },
+    "reports": {
+      "exportable": "قابل للتصدير"
+    },
+    "performance": {
+      "title": "الأداء والنشاط",
+      "period": "الفترة",
+      "periods": {
+        "30d": "آخر 30 يومًا",
+        "90d": "آخر 90 يومًا",
+        "year": "هذا العام",
+        "all": "كل الفترات"
+      },
+      "groups": {
+        "leads": "العملاء المحتملون",
+        "calls": "المكالمات",
+        "meetings": "الاجتماعات",
+        "visits": "الزيارات الميدانية",
+        "tasks": "المهام",
+        "deals": "الفرص"
+      },
+      "metrics": {
+        "leadsOwned": "العملاء المحتملون المسندون",
+        "leadsOpen": "المفتوحون",
+        "leadsConverted": "المحوَّلون",
+        "contactAttempts": "محاولات التواصل",
+        "reached": "تم الوصول إلى {count}",
+        "inPeriod": "أُنشئوا في هذه الفترة",
+        "now": "حاليًا",
+        "callsTotal": "المكالمات المسجلة",
+        "callsOutbound": "الصادرة",
+        "inbound": "{count} واردة",
+        "talkTime": "مدة التحدث",
+        "hours": "ساعات",
+        "avgCall": "متوسط المكالمة",
+        "minutes": "دقائق",
+        "meetingsTotal": "الاجتماعات",
+        "meetingsCompleted": "المنعقدة",
+        "meetingsUpcoming": "القادمة",
+        "visitsTotal": "الزيارات",
+        "visitsCompleted": "المكتملة",
+        "tasksOpen": "المهام المفتوحة",
+        "tasksOverdue": "المتأخرة",
+        "tasksCompleted": "المكتملة",
+        "dealsOpen": "المفتوحة",
+        "dealsWon": "المكسوبة",
+        "dealsLost": "الخاسرة",
+        "wonValue": "قيمة الفرص المكسوبة"
+      },
+      "callOutcomes": "المكالمات حسب النتيجة",
+      "recent": "النشاط الأخير",
+      "recentHint": "أحدث الإجراءات التي سجلها هذا الموظف.",
+      "noActivity": "لا يوجد نشاط مسجل في هذه الفترة.",
+      "openOpportunity": "فتح الفرصة",
+      "openLead": "فتح العميل المحتمل",
+      "openCustomer": "فتح العميل"
+    },
+    "users": {
+      "directorySubtitle": "الموظفون وأدوارهم. افتح أي موظف لعرض أدائه ونشاطه الأخير.",
+      "reasonOptional": "السبب (اختياري)",
+      "reasonPlaceholder": "مثال: ترك الشركة"
+    },
+    "approvalLimits": {
+      "title": "حدود الاعتماد",
+      "subtitle": "الأرقام التي تعتمد عليها مصفوفة الاعتماد: من يعتمد أي خصم وهامش وشروط دفع وقيمة عقد، وخلال كم من الوقت.",
+      "readOnly": "يمكن لدورك عرض هذه القيمة دون تغييرها.",
+      "discard": "تجاهل التغييرات",
+      "back": "العودة إلى الاعتمادات",
+      "saved": "تم حفظ حدود الاعتماد.",
+      "errors": {
+        "number": "أدخل رقمًا، مثل 15 أو 12.5.",
+        "integer": "أدخل عددًا صحيحًا من الساعات.",
+        "range": "أدخل قيمة من {min} إلى {max}.",
+        "min": "أدخل {min} أو أكثر."
+      },
+      "units": {
+        "pct": "%",
+        "egp": "ج.م",
+        "hours": "ساعة"
+      },
+      "sections": {
+        "discounts": {
+          "title": "صلاحية الخصم",
+          "description": "أكبر خصم يمكن لكل معتمد منحه. فوق سقف مدير المبيعات يعتمد المدير المالي، وفوق سقف المدير المالي يعتمد الرئيس التنفيذي."
+        },
+        "margins": {
+          "title": "الهامش وشروط الدفع",
+          "description": "العروض التي يقل هامشها عن الحد الأدنى تذهب إلى الرئيس التنفيذي، والدفعة المقدمة الأقل من الحد الأدنى تذهب إلى المالية."
+        },
+        "values": {
+          "title": "حدود القيمة",
+          "description": "العقود التي تتجاوز حد الرئيس التنفيذي تحتاج اعتماده، والعروض المالية التي تتجاوز حد المالية تحتاج تحقق المالية."
+        },
+        "timing": {
+          "title": "زمن الاستجابة",
+          "description": "المدة المتاحة للمعتمد لاتخاذ القرار، ومتى يتم تذكيره."
+        }
+      },
+      "help": {
+        "approval_discount_salesManagerMaxPct": "الخصومات حتى هذه النسبة يعتمدها مدير المبيعات.",
+        "approval_discount_cfoMaxPct": "الخصومات حتى هذه النسبة يعتمدها المدير المالي، وما يزيد عنها يعتمده الرئيس التنفيذي. لا يمكن أن يقل عن سقف مدير المبيعات.",
+        "approval_marginFloorPct": "العرض الذي يقل هامشه عن هذه النسبة يحتاج اعتماد الرئيس التنفيذي.",
+        "approval_paymentTerms_minDownPaymentPct": "الدفعة المقدمة الأقل من هذه النسبة تحتاج اعتماد المالية.",
+        "approval_contract_ceoAboveValue": "العقود والعروض التي تتجاوز هذه القيمة تحتاج اعتماد الرئيس التنفيذي.",
+        "financialProposal_financeValidationAboveValue": "العروض المالية التي تتجاوز هذه القيمة تحتاج تحققًا إضافيًا من المالية.",
+        "approval_slaHours": "عدد الساعات المتاحة للمعتمد قبل أن يصبح الطلب متأخرًا.",
+        "approval_reminderBeforeHours": "تذكير المعتمد قبل الموعد النهائي بهذا العدد من الساعات."
+      }
+    },
+    "exceptions": {
+      "noAccess": "لا يمكن لدورك فتح السجلات وراء هذا العدد.",
+      "fromCenter": "عرض السجلات من مركز الاستثناءات: {name}."
+    },
+    "filters": {
+      "enrichmentOverdue": "استكمال الملف متأخر"
+    },
+    "settings": {
+      "securityBadge": "أمان — مسؤول النظام فقط",
+      "negativeInMap": "{key}: الأرقام السالبة غير مسموح بها. استخدم 0 أو أكثر."
+    },
+    "roles": {
+      "fixedBadge": "محدد من النظام",
+      "fixedAdmin": "يملك مسؤول النظام جميع الصلاحيات دائمًا. صلاحياته يحددها النظام ولا يمكن تعديلها.",
+      "fixedCeo": "يملك الرئيس التنفيذي جميع صلاحيات الأعمال دائمًا (دون إدارة الأمان). صلاحياته يحددها النظام ولا يمكن تعديلها."
+    }
+  },
+  "navigation": {
+    "descriptions": {
+      "dashboard": "مهامك وأهم الأرقام في لمحة.",
+      "executiveDashboard": "أداء الشركة كاملًا للإدارة العليا.",
+      "approvals": "طلبات تنتظر قرارك.",
+      "exceptions": "سجلات متأخرة أو متوقفة أو ناقصة تحتاج إلى معالجة.",
+      "leads": "استفسارات للتحقق منها والتواصل معها وتأهيلها.",
+      "customers": "إدارة سجلات العملاء وبياناتهم.",
+      "opportunities": "الصفقات من الاكتشاف حتى التوقيع.",
+      "pipeline": "الفرص على لوحة حسب المرحلة.",
+      "campaigns": "الحملات التسويقية ونتائجها.",
+      "tasks": "مهامك ومتابعاتك.",
+      "calls": "المكالمات المسجلة ونتائجها.",
+      "meetings": "الاجتماعات المجدولة والمنعقدة.",
+      "visits": "الزيارات الميدانية مع تسجيل الحضور والانصراف.",
+      "activities": "كل تواصل مع العملاء في سجل واحد.",
+      "handoffs": "طلبات فنية تنتظر القرار.",
+      "assessments": "المعاينات الميدانية والتقييمات الفنية.",
+      "proposals": "عروض العملاء وإصداراتها.",
+      "contracts": "العقود وإصداراتها وتوقيعاتها.",
+      "projects": "التنفيذ من التخطيط حتى الضمان.",
+      "reports": "التقارير والتصدير.",
+      "imports": "استيراد السجلات من جداول البيانات.",
+      "duplicates": "سجلات قد تكون مكررة للمراجعة.",
+      "ownership": "طلبات تغيير مالك السجل.",
+      "users": "حسابات المستخدمين وصلاحيات الدخول.",
+      "roles": "الأدوار وصلاحياتها.",
+      "teams": "الفرق وأعضاؤها.",
+      "referenceData": "القوائم المستخدمة في النظام.",
+      "equipment": "الألواح والعواكس والمعدات الأخرى.",
+      "rules": "البيانات المطلوبة لكل مرحلة.",
+      "intakeForms": "استبيانات البيانات الفنية.",
+      "settings": "إعدادات النظام والعمل.",
+      "automation": "القواعد الآلية وسجل تشغيلها.",
+      "integrations": "مفاتيح الواجهات البرمجية والأنظمة المتصلة.",
+      "auditLog": "من غيّر ماذا ومتى."
+    }
+  },
+  "timeline": {
+    "groups": {
+      "deal": "الصفقة",
+      "proposal": "العروض",
+      "contract": "العقد",
+      "handover": "التسليم",
+      "project": "المشروع",
+      "activity": "الأنشطة"
+    },
+    "events": {
+      "generic": "تم تحديث السجل",
+      "activity_customer_request": "سُجّل طلب من العميل",
+      "activity_email": "سُجّلت رسالة بريد إلكتروني",
+      "activity_follow_up": "سُجّلت متابعة",
+      "activity_note": "أُضيفت ملاحظة",
+      "activity_other": "سُجّل نشاط",
+      "activity_sms": "سُجّلت رسالة نصية",
+      "activity_social": "سُجّل تواصل عبر وسائل التواصل الاجتماعي",
+      "activity_whatsapp": "سُجّلت رسالة واتساب",
+      "assessment_started": "بدأت المعاينة الميدانية",
+      "assessment_approved": "قُبلت المعاينة الميدانية",
+      "assessment_returned": "أُعيدت المعاينة الميدانية للتعديل",
+      "combined_proposal_created": "أُنشئ عرض العميل",
+      "contract_created": "أُنشئ العقد",
+      "contract_new_version": "تغيّر العقد — أُنشئ الإصدار {version}",
+      "contract_status_changed": "انتقل العقد من {from} إلى {to}",
+      "customer_collaborator_added": "أُضيف متعاون إلى العميل",
+      "customer_collaborator_removed": "أُزيل متعاون من العميل",
+      "customer_duplicate_keep_separate": "أُبقي السجل المحتمل تكراره عميلًا منفصلًا",
+      "customer_duplicate_link_as_branch": "رُبط السجل المحتمل تكراره كفرع",
+      "customer_duplicate_review_later": "أُرجئت مراجعة السجل المحتمل تكراره",
+      "customer_enrichment_overdue": "تأخر استكمال ملف العميل",
+      "customer_inquiry_linked": "رُبط استفسار جديد بهذا العميل",
+      "customer_merged": "دُمجت سجلات العميل",
+      "customer_ownership_requested": "طُلب تغيير المالك",
+      "customer_ownership_request_approved": "اعتُمد تغيير المالك",
+      "customer_ownership_request_rejected": "رُفض تغيير المالك",
+      "customer_verification_recorded": "سُجّل التحقق من العميل",
+      "customer_lifecycle_changed": "انتقل العميل من {from} إلى {to}",
+      "financial_proposal_created": "أُنشئت التكلفة",
+      "financial_proposal_approved": "اعتُمدت التكلفة",
+      "financial_proposal_returned": "أُعيدت التكلفة للتعديل",
+      "information_requested_customer": "طُلبت معلومات من العميل",
+      "information_requested_internal": "طُلبت معلومات من زميل",
+      "lead_linked_to_existing": "رُبط العميل المحتمل بسجل موجود",
+      "lead_reactivated": "أُعيد تنشيط العميل المحتمل",
+      "lead_repeat_inquiry": "تواصلت جهة الاتصال نفسها مرة أخرى",
+      "lead_stage_changed": "انتقل العميل المحتمل من {from} إلى {to}",
+      "lead_identity_reviewed": "رُوجعت هوية العميل المحتمل",
+      "lead_merged": "دُمج العميل المحتمل مع سجل مكرر",
+      "lead_handoff_submitted": "سُلّم العميل المحتمل إلى المبيعات",
+      "lead_handoff_accepted": "قبلت المبيعات العميل المحتمل",
+      "lead_handoff_returned": "أعادت المبيعات العميل المحتمل",
+      "negotiation_logged": "سُجّلت جولة تفاوض",
+      "negotiation_outcome": "سُجّلت نتيجة التفاوض",
+      "project_created": "أُنشئ المشروع",
+      "project_status_changed": "انتقل المشروع من {from} إلى {to}",
+      "project_milestone_done": "اكتملت مرحلة من مراحل المشروع",
+      "project_delayed": "سُجّل تأخير في المشروع",
+      "project_commissioned": "تم تشغيل المنظومة",
+      "project_handover": "سُلّم المشروع إلى العميل",
+      "project_customer_update": "أُرسل تحديث إلى العميل",
+      "proposal_released": "أُصدر العرض",
+      "proposal_sent": "أُرسل العرض إلى العميل",
+      "proposal_presented": "عُرض العرض على العميل",
+      "proposal_viewed": "اطّلع العميل على العرض",
+      "proposal_feedback": "ملاحظات العميل على العرض",
+      "proposal_accepted": "قبل العميل العرض",
+      "proposal_expired": "انتهت صلاحية العرض",
+      "proposal_revision_requested": "طُلب تعديل العرض",
+      "proposal_revision_completed": "اكتمل تعديل العرض",
+      "proposal_revision_rejected": "رُفض طلب تعديل العرض",
+      "technical_proposal_created": "أُنشئ العرض الفني",
+      "technical_proposal_approved": "اعتُمد العرض الفني",
+      "technical_proposal_returned": "أُعيد العرض الفني للتعديل",
+      "deal_stage_changed": "انتقلت الصفقة من {from} إلى {to}",
+      "deal_finance_hold_changed": "تغيّر الإيقاف المالي",
+      "handover_submitted": "قُدّم التسليم للتنفيذ",
+      "handover_accepted": "قُبل التسليم للتنفيذ",
+      "handover_returned": "أُعيد التسليم للتنفيذ مع بنود ناقصة",
+      "change_request_decided": "اتُّخذ قرار في طلب التغيير",
+      "approval_invalidated": "انتهت صلاحية موافقة بعد تغيير جوهري"
+    }
+  },
+  "server": {
+    "errors": {
+      "favoritesLimitReached": "وصلت إلى الحد الأقصى وهو 50 عنصرًا في المفضلة. أزل عنصرًا لإضافة آخر."
+    }
+  }
+}

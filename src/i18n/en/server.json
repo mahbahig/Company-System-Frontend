@@ -113,7 +113,9 @@
       "taskClosed": "This task is already closed.",
       "technicalProposalNotApproved": "The technical proposal has not been approved yet.",
       "unknownRole": "Unknown role.",
-      "visitNotOpen": "This visit is no longer open."
+      "visitNotOpen": "This visit is no longer open.",
+      "adminRolePermissionsFixed": "The System Administrator role always holds every permission; its permissions cannot be edited.",
+      "ceoRolePermissionsFixed": "The CEO role always holds every business permission; its permissions cannot be edited."
     },
     "validation": {
       "required": "This field is required.",
@@ -179,7 +181,11 @@
       "fileUnreadable": "The file could not be read. Upload a CSV or XLSX file.",
       "singleFileOnly": "Upload one file at a time.",
       "unsupportedFileType": "This file type is not supported.",
-      "malware": "The file was rejected by the security scan."
+      "malware": "The file was rejected by the security scan.",
+      "durationInvalid": "Enter a valid call duration (a whole number of seconds, up to 24 hours).",
+      "outOfRange": "This value is outside the allowed range.",
+      "discountLimitsOrder": "The Sales Manager discount ceiling cannot be higher than the CFO ceiling.",
+      "notNegative": "Enter 0 or more — negative numbers are not allowed."
     }
   }
 }
