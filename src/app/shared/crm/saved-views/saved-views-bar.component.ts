@@ -9,6 +9,8 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { I18nService } from '../../../core/i18n/i18n.service';
 import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { ButtonDirective } from '../../ui/button/button.directive';
+import { ConfirmService } from '../../ui/confirm/confirm.service';
+import { TooltipDirective } from '../../ui/tooltip/tooltip.directive';
 
 interface SavedView {
   id: string;
@@ -23,25 +25,35 @@ interface SavedView {
  * LIST-03 saved views: store the current filters of a list under a name
  * (private, team or company-wide), re-apply them in one click, and — with
  * `exportReport` — export the filtered list (RPT-03, audited).
+ *
+ * A view stores filters only, never data or access: applying one (even a view
+ * a manager shared) re-runs the list request under the viewer's own
+ * permissions and record scope, so a view cannot reveal more than the list
+ * itself would. Sharing options mirror what the API accepts for this user.
  */
 @Component({
   selector: 'app-saved-views-bar',
-  imports: [CdkMenuTrigger, CdkMenu, CdkMenuItem, TranslatePipe, ButtonDirective],
+  imports: [CdkMenuTrigger, CdkMenu, CdkMenuItem, TranslatePipe, ButtonDirective, TooltipDirective],
   template: `
     <div class="flex flex-wrap items-center gap-2">
-      <button type="button" appButton variant="outline" size="sm" [cdkMenuTriggerFor]="menu">{{ 'savedViews.views' | t }}</button>
+      <button type="button" appButton variant="outline" size="sm" [cdkMenuTriggerFor]="menu">
+        {{ 'savedViews.views' | t }}
+        @if (activeView(); as view) {
+          <span class="max-w-40 truncate font-normal text-muted-foreground">· {{ view.name }}</span>
+        }
+      </button>
       <ng-template #menu>
         <div cdkMenu class="z-50 min-w-60 rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-md">
           @for (view of views.value() ?? []; track view.id) {
             <div class="flex items-center justify-between gap-2">
-              <button type="button" cdkMenuItem class="flex-1 rounded-sm px-3 py-2 text-start text-sm hover:bg-secondary focus:bg-secondary" (cdkMenuItemTriggered)="apply(view)">
+              <button type="button" cdkMenuItem class="flex-1 rounded-sm px-3 py-2 text-start text-sm hover:bg-secondary focus:bg-secondary" [attr.aria-current]="view.id === activeView()?.id ? 'true' : null" [class.font-semibold]="view.id === activeView()?.id" (cdkMenuItemTriggered)="apply(view)">
                 {{ view.name }}
                 @if (view.visibility !== 'private') {
                   <span class="ms-1 text-xs text-muted-foreground">({{ 'savedViews.visibility.' + view.visibility | t }})</span>
                 }
               </button>
               @if (mine(view)) {
-                <button type="button" cdkMenuItem class="rounded-sm px-2 py-1 text-xs text-destructive hover:bg-destructive/10" [attr.aria-label]="('crm.common.delete' | t) + ' ' + view.name" (cdkMenuItemTriggered)="remove(view)">✕</button>
+                <button type="button" cdkMenuItem class="rounded-sm px-2 py-1 text-xs text-destructive hover:bg-destructive/10" [attr.aria-label]="('crm.common.delete' | t) + ' ' + view.name" [appTooltip]="'ux.savedViews.delete' | t" (cdkMenuItemTriggered)="remove(view)">✕</button>
               }
             </div>
           } @empty {
@@ -56,8 +68,10 @@ interface SavedView {
           <input class="h-9 rounded-md border border-input bg-background px-2 text-sm" [attr.aria-label]="'savedViews.name' | t" [placeholder]="'savedViews.name' | t" [value]="name()" (input)="name.set($any($event.target).value)" />
           <select class="h-9 rounded-md border border-input bg-background px-2 text-sm" [attr.aria-label]="'savedViews.share' | t" [value]="visibility()" (change)="visibility.set($any($event.target).value)">
             <option value="private">{{ 'savedViews.visibility.private' | t }}</option>
-            @if (canShare()) {
+            @if (canShareTeam()) {
               <option value="team">{{ 'savedViews.visibility.team' | t }}</option>
+            }
+            @if (canShareAll()) {
               <option value="all">{{ 'savedViews.visibility.all' | t }}</option>
             }
           </select>
@@ -81,6 +95,7 @@ export class SavedViewsBarComponent {
   private readonly route = inject(ActivatedRoute);
   protected readonly auth = inject(AuthService);
   private readonly i18n = inject(I18nService);
+  private readonly confirmService = inject(ConfirmService);
 
   /** Backend list code (`lead_bank`, `leads`, `customers`, …). */
   readonly list = input.required<string>();
@@ -94,7 +109,20 @@ export class SavedViewsBarComponent {
   protected readonly visibility = signal<'private' | 'team' | 'all'>('private');
   protected readonly busy = signal(false);
   protected readonly message = signal<string | null>(null);
-  protected readonly canShare = computed(() => this.auth.canAny(['dashboards.view_team', 'leads.distribute', 'settings.manage']));
+  /** The API's own rule (SavedViewsService.assertVisibility): team views need a team-level role, company-wide views need settings rights. */
+  protected readonly canShareTeam = computed(() => this.auth.canAny(['dashboards.view_team', 'settings.manage']));
+  protected readonly canShareAll = computed(() => this.auth.can('settings.manage'));
+  /** The saved view whose filters are exactly the list's current filters. */
+  protected readonly activeView = computed(() => {
+    const current = this.currentFilters();
+    const keys = Object.keys(current).filter((key) => current[key] !== '');
+    return (
+      (this.views.value() ?? []).find((view) => {
+        const entries = Object.entries(view.filters ?? {}).filter(([, value]) => value !== null && value !== '');
+        return entries.length === keys.length && entries.every(([key, value]) => String(Array.isArray(value) ? value.join(',') : value) === current[key]);
+      }) ?? null
+    );
+  });
 
   private currentFilters(): Record<string, string> {
     const map = this.params();
@@ -134,6 +162,14 @@ export class SavedViewsBarComponent {
   }
 
   protected async remove(view: SavedView): Promise<void> {
+    const confirmed = await this.confirmService.confirm({
+      heading: this.i18n.t('ux.savedViews.deleteTitle'),
+      message: this.i18n.t('ux.savedViews.deleteMessage', { name: view.name }),
+      confirmLabel: this.i18n.t('crm.common.delete'),
+      cancelLabel: this.i18n.t('crm.common.cancel'),
+      tone: 'destructive',
+    });
+    if (!confirmed) return;
     try {
       await firstValueFrom(this.api.delete(`saved-views/${view.id}`));
       this.views.reload();

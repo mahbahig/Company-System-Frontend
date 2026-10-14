@@ -1,62 +1,49 @@
-import { Component, ElementRef, inject, signal, viewChild } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Component, inject } from '@angular/core';
 import { Search } from 'lucide';
 
 import { IconComponent } from '../../../shared/ui/icon/icon.component';
-import { I18nService } from '../../i18n/i18n.service';
+import { TooltipDirective } from '../../../shared/ui/tooltip/tooltip.directive';
+import { CommandPalette } from '../../command-palette/command-palette.service';
 import { TranslatePipe } from '../../i18n/translate.pipe';
+import { KeyboardShortcuts } from '../../shortcuts/keyboard-shortcuts.service';
 
 /**
- * Top-bar global search. `Ctrl`/`⌘`+`K` focuses it from anywhere; Enter opens
- * `/search?q=…` (phone numbers are normalised by the API before matching).
+ * Top-bar entry to global search: a search-field-shaped button that opens
+ * the command palette, where results appear as you type (grouped by record
+ * type, inside your access) next to pages and commands. Ctrl/⌘+K or `/`
+ * open it from anywhere; the full results page stays at `/search`.
  */
 @Component({
   selector: 'app-global-search',
-  imports: [RouterLink, TranslatePipe, IconComponent],
+  imports: [TranslatePipe, IconComponent, TooltipDirective],
   template: `
-    <form role="search" class="relative hidden md:block" (submit)="submit($event)">
-      <label for="global-search" class="sr-only">{{ 'search.placeholder' | t }}</label>
-      <button type="submit" class="absolute inset-y-0 start-1 my-auto flex size-7 items-center justify-center rounded text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" [attr.aria-label]="'common.actions.search' | t"><app-icon [icon]="searchIcon" /></button>
-      <input
-        #input
-        id="global-search"
-        type="search"
-        autocomplete="off"
-        class="h-9 w-64 rounded-md border border-input bg-background ltr:pl-9 ltr:pr-14 rtl:pr-9 rtl:pl-14 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring lg:w-80"
-        [placeholder]="'search.placeholder' | t"
-        [value]="text()"
-        (input)="text.set($any($event.target).value)"
-      />
-      <kbd class="pointer-events-none absolute inset-y-0 end-2 my-auto hidden h-5 items-center rounded border border-border px-1.5 text-2xs text-muted-foreground lg:flex" dir="ltr">Ctrl K</kbd>
-    </form>
-    <a class="inline-flex size-9 items-center justify-center rounded-md hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:hidden" [routerLink]="['/', i18n.locale(), 'search']" [attr.aria-label]="'search.title' | t">
+    <button
+      type="button"
+      class="group hidden h-9 w-64 items-center gap-2 rounded-md border border-input bg-background px-2.5 text-sm text-muted-foreground shadow-xs transition-[border-color,box-shadow,color] duration-200 ease-premium hover:border-foreground/20 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:flex lg:w-80"
+      aria-haspopup="dialog"
+      [attr.aria-keyshortcuts]="shortcuts.isMac ? 'Meta+K' : 'Control+K'"
+      (click)="palette.show()"
+    >
       <app-icon [icon]="searchIcon" />
-    </a>
+      <span class="flex-1 truncate text-start">{{ 'ux.palette.trigger' | t }}</span>
+      <kbd class="pointer-events-none hidden h-5 items-center rounded border border-border px-1.5 text-2xs text-muted-foreground lg:flex" dir="ltr">{{ shortcuts.isMac ? '⌘' : 'Ctrl' }} K</kbd>
+    </button>
+    <button
+      type="button"
+      class="inline-flex size-9 items-center justify-center rounded-md hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:hidden"
+      aria-haspopup="dialog"
+      [attr.aria-label]="'ux.palette.trigger' | t"
+      [appTooltip]="'ux.palette.trigger' | t"
+      appTooltipSide="bottom"
+      (click)="palette.show()"
+    >
+      <app-icon [icon]="searchIcon" />
+    </button>
   `,
-  host: { class: 'contents', '(document:keydown)': 'onKey($event)' },
+  host: { class: 'contents' },
 })
 export class GlobalSearchComponent {
-  private readonly router = inject(Router);
-  protected readonly i18n = inject(I18nService);
-  private readonly input = viewChild<ElementRef<HTMLInputElement>>('input');
-
+  protected readonly palette = inject(CommandPalette);
+  protected readonly shortcuts = inject(KeyboardShortcuts);
   protected readonly searchIcon = Search;
-  protected readonly text = signal('');
-
-  protected onKey(event: KeyboardEvent): void {
-    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
-      event.preventDefault();
-      this.input()?.nativeElement.focus();
-    }
-  }
-
-  protected submit(event: Event): void {
-    event.preventDefault();
-    const q = this.text().trim();
-    if (!q) {
-      this.input()?.nativeElement.focus();
-      return;
-    }
-    void this.router.navigate(['/', this.i18n.locale(), 'search'], { queryParams: { q } });
-  }
 }

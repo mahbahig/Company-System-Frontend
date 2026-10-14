@@ -8,8 +8,8 @@ import { Component, input } from '@angular/core';
 @Component({
   selector: 'div[appDetailItem]',
   template: `
-    <dt class="text-xs font-medium uppercase tracking-wide text-muted-foreground">{{ label() }}</dt>
-    <dd class="mt-1 text-sm"><ng-content /></dd>
+    <dt class="text-2xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">{{ label() }}</dt>
+    <dd class="mt-1.5 text-sm font-medium leading-relaxed text-foreground break-words"><ng-content /></dd>
   `,
 })
 export class DetailItemComponent {

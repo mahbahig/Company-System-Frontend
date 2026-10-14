@@ -6,6 +6,7 @@ import { I18nService } from '../../../core/i18n/i18n.service';
 import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { IconComponent } from '../../ui/icon/icon.component';
 import { pageWindow } from './page-window';
+import { TooltipDirective } from '../../ui/tooltip/tooltip.directive';
 
 const LINK =
   'inline-flex h-9 min-w-9 items-center justify-center rounded-md border border-border px-2 text-sm transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
@@ -16,7 +17,7 @@ const LINK =
  */
 @Component({
   selector: 'app-pagination',
-  imports: [RouterLink, TranslatePipe, IconComponent],
+  imports: [TooltipDirective, RouterLink, TranslatePipe, IconComponent],
   template: `
     @if (total() > 0) {
       <nav [attr.aria-label]="'crm.pagination.label' | t" class="flex flex-col items-center justify-between gap-3 pt-4 sm:flex-row">
@@ -26,7 +27,7 @@ const LINK =
           <ul class="flex items-center gap-1">
             <li>
               @if (page() > 1) {
-                <a [routerLink]="[]" [queryParams]="{ page: pageParam(page() - 1) }" queryParamsHandling="merge" [class]="link" [attr.aria-label]="'crm.pagination.previous' | t">
+                <a [routerLink]="[]" [queryParams]="{ page: pageParam(page() - 1) }" queryParamsHandling="merge" [class]="link" [attr.aria-label]="'crm.pagination.previous' | t" [appTooltip]="'crm.pagination.previous' | t">
                   <app-icon [icon]="previousIcon()" />
                 </a>
               } @else {
@@ -53,7 +54,7 @@ const LINK =
             }
             <li>
               @if (page() < pageCount()) {
-                <a [routerLink]="[]" [queryParams]="{ page: pageParam(page() + 1) }" queryParamsHandling="merge" [class]="link" [attr.aria-label]="'crm.pagination.next' | t">
+                <a [routerLink]="[]" [queryParams]="{ page: pageParam(page() + 1) }" queryParamsHandling="merge" [class]="link" [attr.aria-label]="'crm.pagination.next' | t" [appTooltip]="'crm.pagination.next' | t">
                   <app-icon [icon]="nextIcon()" />
                 </a>
               } @else {
