@@ -8,6 +8,7 @@ import { APPROVALS_ROUTES } from './features/approvals/approvals.routes';
 import { ASSESSMENTS_ROUTES } from './features/assessments/assessments.routes';
 import { CONTRACTS_ROUTES } from './features/contracts/contracts.routes';
 import { CUSTOMERS_ROUTES } from './features/customers/customers.routes';
+import { EMPLOYEES_ROUTES } from './features/employees/employees.routes';
 import { HANDOFFS_ROUTES } from './features/handoffs/handoffs.routes';
 import { IMPORTS_ROUTES } from './features/imports/imports.routes';
 import { LEADS_ROUTES } from './features/leads/leads.routes';
@@ -170,6 +171,18 @@ export const routes: Routes = [
             data: { permission: 'data.import' },
             children: IMPORTS_ROUTES,
           },
+          {
+            // The Employees page: account administration (System Administrator),
+            // read-only oversight of everyone (CEO) or of a Sales Manager's own
+            // Sales Representatives — the API scopes the list and every profile.
+            path: 'employees',
+            data: { permission: ['administration.manage_users', 'users.view_performance'] },
+            children: EMPLOYEES_ROUTES,
+          },
+          // The page used to live at /admin/users: old links and bookmarks still arrive.
+          { path: 'admin', pathMatch: 'full', redirectTo: 'employees' },
+          { path: 'admin/users', pathMatch: 'full', redirectTo: 'employees' },
+          { path: 'admin/users/:id', redirectTo: 'employees/:id' },
           {
             path: 'admin',
             // Static children (each page still lazy-loads) so the navigation can see /admin/* paths.

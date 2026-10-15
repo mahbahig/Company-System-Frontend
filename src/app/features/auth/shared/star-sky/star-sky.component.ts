@@ -26,13 +26,7 @@ import { StarSky } from './star-sky';
  */
 @Component({
   selector: 'app-star-sky',
-  template: `
-    <canvas
-      #canvas
-      class="block size-full transition-opacity duration-[1400ms] ease-premium"
-      [class.opacity-0]="!visible()"
-    ></canvas>
-  `,
+  templateUrl: './star-sky.component.html',
   host: { class: 'block', 'aria-hidden': 'true' },
 })
 export class StarSkyComponent {

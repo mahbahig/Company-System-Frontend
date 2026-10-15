@@ -20,6 +20,13 @@
         "decisionMakerRole": "Decision maker's position",
         "siteAvailability": "Site availability",
         "requirements": "Requirements and notes",
+        "useCase": "Use case",
+        "contactRole": "Contact role",
+        "verificationState": "Contact verification",
+        "verificationStates": { "unverified": "Not verified", "pending": "Verification pending", "verified": "Verified" },
+        "decisionMakerStatus": "Decision-making role",
+        "decisionMakerStatuses": { "decision_maker": "Decision maker", "influencer": "Influencer", "unknown": "Unknown" },
+        "constraints": "Constraints",
         "timelines": {
           "immediate": "Immediate",
           "1_3_months": "1–3 months",

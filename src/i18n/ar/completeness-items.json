@@ -1,0 +1,33 @@
+{
+  "completeness": {
+    "items": {
+      "identifier": "الهاتف أو البريد الإلكتروني",
+      "nextActionDue": "موعد الإجراء التالي",
+      "contactName": "اسم جهة الاتصال",
+      "useCase": "الغرض من الاستخدام",
+      "contactRole": "دور جهة الاتصال",
+      "verification": "التحقق من بيانات الاتصال",
+      "siteLocation": "موقع المشروع",
+      "constraints": "القيود",
+      "conversationSummary": "ملخص المحادثة",
+      "identityReviewed": "مراجعة الهوية والتكرار",
+      "segment": "شريحة العميل",
+      "convertGovernorate": "المحافظة",
+      "convertVerification": "التحقق من بيانات الاتصال",
+      "convertContactRole": "دور جهة الاتصال",
+      "contactIdentifier": "الجوال أو البريد الإلكتروني",
+      "preferredChannel": "قناة التواصل المفضلة",
+      "decisionProcess": "آلية اتخاذ القرار",
+      "sourceInteraction": "العميل المحتمل أو التواصل الأصلي",
+      "decisionTimeframe": "موعد اتخاذ القرار",
+      "risks": "المخاطر",
+      "equipmentCosts": "بنود تكلفة المعدات",
+      "labourCosts": "بنود تكلفة التركيب",
+      "costValidity": "تاريخ صلاحية التكاليف",
+      "paymentAssumptions": "افتراضات السداد",
+      "riskAssumptions": "افتراضات المخاطر",
+      "supplierQuoteValidity": "عروض موردين سارية",
+      "loadBasis": "أساس الأحمال المعتمد"
+    }
+  }
+}

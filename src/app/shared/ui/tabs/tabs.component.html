@@ -1,0 +1,27 @@
+<div
+  role="tablist"
+  [attr.aria-label]="label()"
+  class="flex gap-1 overflow-x-auto overflow-y-hidden shadow-[inset_0_-1px_0_hsl(var(--border))] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+>
+  @for (tab of tabs(); track tab.id; let index = $index) {
+    <button
+      type="button"
+      role="tab"
+      [id]="'tab-' + tab.id"
+      [attr.aria-selected]="active() === tab.id"
+      [attr.tabindex]="active() === tab.id ? 0 : -1"
+      (click)="active.set(tab.id)"
+      (keydown)="onKey($event, index)"
+      class="inline-flex items-center gap-2 whitespace-nowrap border-b-2 px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+      [class.border-primary]="active() === tab.id"
+      [class.text-foreground]="active() === tab.id"
+      [class.border-transparent]="active() !== tab.id"
+      [class.text-muted-foreground]="active() !== tab.id"
+    >
+      {{ tab.label }}
+      @if (tab.count !== undefined && tab.count !== null) {
+        <span class="tabular rounded-full bg-muted px-2 py-0.5 text-xs">{{ tab.count }}</span>
+      }
+    </button>
+  }
+</div>

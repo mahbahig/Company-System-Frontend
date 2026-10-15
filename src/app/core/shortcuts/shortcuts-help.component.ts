@@ -14,53 +14,7 @@ const GROUP_ORDER: ShortcutGroup[] = ['general', 'navigation', 'page'];
 @Component({
   selector: 'app-shortcuts-help',
   imports: [TranslatePipe],
-  template: `
-    <dialog
-      #dialog
-      aria-labelledby="shortcuts-heading"
-      class="app-dialog m-auto max-h-[calc(100dvh-2rem)] w-[min(34rem,calc(100vw-2rem))] overflow-y-auto rounded-lg border border-border bg-card p-0 text-card-foreground shadow-xl backdrop:bg-black/50"
-      (close)="shortcuts.helpOpen.set(false)"
-      (cancel)="shortcuts.helpOpen.set(false)"
-      (click)="onBackdrop($event)"
-    >
-      <div class="flex items-center justify-between gap-4 border-b border-border p-5">
-        <h2 id="shortcuts-heading" class="text-lg font-semibold">{{ 'ux.shortcuts.title' | t }}</h2>
-        <button
-          type="button"
-          class="rounded-md p-1 text-muted-foreground hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          [attr.aria-label]="'common.actions.close' | t"
-          (click)="shortcuts.helpOpen.set(false)"
-        >
-          <svg aria-hidden="true" viewBox="0 0 20 20" class="size-5" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 5l10 10M15 5L5 15" stroke-linecap="round" /></svg>
-        </button>
-      </div>
-      <div class="flex flex-col gap-6 p-5">
-        @for (group of groups(); track group.id) {
-          <section [attr.aria-labelledby]="'shortcut-group-' + group.id">
-            <h3 [id]="'shortcut-group-' + group.id" class="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              {{ 'ux.shortcuts.groups.' + group.id | t }}
-            </h3>
-            <dl class="divide-y divide-border rounded-md border border-border">
-              @for (shortcut of group.items; track shortcut.id) {
-                <div class="flex items-center justify-between gap-4 px-3 py-2 text-sm">
-                  <dt class="min-w-0 truncate">{{ shortcut.label() }}</dt>
-                  <dd class="flex shrink-0 items-center gap-1" dir="ltr">
-                    @for (step of shortcuts.display(shortcut.keys); track $index; let last = $last) {
-                      <kbd class="rounded border border-border bg-muted px-1.5 py-0.5 text-xs font-medium">{{ step.join(' + ') }}</kbd>
-                      @if (!last) {
-                        <span class="text-xs text-muted-foreground">{{ 'ux.shortcuts.then' | t }}</span>
-                      }
-                    }
-                  </dd>
-                </div>
-              }
-            </dl>
-          </section>
-        }
-        <p class="text-xs text-muted-foreground">{{ 'ux.shortcuts.typingNote' | t }}</p>
-      </div>
-    </dialog>
-  `,
+  templateUrl: './shortcuts-help.component.html',
 })
 export class ShortcutsHelpComponent {
   protected readonly shortcuts = inject(KeyboardShortcuts);

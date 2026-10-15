@@ -70,6 +70,12 @@ interface QualificationModel {
   decisionMakerRole: string;
   siteAvailability: string;
   requirements: string;
+  /** L3 facts the handoff and conversion gates check. */
+  useCase: string;
+  contactRole: string;
+  verificationState: string;
+  decisionMakerStatus: string;
+  constraints: string;
 }
 
 const EMPTY_Q: QualificationModel = {
@@ -84,9 +90,16 @@ const EMPTY_Q: QualificationModel = {
   decisionMakerRole: '',
   siteAvailability: '',
   requirements: '',
+  useCase: '',
+  contactRole: '',
+  verificationState: '',
+  decisionMakerStatus: '',
+  constraints: '',
 };
 
 const TIMELINES = ['immediate', '1_3_months', '3_6_months', '6_12_months', 'over_12_months'] as const;
+const VERIFICATION_STATES = ['unverified', 'pending', 'verified'] as const;
+const DECISION_MAKER_STATUSES = ['decision_maker', 'influencer', 'unknown'] as const;
 
 const EMPTY: LeadFormModel = {
   name: '',
@@ -150,6 +163,8 @@ export class LeadFormPage implements HasUnsavedChanges {
   readonly id = input<string>();
 
   protected readonly timelines = TIMELINES;
+  protected readonly verificationStates = VERIFICATION_STATES;
+  protected readonly decisionMakerStatuses = DECISION_MAKER_STATUSES;
   protected readonly isEdit = computed(() => !!this.id());
   protected readonly errorKey = signal<string | null>(null);
 
@@ -264,6 +279,11 @@ export class LeadFormPage implements HasUnsavedChanges {
         decisionMakerRole: lead.qualification?.decisionMakerRole ?? '',
         siteAvailability: lead.qualification?.siteAvailability ?? '',
         requirements: lead.qualification?.requirements ?? '',
+        useCase: lead.qualification?.useCase ?? '',
+        contactRole: lead.qualification?.contactRole ?? '',
+        verificationState: lead.qualification?.verificationState ?? '',
+        decisionMakerStatus: lead.qualification?.decisionMakerStatus ?? '',
+        constraints: lead.qualification?.constraints ?? '',
       },
     });
   }
@@ -319,6 +339,11 @@ export class LeadFormPage implements HasUnsavedChanges {
       decisionMakerRole: text(q.decisionMakerRole),
       siteAvailability: text(q.siteAvailability),
       requirements: text(q.requirements),
+      useCase: text(q.useCase),
+      contactRole: text(q.contactRole),
+      verificationState: (q.verificationState || undefined) as Qualification['verificationState'],
+      decisionMakerStatus: (q.decisionMakerStatus || undefined) as Qualification['decisionMakerStatus'],
+      constraints: text(q.constraints),
     };
     const entered = Object.fromEntries(Object.entries(out).filter(([, value]) => value !== undefined)) as Qualification;
     return Object.keys(entered).length ? entered : undefined;

@@ -270,7 +270,8 @@
     },
     "exceptions": {
       "noAccess": "Your role cannot open the records behind this count.",
-      "fromCenter": "Showing records from the Exceptions Center: {name}."
+      "fromCenter": "Showing records from the Exceptions Center: {name}.",
+      "fromQuality": "Showing records from Data quality: {name}."
     },
     "filters": {
       "enrichmentOverdue": "Profile completion overdue"
@@ -283,6 +284,11 @@
       "fixedBadge": "Fixed by the system",
       "fixedAdmin": "The System Administrator always holds every permission. Its grants are defined by the system and cannot be edited.",
       "fixedCeo": "The CEO always holds every business permission (no security administration). Its grants are defined by the system and cannot be edited."
+    },
+    "employees": {
+      "teamSubtitle": "The Sales Representatives who report to you. Open one to see their performance and recent activity.",
+      "teamEmpty": "No Sales Representatives report to you yet.",
+      "empty": "No employees match."
     }
   },
   "navigation": {
@@ -310,7 +316,7 @@
       "imports": "Import records from spreadsheets.",
       "duplicates": "Possible duplicate records to review.",
       "ownership": "Requests to change a record's owner.",
-      "users": "User accounts and access.",
+      "employees": "Employees, their roles and their performance.",
       "roles": "Roles and their permissions.",
       "teams": "Teams and their members.",
       "referenceData": "Lists used across the system.",

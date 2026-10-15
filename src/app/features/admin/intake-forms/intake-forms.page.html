@@ -1,0 +1,188 @@
+<app-page-header
+  [heading]="'admin.intakeForms.title' | t"
+  [subtitle]="'admin.intakeForms.subtitle' | t"
+  class="!mb-0"
+/>
+@if (actions.message(); as text) {
+  <app-alert>{{ text }}</app-alert>
+}
+@if (actions.error(); as text) {
+  <app-alert variant="destructive">{{ text }}</app-alert>
+}
+<div class="flex flex-wrap items-end gap-3">
+  <div class="min-w-64">
+    <label appLabel for="if-type">{{ 'crm.opportunities.fields.solutionTypeCode' | t }}</label>
+    <app-select>
+      <select
+        appSelect
+        id="if-type"
+        [value]="selected()"
+        (change)="selected.set($any($event.target).value)"
+      >
+        @for (form of data.value()?.forms ?? []; track form.code) {
+          <option [value]="form.code">{{ i18n.pick(form.nameAr, form.nameEn) }}</option>
+        }
+      </select>
+    </app-select>
+  </div>
+  <button type="button" appButton [disabled]="actions.busy() || !meta()" (click)="save()">
+    {{ 'crm.common.save' | t }}
+  </button>
+</div>
+
+@if (meta(); as m) {
+  <section appCard aria-labelledby="if-sections">
+    <div appCardHeader>
+      <h2 appCardTitle id="if-sections">{{ 'admin.intakeForms.sections' | t }}</h2>
+    </div>
+    <div appCardContent class="flex flex-wrap gap-4">
+      @for (section of data.value()?.sections ?? []; track section) {
+        <label class="flex items-center gap-2 text-sm"
+          ><input
+            type="checkbox"
+            [checked]="m.intakeSections.includes(section)"
+            (change)="toggleSection(section, $any($event.target).checked)"
+          />
+          {{ 'intake.sections.' + section | t }}</label
+        >
+      }
+    </div>
+  </section>
+
+  <app-table-wrapper [label]="'admin.intakeForms.fields' | t">
+    <table appTable>
+      <thead appTableHeader>
+        <tr appTableRow>
+          <th appTableHead>{{ 'admin.intakeForms.section' | t }}</th>
+          <th appTableHead>{{ 'admin.intakeForms.field' | t }}</th>
+          <th appTableHead>{{ 'admin.intakeForms.mode' | t }}</th>
+        </tr>
+      </thead>
+      <tbody appTableBody>
+        @for (field of fieldsInSections(); track field.section + field.id) {
+          <tr appTableRow>
+            <td appTableCell class="text-xs">{{ 'intake.sections.' + field.section | t }}</td>
+            <td appTableCell>
+              {{ i18n.pick(field.labelAr, field.labelEn) }}
+              <span class="text-xs text-muted-foreground" dir="ltr">({{ field.type }})</span>
+            </td>
+            <td appTableCell>
+              <app-select>
+                <select
+                  appSelect
+                  [attr.aria-label]="i18n.pick(field.labelAr, field.labelEn)"
+                  [value]="mode(field)"
+                  (change)="setMode(field, $any($event.target).value)"
+                >
+                  <option value="default">
+                    {{
+                      (field.required
+                        ? 'admin.intakeForms.defaultRequired'
+                        : 'admin.intakeForms.defaultOptional'
+                      ) | t
+                    }}
+                  </option>
+                  <option value="required">{{ 'admin.intakeForms.required' | t }}</option>
+                  <option value="optional">{{ 'admin.intakeForms.optional' | t }}</option>
+                  <option value="hidden">{{ 'admin.intakeForms.hidden' | t }}</option>
+                </select>
+              </app-select>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </app-table-wrapper>
+
+  <section appCard aria-labelledby="if-custom">
+    <div appCardHeader>
+      <h2 appCardTitle id="if-custom">{{ 'admin.intakeForms.custom' | t }}</h2>
+    </div>
+    <div appCardContent class="flex flex-col gap-3">
+      @for (field of m.customIntakeFields; track $index; let index = $index) {
+        <div class="grid items-end gap-2 sm:grid-cols-7">
+          <input
+            appInput
+            dir="ltr"
+            [attr.aria-label]="'admin.code' | t"
+            [placeholder]="'admin.code' | t"
+            [value]="field.id"
+            (input)="setCustom(index, 'id', $any($event.target).value.trim())"
+          />
+          <app-select>
+            <select
+              appSelect
+              [attr.aria-label]="'admin.intakeForms.section' | t"
+              [value]="field.section"
+              (change)="setCustom(index, 'section', $any($event.target).value)"
+            >
+              @for (section of data.value()?.sections ?? []; track section) {
+                <option [value]="section">{{ 'intake.sections.' + section | t }}</option>
+              }
+            </select>
+          </app-select>
+          <app-select>
+            <select
+              appSelect
+              [attr.aria-label]="'admin.intakeForms.type' | t"
+              [value]="field.type"
+              (change)="setCustom(index, 'type', $any($event.target).value)"
+            >
+              @for (type of ['text', 'number', 'boolean', 'select']; track type) {
+                <option [value]="type">{{ 'admin.intakeForms.types.' + type | t }}</option>
+              }
+            </select>
+          </app-select>
+          <input
+            appInput
+            dir="rtl"
+            [attr.aria-label]="'admin.nameAr' | t"
+            [placeholder]="'admin.nameAr' | t"
+            [value]="field.labelAr"
+            (input)="setCustom(index, 'labelAr', $any($event.target).value)"
+          />
+          <input
+            appInput
+            dir="ltr"
+            [attr.aria-label]="'admin.nameEn' | t"
+            [placeholder]="'admin.nameEn' | t"
+            [value]="field.labelEn"
+            (input)="setCustom(index, 'labelEn', $any($event.target).value)"
+          />
+          @if (field.type === 'select') {
+            <input
+              appInput
+              dir="ltr"
+              [attr.aria-label]="'admin.intakeForms.options' | t"
+              [placeholder]="'admin.intakeForms.options' | t"
+              [value]="(field.options ?? []).join(',')"
+              (change)="setCustom(index, 'options', $any($event.target).value)"
+            />
+          } @else {
+            <label class="flex items-center gap-2 text-sm"
+              ><input
+                type="checkbox"
+                [checked]="field.required"
+                (change)="setCustom(index, 'required', $any($event.target).checked)"
+              />
+              {{ 'admin.intakeForms.required' | t }}</label
+            >
+          }
+          <button type="button" appButton variant="ghost" size="sm" (click)="removeCustom(index)">
+            {{ 'crm.common.delete' | t }}
+          </button>
+        </div>
+      }
+      <button
+        type="button"
+        appButton
+        variant="outline"
+        size="sm"
+        class="self-start"
+        (click)="addCustom()"
+      >
+        {{ 'admin.intakeForms.addField' | t }}
+      </button>
+    </div>
+  </section>
+}

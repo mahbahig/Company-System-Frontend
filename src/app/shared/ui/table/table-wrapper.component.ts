@@ -9,7 +9,7 @@ import { Component, input } from '@angular/core';
  */
 @Component({
   selector: 'app-table-wrapper',
-  template: '<ng-content />',
+  templateUrl: './table-wrapper.component.html',
   host: {
     role: 'region',
     tabindex: '0',

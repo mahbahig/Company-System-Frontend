@@ -1,0 +1,9 @@
+@for (row of rowList(); track row) {
+  <tr class="border-b border-border last:border-0">
+    @for (column of columnList(); track column) {
+      <td class="px-3 py-3.5 align-middle">
+        <app-skeleton class="h-3.5" [style.width.%]="width(row, column)" />
+      </td>
+    }
+  </tr>
+}

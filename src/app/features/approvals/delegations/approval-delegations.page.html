@@ -1,0 +1,64 @@
+<app-page-header
+  [heading]="'approvals.delegations.title' | t"
+  [subtitle]="'approvals.delegations.subtitle' | t"
+  class="!mb-0"
+/>
+<section appCard class="max-w-3xl">
+  <form appCardContent class="flex flex-col gap-4" (submit)="save($event)">
+    @if (error(); as message) {
+      <app-alert variant="destructive">{{ message }}</app-alert>
+    }
+    @if (saved()) {
+      <app-alert>{{ 'approvals.delegations.saved' | t }}</app-alert>
+    }
+    @for (row of rows(); track $index; let index = $index) {
+      <div class="grid items-end gap-3 rounded-md border border-border p-3 sm:grid-cols-4">
+        <div class="sm:col-span-2">
+          <label appLabel [for]="'delegate-' + index">{{
+            'approvals.delegations.delegate' | t
+          }}</label>
+          <app-user-select
+            [inputId]="'delegate-' + index"
+            [value]="row.delegateId"
+            (valueChange)="update(index, 'delegateId', $event)"
+          />
+        </div>
+        <div>
+          <label appLabel [for]="'from-' + index">{{ 'approvals.delegations.from' | t }}</label>
+          <input
+            appInput
+            type="date"
+            dir="ltr"
+            [id]="'from-' + index"
+            [value]="row.from"
+            (change)="update(index, 'from', $any($event.target).value)"
+          />
+        </div>
+        <div>
+          <label appLabel [for]="'to-' + index">{{ 'approvals.delegations.to' | t }}</label>
+          <input
+            appInput
+            type="date"
+            dir="ltr"
+            [id]="'to-' + index"
+            [value]="row.to"
+            (change)="update(index, 'to', $any($event.target).value)"
+          />
+        </div>
+        <div class="sm:col-span-4">
+          <button type="button" appButton variant="ghost" size="sm" (click)="remove(index)">
+            {{ 'crm.common.delete' | t }}
+          </button>
+        </div>
+      </div>
+    } @empty {
+      <p class="text-sm text-muted-foreground">{{ 'approvals.delegations.none' | t }}</p>
+    }
+    <div class="flex gap-2">
+      <button type="button" appButton variant="outline" (click)="add()">
+        {{ 'approvals.delegations.add' | t }}
+      </button>
+      <button type="submit" appButton [disabled]="busy()">{{ 'crm.common.save' | t }}</button>
+    </div>
+  </form>
+</section>

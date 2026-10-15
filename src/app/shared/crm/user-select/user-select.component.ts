@@ -20,16 +20,7 @@ interface LookupUser {
 @Component({
   selector: 'app-user-select',
   imports: [SelectComponent, SelectDirective],
-  template: `
-    <app-select>
-      <select appSelect [id]="inputId()" [value]="value()" [disabled]="disabled()" [attr.aria-invalid]="invalid() ? true : null" (change)="value.set($any($event.target).value)">
-        <option value="">{{ placeholder() || i18n.t('crm.common.selectPlaceholder') }}</option>
-        @for (user of users(); track user.id) {
-          <option [value]="user.id">{{ i18n.pick(user.fullNameAr, user.fullNameEn) }}</option>
-        }
-      </select>
-    </app-select>
-  `,
+  templateUrl: './user-select.component.html',
   host: { class: 'block' },
 })
 export class UserSelectComponent {

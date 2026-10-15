@@ -1,31 +1,38 @@
-@if (exception(); as code) {
+@if (exception() || quality()) {
   <div role="status" class="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-info/30 bg-info/10 px-4 py-2.5 text-sm text-info-tint animate-fade-in [animation-duration:200ms]">
-    <span>{{ 'ux.exceptions.fromCenter' | t: { name: ('exceptionsCenter.codes.' + code | t) } }}</span>
+    @if (exception(); as code) {
+      <span>{{ 'ux.exceptions.fromCenter' | t: { name: ('exceptionsCenter.codes.' + code | t) } }}</span>
+    } @else if (quality(); as code) {
+      <span>{{ 'ux.exceptions.fromQuality' | t: { name: ('exceptionsCenter.quality.' + code | t) } }}</span>
+    }
     <button type="button" class="font-medium underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" (click)="clear()">{{ 'crm.filters.clear' | t }}</button>
   </div>
 }
 <form role="search" class="flex flex-col gap-3" novalidate (submit)="onSubmit($event)">
-  <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
-    <div class="flex-1">
-      <label appLabel for="list-search" class="mb-1.5 block">{{ 'crm.filters.search' | t }}</label>
-      <div class="relative">
-        <span class="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-          <app-icon [icon]="searchIcon" />
-        </span>
-        <input appInput id="list-search" type="search" class="ps-9" [formField]="searchForm.q" [placeholder]="searchPlaceholder()" />
+  @if (searchable() || hasActiveFilter()) {
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
+      @if (searchable()) {
+        <div class="flex-1">
+          <label appLabel for="list-search" class="mb-1.5 block">{{ 'crm.filters.search' | t }}</label>
+          <div class="relative">
+            <span class="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+              <app-icon [icon]="searchIcon" />
+            </span>
+            <input appInput id="list-search" type="search" class="ps-9" [formField]="searchForm.q" [placeholder]="searchPlaceholder()" />
+          </div>
+        </div>
+      }
+
+      <div class="flex gap-2">
+        @if (hasActiveFilter()) {
+          <button type="button" appButton variant="outline" (click)="clear()">
+            <app-icon [icon]="clearIcon" />
+            {{ 'crm.filters.clear' | t }}
+          </button>
+        }
       </div>
     </div>
-
-    <div class="flex gap-2">
-      <button type="submit" appButton>{{ 'common.actions.search' | t }}</button>
-      @if (hasActiveFilter()) {
-        <button type="button" appButton variant="outline" (click)="clear()">
-          <app-icon [icon]="clearIcon" />
-          {{ 'crm.filters.clear' | t }}
-        </button>
-      }
-    </div>
-  </div>
+  }
 
   @if (filters().length > 0 || toggles().length > 0) {
     <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

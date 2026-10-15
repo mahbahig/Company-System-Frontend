@@ -16,17 +16,7 @@ import { layoutBrandWordmark } from './layout-brand-wordmark';
  */
 @Component({
   selector: 'app-brand-wordmark',
-  template: `<svg
-    [attr.viewBox]="viewBox()"
-    class="block h-full w-auto overflow-visible"
-    fill="currentColor"
-    aria-hidden="true"
-    focusable="false"
-  >
-    @for (letter of layout().letters; track $index) {
-      <path [attr.d]="letter.glyph.path" [attr.transform]="'translate(' + letter.x * em + ' 0)'" />
-    }
-  </svg>`,
+  templateUrl: './brand-wordmark.component.html',
   host: { class: 'inline-block shrink-0' },
 })
 export class BrandWordmarkComponent {

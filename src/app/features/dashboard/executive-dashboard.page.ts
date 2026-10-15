@@ -17,17 +17,7 @@ import { AnalyticsFilterBarComponent } from '../analytics/shared/analytics-filte
     AnalyticsFilterBarComponent,
     ExecutiveDashboardComponent,
   ],
-  template: `
-    <app-hero-banner>
-      <app-page-header
-        [heading]="'analytics.tabs.executive' | t"
-        [subtitle]="'analytics.executive.subtitle' | t"
-        class="!mb-0"
-      />
-    </app-hero-banner>
-    <app-analytics-filter-bar [filter]="filter()" />
-    <app-executive-dashboard [filter]="filter()" />
-  `,
+  templateUrl: './executive-dashboard.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
 export class ExecutiveDashboardPage {

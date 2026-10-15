@@ -43,66 +43,7 @@ interface OwnershipRequest {
 @Component({
   selector: 'app-ownership-requests-page',
   imports: [SkeletonRowComponent, RouterLink, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, AlertComponent, ButtonDirective, PageHeaderComponent, PaginationComponent, TabsComponent, ...TABLE_IMPORTS],
-  template: `
-    <app-page-header [heading]="'admin.ownership.title' | t" [subtitle]="'admin.ownership.subtitle' | t" class="!mb-0" />
-    @if (actions.message(); as text) {
-      <app-alert>{{ text }}</app-alert>
-    }
-    @if (actions.error(); as text) {
-      <app-alert variant="destructive">{{ text }}</app-alert>
-    }
-    <app-tabs [tabs]="tabs()" [active]="activeBox()" (activeChange)="pickBox($event)" [label]="'admin.ownership.title' | t" />
-    <app-table-wrapper [label]="'admin.ownership.title' | t" [attr.aria-busy]="data.isLoading()">
-      <table appTable>
-        <thead appTableHeader>
-          <tr appTableRow>
-            <th appTableHead>{{ 'admin.automation.when' | t }}</th>
-            <th appTableHead>{{ 'admin.ownership.type' | t }}</th>
-            <th appTableHead>{{ 'act.fields.customer' | t }}</th>
-            <th appTableHead>{{ 'admin.ownership.requester' | t }}</th>
-            <th appTableHead>{{ 'admin.ownership.owner' | t }}</th>
-            <th appTableHead>{{ 'handoffs.reason' | t }}</th>
-            <th appTableHead>{{ 'admin.users.status' | t }}</th>
-            <th appTableHead><span class="sr-only">{{ 'admin.actions' | t }}</span></th>
-          </tr>
-        </thead>
-        <tbody appTableBody>
-          @for (r of rows(); track r.id) {
-            <tr appTableRow>
-              <td appTableCell class="tabular whitespace-nowrap">{{ i18n.formatDate(r.createdAt, true) }}</td>
-              <td appTableCell>{{ r.type | enum: 'ownershipRequestType' }}</td>
-              <td appTableCell>{{ customer(r.customerId) }}</td>
-              <td appTableCell>{{ person(r.requesterId) }}</td>
-              <td appTableCell>{{ person(r.currentOwnerId) }}</td>
-              <td appTableCell class="max-w-xs truncate" [attr.title]="r.reason">{{ r.reason }}</td>
-              <td appTableCell><app-status-badge enum="ownershipRequestStatus" [value]="r.status" /></td>
-              <td appTableCell>
-                <div class="flex gap-1">
-                  @if (r.approvalId && r.status === 'pending' && auth.can('approvals.view')) {
-                    <a appButton variant="outline" size="sm" [routerLink]="['/', i18n.locale(), 'approvals', r.approvalId]">{{ 'admin.ownership.openApproval' | t }}</a>
-                  }
-                  @if (r.status === 'pending' && activeBox() === 'mine') {
-                    <button type="button" appButton variant="ghost" size="sm" [disabled]="actions.busy()" (click)="cancel(r.id)">{{ 'act.cancel' | t }}</button>
-                  }
-                </div>
-              </td>
-            </tr>
-          } @empty {
-            @if (data.isLoading()) {
-              @for (i of [0, 1, 2, 3, 4]; track i) {
-                <tr app-skeleton-row [columns]="8" [index]="i"></tr>
-              }
-            } @else {
-              <tr app-table-empty [colSpan]="8">{{ 'admin.empty' | t }}</tr>
-            }
-          }
-        </tbody>
-      </table>
-    </app-table-wrapper>
-    @if (data.hasValue()) {
-      <app-pagination [page]="data.value().page" [pageCount]="data.value().pageCount" [total]="data.value().total" [pageSize]="data.value().pageSize" />
-    }
-  `,
+  templateUrl: './ownership-requests.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
 export class OwnershipRequestsPage {
@@ -113,6 +54,8 @@ export class OwnershipRequestsPage {
   protected readonly actions = new ActionRunner(this.i18n);
 
   readonly box = input<string>();
+  /** Exceptions Center / Data Quality: only `pending` requests. */
+  readonly status = input<string>();
   readonly page = input(1, { transform: (value: unknown) => numberAttribute(value, 1) });
 
   protected readonly tabs = computed(() => [
@@ -121,7 +64,7 @@ export class OwnershipRequestsPage {
     ...(this.auth.can('ownership.decide') ? [{ id: 'all', label: this.i18n.t('admin.ownership.all') }] : []),
   ]);
   protected readonly activeBox = computed(() => this.box() ?? this.tabs()[0]?.id ?? 'on_my_customers');
-  protected readonly data = rxResource({ params: () => ({ box: this.activeBox(), page: this.page() }), stream: ({ params }) => this.api.get<Page<OwnershipRequest>>('ownership/requests', params) });
+  protected readonly data = rxResource({ params: () => ({ box: this.activeBox(), status: this.status(), page: this.page() }), stream: ({ params }) => this.api.get<Page<OwnershipRequest>>('ownership/requests', params) });
   protected readonly rows = computed(() => (this.data.hasValue() ? this.data.value().rows : []));
 
   protected pickBox(box: string): void {

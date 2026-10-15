@@ -29,13 +29,7 @@ import { SolarScene } from './solar-scene';
  */
 @Component({
   selector: 'app-solar-scene',
-  template: `
-    <canvas
-      #canvas
-      class="block size-full cursor-grab transition-opacity duration-[1400ms] ease-premium active:cursor-grabbing"
-      [class.opacity-0]="!visible()"
-    ></canvas>
-  `,
+  templateUrl: './solar-scene.component.html',
   host: { class: 'block', 'aria-hidden': 'true' },
 })
 export class SolarSceneComponent {

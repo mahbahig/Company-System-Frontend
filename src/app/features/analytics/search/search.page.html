@@ -1,0 +1,88 @@
+<app-page-header [heading]="'search.title' | t" [subtitle]="'search.subtitle' | t" class="!mb-0" />
+<form role="search" class="flex gap-2" (submit)="submit($event)">
+  <label for="global-search-page" class="sr-only">{{ 'search.placeholder' | t }}</label>
+  <input
+    appInput
+    id="global-search-page"
+    type="search"
+    class="flex-1"
+    [value]="text()"
+    (input)="text.set($any($event.target).value)"
+    [placeholder]="'search.placeholder' | t"
+    autocomplete="off"
+  />
+</form>
+
+@if (q().trim() && q().trim().length < 2) {
+  <p
+    class="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground"
+  >
+    {{ 'search.tooShort' | t }}
+  </p>
+}
+@if (results.error()) {
+  <app-alert variant="destructive">{{ i18n.errorText(results.error()) }}</app-alert>
+}
+@if (results.isLoading()) {
+  <div
+    role="status"
+    [attr.aria-label]="'common.labels.loading' | t"
+    class="rounded-lg border border-border bg-card p-4"
+  >
+    <app-list-skeleton [rows]="5" />
+  </div>
+} @else if (q().trim().length >= 2 && results.hasValue()) {
+  @if (groups().length) {
+    <p class="text-sm text-muted-foreground" role="status">
+      {{ 'ux.search.count' | t: { count: total(), query: q().trim() } }}
+    </p>
+    @for (group of groups(); track group.type) {
+      <section class="flex flex-col gap-2" [attr.aria-labelledby]="'search-group-' + group.type">
+        <h2
+          [id]="'search-group-' + group.type"
+          class="flex items-center gap-2 text-sm font-semibold"
+        >
+          <app-icon [icon]="icons[group.type]" svgClass="size-4 text-muted-foreground" />
+          {{ 'ux.palette.groups.records.' + group.type | t }}
+          <span
+            class="tabular rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground"
+            >{{ group.hits.length }}</span
+          >
+        </h2>
+        <ul class="divide-y divide-border rounded-lg border border-border bg-card">
+          @for (hit of group.hits; track hit.type + hit.id) {
+            <li>
+              <a
+                [routerLink]="link(hit).commands"
+                [queryParams]="link(hit).queryParams"
+                class="flex items-center justify-between gap-3 p-4 transition-colors hover:bg-secondary/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+              >
+                <span class="min-w-0">
+                  <span class="block truncate font-medium" dir="auto">{{
+                    hit.title || hit.number
+                  }}</span>
+                  @if (subtitle(hit); as text) {
+                    <span class="block truncate text-sm text-muted-foreground" dir="auto">{{
+                      text
+                    }}</span>
+                  }
+                </span>
+                @if (hit.number) {
+                  <span class="tabular shrink-0 text-sm text-muted-foreground" dir="ltr">{{
+                    hit.number
+                  }}</span>
+                }
+              </a>
+            </li>
+          }
+        </ul>
+      </section>
+    }
+  } @else {
+    <p
+      class="rounded-lg border border-dashed border-border p-8 text-center text-sm text-muted-foreground"
+    >
+      {{ 'search.noResults' | t: { query: q() } }}
+    </p>
+  }
+}

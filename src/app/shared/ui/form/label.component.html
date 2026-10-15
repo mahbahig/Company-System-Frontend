@@ -1,0 +1,5 @@
+<ng-content />
+@if (required()) {
+  <span aria-hidden="true" class="ms-1 text-destructive">*</span>
+  <span class="sr-only"> ({{ 'common.labels.required' | t }})</span>
+}

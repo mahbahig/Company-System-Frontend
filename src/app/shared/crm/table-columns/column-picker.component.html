@@ -1,0 +1,78 @@
+<button
+  #trigger
+  type="button"
+  appButton
+  variant="outline"
+  size="sm"
+  cdkOverlayOrigin
+  #origin="cdkOverlayOrigin"
+  aria-haspopup="dialog"
+  [attr.aria-expanded]="open()"
+  (click)="open.set(!open())"
+>
+  <app-icon [icon]="columnsIcon" />
+  {{ 'ux.columns.button' | t }}
+  @if (columns().customized()) {
+    <span class="size-1.5 rounded-full bg-primary" aria-hidden="true"></span>
+    <span class="sr-only">({{ 'ux.columns.customized' | t }})</span>
+  }
+</button>
+<ng-template
+  cdkConnectedOverlay
+  [cdkConnectedOverlayOrigin]="origin"
+  [cdkConnectedOverlayOpen]="open()"
+  [cdkConnectedOverlayPositions]="positions"
+  [cdkConnectedOverlayHasBackdrop]="true"
+  cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop"
+  (backdropClick)="close()"
+  (detach)="close()"
+  (overlayKeydown)="onKeydown($event)"
+>
+  <div
+    role="dialog"
+    [attr.aria-label]="'ux.columns.heading' | t"
+    cdkTrapFocus
+    [cdkTrapFocusAutoCapture]="true"
+    class="app-popover z-50 w-60 rounded-md border border-border bg-popover p-2 text-popover-foreground shadow-lg"
+  >
+    <fieldset>
+      <legend class="px-1 pb-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        {{ 'ux.columns.heading' | t }}
+      </legend>
+      <div class="flex max-h-72 flex-col overflow-y-auto scroll-area">
+        @for (column of columns().allowed(); track column.id) {
+          <label
+            class="flex cursor-pointer items-center gap-2 rounded-sm px-1 py-1.5 text-sm hover:bg-secondary has-[:disabled]:cursor-default has-[:disabled]:opacity-70"
+          >
+            <input
+              type="checkbox"
+              class="size-4 rounded border-input accent-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              [checked]="columns().show(column.id)"
+              [disabled]="!!column.locked"
+              (change)="columns().toggle(column.id)"
+            />
+            <span class="flex-1">{{ column.labelKey | t }}</span>
+            @if (column.locked) {
+              <span class="text-2xs text-muted-foreground">{{ 'ux.columns.always' | t }}</span>
+            }
+          </label>
+        }
+      </div>
+    </fieldset>
+    <div class="mt-1 flex justify-between gap-2 border-t border-border pt-2">
+      <button
+        type="button"
+        appButton
+        variant="ghost"
+        size="sm"
+        [disabled]="!columns().customized()"
+        (click)="columns().reset()"
+      >
+        {{ 'ux.columns.reset' | t }}
+      </button>
+      <button type="button" appButton variant="outline" size="sm" (click)="close()">
+        {{ 'ux.columns.done' | t }}
+      </button>
+    </div>
+  </div>
+</ng-template>

@@ -33,7 +33,7 @@ import { CustomersApi } from '../customers-api.service';
 import type { Customer } from '../models/customer.interface';
 import { RowLinkDirective } from '../../../shared/ui/table/row-link.directive';
 
-const flag = (value: string | undefined) => value === '1';
+const flag = (value: string | undefined) => value === '1' || value === 'true';
 
 /** Customer list columns; the customer number always stays. */
 const CUSTOMER_COLUMNS: ColumnDef[] = [

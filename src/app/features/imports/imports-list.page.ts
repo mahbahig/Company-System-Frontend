@@ -21,73 +21,7 @@ import { SkeletonRowComponent } from '../../shared/ui/skeleton/skeleton.componen
 @Component({
   selector: 'app-imports-list-page',
   imports: [SkeletonRowComponent, RouterLink, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, AlertComponent, ButtonDirective, PageHeaderComponent, PaginationComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, ...TABLE_IMPORTS],
-  template: `
-    <app-page-header [heading]="'imports.title' | t" [subtitle]="'imports.subtitle' | t" class="!mb-0" />
-    <form appCard class="max-w-3xl" (submit)="upload($event)" aria-labelledby="imp-new">
-      <div appCardHeader><h2 appCardTitle id="imp-new">{{ 'imports.new' | t }}</h2></div>
-      <div appCardContent class="grid gap-4 sm:grid-cols-3">
-        @if (actions.error(); as text) {
-          <app-alert variant="destructive" class="sm:col-span-3">{{ text }}</app-alert>
-        }
-        <div>
-          <label appLabel for="imp-entity" required>{{ 'imports.entity' | t }}</label>
-          <app-select>
-            <select appSelect id="imp-entity" [value]="entity()" (change)="entity.set($any($event.target).value)">
-              <option value="lead">{{ 'lead' | enum: 'importEntity' }}</option>
-              <option value="customer">{{ 'customer' | enum: 'importEntity' }}</option>
-            </select>
-          </app-select>
-        </div>
-        <div class="sm:col-span-2">
-          <label appLabel for="imp-file" required>{{ 'imports.file' | t }}</label>
-          <input appInput id="imp-file" type="file" accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" (change)="pick($event)" />
-          <p class="mt-1 text-xs text-muted-foreground">{{ 'imports.fileHint' | t }}</p>
-        </div>
-        <button type="submit" appButton class="self-start" [disabled]="actions.busy() || !file()">{{ (actions.busy() ? 'imports.uploading' : 'imports.upload') | t }}</button>
-      </div>
-    </form>
-
-    @if (jobs.error()) {
-      <app-alert variant="destructive">{{ i18n.errorText(jobs.error()) }}</app-alert>
-    }
-    <app-table-wrapper [label]="'imports.history' | t" [attr.aria-busy]="jobs.isLoading()">
-      <table appTable>
-        <thead appTableHeader>
-          <tr appTableRow>
-            <th appTableHead>{{ 'imports.jobNo' | t }}</th>
-            <th appTableHead>{{ 'imports.entity' | t }}</th>
-            <th appTableHead>{{ 'imports.file' | t }}</th>
-            <th appTableHead>{{ 'imports.rows' | t }}</th>
-            <th appTableHead>{{ 'imports.status' | t }}</th>
-            <th appTableHead>{{ 'imports.created' | t }}</th>
-          </tr>
-        </thead>
-        <tbody appTableBody>
-          @for (job of rows(); track job.id) {
-            <tr appTableRow [appRowLink]="job.id">
-              <td appTableCell><a class="tabular text-primary hover:underline" [routerLink]="job.id">{{ job.jobNo }}</a></td>
-              <td appTableCell>{{ job.entity | enum: 'importEntity' }}</td>
-              <td appTableCell class="max-w-56 truncate" dir="ltr">{{ job.fileName }}</td>
-              <td appTableCell class="tabular">{{ i18n.formatNumber(job.totalRows) }}</td>
-              <td appTableCell><app-status-badge enum="importJobStatus" [value]="job.status" /></td>
-              <td appTableCell class="tabular whitespace-nowrap">{{ i18n.formatDate(job.createdAt, true) }}</td>
-            </tr>
-          } @empty {
-            @if (jobs.isLoading()) {
-              @for (i of [0, 1, 2, 3, 4]; track i) {
-                <tr app-skeleton-row [columns]="6" [index]="i"></tr>
-              }
-            } @else {
-              <tr app-table-empty [colSpan]="6">{{ 'imports.empty' | t }}</tr>
-            }
-          }
-        </tbody>
-      </table>
-    </app-table-wrapper>
-    @if (jobs.hasValue()) {
-      <app-pagination [page]="jobs.value().page" [pageCount]="jobs.value().pageCount" [total]="jobs.value().total" [pageSize]="jobs.value().pageSize" />
-    }
-  `,
+  templateUrl: './imports-list.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
 export class ImportsListPage {

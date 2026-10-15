@@ -1,0 +1,9 @@
+<app-hero-banner>
+  <app-page-header
+    [heading]="'analytics.tabs.executive' | t"
+    [subtitle]="'analytics.executive.subtitle' | t"
+    class="!mb-0"
+  />
+</app-hero-banner>
+<app-analytics-filter-bar [filter]="filter()" />
+<app-executive-dashboard [filter]="filter()" />

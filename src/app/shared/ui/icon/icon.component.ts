@@ -12,7 +12,7 @@ import { createElement, type IconNode } from 'lucide';
  */
 @Component({
   selector: 'app-icon',
-  template: '',
+  templateUrl: './icon.component.html',
   host: { class: 'contents' },
 })
 export class IconComponent {

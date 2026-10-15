@@ -1,0 +1,274 @@
+<section appCard [attr.aria-labelledby]="headingId">
+  <div appCardHeader class="flex flex-row flex-wrap items-center justify-between gap-2">
+    <h2 appCardTitle [id]="headingId">
+      {{ heading() || ('pipeline.titles.' + view().pipeline | t) }}
+    </h2>
+    <div class="flex flex-wrap items-center gap-2">
+      <app-badge tone="info" data-testid="current-stage"
+        >{{ stageKey(view().stage) }} · {{ stageLabel(view().stage) }}</app-badge
+      >
+      <app-badge [tone]="escalationTone()">{{
+        'pipeline.escalation.' + view().control.escalation | t
+      }}</app-badge>
+      @if (!view().control.controlled && view().control.missing.length) {
+        <app-badge tone="warning">{{ 'pipeline.notControlled' | t }}</app-badge>
+      }
+    </div>
+  </div>
+
+  <div appCardContent class="flex flex-col gap-5">
+    @if (error(); as text) {
+      <app-alert variant="destructive" role="alert">{{ text }}</app-alert>
+    }
+
+    <!-- Where the record is in the pipeline, and its branches. -->
+    @if (openStages().length) {
+      <ol
+        class="flex flex-wrap items-center gap-1.5"
+        [attr.aria-label]="'pipeline.stagesLabel' | t"
+      >
+        @for (stage of openStages(); track stage.code) {
+          <li>
+            <app-badge
+              [tone]="stageTone(stage)"
+              [attr.aria-current]="stage.code === view().stage ? 'step' : null"
+              >{{ stage.key }} {{ stageLabel(stage.code) }}</app-badge
+            >
+          </li>
+        }
+      </ol>
+      @if (branchStages().length) {
+        <p class="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+          <span>{{ 'pipeline.branches' | t }}:</span>
+          @for (stage of branchStages(); track stage.code) {
+            <app-badge [tone]="stage.code === view().stage ? 'warning' : 'outline'"
+              >{{ stage.key }} {{ stageLabel(stage.code) }}</app-badge
+            >
+          }
+        </p>
+      }
+    }
+
+    <!-- Operational control: owner, next action, due date, approvers. -->
+    <dl class="grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2 lg:grid-cols-3">
+      <div>
+        <dt class="text-xs text-muted-foreground">{{ 'pipeline.control.owner' | t }}</dt>
+        <dd>{{ people.name(view().control.ownerId) }}</dd>
+      </div>
+      <div>
+        <dt class="text-xs text-muted-foreground">{{ 'pipeline.control.nextAction' | t }}</dt>
+        <dd>
+          {{
+            view().control.nextAction
+              ? actionLabel(view().control.nextAction!)
+              : ('crm.common.notSet' | t)
+          }}
+        </dd>
+      </div>
+      <div>
+        <dt class="text-xs text-muted-foreground">{{ 'pipeline.control.nextActionOwner' | t }}</dt>
+        <dd>{{ people.name(view().control.nextActionOwnerId) }}</dd>
+      </div>
+      <div>
+        <dt class="text-xs text-muted-foreground">{{ 'pipeline.control.dueAt' | t }}</dt>
+        <dd class="tabular" [class.text-destructive]="overdue()" [class.font-medium]="overdue()">
+          {{
+            view().control.dueAt
+              ? i18n.formatDate(view().control.dueAt, true)
+              : ('crm.common.notSet' | t)
+          }}
+        </dd>
+      </div>
+      <div>
+        <dt class="text-xs text-muted-foreground">{{ 'pipeline.control.since' | t }}</dt>
+        <dd class="tabular">
+          {{ i18n.formatDate(view().control.stageEnteredAt, true) || ('crm.common.notSet' | t) }}
+        </dd>
+      </div>
+      <div>
+        <dt class="text-xs text-muted-foreground">{{ 'pipeline.control.approvers' | t }}</dt>
+        <dd>{{ roles(view().control.nextApprovers) || ('crm.common.none' | t) }}</dd>
+      </div>
+    </dl>
+    @if (view().control.missing.length) {
+      <p class="text-xs text-warning-tint">
+        {{ 'pipeline.control.missing' | t }}: {{ missingControl() }}
+      </p>
+    }
+
+    <!-- Transitions: what each move still needs; buttons only for this user's permitted moves. -->
+    @if (transitions().length) {
+      <div>
+        <h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          {{ 'pipeline.transitionsTitle' | t }}
+        </h3>
+        <ul class="flex flex-col gap-3">
+          @for (transition of transitions(); track transition.action) {
+            <li class="rounded-md border border-border p-3" [attr.data-action]="transition.action">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <div class="flex flex-wrap items-center gap-2 text-sm">
+                  <span class="font-medium">{{ actionLabel(transition.action) }}</span>
+                  <span class="text-muted-foreground">→ {{ stageLabel(transition.to) }}</span>
+                  <app-badge [tone]="transition.ready ? 'success' : 'warning'">{{
+                    (transition.ready ? 'pipeline.ready' : 'pipeline.blocked') | t
+                  }}</app-badge>
+                </div>
+                @if (transition.permitted && !hidden().includes(transition.action)) {
+                  <button
+                    type="button"
+                    appButton
+                    size="sm"
+                    [variant]="isClosing(transition) ? 'outline' : 'default'"
+                    [disabled]="busy() || !transition.ready"
+                    [attr.aria-describedby]="transition.ready ? null : 'why-' + transition.action"
+                    (click)="start(transition)"
+                  >
+                    {{ actionLabel(transition.action) }}
+                  </button>
+                } @else if (via()[transition.action]) {
+                  <span class="text-xs text-muted-foreground">{{
+                    via()[transition.action] | t
+                  }}</span>
+                } @else if (!transition.permitted) {
+                  <span class="text-xs text-muted-foreground">{{
+                    'pipeline.performedBy' | t: { roles: roles(transition.performedBy) }
+                  }}</span>
+                }
+              </div>
+              @if (transition.approvedBy.length) {
+                <p class="mt-1 text-xs text-muted-foreground">
+                  {{ 'pipeline.approvedBy' | t: { roles: roles(transition.approvedBy) } }}
+                </p>
+              }
+              @if (unmetOf(transition).length) {
+                <div [id]="'why-' + transition.action" class="mt-2">
+                  <p class="text-xs font-medium">
+                    {{ 'pipeline.whyBlocked' | t: { action: actionLabel(transition.action) } }}
+                  </p>
+                  <ul class="mt-1 flex flex-col gap-0.5 text-xs" data-testid="unmet">
+                    @for (item of unmetOf(transition); track item.code) {
+                      <li class="flex gap-1.5">
+                        <span aria-hidden="true" class="text-destructive">✗</span
+                        >{{ requirementLabel(item) }}
+                      </li>
+                    }
+                  </ul>
+                </div>
+              }
+              @if (metOf(transition).length) {
+                <details class="mt-2 text-xs text-muted-foreground">
+                  <summary class="cursor-pointer">
+                    {{ 'pipeline.metCount' | t: { count: metOf(transition).length } }}
+                  </summary>
+                  <ul class="mt-1 flex flex-col gap-0.5">
+                    @for (item of metOf(transition); track item.code) {
+                      <li class="flex gap-1.5">
+                        <span aria-hidden="true" class="text-success-tint">✓</span
+                        >{{ requirementLabel(item) }}
+                      </li>
+                    }
+                  </ul>
+                </details>
+              }
+              @if (pending()?.action === transition.action) {
+                <form class="mt-3 flex flex-col gap-2" (submit)="confirm($event)">
+                  <label [for]="'reason-' + transition.action" class="text-xs font-medium">{{
+                    'pipeline.reason' | t
+                  }}</label>
+                  <textarea
+                    appTextarea
+                    [id]="'reason-' + transition.action"
+                    rows="2"
+                    [value]="reason()"
+                    (input)="reason.set($any($event.target).value)"
+                  ></textarea>
+                  <div class="flex gap-2">
+                    <button
+                      type="submit"
+                      appButton
+                      size="sm"
+                      [disabled]="busy() || !reason().trim()"
+                    >
+                      {{ 'pipeline.confirm' | t }}
+                    </button>
+                    <button
+                      type="button"
+                      appButton
+                      size="sm"
+                      variant="outline"
+                      (click)="pending.set(null)"
+                    >
+                      {{ 'common.actions.cancel' | t }}
+                    </button>
+                  </div>
+                </form>
+              }
+            </li>
+          }
+        </ul>
+      </div>
+    }
+
+    <!-- Open blockers with their owner and due date. -->
+    @if (openBlockers().length) {
+      <div>
+        <h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          {{ 'pipeline.blockersTitle' | t }}
+        </h3>
+        <ul class="flex flex-col gap-2 text-sm" data-testid="blockers">
+          @for (blocker of openBlockers(); track blocker.code + blocker.dueAt) {
+            <li class="flex flex-wrap items-center gap-2">
+              <app-badge [tone]="blocker.severity === 'warning' ? 'warning' : 'danger'">{{
+                'pipeline.severity.' + blocker.severity | t
+              }}</app-badge>
+              <span>{{ blocker.description }}</span>
+              <span class="text-xs text-muted-foreground">
+                {{ people.name(blocker.ownerId) }} ·
+                <span class="tabular" [class.text-destructive]="isOverdue(blocker.dueAt)">{{
+                  i18n.formatDate(blocker.dueAt)
+                }}</span>
+              </span>
+            </li>
+          }
+        </ul>
+      </div>
+    }
+
+    <!-- Stage history: never rewritten. -->
+    <details [open]="historyOpen()">
+      <summary
+        class="cursor-pointer text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+      >
+        {{ 'pipeline.historyTitle' | t: { count: view().history.length } }}
+      </summary>
+      <ol class="mt-2 flex flex-col gap-2 text-sm">
+        @for (entry of historyNewestFirst(); track $index) {
+          <li class="border-s-2 border-border ps-3">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="font-medium"
+                >{{ entry.fromStage ? stageLabel(entry.fromStage) + ' → ' : ''
+                }}{{ stageLabel(entry.toStage) }}</span
+              >
+              @if (entry.action) {
+                <app-badge tone="outline">{{ actionLabel(entry.action) }}</app-badge>
+              }
+            </div>
+            <p class="text-xs text-muted-foreground">
+              <span class="tabular">{{ i18n.formatDate(entry.enteredAt, true) }}</span> ·
+              {{ entry.changedBy ? people.name(entry.changedBy) : ('pipeline.system' | t) }}
+              @if (entry.evidence?.length) {
+                · {{ 'pipeline.evidenceCount' | t: { count: entry.evidence!.length } }}
+              }
+              @if (entry.approvalIds?.length) {
+                · {{ 'pipeline.approvalCount' | t: { count: entry.approvalIds!.length } }}
+              }
+            </p>
+            @if (entry.reason) {
+              <p class="text-xs">{{ entry.reason }}</p>
+            }
+          </li>
+        }
+      </ol>
+    </details>
+  </div>
+</section>

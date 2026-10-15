@@ -251,9 +251,50 @@
           <input type="checkbox" id="lq-financing" class="size-4 rounded border-input accent-primary" [formField]="leadForm.q.financingInterest" />
           <label appLabel for="lq-financing">{{ 'crm.leads.qualification.financingInterest' | t }}</label>
         </div>
+        <div>
+          <label appLabel for="lq-crole" class="mb-1.5 block">{{ 'crm.leads.qualification.contactRole' | t }}</label>
+          <app-select>
+            <select appSelect id="lq-crole" [formField]="leadForm.q.contactRole">
+              <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
+              @for (option of reference.options('contact_role'); track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+          </app-select>
+        </div>
+        <div>
+          <label appLabel for="lq-verify" class="mb-1.5 block">{{ 'crm.leads.qualification.verificationState' | t }}</label>
+          <app-select>
+            <select appSelect id="lq-verify" [formField]="leadForm.q.verificationState">
+              <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
+              @for (option of verificationStates; track option) {
+                <option [value]="option">{{ 'crm.leads.qualification.verificationStates.' + option | t }}</option>
+              }
+            </select>
+          </app-select>
+        </div>
+        <div>
+          <label appLabel for="lq-dmstatus" class="mb-1.5 block">{{ 'crm.leads.qualification.decisionMakerStatus' | t }}</label>
+          <app-select>
+            <select appSelect id="lq-dmstatus" [formField]="leadForm.q.decisionMakerStatus">
+              <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
+              @for (option of decisionMakerStatuses; track option) {
+                <option [value]="option">{{ 'crm.leads.qualification.decisionMakerStatuses.' + option | t }}</option>
+              }
+            </select>
+          </app-select>
+        </div>
+        <div>
+          <label appLabel for="lq-usecase" class="mb-1.5 block">{{ 'crm.leads.qualification.useCase' | t }}</label>
+          <input appInput id="lq-usecase" [formField]="leadForm.q.useCase" />
+        </div>
         <div class="sm:col-span-2">
           <label appLabel for="lq-req" class="mb-1.5 block">{{ 'crm.leads.qualification.requirements' | t }}</label>
           <textarea appTextarea id="lq-req" rows="3" [formField]="leadForm.q.requirements"></textarea>
+        </div>
+        <div class="sm:col-span-2">
+          <label appLabel for="lq-constraints" class="mb-1.5 block">{{ 'crm.leads.qualification.constraints' | t }}</label>
+          <textarea appTextarea id="lq-constraints" rows="2" [formField]="leadForm.q.constraints"></textarea>
         </div>
       </div>
     </section>

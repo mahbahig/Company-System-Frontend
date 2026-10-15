@@ -40,7 +40,7 @@ import { LeadsApi } from '../leads-api.service';
 import type { Lead } from '../models/lead.interface';
 import { RowLinkDirective } from '../../../shared/ui/table/row-link.directive';
 
-const flag = (value: string | undefined) => value === '1';
+const flag = (value: string | undefined) => value === '1' || value === 'true';
 const SLA_TONE: Record<string, 'success' | 'warning' | 'danger' | 'neutral'> = {
   on_track: 'success',
   met: 'success',

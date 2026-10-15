@@ -1,0 +1,8 @@
+@if (heading()) {
+  <span class="block font-semibold">{{ heading() }}</span>
+}
+@if (text()) {
+  <span class="block" [class.font-normal]="heading()" [class.opacity-80]="heading()">{{
+    text()
+  }}</span>
+}

@@ -20,6 +20,13 @@
         "decisionMakerRole": "منصب صاحب القرار",
         "siteAvailability": "إتاحة الموقع",
         "requirements": "المتطلبات والملاحظات",
+        "useCase": "الغرض من الاستخدام",
+        "contactRole": "دور جهة الاتصال",
+        "verificationState": "التحقق من بيانات الاتصال",
+        "verificationStates": { "unverified": "لم يتم التحقق", "pending": "التحقق قيد الانتظار", "verified": "تم التحقق" },
+        "decisionMakerStatus": "دور جهة الاتصال في القرار",
+        "decisionMakerStatuses": { "decision_maker": "صاحب القرار", "influencer": "مؤثر في القرار", "unknown": "غير معروف" },
+        "constraints": "القيود",
         "timelines": {
           "immediate": "فوري",
           "1_3_months": "1–3 أشهر",

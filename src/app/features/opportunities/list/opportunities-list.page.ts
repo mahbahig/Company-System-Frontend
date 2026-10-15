@@ -32,7 +32,7 @@ import { OpportunitiesApi } from '../opportunities-api.service';
 import type { Opportunity } from '../models/opportunity.interface';
 import { RowLinkDirective } from '../../../shared/ui/table/row-link.directive';
 
-const flag = (value: string | undefined) => value === '1';
+const flag = (value: string | undefined) => value === '1' || value === 'true';
 
 /** Opportunity list columns; the opportunity number always stays. */
 const OPPORTUNITY_COLUMNS: ColumnDef[] = [
@@ -96,6 +96,8 @@ export class OpportunitiesListPage {
   readonly health = input<string>();
   readonly incomplete = input<string>();
   readonly intakeIncomplete = input<string>();
+  readonly stagnant = input<string>();
+  readonly technicalGap = input<string>();
   readonly page = input(1, { transform: (value: unknown) => numberAttribute(value, 1) });
 
   protected readonly canCreate = computed(() => this.auth.can('opportunities.create'));
@@ -113,6 +115,8 @@ export class OpportunitiesListPage {
       health: this.health(),
       incomplete: flag(this.incomplete()) || undefined,
       intakeIncomplete: flag(this.intakeIncomplete()) || undefined,
+      stagnant: flag(this.stagnant()) || undefined,
+      technicalGap: flag(this.technicalGap()) || undefined,
       page: this.page(),
     }),
     stream: ({ params }) => this.opportunities.list(params),
@@ -129,7 +133,12 @@ export class OpportunitiesListPage {
         this.priority() ||
         flag(this.mine()) ||
         flag(this.collaborating()) ||
-        flag(this.nextActionOverdue())
+        flag(this.nextActionOverdue()) ||
+        this.health() ||
+        flag(this.incomplete()) ||
+        flag(this.intakeIncomplete()) ||
+        flag(this.stagnant()) ||
+        flag(this.technicalGap())
       ),
   );
 

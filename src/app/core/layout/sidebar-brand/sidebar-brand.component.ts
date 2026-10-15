@@ -10,20 +10,7 @@ import { TranslatePipe } from '../../i18n/translate.pipe';
 @Component({
   selector: 'app-sidebar-brand',
   imports: [TranslatePipe],
-  template: `
-    <img
-      src="brand/ecotech-sun.png"
-      alt=""
-      width="36"
-      height="36"
-      draggable="false"
-      decoding="async"
-      class="size-9 shrink-0 select-none animate-brand-spin"
-    />
-    <span class="truncate text-sm font-semibold tracking-tight text-sidebar-foreground" [class.sr-only]="collapsed()">{{
-      'app.name' | t
-    }}</span>
-  `,
+  templateUrl: './sidebar-brand.component.html',
   host: {
     class: 'flex items-center gap-3 py-4 transition-[padding] duration-200 ease-premium',
     '[class.px-3]': '!collapsed()',

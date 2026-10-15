@@ -396,6 +396,7 @@ export const ROLE_PERMISSIONS: Record<RoleKey, Partial<Record<PermissionCode, Sc
     'tasks.view': 'team',
     'technical_proposals.view': 'team',
     'users.view': 'all',
+    'users.view_performance': 'team',
     'visits.create': 'team',
     'visits.edit': 'team',
     'visits.view': 'team',

@@ -7,14 +7,7 @@ import { Component, signal } from '@angular/core';
  */
 @Component({
   selector: 'app-tooltip-panel',
-  template: `
-    @if (heading()) {
-      <span class="block font-semibold">{{ heading() }}</span>
-    }
-    @if (text()) {
-      <span class="block" [class.font-normal]="heading()" [class.opacity-80]="heading()">{{ text() }}</span>
-    }
-  `,
+  templateUrl: './tooltip-panel.component.html',
   host: {
     'aria-hidden': 'true',
     class:

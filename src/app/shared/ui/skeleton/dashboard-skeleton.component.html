@@ -1,0 +1,18 @@
+<div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+  @for (tile of [0, 1, 2, 3]; track tile) {
+    <div class="flex flex-col gap-3 rounded-lg border border-border bg-card p-5">
+      <app-skeleton class="h-3 w-24" />
+      <app-skeleton class="h-7 w-20" />
+    </div>
+  }
+</div>
+<div class="grid gap-6 lg:grid-cols-2">
+  @for (panel of [0, 1]; track panel) {
+    <div class="flex flex-col gap-4 rounded-lg border border-border bg-card p-6">
+      <app-skeleton class="h-5 w-40" />
+      @for (bar of [0, 1, 2, 3]; track bar) {
+        <app-skeleton class="h-3" [style.width.%]="90 - bar * 15" />
+      }
+    </div>
+  }
+</div>

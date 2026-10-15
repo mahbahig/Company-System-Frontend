@@ -1,0 +1,203 @@
+@if (workflow.hasValue()) {
+  <app-pipeline-tracker
+    [view]="workflow.value().opportunity"
+    [via]="opportunityVia"
+    [formActions]="['confirm_need', 'close_lost']"
+    [hidden]="hiddenOpportunityActions"
+    [busy]="busy()"
+    [error]="error()"
+    (act)="onAction($event)"
+  />
+
+  @if (form() === 'confirm_need') {
+    <form
+      class="flex flex-col gap-3 rounded-md border border-border p-4"
+      (submit)="confirmNeed($event)"
+    >
+      <h3 class="text-sm font-semibold">{{ 'pipeline.actions.confirm_need' | t }}</h3>
+      <div class="max-w-xs">
+        <label appLabel for="need-method" required>{{ 'crm.opportunities.need.method' | t }}</label>
+        <app-select class="mt-1.5">
+          <select
+            appSelect
+            id="need-method"
+            [value]="needMethod()"
+            (change)="needMethod.set($any($event.target).value)"
+          >
+            @for (method of needMethods; track method) {
+              <option [value]="method">{{ 'crm.opportunities.need.methods.' + method | t }}</option>
+            }
+          </select>
+        </app-select>
+      </div>
+      <div>
+        <label appLabel for="need-note" required>{{ 'crm.opportunities.need.note' | t }}</label>
+        <textarea
+          appTextarea
+          id="need-note"
+          rows="2"
+          class="mt-1.5"
+          [value]="needNote()"
+          (input)="needNote.set($any($event.target).value)"
+        ></textarea>
+      </div>
+      <div class="flex gap-2">
+        <button type="submit" appButton size="sm" [disabled]="busy() || !needNote().trim()">
+          {{ 'pipeline.confirm' | t }}
+        </button>
+        <button type="button" appButton size="sm" variant="outline" (click)="form.set(null)">
+          {{ 'common.actions.cancel' | t }}
+        </button>
+      </div>
+    </form>
+  }
+
+  @if (form() === 'close_lost') {
+    <form
+      class="flex flex-col gap-3 rounded-md border border-destructive/40 p-4"
+      (submit)="closeLost($event)"
+    >
+      <h3 class="text-sm font-semibold">{{ 'pipeline.actions.close_lost' | t }}</h3>
+      <div class="grid gap-3 sm:grid-cols-2">
+        <div>
+          <label appLabel for="lost-code" required>{{
+            'crm.opportunities.transition.reasonCode' | t
+          }}</label>
+          <app-select class="mt-1.5">
+            <select
+              appSelect
+              id="lost-code"
+              [value]="lostCode()"
+              (change)="lostCode.set($any($event.target).value)"
+            >
+              <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
+              @for (option of reference.options('loss_reason'); track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+          </app-select>
+        </div>
+        <div>
+          <label appLabel for="lost-competitor">{{
+            'crm.opportunities.transition.competitor' | t
+          }}</label>
+          <app-select class="mt-1.5">
+            <select
+              appSelect
+              id="lost-competitor"
+              [value]="lostCompetitor()"
+              (change)="lostCompetitor.set($any($event.target).value)"
+            >
+              <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
+              @for (option of reference.options('competitor'); track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+          </app-select>
+        </div>
+        <div class="sm:col-span-2">
+          <label appLabel for="lost-feedback">{{
+            'crm.opportunities.lost.finalFeedback' | t
+          }}</label>
+          <textarea
+            appTextarea
+            id="lost-feedback"
+            rows="2"
+            class="mt-1.5"
+            [value]="lostFeedback()"
+            (input)="lostFeedback.set($any($event.target).value)"
+          ></textarea>
+        </div>
+        <div>
+          <label appLabel for="lost-reopen">{{ 'crm.opportunities.lost.reopenAt' | t }}</label>
+          <input
+            appInput
+            id="lost-reopen"
+            type="date"
+            class="mt-1.5"
+            [value]="lostReopenAt()"
+            (input)="lostReopenAt.set($any($event.target).value)"
+          />
+        </div>
+      </div>
+      <div class="flex gap-2">
+        <button
+          type="submit"
+          appButton
+          size="sm"
+          variant="destructive"
+          [disabled]="busy() || !lostCode()"
+        >
+          {{ 'pipeline.confirm' | t }}
+        </button>
+        <button type="button" appButton size="sm" variant="outline" (click)="form.set(null)">
+          {{ 'common.actions.cancel' | t }}
+        </button>
+      </div>
+    </form>
+  }
+
+  @if (workflow.value().deal; as deal) {
+    <app-pipeline-tracker [view]="deal" [hidden]="dealActions" [via]="dealVia" />
+    @if (canFinance()) {
+      <form
+        class="flex flex-wrap items-end gap-3 rounded-md border border-border p-4"
+        (submit)="toggleHold($event)"
+      >
+        <div class="text-sm">
+          <span class="font-medium">{{ 'crm.opportunities.finance.hold' | t }}:</span>
+          {{ (opportunity().deal?.financeHold?.active ? 'crm.common.yes' : 'crm.common.no') | t }}
+          @if (
+            opportunity().deal?.financeHold?.active && opportunity().deal?.financeHold?.reasonCode
+          ) {
+            ({{ opportunity().deal?.financeHold?.reasonCode }})
+          }
+        </div>
+        @if (!opportunity().deal?.financeHold?.active) {
+          <div>
+            <label appLabel for="hold-reason" class="mb-1.5 block text-xs">{{
+              'crm.opportunities.finance.reasonCode' | t
+            }}</label>
+            <input
+              appInput
+              id="hold-reason"
+              [value]="holdReason()"
+              (input)="holdReason.set($any($event.target).value)"
+              placeholder="payment_overdue"
+            />
+          </div>
+        }
+        <div class="min-w-48 flex-1">
+          <label appLabel for="hold-note" class="mb-1.5 block text-xs">{{
+            'pipeline.reason' | t
+          }}</label>
+          <input
+            appInput
+            id="hold-note"
+            [value]="holdNote()"
+            (input)="holdNote.set($any($event.target).value)"
+          />
+        </div>
+        <button
+          type="submit"
+          appButton
+          size="sm"
+          variant="outline"
+          [disabled]="
+            busy() ||
+            (opportunity().deal?.financeHold?.active ? !holdNote().trim() : !holdReason().trim())
+          "
+        >
+          {{
+            (opportunity().deal?.financeHold?.active
+              ? 'crm.opportunities.finance.release'
+              : 'crm.opportunities.finance.place'
+            ) | t
+          }}
+        </button>
+      </form>
+    }
+  }
+} @else if (workflow.error()) {
+  <app-alert variant="destructive">{{ 'errors.db.unexpected' | t }}</app-alert>
+}

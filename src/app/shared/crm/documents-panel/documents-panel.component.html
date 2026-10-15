@@ -1,0 +1,118 @@
+<section class="flex flex-col gap-4" [attr.aria-labelledby]="headingId">
+  <div class="flex flex-wrap items-center justify-between gap-2">
+    <h2 [id]="headingId" class="text-lg font-semibold">{{ 'docs.title' | t }}</h2>
+    @if (canUpload()) {
+      <button
+        type="button"
+        appButton
+        variant="outline"
+        size="sm"
+        (click)="showUpload.set(!showUpload())"
+      >
+        {{ 'docs.upload' | t }}
+      </button>
+    }
+  </div>
+
+  @if (error(); as message) {
+    <app-alert variant="destructive">{{ message }}</app-alert>
+  }
+
+  @if (showUpload()) {
+    <form
+      class="grid gap-3 rounded-md border border-border p-4 sm:grid-cols-4"
+      (submit)="upload($event)"
+    >
+      <div class="sm:col-span-2">
+        <label appLabel [for]="headingId + '-file'" required>{{ 'docs.file' | t }}</label>
+        <input
+          appInput
+          type="file"
+          [id]="headingId + '-file'"
+          accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.csv,.dwg"
+          capture="environment"
+          (change)="pick($event)"
+        />
+      </div>
+      <div>
+        <label appLabel [for]="headingId + '-category'" required>{{ 'docs.category' | t }}</label>
+        <app-select>
+          <select
+            appSelect
+            [id]="headingId + '-category'"
+            [value]="category()"
+            (change)="category.set($any($event.target).value)"
+          >
+            <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>
+            @for (option of reference.options('document_category'); track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
+            }
+          </select>
+        </app-select>
+      </div>
+      <div>
+        <label appLabel [for]="headingId + '-class'">{{ 'docs.classification' | t }}</label>
+        <app-select>
+          <select
+            appSelect
+            [id]="headingId + '-class'"
+            [value]="classification()"
+            (change)="classification.set($any($event.target).value)"
+          >
+            @for (value of classifications; track value) {
+              <option [value]="value">{{ value | enum: 'documentClassification' }}</option>
+            }
+          </select>
+        </app-select>
+      </div>
+      <div class="sm:col-span-4">
+        <button
+          type="submit"
+          appButton
+          size="sm"
+          [disabled]="uploading() || !file() || !category()"
+        >
+          {{ (uploading() ? 'docs.uploading' : 'docs.save') | t }}
+        </button>
+      </div>
+    </form>
+  }
+
+  @if (rows().length) {
+    <ul class="divide-y divide-border rounded-md border border-border">
+      @for (doc of rows(); track doc.id) {
+        <li class="flex flex-wrap items-center justify-between gap-3 p-3">
+          <div class="min-w-0">
+            <p class="truncate text-sm font-medium" dir="auto">{{ doc.fileName }}</p>
+            <p class="text-xs text-muted-foreground">
+              {{ reference.label('document_category', doc.category) }} ·
+              {{ doc.classification | enum: 'documentClassification' }} · v{{ doc.version }} ·
+              <span dir="ltr">{{ size(doc.size) }}</span> ·
+              {{ i18n.formatDate(doc.uploadedAt ?? doc.createdAt, true) }}
+              @if (doc.generated) {
+                · {{ 'docs.generated' | t }}
+              }
+              @if (fromOtherRecord(doc)) {
+                · {{ 'docs.from' | t }} {{ doc.entityType | enum: 'documentEntityType' }}
+                @if (doc.parentLabel) {
+                  <span dir="ltr"> {{ doc.parentLabel }}</span>
+                }
+              }
+            </p>
+          </div>
+          @if (canDownload()) {
+            <button type="button" appButton variant="ghost" size="sm" (click)="download(doc)">
+              {{ 'docs.download' | t }}
+            </button>
+          }
+        </li>
+      }
+    </ul>
+  } @else if (!documents.isLoading()) {
+    <p
+      class="rounded-md border border-dashed border-border p-6 text-center text-sm text-muted-foreground"
+    >
+      {{ 'docs.empty' | t }}
+    </p>
+  }
+</section>

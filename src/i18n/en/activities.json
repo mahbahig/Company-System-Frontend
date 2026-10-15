@@ -4,7 +4,7 @@
     "empty": "Nothing recorded yet.",
     "cancel": "Cancel",
     "cancelled": "Cancelled.",
-    "calls": { "title": "Calls", "subtitle": "Logged calls with their outcome and follow-up.", "new": "Log a call", "detail": "Call" },
+    "calls": { "title": "Calls", "subtitle": "Logged calls with their outcome and follow-up.", "new": "Log a call", "detail": "Call", "searchPlaceholder": "Search by owner, name or phone number" },
     "meetings": {
       "title": "Meetings",
       "subtitle": "Scheduled and held customer meetings.",

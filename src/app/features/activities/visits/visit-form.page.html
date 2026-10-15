@@ -1,0 +1,111 @@
+<app-breadcrumbs [items]="crumbs()" />
+<app-page-header [heading]="'act.visits.new' | t" class="!mb-0" />
+<form appCard class="max-w-3xl" appSaveShortcut (submit)="save($event)">
+  <div appCardContent class="grid gap-4 sm:grid-cols-2">
+    @if (actions.error(); as text) {
+      <app-alert variant="destructive" class="sm:col-span-2">{{ text }}</app-alert>
+    }
+    <div>
+      <label appLabel for="vs-customer" required>{{ 'act.fields.customer' | t }}</label>
+      <app-record-picker kind="customer" inputId="vs-customer" [(value)]="customer" />
+    </div>
+    <div>
+      <label appLabel for="vs-opp">{{ 'act.fields.opportunity' | t }}</label>
+      <app-record-picker
+        kind="opportunity"
+        inputId="vs-opp"
+        [parentId]="customer() || undefined"
+        [(value)]="opportunity"
+      />
+    </div>
+    @if (customer()) {
+      <div>
+        <label appLabel for="vs-site">{{ 'act.fields.site' | t }}</label>
+        <app-record-picker kind="site" inputId="vs-site" [parentId]="customer()" [(value)]="site" />
+      </div>
+      <div>
+        <label appLabel for="vs-contact">{{ 'act.fields.contact' | t }}</label>
+        <app-record-picker
+          kind="contact"
+          inputId="vs-contact"
+          [parentId]="customer()"
+          [(value)]="contact"
+        />
+      </div>
+    }
+    <div>
+      <label appLabel for="vs-purpose" required>{{ 'act.fields.purpose' | t }}</label>
+      <app-select>
+        <select
+          appSelect
+          id="vs-purpose"
+          [value]="form().purpose"
+          (change)="set('purpose', $any($event.target).value)"
+        >
+          @for (purpose of purposes; track purpose) {
+            <option [value]="purpose">{{ purpose | enum: 'visitPurpose' }}</option>
+          }
+        </select>
+      </app-select>
+    </div>
+    <div>
+      <label appLabel for="vs-type">{{ 'act.fields.visitType' | t }}</label>
+      <app-select>
+        <select
+          appSelect
+          id="vs-type"
+          [value]="form().visitTypeCode"
+          (change)="set('visitTypeCode', $any($event.target).value)"
+        >
+          <option value="">—</option>
+          @for (option of reference.options('visit_type'); track option.value) {
+            <option [value]="option.value">{{ option.label }}</option>
+          }
+        </select>
+      </app-select>
+    </div>
+    <div>
+      <label appLabel for="vs-at" required>{{ 'act.columns.when' | t }}</label>
+      <input
+        appInput
+        id="vs-at"
+        type="datetime-local"
+        dir="ltr"
+        [value]="form().scheduledAt"
+        (change)="set('scheduledAt', $any($event.target).value)"
+      />
+    </div>
+    <div>
+      <label appLabel for="vs-address">{{ 'act.fields.plannedAddress' | t }}</label>
+      <input
+        appInput
+        id="vs-address"
+        [value]="form().plannedAddress"
+        (input)="set('plannedAddress', $any($event.target).value)"
+      />
+    </div>
+    <label class="flex items-center gap-2 text-sm sm:col-span-2"
+      ><input
+        type="checkbox"
+        [checked]="needsAssessment()"
+        (change)="needsAssessment.set($any($event.target).checked)"
+      />
+      {{ 'act.fields.requiresTechnicalAssessment' | t }}</label
+    >
+    <div class="flex flex-col gap-1.5 sm:col-span-2">
+      <button
+        type="submit"
+        appButton
+        class="self-start"
+        [disabled]="actions.busy() || !customer() || !form().scheduledAt"
+        [attr.aria-describedby]="missing() ? 'visits-form-why' : null"
+        aria-keyshortcuts="Control+S Meta+S"
+      >
+        {{ (actions.busy() ? 'crm.common.saving' : 'crm.common.save') | t }}
+      </button>
+      @if (missing(); as key) {
+        <p id="visits-form-why" class="text-xs text-muted-foreground">{{ key | t }}</p>
+      }
+    </div>
+  </div>
+</form>

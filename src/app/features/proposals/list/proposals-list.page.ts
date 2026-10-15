@@ -24,107 +24,7 @@ const STATUSES = ['draft', 'pending_approval', 'approved', 'released', 'sent', '
 @Component({
   selector: 'app-proposals-list-page',
   imports: [SkeletonRowComponent, RouterLink, TranslatePipe, StatusBadgeComponent, AlertComponent, BadgeComponent, PageHeaderComponent, ListToolbarComponent, PaginationComponent, ...TABLE_IMPORTS],
-  template: `
-    <app-page-header [heading]="'prop.listTitle' | t" [subtitle]="'prop.listSubtitle' | t" class="!mb-0" />
-    <app-list-toolbar [searchValue]="q() ?? ''" [filters]="filters()" [toggles]="toggles()" />
-    @if (result.error()) {
-      <app-alert variant="destructive">{{ i18n.errorText(result.error()) }}</app-alert>
-    }
-    <section class="flex flex-col gap-3" aria-labelledby="prop-pick-heading">
-      <div>
-        <h2 id="prop-pick-heading" class="text-lg font-semibold">{{ 'prop.pickOpportunity' | t }}</h2>
-        <p class="text-sm text-muted-foreground">{{ 'prop.pickOpportunityHint' | t }}</p>
-      </div>
-      @if (opportunities.error()) {
-        <app-alert variant="destructive">{{ i18n.errorText(opportunities.error()) }}</app-alert>
-      }
-      <app-table-wrapper [label]="'prop.pickOpportunity' | t" [attr.aria-busy]="opportunities.isLoading()">
-        <table appTable>
-          <thead appTableHeader>
-            <tr appTableRow>
-              <th appTableHead>{{ 'prop.columns.opportunity' | t }}</th>
-              <th appTableHead>{{ 'prop.columns.stage' | t }}</th>
-              <th appTableHead>{{ 'prop.columns.handoff' | t }}</th>
-              <th appTableHead><span class="sr-only">{{ 'prop.workspaceTitle' | t }}</span></th>
-            </tr>
-          </thead>
-          <tbody appTableBody>
-            @for (row of opportunityRows(); track row.id) {
-              <tr appTableRow [appRowLink]="['/', i18n.locale(), 'opportunities', row.id, 'proposals']">
-                <td appTableCell>
-                  <span class="tabular me-2 text-muted-foreground" dir="ltr">{{ row.opportunityNo }}</span>
-                  <a class="font-medium text-primary hover:underline" [routerLink]="['/', i18n.locale(), 'opportunities', row.id, 'proposals']">{{ row.name }}</a>
-                </td>
-                <td appTableCell>{{ reference.label('pipeline_stage', row.stage) }}</td>
-                <td appTableCell>
-                  @if (row.handoffStatus) {
-                    <app-status-badge enum="handoffStatus" [value]="row.handoffStatus" />
-                  } @else {
-                    <span class="text-muted-foreground">—</span>
-                  }
-                </td>
-                <td appTableCell class="text-end">
-                  <a class="text-sm text-primary hover:underline" [routerLink]="['/', i18n.locale(), 'opportunities', row.id, 'proposals']">{{ 'prop.workspaceTitle' | t }}</a>
-                </td>
-              </tr>
-            } @empty {
-              @if (opportunities.isLoading()) {
-                @for (i of [0, 1, 2, 3, 4]; track i) {
-                  <tr app-skeleton-row [columns]="4" [index]="i"></tr>
-                }
-              } @else {
-                <tr app-table-empty [colSpan]="4">{{ 'prop.noOpportunities' | t }}</tr>
-              }
-            }
-          </tbody>
-        </table>
-      </app-table-wrapper>
-    </section>
-
-    <h2 class="text-lg font-semibold">{{ 'prop.listTitle' | t }}</h2>
-    <app-table-wrapper [label]="'prop.listTitle' | t" [attr.aria-busy]="result.isLoading()">
-      <table appTable>
-        <thead appTableHeader>
-          <tr appTableRow>
-            <th appTableHead>{{ 'prop.columns.number' | t }}</th>
-            <th appTableHead>{{ 'prop.columns.version' | t }}</th>
-            <th appTableHead>{{ 'prop.columns.status' | t }}</th>
-            <th appTableHead>{{ 'prop.columns.capacity' | t }}</th>
-            <th appTableHead>{{ 'prop.columns.price' | t }}</th>
-            <th appTableHead>{{ 'prop.columns.validUntil' | t }}</th>
-          </tr>
-        </thead>
-        <tbody appTableBody>
-          @for (row of rows(); track row.id) {
-            <tr appTableRow [appRowLink]="['combined', row.id]">
-              <td appTableCell class="tabular whitespace-nowrap">
-                <a class="text-primary hover:underline" [routerLink]="['combined', row.id]" dir="ltr">{{ row.proposalNo }}</a>
-                @if (row.isFinal) {
-                  <app-badge tone="success" class="ms-1">{{ 'prop.final' | t }}</app-badge>
-                }
-              </td>
-              <td appTableCell class="tabular">v{{ row.versionNo }}</td>
-              <td appTableCell><app-status-badge enum="combinedProposalStatus" [value]="row.status" /></td>
-              <td appTableCell class="tabular">{{ row.kwp }}</td>
-              <td appTableCell class="tabular whitespace-nowrap">{{ i18n.formatMoney(row.price) }}</td>
-              <td appTableCell class="tabular whitespace-nowrap">{{ i18n.formatDate(row.validUntil) || '—' }}</td>
-            </tr>
-          } @empty {
-            @if (result.isLoading()) {
-              @for (i of [0, 1, 2, 3, 4]; track i) {
-                <tr app-skeleton-row [columns]="6" [index]="i"></tr>
-              }
-            } @else {
-              <tr app-table-empty [colSpan]="6">{{ 'prop.emptyVersions' | t }}</tr>
-            }
-          }
-        </tbody>
-      </table>
-    </app-table-wrapper>
-    @if (result.hasValue()) {
-      <app-pagination [page]="result.value().page" [pageCount]="result.value().pageCount" [total]="result.value().total" [pageSize]="result.value().pageSize" />
-    }
-  `,
+  templateUrl: './proposals-list.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
 export class ProposalsListPage {
@@ -136,10 +36,12 @@ export class ProposalsListPage {
   readonly q = input<string>();
   readonly status = input<string>();
   readonly mine = input<string>();
+  /** Exceptions Center: versions expiring within 7 days or recently expired. */
+  readonly expiring = input<string>();
   readonly page = input(1, { transform: (value: unknown) => numberAttribute(value, 1) });
 
   protected readonly result = rxResource({
-    params: () => ({ q: this.q(), status: this.status(), mine: this.mine() === '1' || undefined, page: this.page() }),
+    params: () => ({ q: this.q(), status: this.status(), mine: this.mine() === '1' || undefined, expiring: this.expiring() === '1' || undefined, page: this.page() }),
     stream: ({ params }) => this.api.combinedList(params),
   });
   /** Open opportunities the user can reach: where a new technical proposal is started (the workspace lives under the opportunity). */

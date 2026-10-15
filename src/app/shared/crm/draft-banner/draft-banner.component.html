@@ -1,0 +1,23 @@
+@if (offeredAt(); as at) {
+  <div
+    role="status"
+    class="flex flex-col gap-3 rounded-md border border-info/40 bg-info/10 p-4 text-sm text-info-tint sm:flex-row sm:items-center sm:justify-between animate-fade-in"
+  >
+    <p class="flex items-start gap-2">
+      <app-icon [icon]="icon" svgClass="mt-0.5 size-4 shrink-0" />
+      <span>{{ 'ux.drafts.offer' | t: { when: relative(at) } }}</span>
+    </p>
+    <div class="flex shrink-0 gap-2">
+      <button type="button" appButton size="sm" (click)="restore.emit()">
+        {{ 'ux.drafts.restore' | t }}
+      </button>
+      <button type="button" appButton size="sm" variant="ghost" (click)="discard.emit()">
+        {{ 'ux.drafts.discard' | t }}
+      </button>
+    </div>
+  </div>
+} @else if (savedAt(); as at) {
+  <p role="status" aria-live="polite" class="text-xs text-muted-foreground">
+    {{ 'ux.drafts.saved' | t: { when: relative(at) } }}
+  </p>
+}

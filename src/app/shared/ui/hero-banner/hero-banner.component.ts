@@ -11,13 +11,7 @@ import { DecorComponent } from '../../decor/decor.component';
 @Component({
   selector: 'app-hero-banner',
   imports: [DecorComponent],
-  template: `
-    <div aria-hidden="true" class="hero-surface absolute inset-0 -z-10"></div>
-    @defer (on idle) {
-      <app-decor composition="centerpiece" align="end" class="hero-decor absolute inset-0 -z-10" />
-    }
-    <div class="relative sm:max-w-[62%]"><ng-content /></div>
-  `,
+  templateUrl: './hero-banner.component.html',
   styles: `
     /* Warm light pooled at the end side (where the piece sits), a breath of
        the primary at the opposite corner. */

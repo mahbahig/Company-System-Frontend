@@ -5,7 +5,7 @@ import { badgeVariants, type BadgeTone } from './badge-variants';
 /** Status pill: `<app-badge tone="success">Won</app-badge>`. */
 @Component({
   selector: 'app-badge',
-  template: '<ng-content />',
+  templateUrl: './badge.component.html',
   host: { '[class]': 'classes()' },
 })
 export class BadgeComponent {

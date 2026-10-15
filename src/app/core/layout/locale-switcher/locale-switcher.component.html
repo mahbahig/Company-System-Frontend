@@ -1,0 +1,15 @@
+<button
+  type="button"
+  appButton
+  variant="ghost"
+  size="sm"
+  class="gap-2 px-2 sm:px-3"
+  [attr.aria-label]="label()"
+  [attr.lang]="target()"
+  [appTooltip]="label()"
+  appTooltipSide="bottom"
+  (click)="switch()"
+>
+  <app-icon [icon]="languages" />
+  <span class="hidden sm:inline">{{ targetName() }}</span>
+</button>

@@ -49,77 +49,7 @@ const CONTRACT_COLUMNS: ColumnDef[] = [
     TableSkeletonComponent,
     ...TABLE_IMPORTS,
   ],
-  template: `
-    <app-page-header [heading]="'contracts.title' | t" [subtitle]="'contracts.subtitle' | t" class="!mb-0" />
-    <div class="flex flex-wrap items-start justify-between gap-2">
-      <app-saved-views-bar list="contracts" />
-      <app-column-picker [columns]="columns" />
-    </div>
-    <app-list-toolbar [searchValue]="q() ?? ''" [filters]="filters()" [toggles]="toggles()" />
-    @if (result.error()) {
-      <app-alert variant="destructive">{{ i18n.errorText(result.error()) }}</app-alert>
-    }
-    <app-table-wrapper [label]="'contracts.title' | t" [attr.aria-busy]="result.isLoading()">
-      <table appTable>
-        <thead appTableHeader>
-          <tr appTableRow>
-            @if (columns.show('number')) {
-              <th appTableHead>{{ 'contracts.columns.number' | t }}</th>
-            }
-            @if (columns.show('customer')) {
-              <th appTableHead>{{ 'prop.columns.customer' | t }}</th>
-            }
-            @if (columns.show('opportunity')) {
-              <th appTableHead>{{ 'prop.columns.opportunity' | t }}</th>
-            }
-            @if (columns.show('status')) {
-              <th appTableHead>{{ 'contracts.columns.status' | t }}</th>
-            }
-            @if (columns.show('value')) {
-              <th appTableHead>{{ 'contracts.columns.value' | t }}</th>
-            }
-            @if (columns.show('date')) {
-              <th appTableHead>{{ 'contracts.columns.date' | t }}</th>
-            }
-          </tr>
-        </thead>
-        <tbody appTableBody>
-          @for (row of rows(); track row.id) {
-            <tr appTableRow [appRowLink]="row.id">
-              @if (columns.show('number')) {
-                <td appTableCell class="tabular whitespace-nowrap"><a class="text-primary hover:underline" [routerLink]="row.id" dir="ltr">{{ row.contractNo }}</a></td>
-              }
-              @if (columns.show('customer')) {
-                <td appTableCell>{{ customer(row) }}</td>
-              }
-              @if (columns.show('opportunity')) {
-                <td appTableCell>{{ opportunity(row) }}</td>
-              }
-              @if (columns.show('status')) {
-                <td appTableCell><app-status-badge enum="contractStatus" [value]="row.status" /></td>
-              }
-              @if (columns.show('value')) {
-                <td appTableCell class="tabular whitespace-nowrap">{{ i18n.formatMoney(row.value) }}</td>
-              }
-              @if (columns.show('date')) {
-                <td appTableCell class="tabular whitespace-nowrap">{{ i18n.formatDate(row.contractDate) || '—' }}</td>
-              }
-            </tr>
-          } @empty {
-            @if (!result.isLoading()) {
-              <tr app-table-empty [colSpan]="columns.count()">{{ 'contracts.empty' | t }}</tr>
-            }
-          }
-        </tbody>
-        @if (result.isLoading() && rows().length === 0) {
-          <tbody app-table-skeleton [columns]="columns.count()"></tbody>
-        }
-      </table>
-    </app-table-wrapper>
-    @if (result.hasValue()) {
-      <app-pagination [page]="result.value().page" [pageCount]="result.value().pageCount" [total]="result.value().total" [pageSize]="result.value().pageSize" />
-    }
-  `,
+  templateUrl: './contracts-list.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
 export class ContractsListPage {
@@ -130,10 +60,12 @@ export class ContractsListPage {
   readonly q = input<string>();
   readonly status = input<string>();
   readonly pending = input<string>();
+  /** Exceptions Center: sent for signature and not yet signed by both parties. */
+  readonly awaitingSignature = input<string>();
   readonly page = input(1, { transform: (value: unknown) => numberAttribute(value, 1) });
 
   protected readonly result = rxResource({
-    params: () => ({ q: this.q(), status: this.status(), pending: this.pending() === '1' || undefined, page: this.page() }),
+    params: () => ({ q: this.q(), status: this.status(), pending: this.pending() === '1' || undefined, awaitingSignature: this.awaitingSignature() === '1' || undefined, page: this.page() }),
     stream: ({ params }) => this.api.list(params),
   });
   protected readonly rows = computed(() => (this.result.hasValue() ? this.result.value().rows : []));

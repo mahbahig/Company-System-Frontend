@@ -34,60 +34,7 @@ interface SavedView {
 @Component({
   selector: 'app-saved-views-bar',
   imports: [CdkMenuTrigger, CdkMenu, CdkMenuItem, TranslatePipe, ButtonDirective, TooltipDirective],
-  template: `
-    <div class="flex flex-wrap items-center gap-2">
-      <button type="button" appButton variant="outline" size="sm" [cdkMenuTriggerFor]="menu">
-        {{ 'savedViews.views' | t }}
-        @if (activeView(); as view) {
-          <span class="max-w-40 truncate font-normal text-muted-foreground">· {{ view.name }}</span>
-        }
-      </button>
-      <ng-template #menu>
-        <div cdkMenu class="z-50 min-w-60 rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-md">
-          @for (view of views.value() ?? []; track view.id) {
-            <div class="flex items-center justify-between gap-2">
-              <button type="button" cdkMenuItem class="flex-1 rounded-sm px-3 py-2 text-start text-sm hover:bg-secondary focus:bg-secondary" [attr.aria-current]="view.id === activeView()?.id ? 'true' : null" [class.font-semibold]="view.id === activeView()?.id" (cdkMenuItemTriggered)="apply(view)">
-                {{ view.name }}
-                @if (view.visibility !== 'private') {
-                  <span class="ms-1 text-xs text-muted-foreground">({{ 'savedViews.visibility.' + view.visibility | t }})</span>
-                }
-              </button>
-              @if (mine(view)) {
-                <button type="button" cdkMenuItem class="rounded-sm px-2 py-1 text-xs text-destructive hover:bg-destructive/10" [attr.aria-label]="('crm.common.delete' | t) + ' ' + view.name" [appTooltip]="'ux.savedViews.delete' | t" (cdkMenuItemTriggered)="remove(view)">✕</button>
-              }
-            </div>
-          } @empty {
-            <p class="px-3 py-2 text-sm text-muted-foreground">{{ 'savedViews.none' | t }}</p>
-          }
-          <div role="separator" class="my-1 h-px bg-border"></div>
-          <button type="button" cdkMenuItem class="w-full rounded-sm px-3 py-2 text-start text-sm hover:bg-secondary focus:bg-secondary" (cdkMenuItemTriggered)="saving.set(true)">{{ 'savedViews.saveCurrent' | t }}</button>
-        </div>
-      </ng-template>
-      @if (saving()) {
-        <form class="flex flex-wrap items-center gap-2" (submit)="save($event)">
-          <input class="h-9 rounded-md border border-input bg-background px-2 text-sm" [attr.aria-label]="'savedViews.name' | t" [placeholder]="'savedViews.name' | t" [value]="name()" (input)="name.set($any($event.target).value)" />
-          <select class="h-9 rounded-md border border-input bg-background px-2 text-sm" [attr.aria-label]="'savedViews.share' | t" [value]="visibility()" (change)="visibility.set($any($event.target).value)">
-            <option value="private">{{ 'savedViews.visibility.private' | t }}</option>
-            @if (canShareTeam()) {
-              <option value="team">{{ 'savedViews.visibility.team' | t }}</option>
-            }
-            @if (canShareAll()) {
-              <option value="all">{{ 'savedViews.visibility.all' | t }}</option>
-            }
-          </select>
-          <button type="submit" appButton size="sm" [disabled]="busy() || !name().trim()">{{ 'crm.common.save' | t }}</button>
-          <button type="button" appButton variant="ghost" size="sm" (click)="saving.set(false)">{{ 'crm.common.cancel' | t }}</button>
-        </form>
-      }
-      @if (exportReport() && auth.can('data.export')) {
-        <button type="button" appButton variant="outline" size="sm" [disabled]="busy()" (click)="export('xlsx')">{{ 'savedViews.exportExcel' | t }}</button>
-        <button type="button" appButton variant="ghost" size="sm" [disabled]="busy()" (click)="export('csv')">CSV</button>
-      }
-      @if (message(); as text) {
-        <span class="text-xs text-muted-foreground" role="status">{{ text }}</span>
-      }
-    </div>
-  `,
+  templateUrl: './saved-views-bar.component.html',
 })
 export class SavedViewsBarComponent {
   private readonly api = inject(ApiService);

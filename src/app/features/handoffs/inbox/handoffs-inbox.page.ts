@@ -19,59 +19,7 @@ import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.compo
 @Component({
   selector: 'app-handoffs-inbox-page',
   imports: [SkeletonRowComponent, RouterLink, TranslatePipe, StatusBadgeComponent, AlertComponent, PageHeaderComponent, TabsComponent, PaginationComponent, ...TABLE_IMPORTS],
-  template: `
-    <app-page-header [heading]="'handoffs.inboxTitle' | t" [subtitle]="'handoffs.inboxSubtitle' | t" class="!mb-0" />
-    <app-tabs [tabs]="tabs" [active]="activeView()" (activeChange)="select($event)" [label]="'handoffs.inboxTitle' | t" />
-
-    @if (result.error()) {
-      <app-alert variant="destructive">{{ i18n.errorText(result.error()) }}</app-alert>
-    }
-    <app-table-wrapper [label]="'handoffs.inboxTitle' | t" [attr.aria-busy]="result.isLoading()">
-      <table appTable>
-        <thead appTableHeader>
-          <tr appTableRow>
-            <th appTableHead>{{ 'handoffs.columns.number' | t }}</th>
-            <th appTableHead>{{ 'handoffs.columns.opportunity' | t }}</th>
-            <th appTableHead>{{ 'handoffs.columns.customer' | t }}</th>
-            <th appTableHead>{{ 'handoffs.columns.submittedBy' | t }}</th>
-            <th appTableHead>{{ 'handoffs.columns.status' | t }}</th>
-            <th appTableHead>{{ 'handoffs.columns.submitted' | t }}</th>
-            <th appTableHead>{{ 'handoffs.columns.slaDue' | t }}</th>
-            <th appTableHead>{{ 'handoffs.columns.resubmissions' | t }}</th>
-          </tr>
-        </thead>
-        <tbody appTableBody>
-          @for (row of rows(); track row.id) {
-            <tr appTableRow [appRowLink]="opp(row) ? ['/', i18n.locale(), 'opportunities', opp(row)!.id, 'handoff'] : null">
-              <td appTableCell class="tabular whitespace-nowrap font-medium">
-                @if (opp(row); as o) {
-                  <a [routerLink]="['/', i18n.locale(), 'opportunities', o.id, 'handoff']" class="text-primary hover:underline" dir="ltr">{{ row.handoffNo }}</a>
-                }
-              </td>
-              <td appTableCell>{{ opp(row)?.name }} <span class="block text-xs text-muted-foreground tabular" dir="ltr">{{ opp(row)?.opportunityNo }}</span></td>
-              <td appTableCell>{{ customer(row) }}</td>
-              <td appTableCell class="whitespace-nowrap">{{ name(row.submittedBy) }}</td>
-              <td appTableCell><app-status-badge enum="handoffStatus" [value]="row.status" /></td>
-              <td appTableCell class="tabular whitespace-nowrap">{{ i18n.formatDate(row.submittedAt, true) }}</td>
-              <td appTableCell class="tabular whitespace-nowrap" [class.font-semibold]="late(row)" [class.text-destructive]="late(row)">{{ i18n.formatDate(row.slaDueAt, true) || '—' }}</td>
-              <td appTableCell class="tabular text-center">{{ row.resubmissionCount }}</td>
-            </tr>
-          } @empty {
-            @if (result.isLoading()) {
-              @for (i of [0, 1, 2, 3, 4]; track i) {
-                <tr app-skeleton-row [columns]="8" [index]="i"></tr>
-              }
-            } @else {
-              <tr app-table-empty [colSpan]="8">{{ 'handoffs.inboxEmpty' | t }}</tr>
-            }
-          }
-        </tbody>
-      </table>
-    </app-table-wrapper>
-    @if (result.hasValue()) {
-      <app-pagination [page]="result.value().page" [pageCount]="result.value().pageCount" [total]="result.value().total" [pageSize]="result.value().pageSize" />
-    }
-  `,
+  templateUrl: './handoffs-inbox.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
 export class HandoffsInboxPage {

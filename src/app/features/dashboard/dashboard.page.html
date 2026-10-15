@@ -1,0 +1,57 @@
+<app-hero-banner>
+  <app-page-header
+    [heading]="'dashboard.welcome' | t: { name: name() }"
+    [subtitle]="subtitle()"
+    class="!mb-0"
+  />
+  @if (user()?.roles?.length) {
+    <div class="mt-4 flex flex-wrap gap-2">
+      @for (role of user()?.roles ?? []; track role.id) {
+        <app-badge tone="info">{{ i18n.pick(role.nameAr, role.nameEn) }}</app-badge>
+      }
+    </div>
+  }
+</app-hero-banner>
+
+<app-quick-access />
+
+@if (tabs().length > 1) {
+  <app-tabs
+    [tabs]="tabs()"
+    [active]="active()"
+    (activeChange)="select($event)"
+    [label]="'analytics.dashboards' | t"
+  />
+}
+
+@if (active() && active() !== 'personal' && active() !== 'platform') {
+  <app-analytics-filter-bar [filter]="filter()" />
+}
+
+@if (available.hasValue() && !tabs().length) {
+  <p class="text-sm text-muted-foreground">{{ 'dashboard.noDashboards' | t }}</p>
+}
+
+@switch (active()) {
+  @case ('executive') {
+    <app-executive-dashboard [filter]="filter()" />
+  }
+  @case ('sales') {
+    <app-sales-dashboard [filter]="filter()" />
+  }
+  @case ('marketing') {
+    <app-marketing-dashboard [filter]="filter()" />
+  }
+  @case ('operational') {
+    <app-operational-dashboard [filter]="filter()" />
+  }
+  @case ('finance') {
+    <app-finance-dashboard [filter]="filter()" />
+  }
+  @case ('platform') {
+    <app-platform-dashboard />
+  }
+  @case ('personal') {
+    <app-personal-dashboard [filter]="filter()" />
+  }
+}

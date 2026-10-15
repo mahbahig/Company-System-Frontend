@@ -17,47 +17,7 @@ const ICONS: Record<Theme, IconNode> = { light: Sun, dark: Moon, system: Monitor
 @Component({
   selector: 'app-theme-toggle',
   imports: [TooltipDirective, CdkMenuTrigger, CdkMenu, CdkMenuItemRadio, ButtonDirective, IconComponent, TranslatePipe],
-  template: `
-    <button
-      type="button"
-      appButton
-      variant="ghost"
-      size="icon"
-      [cdkMenuTriggerFor]="menu"
-      [cdkMenuPosition]="positions"
-      [attr.aria-label]="label()"
-      [appTooltip]="label()"
-      appTooltipSide="bottom"
-    >
-      <app-icon [icon]="activeIcon()" />
-    </button>
-
-    <ng-template #menu>
-      <div
-        cdkMenu
-        class="z-50 min-w-44 overflow-hidden rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-lg"
-      >
-        <p class="px-2 py-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground" aria-hidden="true">
-          {{ 'common.theme.label' | t }}
-        </p>
-        @for (option of themes; track option) {
-          <button
-            type="button"
-            cdkMenuItemRadio
-            [cdkMenuItemChecked]="option === theme.theme()"
-            (cdkMenuItemTriggered)="theme.choose(option)"
-            class="flex w-full cursor-pointer items-center gap-2 rounded-sm px-2 py-2 text-sm outline-none hover:bg-secondary hover:text-secondary-foreground focus:bg-secondary focus:text-secondary-foreground"
-          >
-            <app-icon [icon]="icons[option]" svgClass="size-4 text-muted-foreground" />
-            <span class="flex-1 text-start">{{ 'common.theme.' + option | t }}</span>
-            @if (option === theme.theme()) {
-              <app-icon [icon]="check" svgClass="size-4 text-primary" />
-            }
-          </button>
-        }
-      </div>
-    </ng-template>
-  `,
+  templateUrl: './theme-toggle.component.html',
 })
 export class ThemeToggleComponent {
   protected readonly theme = inject(ThemeService);

@@ -103,7 +103,7 @@ export const NAV_SECTIONS: readonly NavSection[] = [
   {
     labelKey: 'administration',
     items: [
-      { labelKey: 'users', path: '/admin/users', icon: UserCog, permission: ['administration.manage_users', 'users.view_performance'] },
+      { labelKey: 'employees', path: '/employees', icon: UserCog, permission: ['administration.manage_users', 'users.view_performance'] },
       { labelKey: 'roles', path: '/admin/roles', icon: Shield, permission: 'security.manage_roles' },
       { labelKey: 'teams', path: '/admin/teams', icon: UsersRound, permission: 'administration.manage_teams' },
       { labelKey: 'referenceData', path: '/admin/reference-data', icon: Database, permission: 'settings.manage' },

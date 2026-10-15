@@ -1,0 +1,220 @@
+<section appCard aria-labelledby="hub-heading">
+  <div appCardHeader>
+    <h2 appCardTitle id="hub-heading">{{ 'oppHub.title' | t }}</h2>
+  </div>
+  <div appCardContent class="flex flex-col gap-4">
+    <nav class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3" [attr.aria-label]="'oppHub.title' | t">
+      @if (auth.can('intake.view')) {
+        <a class="hub-link" [routerLink]="base().concat('intake')">
+          <span class="font-medium">{{ 'oppHub.intake' | t }}</span>
+          @if (intakeStatus()) {
+            <app-status-badge enum="intakeStatus" [value]="intakeStatus()!" />
+          }
+        </a>
+      }
+      @if (auth.can('handoffs.view')) {
+        <a class="hub-link" [routerLink]="base().concat('handoff')">
+          <span class="font-medium">{{ 'oppHub.handoff' | t }}</span>
+          @if (handoffStatus()) {
+            <app-status-badge enum="handoffStatus" [value]="handoffStatus()!" />
+          }
+        </a>
+      }
+      @if (auth.can('assessments.view')) {
+        @for (a of assessments.value() ?? []; track a.id) {
+          <a class="hub-link" [routerLink]="['/', i18n.locale(), 'assessments', a.id]">
+            <span class="font-medium"
+              >{{ 'oppHub.assessment' | t }}
+              <span class="tabular text-xs" dir="ltr">{{ a.assessmentNo }}</span></span
+            >
+            <app-status-badge enum="assessmentStatus" [value]="a.status" />
+          </a>
+        } @empty {
+          <span class="hub-link text-muted-foreground">
+            <span>{{ 'oppHub.assessment' | t }} — {{ 'oppHub.notStarted' | t }}</span>
+            @if (auth.can('assessments.create') && !assessments.isLoading()) {
+              <button
+                type="button"
+                appButton
+                size="sm"
+                [disabled]="!handoffAccepted() || assessmentAction.busy()"
+                [attr.title]="handoffAccepted() ? null : ('oppHub.assessmentNeedsHandoff' | t)"
+                (click)="startAssessment()"
+              >
+                {{ 'oppHub.startAssessment' | t }}
+              </button>
+            }
+          </span>
+        }
+      }
+      @if (
+        auth.canAny([
+          'technical_proposals.view',
+          'financial_proposals.view',
+          'combined_proposals.view',
+        ])
+      ) {
+        <a class="hub-link" [routerLink]="base().concat('proposals')">
+          <span class="font-medium">{{ 'oppHub.proposals' | t }}</span>
+          @if (proposalStatus()) {
+            <app-status-badge enum="combinedProposalStatus" [value]="proposalStatus()!" />
+          }
+        </a>
+      }
+      @if (auth.can('contracts.view')) {
+        @for (c of contracts.value() ?? []; track c.id) {
+          <a class="hub-link" [routerLink]="['/', i18n.locale(), 'contracts', c.id]">
+            <span class="font-medium"
+              >{{ 'oppHub.contract' | t }}
+              <span class="tabular text-xs" dir="ltr"
+                >{{ c.contractNo }} v{{ c.versionNo }}</span
+              ></span
+            >
+            <app-status-badge enum="contractStatus" [value]="c.status" />
+          </a>
+        } @empty {
+          <span class="hub-link text-muted-foreground"
+            >{{ 'oppHub.contract' | t }} — {{ 'oppHub.notStarted' | t }}</span
+          >
+        }
+      }
+      @if (auth.can('projects.view')) {
+        @for (p of projects.value() ?? []; track p.id) {
+          <a class="hub-link" [routerLink]="['/', i18n.locale(), 'projects', p.id]">
+            <span class="font-medium"
+              >{{ 'oppHub.project' | t }}
+              <span class="tabular text-xs" dir="ltr">{{ p.projectNo }}</span></span
+            >
+            <app-status-badge enum="projectStatus" [value]="p.status" />
+          </a>
+        }
+      }
+    </nav>
+
+    @if (
+      auth.can('assessments.create') && !handoffAccepted() && !(assessments.value() ?? []).length
+    ) {
+      <p class="text-sm text-muted-foreground">{{ 'oppHub.assessmentNeedsHandoff' | t }}</p>
+    }
+    @if (assessmentAction.error(); as text) {
+      <app-alert variant="destructive">{{ text }}</app-alert>
+    }
+
+    <div
+      class="flex flex-wrap gap-2"
+      role="group"
+      [attr.aria-label]="'customer360.quickActions' | t"
+    >
+      @if (auth.can('calls.create')) {
+        <a
+          appButton
+          variant="outline"
+          size="sm"
+          [routerLink]="['/', i18n.locale(), 'calls', 'new']"
+          [queryParams]="activityParams()"
+          >{{ 'act.calls.new' | t }}</a
+        >
+      }
+      @if (auth.can('meetings.create')) {
+        <a
+          appButton
+          variant="outline"
+          size="sm"
+          [routerLink]="['/', i18n.locale(), 'meetings', 'new']"
+          [queryParams]="activityParams()"
+          >{{ 'act.meetings.new' | t }}</a
+        >
+      }
+      @if (auth.can('visits.create')) {
+        <a
+          appButton
+          variant="outline"
+          size="sm"
+          [routerLink]="['/', i18n.locale(), 'visits', 'new']"
+          [queryParams]="activityParams()"
+          >{{ 'act.visits.new' | t }}</a
+        >
+      }
+      @if (auth.can('tasks.create')) {
+        <a
+          appButton
+          variant="outline"
+          size="sm"
+          [routerLink]="['/', i18n.locale(), 'tasks', 'new']"
+          [queryParams]="{ opportunityId: opportunityId() }"
+          >{{ 'oppHub.newTask' | t }}</a
+        >
+      }
+    </div>
+  </div>
+</section>
+
+<section appCard aria-labelledby="roles-heading">
+  <div appCardHeader>
+    <h2 appCardTitle id="roles-heading">{{ 'oppHub.contactRoles' | t }}</h2>
+    <p appCardDescription>{{ 'oppHub.contactRolesHint' | t }}</p>
+  </div>
+  <div appCardContent class="flex flex-col gap-3">
+    @if (actions.message(); as text) {
+      <app-alert>{{ text }}</app-alert>
+    }
+    @if (actions.error(); as text) {
+      <app-alert variant="destructive">{{ text }}</app-alert>
+    }
+    @for (contact of contacts.value() ?? []; track contact.id) {
+      <div class="grid items-center gap-2 sm:grid-cols-[1fr_12rem_auto]">
+        <label class="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            [disabled]="!canEdit()"
+            [checked]="!!roleOf(contact.id)"
+            (change)="toggle(contact.id, $any($event.target).checked)"
+          />
+          <span class="font-medium">{{ contact.fullName }}</span>
+          @if (contact.jobTitle) {
+            <span class="text-xs text-muted-foreground">{{ contact.jobTitle }}</span>
+          }
+        </label>
+        @if (roleOf(contact.id); as current) {
+          <app-select>
+            <select
+              appSelect
+              [attr.aria-label]="'oppHub.role' | t"
+              [disabled]="!canEdit()"
+              [value]="current.role"
+              (change)="setRole(contact.id, $any($event.target).value)"
+            >
+              @for (role of roles; track role) {
+                <option [value]="role">{{ role | enum: 'contactRole' }}</option>
+              }
+            </select>
+          </app-select>
+          <label class="flex items-center gap-1 text-xs">
+            <input
+              type="radio"
+              name="primary-contact"
+              [disabled]="!canEdit()"
+              [checked]="primary() === contact.id"
+              (change)="primary.set(contact.id)"
+            />
+            {{ 'oppHub.primary' | t }}
+          </label>
+        }
+      </div>
+    } @empty {
+      <p class="text-sm text-muted-foreground">{{ 'oppHub.noContacts' | t }}</p>
+    }
+    @if (canEdit() && (contacts.value() ?? []).length) {
+      <button
+        type="button"
+        appButton
+        size="sm"
+        class="self-start"
+        [disabled]="actions.busy()"
+        (click)="saveRoles()"
+      >
+        {{ 'oppHub.saveRoles' | t }}
+      </button>
+    }
+  </div>
+</section>

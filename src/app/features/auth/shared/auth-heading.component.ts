@@ -16,21 +16,7 @@ import { IconComponent } from '../../../shared/ui/icon/icon.component';
 @Component({
   selector: 'app-auth-heading',
   imports: [IconComponent, TranslatePipe],
-  template: `
-    <p
-      class="flex items-center gap-2 text-xs font-semibold uppercase text-primary ltr:tracking-[0.16em]"
-    >
-      <app-icon [icon]="icon()" svgClass="size-3.5" />{{ eyebrow() | t }}
-    </p>
-    <h1
-      class="mt-3 text-[1.75rem] font-semibold leading-tight text-balance text-foreground ltr:tracking-[-0.022em] sm:text-[2rem]"
-    >
-      {{ heading() | t }}
-    </h1>
-    @if (lead(); as lead) {
-      <p class="mt-2.5 text-[0.9375rem] leading-relaxed text-muted-foreground">{{ lead | t }}</p>
-    }
-  `,
+  templateUrl: './auth-heading.component.html',
   host: { class: 'block animate-fade-in-up' },
 })
 export class AuthHeadingComponent {

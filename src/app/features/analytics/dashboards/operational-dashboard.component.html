@@ -1,0 +1,57 @@
+@if (data.error()) {
+  <app-alert variant="destructive">{{ i18n.errorText(data.error()) }}</app-alert>
+}
+@if (data.value(); as d) {
+  <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    @for (card of cards; track card.key) {
+      <app-stat-card
+        [label]="'analytics.operational.' + card.key | t"
+        [value]="n(d.counts[card.key])"
+        [tone]="d.counts[card.key] && card.tone ? card.tone : 'neutral'"
+        [link]="card.path ? openable(card.path) : undefined"
+      />
+    }
+  </div>
+
+  <section class="flex flex-col gap-3" aria-labelledby="workload-heading">
+    <h2 id="workload-heading" class="text-lg font-semibold">
+      {{ 'analytics.operational.workload' | t }}
+    </h2>
+    <app-table-wrapper [label]="'analytics.operational.workload' | t">
+      <table appTable>
+        <thead appTableHeader>
+          <tr appTableRow>
+            <th appTableHead>{{ 'analytics.operational.person' | t }}</th>
+            <th appTableHead>{{ 'analytics.operational.tasks' | t }}</th>
+            <th appTableHead>{{ 'analytics.operational.assessments' | t }}</th>
+            <th appTableHead>{{ 'analytics.operational.technicalProposals' | t }}</th>
+            <th appTableHead>{{ 'analytics.operational.financialProposals' | t }}</th>
+            <th appTableHead>{{ 'analytics.operational.projects' | t }}</th>
+            <th appTableHead>{{ 'analytics.operational.total' | t }}</th>
+          </tr>
+        </thead>
+        <tbody appTableBody>
+          @for (row of d.workload; track row.userId) {
+            <tr appTableRow>
+              <td appTableCell class="font-medium">{{ name(row) }}</td>
+              <td appTableCell class="tabular">{{ n(row.tasks) }}</td>
+              <td appTableCell class="tabular">{{ n(row.assessments) }}</td>
+              <td appTableCell class="tabular">{{ n(row.technicalProposals) }}</td>
+              <td appTableCell class="tabular">{{ n(row.financialProposals) }}</td>
+              <td appTableCell class="tabular">{{ n(row.projects) }}</td>
+              <td appTableCell class="tabular font-semibold">{{ n(row.total) }}</td>
+            </tr>
+          } @empty {
+            <tr app-table-empty [colSpan]="7">
+              {{
+                'analytics.empty' | t
+              }}
+            </tr>
+          }
+        </tbody>
+      </table>
+    </app-table-wrapper>
+  </section>
+} @else if (data.isLoading()) {
+  <app-dashboard-skeleton [label]="'common.labels.loading' | t" />
+}

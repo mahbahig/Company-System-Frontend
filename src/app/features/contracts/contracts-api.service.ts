@@ -75,7 +75,7 @@ export type { Person };
 export class ContractsApi {
   private readonly api = inject(ApiService);
 
-  list(query: { status?: string; pending?: boolean; q?: string; page?: number; opportunityId?: string; customerId?: string }): Observable<Page<Contract>> {
+  list(query: { status?: string; pending?: boolean; awaitingSignature?: boolean; q?: string; page?: number; opportunityId?: string; customerId?: string }): Observable<Page<Contract>> {
     return this.api.get('contracts', query);
   }
   get(id: string): Observable<ContractDetail> {

@@ -1,0 +1,98 @@
+@if (visible()) {
+  <section appCard aria-labelledby="quick-access-heading">
+    <div appCardHeader class="flex flex-row flex-wrap items-center justify-between gap-3">
+      <h2 appCardTitle id="quick-access-heading">{{ 'ux.dashboard.quickAccess' | t }}</h2>
+      <button type="button" appButton variant="outline" size="sm" (click)="palette.show()">
+        <app-icon [icon]="searchIcon" />
+        {{ 'ux.dashboard.openPalette' | t }}
+      </button>
+    </div>
+    <div appCardContent class="grid gap-6 md:grid-cols-3">
+      <div>
+        <h3
+          class="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+        >
+          <app-icon [icon]="starIcon" svgClass="size-3.5" />{{ 'ux.dashboard.favorites' | t }}
+        </h3>
+        @if (!favorites.loaded()) {
+          <app-list-skeleton [rows]="3" />
+        } @else if (favoriteHits().length) {
+          <ul class="flex flex-col gap-0.5">
+            @for (hit of favoriteHits(); track hit.type + hit.id) {
+              <li>
+                <a
+                  [routerLink]="link(hit)"
+                  class="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <app-icon
+                    [icon]="icons[hit.type]"
+                    svgClass="size-4 shrink-0 text-muted-foreground"
+                  />
+                  <span class="min-w-0 flex-1 truncate" dir="auto">{{
+                    hit.title || hit.number
+                  }}</span>
+                  @if (hit.number) {
+                    <span class="tabular shrink-0 text-xs text-muted-foreground" dir="ltr">{{
+                      hit.number
+                    }}</span>
+                  }
+                </a>
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="text-sm text-muted-foreground">{{ 'ux.dashboard.emptyFavorites' | t }}</p>
+        }
+      </div>
+      <div>
+        <h3
+          class="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+        >
+          <app-icon [icon]="clockIcon" svgClass="size-3.5" />{{ 'ux.dashboard.recent' | t }}
+        </h3>
+        @if (recentHits.isLoading()) {
+          <app-list-skeleton [rows]="3" />
+        } @else if (recentList().length) {
+          <ul class="flex flex-col gap-0.5">
+            @for (hit of recentList(); track hit.type + hit.id) {
+              <li>
+                <a
+                  [routerLink]="link(hit)"
+                  class="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <app-icon
+                    [icon]="icons[hit.type]"
+                    svgClass="size-4 shrink-0 text-muted-foreground"
+                  />
+                  <span class="min-w-0 flex-1 truncate" dir="auto">{{
+                    hit.title || hit.number
+                  }}</span>
+                  <span class="shrink-0 text-xs text-muted-foreground">{{
+                    'search.types.' + hit.type | t
+                  }}</span>
+                </a>
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="text-sm text-muted-foreground">{{ 'ux.dashboard.emptyRecent' | t }}</p>
+        }
+      </div>
+      @if (creates().length) {
+        <div>
+          <h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            {{ 'ux.dashboard.create' | t }}
+          </h3>
+          <div class="flex flex-wrap gap-2">
+            @for (action of creates(); track action.id) {
+              <a appButton variant="outline" size="sm" [routerLink]="navigation.link(action.path!)">
+                <app-icon [icon]="action.icon" />
+                {{ action.label }}
+              </a>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  </section>
+}

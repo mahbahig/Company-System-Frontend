@@ -108,11 +108,22 @@ export class LeadConvertPage {
   protected readonly nextAction = signal('');
   protected readonly nextActionAt = signal('');
 
-  /** Required items still missing on the lead (filled through Edit lead, never here). */
+  /**
+   * Required items still missing on the lead (filled through Edit lead, never here), one per
+   * lead field: the L3 and L5 gates re-check some of the same fields (category / segment).
+   */
   protected readonly missing = computed(() => {
     if (!this.detail.hasValue()) return [];
-    return this.detail.value().completeness.missing.filter((item) => !item.satisfied && item.level === 'gate' && CONVERSION_GATES.includes(item.gate ?? ''));
+    const pending = this.detail.value().completeness.missing.filter((item) => !item.satisfied && item.level === 'gate' && CONVERSION_GATES.includes(item.gate ?? ''));
+    const seen = new Set<string>();
+    return pending.filter((item) => !seen.has(item.field ?? item.id) && !!seen.add(item.field ?? item.id));
   });
+  /** A missing item's name; an id without a label reads as words, never as a raw key. */
+  protected itemLabel(id: string): string {
+    const key = `completeness.items.${id}`;
+    return this.i18n.has(key) ? this.i18n.t(key) : id.replace(/([A-Z])/g, ' $1').replace(/^./, (c) => c.toUpperCase());
+  }
+
   /** L5: conversion follows the Sales Representative's acceptance of the handoff. */
   protected readonly notQualified = computed(() => this.lead()?.status !== 'conversion');
 

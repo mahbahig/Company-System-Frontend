@@ -27,10 +27,7 @@ const ICONS: Record<AlertVariant, IconNode> = {
 @Component({
   selector: 'app-auth-notice',
   imports: [IconComponent],
-  template: `
-    <app-icon [icon]="icon()" svgClass="mt-0.5 size-4 shrink-0" />
-    <div class="min-w-0 flex-1"><ng-content /></div>
-  `,
+  templateUrl: './auth-notice.component.html',
   host: {
     '[class]': 'classes()',
     '[attr.role]': "urgent() ? 'alert' : 'status'",

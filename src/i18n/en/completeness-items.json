@@ -1,0 +1,33 @@
+{
+  "completeness": {
+    "items": {
+      "identifier": "Phone or email",
+      "nextActionDue": "Next action due date",
+      "contactName": "Contact person",
+      "useCase": "Use case",
+      "contactRole": "Contact role",
+      "verification": "Contact verification",
+      "siteLocation": "Site location",
+      "constraints": "Constraints",
+      "conversationSummary": "Conversation summary",
+      "identityReviewed": "Identity & duplicate review",
+      "segment": "Customer segment",
+      "convertGovernorate": "Governorate",
+      "convertVerification": "Contact verification",
+      "convertContactRole": "Contact role",
+      "contactIdentifier": "Mobile or email",
+      "preferredChannel": "Preferred channel",
+      "decisionProcess": "Decision process",
+      "sourceInteraction": "Originating lead or interaction",
+      "decisionTimeframe": "Decision timeframe",
+      "risks": "Risks",
+      "equipmentCosts": "Equipment cost lines",
+      "labourCosts": "Installation cost lines",
+      "costValidity": "Cost validity date",
+      "paymentAssumptions": "Payment assumptions",
+      "riskAssumptions": "Risk assumptions",
+      "supplierQuoteValidity": "Valid supplier quotes",
+      "loadBasis": "Validated load basis"
+    }
+  }
+}

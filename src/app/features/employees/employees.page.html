@@ -1,0 +1,428 @@
+<app-page-header
+  [heading]="'admin.users.title' | t"
+  [subtitle]="
+    (canManage()
+      ? 'admin.users.subtitle'
+      : teamOnly()
+        ? 'ux.employees.teamSubtitle'
+        : 'ux.users.directorySubtitle'
+    ) | t
+  "
+  class="!mb-0"
+>
+  @if (canManage()) {
+    <button type="button" appButton (click)="edit(null)">{{ 'admin.users.new' | t }}</button>
+  }
+</app-page-header>
+@if (actions.message(); as text) {
+  <app-alert>{{ text }}</app-alert>
+}
+@if (secret(); as s) {
+  <app-alert variant="destructive">
+    {{ 'admin.users.temporaryPassword' | t }}
+    <code class="ms-1 rounded bg-muted px-2 py-0.5 font-mono" dir="ltr">{{ s }}</code>
+  </app-alert>
+}
+<app-list-toolbar [searchValue]="q() ?? ''" [filters]="filters()" />
+@if (data.error()) {
+  <app-alert variant="destructive">{{ i18n.errorText(data.error()) }}</app-alert>
+}
+<app-table-wrapper [label]="'admin.users.title' | t" [attr.aria-busy]="data.isLoading()">
+  <table appTable>
+    <thead appTableHeader>
+      <tr appTableRow>
+        <th appTableHead>{{ 'admin.users.name' | t }}</th>
+        <th appTableHead>{{ 'admin.users.roles' | t }}</th>
+        <th appTableHead>{{ 'admin.users.teams' | t }}</th>
+        <th appTableHead>{{ 'admin.users.capacity' | t }}</th>
+        <th appTableHead>{{ 'admin.users.lastLogin' | t }}</th>
+        <th appTableHead>{{ 'admin.users.status' | t }}</th>
+        @if (canManage()) {
+          <th appTableHead>
+            <span class="sr-only">{{ 'admin.actions' | t }}</span>
+          </th>
+        }
+      </tr>
+    </thead>
+    <tbody appTableBody>
+      @for (u of rows(); track u.id) {
+        <tr appTableRow [appRowLink]="u.id">
+          <td appTableCell>
+            <a
+              [routerLink]="u.id"
+              class="font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >{{ i18n.pick(u.fullNameAr, u.fullNameEn) }}</a
+            >
+            <span class="block text-xs text-muted-foreground" dir="ltr">{{ u.email }}</span>
+          </td>
+          <td appTableCell class="text-xs">{{ roleNames(u.roleCodes) }}</td>
+          <td appTableCell class="text-xs">{{ teamNames(u) }}</td>
+          <td appTableCell class="tabular">{{ i18n.formatNumber(u.leadCapacity) }}</td>
+          <td appTableCell class="tabular whitespace-nowrap">
+            {{ i18n.formatDate(u.lastLoginAt, true) || '—' }}
+          </td>
+          <td appTableCell>
+            <app-badge [tone]="u.isActive ? 'success' : 'danger'">{{
+              (u.isActive ? 'admin.active' : 'admin.inactive') | t
+            }}</app-badge>
+            @if (u.mfaEnabled) {
+              <app-badge tone="info" class="ms-1">2FA</app-badge>
+            }
+            @if (u.availability && u.availability.status !== 'available') {
+              <app-badge tone="warning" class="ms-1">{{
+                u.availability.status | enum: 'availabilityStatus'
+              }}</app-badge>
+            }
+          </td>
+          @if (canManage()) {
+            <td appTableCell>
+              <div class="flex flex-wrap gap-1">
+                <button type="button" appButton variant="ghost" size="sm" (click)="edit(u)">
+                  {{ 'crm.common.edit' | t }}
+                </button>
+                @if (u.isActive) {
+                  <button
+                    type="button"
+                    appButton
+                    variant="ghost"
+                    size="sm"
+                    (click)="startDeactivate(u)"
+                  >
+                    {{ 'admin.users.deactivate' | t }}
+                  </button>
+                  <button
+                    type="button"
+                    appButton
+                    variant="ghost"
+                    size="sm"
+                    [disabled]="actions.busy()"
+                    (click)="reset(u)"
+                  >
+                    {{ 'admin.users.resetPassword' | t }}
+                  </button>
+                  @if (auth.can('administration.manage_users')) {
+                    <button
+                      type="button"
+                      appButton
+                      variant="ghost"
+                      size="sm"
+                      [disabled]="actions.busy()"
+                      (click)="run(api.forceLogout(u.id), 'admin.users.loggedOut')"
+                    >
+                      {{ 'admin.users.forceLogout' | t }}
+                    </button>
+                  }
+                } @else {
+                  <button
+                    type="button"
+                    appButton
+                    variant="ghost"
+                    size="sm"
+                    [disabled]="actions.busy()"
+                    (click)="run(api.activate(u.id), 'admin.users.activated')"
+                  >
+                    {{ 'admin.users.activate' | t }}
+                  </button>
+                }
+              </div>
+            </td>
+          }
+        </tr>
+      } @empty {
+        @if (data.isLoading()) {
+          @for (i of [0, 1, 2, 3, 4]; track i) {
+            <tr app-skeleton-row [columns]="canManage() ? 7 : 6" [index]="i"></tr>
+          }
+        } @else {
+          <tr app-table-empty [colSpan]="canManage() ? 7 : 6">
+            {{
+              emptyKey() | t
+            }}
+          </tr>
+        }
+      }
+    </tbody>
+  </table>
+</app-table-wrapper>
+@if (data.hasValue()) {
+  <app-pagination
+    [page]="data.value().page"
+    [pageCount]="data.value().pageCount"
+    [total]="data.value().total"
+    [pageSize]="data.value().pageSize"
+  />
+}
+
+<app-dialog
+  [(open)]="editorOpen"
+  [heading]="(editing() ? 'admin.users.edit' : 'admin.users.new') | t"
+>
+  <form class="grid gap-4 sm:grid-cols-2" (submit)="save($event)">
+    @if (actions.error(); as text) {
+      <app-alert variant="destructive" class="sm:col-span-2">{{ text }}</app-alert>
+    }
+    <div>
+      <label appLabel for="u-email" required>{{ 'auth.login.emailLabel' | t }}</label>
+      <input
+        appInput
+        id="u-email"
+        type="email"
+        dir="ltr"
+        [disabled]="!!editing()"
+        [value]="d().email"
+        (input)="set('email', $any($event.target).value)"
+      />
+    </div>
+    <div>
+      <label appLabel for="u-empno">{{ 'admin.users.employeeNo' | t }}</label>
+      <input
+        appInput
+        id="u-empno"
+        dir="ltr"
+        [value]="d().employeeNo"
+        (input)="set('employeeNo', $any($event.target).value)"
+      />
+    </div>
+    <div>
+      <label appLabel for="u-name-ar" required>{{ 'admin.users.nameAr' | t }}</label>
+      <input
+        appInput
+        id="u-name-ar"
+        dir="rtl"
+        [value]="d().fullNameAr"
+        (input)="set('fullNameAr', $any($event.target).value)"
+      />
+    </div>
+    <div>
+      <label appLabel for="u-name-en" required>{{ 'admin.users.nameEn' | t }}</label>
+      <input
+        appInput
+        id="u-name-en"
+        dir="ltr"
+        [value]="d().fullNameEn"
+        (input)="set('fullNameEn', $any($event.target).value)"
+      />
+    </div>
+    <div>
+      <label appLabel for="u-job-ar">{{ 'admin.users.jobTitleAr' | t }}</label>
+      <input
+        appInput
+        id="u-job-ar"
+        dir="rtl"
+        [value]="d().jobTitleAr"
+        (input)="set('jobTitleAr', $any($event.target).value)"
+      />
+    </div>
+    <div>
+      <label appLabel for="u-job-en">{{ 'admin.users.jobTitleEn' | t }}</label>
+      <input
+        appInput
+        id="u-job-en"
+        dir="ltr"
+        [value]="d().jobTitleEn"
+        (input)="set('jobTitleEn', $any($event.target).value)"
+      />
+    </div>
+    <div>
+      <label appLabel for="u-mobile">{{ 'crm.customers.fields.mobile' | t }}</label>
+      <input
+        appInput
+        id="u-mobile"
+        type="tel"
+        dir="ltr"
+        [value]="d().mobile"
+        (input)="set('mobile', $any($event.target).value)"
+      />
+    </div>
+    <div>
+      <label appLabel for="u-dept">{{ 'admin.users.department' | t }}</label>
+      <input
+        appInput
+        id="u-dept"
+        [value]="d().department"
+        (input)="set('department', $any($event.target).value)"
+      />
+    </div>
+    <!-- Nobody changes their own roles (separation of duties); the API refuses it too. -->
+    <fieldset class="sm:col-span-2" [disabled]="editingSelf()">
+      <legend class="mb-1 text-sm font-medium">{{ 'admin.users.roles' | t }} *</legend>
+      @if (editingSelf()) {
+        <p class="mb-1 text-xs text-muted-foreground">
+          {{ 'server.errors.cannotChangeOwnRoles' | t }}
+        </p>
+      }
+      <div class="grid gap-1 sm:grid-cols-2">
+        @for (role of roles.value() ?? []; track role.code) {
+          <label class="flex items-center gap-2 text-sm"
+            ><input
+              type="checkbox"
+              [checked]="d().roleCodes.includes(role.code)"
+              (change)="toggle('roleCodes', role.code, $any($event.target).checked)"
+            />
+            {{ i18n.pick(role.nameAr, role.nameEn) }}</label
+          >
+        }
+      </div>
+    </fieldset>
+    <fieldset class="sm:col-span-2">
+      <legend class="mb-1 text-sm font-medium">{{ 'admin.users.teams' | t }}</legend>
+      <div class="grid gap-1 sm:grid-cols-2">
+        @for (team of teams.value() ?? []; track team.id) {
+          <label class="flex items-center gap-2 text-sm"
+            ><input
+              type="checkbox"
+              [checked]="d().teamIds.includes(team.id)"
+              (change)="toggle('teamIds', team.id, $any($event.target).checked)"
+            />
+            {{ i18n.pick(team.nameAr, team.nameEn) }}</label
+          >
+        }
+      </div>
+    </fieldset>
+    <div>
+      <label appLabel for="u-manager">{{ 'admin.users.manager' | t }}</label>
+      <app-user-select
+        inputId="u-manager"
+        [value]="d().managerId"
+        (valueChange)="set('managerId', $event)"
+      />
+    </div>
+    <div>
+      <label appLabel for="u-capacity">{{ 'admin.users.capacity' | t }}</label>
+      <input
+        appInput
+        id="u-capacity"
+        type="number"
+        min="0"
+        dir="ltr"
+        [value]="d().leadCapacity"
+        (input)="set('leadCapacity', $any($event.target).value)"
+      />
+    </div>
+    <div>
+      <label appLabel for="u-territories">{{ 'admin.users.territories' | t }}</label>
+      <select
+        id="u-territories"
+        multiple
+        class="h-28 w-full rounded-md border border-input bg-background p-1 text-sm"
+        (change)="setTerritories($event)"
+      >
+        @for (option of reference.options('governorate'); track option.value) {
+          <option [value]="option.value" [selected]="d().territories.includes(option.value)">
+            {{ option.label }}
+          </option>
+        }
+      </select>
+    </div>
+    <div>
+      <label appLabel for="u-spec">{{ 'admin.users.specializations' | t }}</label>
+      <input
+        appInput
+        id="u-spec"
+        [value]="d().specializations"
+        (input)="set('specializations', $any($event.target).value)"
+      />
+      <p class="mt-1 text-xs text-muted-foreground">{{ 'admin.users.commaSeparated' | t }}</p>
+    </div>
+    <div>
+      <label appLabel for="u-avail">{{ 'admin.users.availability' | t }}</label>
+      <app-select>
+        <select
+          appSelect
+          id="u-avail"
+          [value]="d().availability"
+          (change)="set('availability', $any($event.target).value)"
+        >
+          @for (status of ['available', 'leave', 'out_of_office']; track status) {
+            <option [value]="status">{{ status | enum: 'availabilityStatus' }}</option>
+          }
+        </select>
+      </app-select>
+    </div>
+    @if (d().availability !== 'available') {
+      <div>
+        <label appLabel for="u-avail-to">{{ 'admin.users.availableFrom' | t }}</label>
+        <input
+          appInput
+          id="u-avail-to"
+          type="date"
+          dir="ltr"
+          [value]="d().availabilityTo"
+          (change)="set('availabilityTo', $any($event.target).value)"
+        />
+      </div>
+    }
+    <div>
+      <label appLabel for="u-locale">{{ 'admin.users.language' | t }}</label>
+      <app-select>
+        <select
+          appSelect
+          id="u-locale"
+          [value]="d().defaultLocale"
+          (change)="set('defaultLocale', $any($event.target).value)"
+        >
+          <option value="ar">العربية</option>
+          <option value="en">English</option>
+        </select>
+      </app-select>
+    </div>
+    <div class="flex gap-2 sm:col-span-2">
+      <button type="submit" appButton [disabled]="actions.busy() || !valid()">
+        {{ 'crm.common.save' | t }}
+      </button>
+      <button type="button" appButton variant="outline" (click)="editorOpen.set(false)">
+        {{ 'crm.common.cancel' | t }}
+      </button>
+    </div>
+  </form>
+</app-dialog>
+
+<app-dialog [(open)]="deactivateOpen" [heading]="'admin.users.deactivate' | t">
+  <form class="flex flex-col gap-4" (submit)="deactivate($event)">
+    @if (actions.error(); as text) {
+      <app-alert variant="destructive">{{ text }}</app-alert>
+    }
+    @if (openWork.value(); as work) {
+      @if (work.length) {
+        <div class="rounded-md border border-border p-3 text-sm">
+          <p class="mb-1 font-medium">{{ 'admin.users.openWork' | t }}</p>
+          <ul class="grid grid-cols-2 gap-1">
+            @for (w of work; track w.module) {
+              <li>
+                {{ 'admin.users.modules.' + w.module | t }}:
+                <span class="tabular font-medium">{{ i18n.formatNumber(w.count) }}</span>
+              </li>
+            }
+          </ul>
+        </div>
+      } @else {
+        <p class="text-sm text-muted-foreground">{{ 'admin.users.noOpenWork' | t }}</p>
+      }
+    }
+    <div>
+      <label appLabel for="dz-reassign">{{ 'admin.users.reassignTo' | t }}</label>
+      <app-user-select inputId="dz-reassign" [(value)]="reassignTo" />
+    </div>
+    <div>
+      <label appLabel for="dz-reason">{{ 'ux.users.reasonOptional' | t }}</label>
+      <input
+        appInput
+        id="dz-reason"
+        maxlength="300"
+        [placeholder]="'ux.users.reasonPlaceholder' | t"
+        [value]="reason()"
+        (input)="reason.set($any($event.target).value)"
+      />
+    </div>
+    <button
+      type="submit"
+      appButton
+      variant="destructive"
+      fullWidth
+      size="lg"
+      [disabled]="actions.busy()"
+    >
+      {{ (actions.busy() ? 'crm.common.saving' : 'admin.users.deactivate') | t }}
+    </button>
+  </form>
+</app-dialog>

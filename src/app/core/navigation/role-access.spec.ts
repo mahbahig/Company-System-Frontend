@@ -123,14 +123,14 @@ describe('role-based page access (routes + navigation)', () => {
       allowed: [
         '/dashboard', '/dashboard/executive', '/customers', '/customers/new', '/leads', '/leads/distribute', '/opportunities', '/pipeline', '/projects',
         '/approvals', '/approvals/limits', '/approvals/delegations', '/reports', '/contracts', '/exceptions', '/calls/new', '/tasks/new',
-        '/admin/users', '/admin/users/u1', '/admin/roles', '/admin/teams', '/admin/settings', '/admin/audit', '/admin/automation', '/admin/integrations', '/admin/reference-data', '/admin/equipment',
+        '/employees', '/employees/u1', '/admin/roles', '/admin/teams', '/admin/settings', '/admin/audit', '/admin/automation', '/admin/integrations', '/admin/reference-data', '/admin/equipment',
       ],
       // Nothing is refused for its permissions; an unknown URL still fails closed.
       denied: ['/no-such-page'],
     },
     read_only_executive: {
       allowed: ['/dashboard', '/dashboard/executive', '/customers', '/customers/c1', '/opportunities', '/pipeline', '/projects', '/contracts', '/reports', '/exceptions'],
-      denied: ['/customers/new', '/customers/c1/edit', '/leads', '/approvals', '/tasks', '/admin/audit', '/admin/users', '/admin/settings', '/proposals'],
+      denied: ['/customers/new', '/customers/c1/edit', '/leads', '/approvals', '/tasks', '/admin/audit', '/employees', '/admin/settings', '/proposals'],
     },
     telesales: {
       allowed: ['/leads', '/leads/new', '/leads/quick-add', '/leads/l1', '/leads/l1/edit', '/calls', '/calls/new', '/meetings/new', '/tasks'],
@@ -138,24 +138,25 @@ describe('role-based page access (routes + navigation)', () => {
     },
     sales_representative: {
       allowed: ['/pipeline', '/customers', '/customers/new', '/customers/c1/contacts/new', '/opportunities/new', '/opportunities/o1/handoff', '/leads/l1/convert', '/proposals', '/contracts', '/reports'],
-      denied: ['/leads/distribute', '/approvals/delegations', '/approvals/limits', '/duplicates', '/admin/users', '/admin/users/u1', '/admin/settings', '/admin/audit', '/admin/roles'],
+      denied: ['/leads/distribute', '/approvals/delegations', '/approvals/limits', '/duplicates', '/employees', '/employees/u1', '/admin/settings', '/admin/audit', '/admin/roles'],
     },
+    // The Employees page opens (team scope: the API lists only the Sales Representatives who report to them).
     sales_manager: {
-      allowed: ['/leads/distribute', '/approvals', '/approvals/delegations', '/duplicates', '/ownership-requests', '/reports', '/exceptions'],
-      denied: ['/admin/users', '/admin/settings', '/admin/audit', '/admin/roles', '/approvals/limits', '/admin/equipment', '/dashboard/executive', '/imports'],
+      allowed: ['/leads/distribute', '/approvals', '/approvals/delegations', '/duplicates', '/ownership-requests', '/reports', '/exceptions', '/employees', '/employees/u1'],
+      denied: ['/admin/settings', '/admin/audit', '/admin/roles', '/approvals/limits', '/admin/equipment', '/dashboard/executive', '/imports'],
     },
     // Second-highest: every business page (incl. the employee directory with performance, settings and
     // approval limits) — never roles & permissions, the audit trail or platform administration.
     ceo: {
       allowed: [
-        '/dashboard/executive', '/approvals', '/approvals/limits', '/admin/settings', '/admin/users', '/admin/users/u1', '/contracts', '/projects', '/duplicates', '/reports',
+        '/dashboard/executive', '/approvals', '/approvals/limits', '/admin/settings', '/employees', '/employees/u1', '/contracts', '/projects', '/duplicates', '/reports',
         '/leads', '/tasks/new', '/customers/new', '/calls/new', '/exceptions',
       ],
       denied: ['/admin/audit', '/admin/roles', '/admin/automation', '/admin/integrations', '/admin/teams'],
     },
     financial_proposal_manager: {
       allowed: ['/admin/settings', '/admin/equipment', '/contracts', '/proposals', '/proposals/financial/f1', '/projects', '/approvals'],
-      denied: ['/admin/users', '/admin/audit', '/assessments', '/leads', '/handoffs'],
+      denied: ['/employees', '/admin/audit', '/assessments', '/leads', '/handoffs'],
     },
     project_manager: {
       allowed: ['/projects', '/projects/p1', '/handoffs', '/proposals', '/tasks/new', '/opportunities/o1/proposals', '/reports'],
@@ -172,11 +173,11 @@ describe('role-based page access (routes + navigation)', () => {
     },
     installation_crew: {
       allowed: ['/dashboard', '/projects', '/projects/p1', '/tasks', '/tasks/t1', '/notifications', '/account/password'],
-      denied: ['/tasks/new', '/customers', '/leads', '/assessments', '/visits', '/reports', '/contracts', '/approvals', '/admin/users', '/opportunities'],
+      denied: ['/tasks/new', '/customers', '/leads', '/assessments', '/visits', '/reports', '/contracts', '/approvals', '/employees', '/opportunities'],
     },
     marketing: {
       allowed: ['/campaigns', '/leads/new', '/imports', '/reports'],
-      denied: ['/customers', '/opportunities', '/approvals', '/admin/users', '/leads/distribute'],
+      denied: ['/customers', '/opportunities', '/approvals', '/employees', '/leads/distribute'],
     },
   };
 

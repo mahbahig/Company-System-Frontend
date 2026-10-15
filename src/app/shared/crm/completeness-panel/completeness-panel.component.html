@@ -1,0 +1,85 @@
+<section appCard [attr.aria-labelledby]="headingId">
+  <div appCardHeader class="flex flex-row items-center justify-between gap-2">
+    <h2 appCardTitle [id]="headingId">{{ heading() || ('completeness.title' | t) }}</h2>
+    @if (canRequest() && ordered().length > 1) {
+      <button type="button" appButton variant="outline" size="sm" (click)="request(ordered())">
+        {{ 'completeness.requestFrom' | t }}
+      </button>
+    }
+  </div>
+  <div appCardContent class="flex flex-col gap-4">
+    <div>
+      <div class="mb-1.5 flex items-center justify-between text-sm">
+        <span class="font-medium">{{ 'completeness.score' | t: { score: result().score } }}</span>
+        <span class="tabular text-muted-foreground" dir="ltr"
+          >{{ result().satisfiedCount }}/{{ result().total }}</span
+        >
+      </div>
+      <div
+        role="progressbar"
+        [attr.aria-label]="'completeness.progressLabel' | t"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        [attr.aria-valuenow]="result().score"
+        class="h-2 overflow-hidden rounded-full bg-secondary"
+      >
+        <div
+          class="h-full rounded-full transition-all"
+          [class]="barTone()"
+          [style.width.%]="result().score"
+        ></div>
+      </div>
+    </div>
+
+    @if (ordered().length === 0) {
+      <p class="text-sm text-muted-foreground">{{ 'completeness.allComplete' | t }}</p>
+    } @else {
+      <div>
+        <h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          {{ 'completeness.missing' | t }}
+        </h3>
+        <ul class="flex flex-col gap-2">
+          @for (item of ordered(); track item.id) {
+            <li class="flex items-start justify-between gap-3 text-sm">
+              <span>
+                {{ label(item) }}
+                <span class="block text-xs text-muted-foreground">
+                  {{ section(item) }}
+                  @if (item.responsibleRole) {
+                    · {{ 'completeness.responsible' | t: { role: role(item.responsibleRole) } }}
+                  }
+                </span>
+              </span>
+              <span class="flex shrink-0 items-center gap-2">
+                <app-badge [tone]="item.level === 'recommended' ? 'neutral' : 'warning'">{{
+                  'completeness.levels.' + item.level | t
+                }}</app-badge>
+                @if (canRequest()) {
+                  <button
+                    type="button"
+                    class="text-xs text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    (click)="request([item])"
+                  >
+                    {{ 'completeness.requestFrom' | t }}
+                  </button>
+                }
+              </span>
+            </li>
+          }
+        </ul>
+      </div>
+    }
+  </div>
+</section>
+
+@if (entityType() && entityId()) {
+  <app-info-request-dialog
+    [(open)]="dialogOpen"
+    [entityType]="entityType()!"
+    [entityId]="entityId()!"
+    [items]="requestItems()"
+    [roles]="requestRoles()"
+    [contactId]="contactId()"
+    (created)="requested.emit()"
+  />
+}

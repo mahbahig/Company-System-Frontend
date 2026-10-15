@@ -6,6 +6,6 @@ import { StatusPageComponent } from './status-page.component';
 @Component({
   selector: 'app-forbidden-page',
   imports: [StatusPageComponent],
-  template: `<app-status-page [code]="403" titleKey="errors.forbidden.title" bodyKey="errors.forbidden.body" />`,
+  templateUrl: './forbidden.page.html',
 })
 export class ForbiddenPage {}

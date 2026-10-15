@@ -60,7 +60,7 @@
         <p class="mt-1">{{ 'crm.leads.convert.missingBody' | t }}</p>
         <ul class="mt-2 list-disc ps-5">
           @for (item of missing(); track item.id) {
-            <li>{{ 'completeness.items.' + item.id | t }}</li>
+            <li>{{ itemLabel(item.id) }}</li>
           }
         </ul>
         @if (auth.can('leads.edit')) {

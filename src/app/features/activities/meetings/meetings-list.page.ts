@@ -25,54 +25,7 @@ const STATUSES = ['planned', 'confirmed', 'completed', 'cancelled', 'rescheduled
 @Component({
   selector: 'app-meetings-list-page',
   imports: [ShortcutDirective, SkeletonRowComponent, RouterLink, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, AlertComponent, ButtonDirective, PageHeaderComponent, ListToolbarComponent, PaginationComponent, ...TABLE_IMPORTS],
-  template: `
-    <app-page-header [heading]="'act.meetings.title' | t" [subtitle]="'act.meetings.subtitle' | t" class="!mb-0">
-      @if (auth.can('meetings.create')) {
-        <a appButton routerLink="new" appShortcut="n">{{ 'act.meetings.new' | t }}</a>
-      }
-    </app-page-header>
-    <app-list-toolbar [searchValue]="q() ?? ''" [filters]="filters()" />
-    @if (result.error()) {
-      <app-alert variant="destructive">{{ i18n.errorText(result.error()) }}</app-alert>
-    }
-    <app-table-wrapper [label]="'act.meetings.title' | t" [attr.aria-busy]="result.isLoading()">
-      <table appTable>
-        <thead appTableHeader>
-          <tr appTableRow>
-            <th appTableHead>{{ 'act.fields.subject' | t }}</th>
-            <th appTableHead>{{ 'act.columns.when' | t }}</th>
-            <th appTableHead>{{ 'act.fields.customer' | t }}</th>
-            <th appTableHead>{{ 'act.fields.mode' | t }}</th>
-            <th appTableHead>{{ 'act.columns.status' | t }}</th>
-            <th appTableHead>{{ 'act.columns.owner' | t }}</th>
-          </tr>
-        </thead>
-        <tbody appTableBody>
-          @for (row of rows(); track row.id) {
-            <tr appTableRow [appRowLink]="row.id">
-              <td appTableCell><a class="text-primary hover:underline" [routerLink]="row.id">{{ row.subject }}</a></td>
-              <td appTableCell class="tabular whitespace-nowrap">{{ i18n.formatDate(row.scheduledAt, true) }}</td>
-              <td appTableCell>{{ customer(row) }}</td>
-              <td appTableCell>{{ row.mode | enum: 'meetingMode' }}</td>
-              <td appTableCell><app-status-badge enum="meetingStatus" [value]="row.status" /></td>
-              <td appTableCell>{{ owner(row) }}</td>
-            </tr>
-          } @empty {
-            @if (result.isLoading()) {
-              @for (i of [0, 1, 2, 3, 4]; track i) {
-                <tr app-skeleton-row [columns]="6" [index]="i"></tr>
-              }
-            } @else {
-              <tr app-table-empty [colSpan]="6">{{ 'act.empty' | t }}</tr>
-            }
-          }
-        </tbody>
-      </table>
-    </app-table-wrapper>
-    @if (result.hasValue()) {
-      <app-pagination [page]="result.value().page" [pageCount]="result.value().pageCount" [total]="result.value().total" [pageSize]="result.value().pageSize" />
-    }
-  `,
+  templateUrl: './meetings-list.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
 export class MeetingsListPage {

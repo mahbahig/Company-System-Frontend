@@ -8,7 +8,7 @@ import { Component, computed, input, numberAttribute } from '@angular/core';
  */
 @Component({
   selector: 'app-skeleton',
-  template: '',
+  templateUrl: './skeleton.component.html',
   host: { 'aria-hidden': 'true', class: 'block rounded-md bg-muted animate-skeleton' },
 })
 export class SkeletonComponent {}
@@ -17,17 +17,7 @@ export class SkeletonComponent {}
 @Component({
   selector: 'tbody[app-table-skeleton]',
   imports: [SkeletonComponent],
-  template: `
-    @for (row of rowList(); track row) {
-      <tr class="border-b border-border last:border-0">
-        @for (column of columnList(); track column) {
-          <td class="px-3 py-3.5 align-middle">
-            <app-skeleton class="h-3.5" [style.width.%]="width(row, column)" />
-          </td>
-        }
-      </tr>
-    }
-  `,
+  templateUrl: './table-skeleton.component.html',
   host: { 'aria-hidden': 'true' },
 })
 export class TableSkeletonComponent {
@@ -47,37 +37,7 @@ export class TableSkeletonComponent {
 @Component({
   selector: 'app-detail-skeleton',
   imports: [SkeletonComponent],
-  template: `
-    <div class="flex flex-col gap-2">
-      <app-skeleton class="h-3 w-24" />
-      <app-skeleton class="h-7 w-72 max-w-full" />
-      <app-skeleton class="h-4 w-48 max-w-full" />
-    </div>
-    <div class="grid gap-3 sm:grid-cols-3 lg:grid-cols-6">
-      @for (tile of tiles(); track tile) {
-        <app-skeleton class="h-20 rounded-lg" />
-      }
-    </div>
-    <div class="grid gap-6 lg:grid-cols-3">
-      <div class="flex flex-col gap-4 rounded-lg border border-border bg-card p-6 lg:col-span-2">
-        <app-skeleton class="h-5 w-40" />
-        <div class="grid gap-4 sm:grid-cols-2">
-          @for (line of lines; track line) {
-            <div class="flex flex-col gap-2">
-              <app-skeleton class="h-3 w-20" />
-              <app-skeleton class="h-4 w-3/4" />
-            </div>
-          }
-        </div>
-      </div>
-      <div class="flex flex-col gap-3 rounded-lg border border-border bg-card p-6">
-        <app-skeleton class="h-5 w-32" />
-        <app-skeleton class="h-4 w-full" />
-        <app-skeleton class="h-4 w-5/6" />
-        <app-skeleton class="h-4 w-2/3" />
-      </div>
-    </div>
-  `,
+  templateUrl: './detail-skeleton.component.html',
   host: { role: 'status', class: 'flex flex-col gap-6', '[attr.aria-label]': 'label()' },
 })
 export class DetailSkeletonComponent {
@@ -94,17 +54,7 @@ export class DetailSkeletonComponent {
 @Component({
   selector: 'app-list-skeleton',
   imports: [SkeletonComponent],
-  template: `
-    @for (row of rowList(); track row) {
-      <div class="flex items-start gap-3">
-        <app-skeleton class="mt-1 size-2.5 shrink-0 rounded-full" />
-        <div class="flex flex-1 flex-col gap-1.5">
-          <app-skeleton class="h-4" [style.width.%]="60 + (row % 3) * 12" />
-          <app-skeleton class="h-3 w-32" />
-        </div>
-      </div>
-    }
-  `,
+  templateUrl: './list-skeleton.component.html',
   host: { 'aria-hidden': 'true', class: 'flex flex-col gap-4' },
 })
 export class ListSkeletonComponent {
@@ -119,13 +69,7 @@ export class ListSkeletonComponent {
 @Component({
   selector: 'tr[app-skeleton-row]',
   imports: [SkeletonComponent],
-  template: `
-    @for (column of columnList(); track column) {
-      <td class="px-3 py-3.5 align-middle">
-        <app-skeleton class="h-3.5" [style.width.%]="45 + ((index() * 7 + column * 13) % 5) * 11" />
-      </td>
-    }
-  `,
+  templateUrl: './skeleton-row.component.html',
   host: { 'aria-hidden': 'true', class: 'border-b border-border last:border-0' },
 })
 export class SkeletonRowComponent {
@@ -138,26 +82,7 @@ export class SkeletonRowComponent {
 @Component({
   selector: 'app-dashboard-skeleton',
   imports: [SkeletonComponent],
-  template: `
-    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-      @for (tile of [0, 1, 2, 3]; track tile) {
-        <div class="flex flex-col gap-3 rounded-lg border border-border bg-card p-5">
-          <app-skeleton class="h-3 w-24" />
-          <app-skeleton class="h-7 w-20" />
-        </div>
-      }
-    </div>
-    <div class="grid gap-6 lg:grid-cols-2">
-      @for (panel of [0, 1]; track panel) {
-        <div class="flex flex-col gap-4 rounded-lg border border-border bg-card p-6">
-          <app-skeleton class="h-5 w-40" />
-          @for (bar of [0, 1, 2, 3]; track bar) {
-            <app-skeleton class="h-3" [style.width.%]="90 - bar * 15" />
-          }
-        </div>
-      }
-    </div>
-  `,
+  templateUrl: './dashboard-skeleton.component.html',
   host: { role: 'status', class: 'flex flex-col gap-6', '[attr.aria-label]': 'label()' },
 })
 export class DashboardSkeletonComponent {

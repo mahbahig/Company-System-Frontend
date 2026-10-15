@@ -1,0 +1,153 @@
+<app-breadcrumbs [items]="crumbs()" />
+<app-page-header [heading]="'act.meetings.new' | t" class="!mb-0" />
+<form appCard class="max-w-3xl" appSaveShortcut (submit)="save($event)">
+  <div appCardContent class="grid gap-4 sm:grid-cols-2">
+    @if (actions.error(); as text) {
+      <app-alert variant="destructive" class="sm:col-span-2">{{ text }}</app-alert>
+    }
+    <div class="sm:col-span-2">
+      <label appLabel for="mt-subject" required>{{ 'act.fields.subject' | t }}</label>
+      <input
+        appInput
+        id="mt-subject"
+        [value]="form().subject"
+        (input)="set('subject', $any($event.target).value)"
+      />
+    </div>
+    <div>
+      <label appLabel for="mt-customer" required>{{ 'act.fields.customer' | t }}</label>
+      <app-record-picker kind="customer" inputId="mt-customer" [(value)]="customer" />
+    </div>
+    <div>
+      <label appLabel for="mt-opp">{{ 'act.fields.opportunity' | t }}</label>
+      <app-record-picker
+        kind="opportunity"
+        inputId="mt-opp"
+        [parentId]="customer() || undefined"
+        [(value)]="opportunity"
+      />
+    </div>
+    <div>
+      <label appLabel for="mt-at" required>{{ 'act.columns.when' | t }}</label>
+      <input
+        appInput
+        id="mt-at"
+        type="datetime-local"
+        dir="ltr"
+        [value]="form().scheduledAt"
+        (change)="set('scheduledAt', $any($event.target).value)"
+      />
+    </div>
+    <div>
+      <label appLabel for="mt-ends">{{ 'act.fields.endsAt' | t }}</label>
+      <input
+        appInput
+        id="mt-ends"
+        type="datetime-local"
+        dir="ltr"
+        [value]="form().endsAt"
+        (change)="set('endsAt', $any($event.target).value)"
+      />
+    </div>
+    <div>
+      <label appLabel for="mt-mode">{{ 'act.fields.mode' | t }}</label>
+      <app-select>
+        <select
+          appSelect
+          id="mt-mode"
+          [value]="form().mode"
+          (change)="set('mode', $any($event.target).value)"
+        >
+          @for (mode of ['in_person', 'online', 'hybrid', 'phone']; track mode) {
+            <option [value]="mode">{{ mode | enum: 'meetingMode' }}</option>
+          }
+        </select>
+      </app-select>
+    </div>
+    <div>
+      @if (form().mode === 'online' || form().mode === 'hybrid') {
+        <label appLabel for="mt-url">{{ 'act.fields.onlineUrl' | t }}</label>
+        <input
+          appInput
+          id="mt-url"
+          type="url"
+          dir="ltr"
+          [value]="form().onlineUrl"
+          (input)="set('onlineUrl', $any($event.target).value)"
+        />
+      } @else {
+        <label appLabel for="mt-location">{{ 'act.fields.location' | t }}</label>
+        <input
+          appInput
+          id="mt-location"
+          [value]="form().location"
+          (input)="set('location', $any($event.target).value)"
+        />
+      }
+    </div>
+    <div class="sm:col-span-2">
+      <label appLabel for="mt-agenda">{{ 'act.fields.agenda' | t }}</label>
+      <textarea
+        appTextarea
+        id="mt-agenda"
+        rows="3"
+        [value]="form().agenda"
+        (input)="set('agenda', $any($event.target).value)"
+      ></textarea>
+    </div>
+    <fieldset class="flex flex-col gap-2 sm:col-span-2">
+      <legend class="mb-1 text-sm font-medium">{{ 'act.fields.attendees' | t }}</legend>
+      @for (a of attendees(); track $index; let index = $index) {
+        <div class="grid gap-2 sm:grid-cols-4">
+          <app-user-select
+            [placeholder]="'act.fields.internalAttendee' | t"
+            [value]="a.userId ?? ''"
+            (valueChange)="setAttendee(index, 'userId', $event)"
+          />
+          <input
+            appInput
+            [attr.aria-label]="'act.fields.externalName' | t"
+            [placeholder]="'act.fields.externalName' | t"
+            [value]="a.externalName ?? ''"
+            (input)="setAttendee(index, 'externalName', $any($event.target).value)"
+          />
+          <input
+            appInput
+            [attr.aria-label]="'act.fields.externalRole' | t"
+            [placeholder]="'act.fields.externalRole' | t"
+            [value]="a.externalRole ?? ''"
+            (input)="setAttendee(index, 'externalRole', $any($event.target).value)"
+          />
+          <button type="button" appButton variant="ghost" size="sm" (click)="removeAttendee(index)">
+            {{ 'crm.common.delete' | t }}
+          </button>
+        </div>
+      }
+      <button
+        type="button"
+        appButton
+        variant="outline"
+        size="sm"
+        class="self-start"
+        (click)="attendees.update((rows) => [...rows, {}])"
+      >
+        {{ 'act.fields.addAttendee' | t }}
+      </button>
+    </fieldset>
+    <div class="flex flex-col gap-1.5 sm:col-span-2">
+      <button
+        type="submit"
+        appButton
+        class="self-start"
+        [disabled]="actions.busy() || !form().subject.trim() || !customer() || !form().scheduledAt"
+        [attr.aria-describedby]="missing() ? 'meetings-form-why' : null"
+        aria-keyshortcuts="Control+S Meta+S"
+      >
+        {{ (actions.busy() ? 'crm.common.saving' : 'crm.common.save') | t }}
+      </button>
+      @if (missing(); as key) {
+        <p id="meetings-form-why" class="text-xs text-muted-foreground">{{ key | t }}</p>
+      }
+    </div>
+  </div>
+</form>

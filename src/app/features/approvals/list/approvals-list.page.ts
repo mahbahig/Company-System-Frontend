@@ -27,72 +27,7 @@ const STATUSES = ['pending', 'approved', 'rejected', 'returned', 'expired', 'esc
 @Component({
   selector: 'app-approvals-list-page',
   imports: [SkeletonRowComponent, RouterLink, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, AlertComponent, ButtonDirective, PageHeaderComponent, TabsComponent, ListToolbarComponent, PaginationComponent, ...TABLE_IMPORTS],
-  template: `
-    <app-page-header [heading]="'approvals.title' | t" [subtitle]="'approvals.subtitle' | t" class="!mb-0">
-      @if (auth.can('settings.manage_policy')) {
-        <a appButton variant="outline" routerLink="limits">{{ 'ux.approvalLimits.title' | t }}</a>
-      }
-      @if (auth.can('approvals.decide')) {
-        <a appButton variant="outline" routerLink="delegations">{{ 'approvals.delegations.title' | t }}</a>
-      }
-    </app-page-header>
-
-    <app-tabs [tabs]="tabs()" [active]="activeBox()" (activeChange)="selectBox($event)" [label]="'approvals.title' | t" />
-    <app-list-toolbar [searchValue]="''" [filters]="filters()" />
-
-    @if (result.error()) {
-      <app-alert variant="destructive">{{ i18n.errorText(result.error()) }}</app-alert>
-    }
-
-    <app-table-wrapper [label]="'approvals.title' | t" [attr.aria-busy]="result.isLoading()">
-      <table appTable>
-        <thead appTableHeader>
-          <tr appTableRow>
-            <th appTableHead>{{ 'approvals.columns.number' | t }}</th>
-            <th appTableHead>{{ 'approvals.columns.type' | t }}</th>
-            <th appTableHead>{{ 'approvals.columns.subject' | t }}</th>
-            <th appTableHead>{{ 'approvals.columns.requester' | t }}</th>
-            <th appTableHead>{{ 'approvals.columns.status' | t }}</th>
-            <th appTableHead>{{ 'approvals.columns.due' | t }}</th>
-          </tr>
-        </thead>
-        <tbody appTableBody>
-          @for (row of rows(); track row.id) {
-            <tr appTableRow [appRowLink]="row.id">
-              <td appTableCell class="tabular whitespace-nowrap font-medium"><a [routerLink]="row.id" class="text-primary hover:underline" dir="ltr">{{ row.approvalNo }}</a></td>
-              <td appTableCell class="whitespace-nowrap">{{ row.type | enum: 'approvalType' }}</td>
-              <td appTableCell>
-                {{ row.subject }}
-                @if (row.onBehalfOf) {
-                  <span class="block text-xs text-muted-foreground">{{ 'approvals.onBehalfOf' | t: { name: userLabel(row.onBehalfOf) } }}</span>
-                }
-              </td>
-              <td appTableCell class="whitespace-nowrap">{{ requester(row) }}</td>
-              <td appTableCell>
-                <app-status-badge enum="approvalStatus" [value]="row.status" />
-                @if (row.escalationLevel > 0) {
-                  <span class="ms-1 text-xs text-destructive">{{ 'approvals.escalated' | t: { level: row.escalationLevel } }}</span>
-                }
-              </td>
-              <td appTableCell class="tabular whitespace-nowrap" [class.text-destructive]="isOverdue(row)">{{ i18n.formatDate(row.dueAt, true) }}</td>
-            </tr>
-          } @empty {
-            @if (result.isLoading()) {
-              @for (i of [0, 1, 2, 3, 4]; track i) {
-                <tr app-skeleton-row [columns]="6" [index]="i"></tr>
-              }
-            } @else {
-              <tr app-table-empty [colSpan]="6">{{ 'approvals.empty' | t }}</tr>
-            }
-          }
-        </tbody>
-      </table>
-    </app-table-wrapper>
-
-    @if (result.hasValue()) {
-      <app-pagination [page]="result.value().page" [pageCount]="result.value().pageCount" [total]="result.value().total" [pageSize]="result.value().pageSize" />
-    }
-  `,
+  templateUrl: './approvals-list.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
 export class ApprovalsListPage {
@@ -104,6 +39,8 @@ export class ApprovalsListPage {
   readonly box = input<string>();
   readonly status = input<string>();
   readonly type = input<string>();
+  /** Exceptions Center: still waiting for a decision (pending or escalated). */
+  readonly open = input<string>();
   readonly page = input(1, { transform: (value: unknown) => numberAttribute(value, 1) });
 
   protected readonly activeBox = computed(() => (['inbox', 'requested', 'decided', 'all'].includes(this.box() ?? '') ? (this.box() as string) : 'inbox'));
@@ -116,7 +53,7 @@ export class ApprovalsListPage {
   ]);
 
   protected readonly result = rxResource({
-    params: () => ({ box: this.activeBox(), status: this.status(), type: this.type(), page: this.page() }),
+    params: () => ({ box: this.activeBox(), status: this.status(), open: this.open() === '1' || undefined, type: this.type(), page: this.page() }),
     stream: ({ params }) => this.api.list(params),
   });
   protected readonly rows = computed(() => (this.result.hasValue() ? this.result.value().rows : []));

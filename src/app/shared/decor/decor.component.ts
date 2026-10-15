@@ -33,13 +33,7 @@ const COMPACT_QUERY = '(max-width: 767px), (pointer: coarse)';
  */
 @Component({
   selector: 'app-decor',
-  template: `
-    <canvas
-      #canvas
-      class="block size-full transition-opacity duration-[1600ms] ease-premium"
-      [class.opacity-0]="!visible()"
-    ></canvas>
-  `,
+  templateUrl: './decor.component.html',
   host: { class: 'pointer-events-none block select-none', 'aria-hidden': 'true' },
 })
 export class DecorComponent {

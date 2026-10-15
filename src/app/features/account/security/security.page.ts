@@ -20,74 +20,7 @@ import { AccountApi } from '../account-api.service';
 @Component({
   selector: 'app-security-page',
   imports: [TranslatePipe, AlertComponent, ButtonDirective, PageHeaderComponent, ...CARD_IMPORTS, ...FORM_IMPORTS],
-  template: `
-    <app-page-header [heading]="'account.mfa.title' | t" [subtitle]="'account.mfa.subtitle' | t" class="!mb-0" />
-    @if (mustEnroll()) {
-      <app-alert variant="destructive">{{ 'account.mfa.required' | t }}</app-alert>
-    }
-    @if (actions.message(); as text) {
-      <app-alert>{{ text }}</app-alert>
-    }
-    @if (actions.error(); as text) {
-      <app-alert variant="destructive">{{ text }}</app-alert>
-    }
-
-    @if (recoveryCodes(); as codes) {
-      <section appCard class="max-w-xl" aria-labelledby="mfa-codes">
-        <div appCardHeader>
-          <h2 appCardTitle id="mfa-codes">{{ 'account.mfa.recoveryTitle' | t }}</h2>
-          <p appCardDescription>{{ 'account.mfa.recoveryHint' | t }}</p>
-        </div>
-        <div appCardContent>
-          <ul class="grid grid-cols-2 gap-2 font-mono text-sm" dir="ltr">
-            @for (code of codes; track code) {
-              <li class="rounded bg-muted px-2 py-1">{{ code }}</li>
-            }
-          </ul>
-        </div>
-      </section>
-    }
-
-    <section appCard class="max-w-xl" aria-labelledby="mfa-state">
-      <div appCardHeader>
-        <h2 appCardTitle id="mfa-state">{{ (enabled() ? 'account.mfa.enabled' : 'account.mfa.disabled') | t }}</h2>
-      </div>
-      <div appCardContent class="flex flex-col gap-4">
-        @if (!enabled()) {
-          @if (setup(); as s) {
-            <ol class="list-decimal space-y-2 ps-5 text-sm">
-              <li>{{ 'account.mfa.step1' | t }}</li>
-              <li>
-                {{ 'account.mfa.step2' | t }}
-                <code class="mt-1 block break-all rounded bg-muted px-2 py-1 font-mono text-xs" dir="ltr">{{ s.secret }}</code>
-                <a class="mt-1 inline-block text-xs text-primary hover:underline" [href]="s.otpauthUrl">{{ 'account.mfa.openApp' | t }}</a>
-              </li>
-              <li>{{ 'account.mfa.step3' | t }}</li>
-            </ol>
-            <div>
-              <label appLabel for="mfa-enable-code" required>{{ 'account.mfa.code' | t }}</label>
-              <input appInput id="mfa-enable-code" inputmode="numeric" autocomplete="one-time-code" dir="ltr" class="max-w-48 tabular tracking-widest" [value]="code()" (input)="code.set($any($event.target).value)" />
-            </div>
-            <button type="button" appButton class="self-start" [disabled]="actions.busy() || code().trim().length < 6" (click)="enable()">{{ 'account.mfa.enable' | t }}</button>
-          } @else {
-            <p class="text-sm text-muted-foreground">{{ 'account.mfa.intro' | t }}</p>
-            <button type="button" appButton class="self-start" [disabled]="actions.busy()" (click)="start()">{{ 'account.mfa.setUp' | t }}</button>
-          }
-        } @else {
-          <p class="text-sm text-muted-foreground">{{ 'account.mfa.disableHint' | t }}</p>
-          <div>
-            <label appLabel for="mfa-pw" required>{{ 'account.password.current' | t }}</label>
-            <input appInput id="mfa-pw" type="password" autocomplete="current-password" dir="ltr" [value]="password()" (input)="password.set($any($event.target).value)" />
-          </div>
-          <div>
-            <label appLabel for="mfa-disable-code" required>{{ 'account.mfa.code' | t }}</label>
-            <input appInput id="mfa-disable-code" inputmode="numeric" autocomplete="one-time-code" dir="ltr" class="max-w-48 tabular tracking-widest" [value]="code()" (input)="code.set($any($event.target).value)" />
-          </div>
-          <button type="button" appButton variant="destructive" class="self-start" [disabled]="actions.busy() || !password() || code().trim().length < 6" (click)="disable()">{{ 'account.mfa.disable' | t }}</button>
-        }
-      </div>
-    </section>
-  `,
+  templateUrl: './security.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
 export class SecurityPage {

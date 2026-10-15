@@ -1,0 +1,16 @@
+<button
+  type="button"
+  class="inline-flex size-9 items-center justify-center rounded-md border border-input bg-background text-muted-foreground shadow-xs transition-[color,background-color,border-color,transform] duration-200 ease-premium hover:border-foreground/20 hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-95 disabled:opacity-60"
+  [class.!text-accent]="pinned()"
+  [attr.aria-pressed]="pinned()"
+  [attr.aria-label]="label()"
+  [appTooltip]="label()"
+  appTooltipSide="bottom"
+  [disabled]="favorites.busy()"
+  (click)="toggle()"
+>
+  <app-icon [icon]="star" [svgClass]="pinned() ? 'size-4 fill-current' : 'size-4'" />
+</button>
+@if (error()) {
+  <span role="alert" class="ms-2 self-center text-xs text-destructive">{{ error() }}</span>
+}

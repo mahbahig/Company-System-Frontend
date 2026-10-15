@@ -1,0 +1,62 @@
+<app-page-header [heading]="title()" [subtitle]="subtitle()" class="!mb-0">
+  <a appButton variant="ghost" [routerLink]="['/', i18n.locale(), 'reports']">{{
+    'reports.back' | t
+  }}</a>
+  @if (auth.can('data.export')) {
+    @for (format of formats; track format) {
+      <button
+        type="button"
+        appButton
+        variant="outline"
+        size="sm"
+        [disabled]="actions.busy()"
+        (click)="download(format)"
+      >
+        {{ 'reports.export.' + format | t }}
+      </button>
+    }
+  }
+</app-page-header>
+<app-analytics-filter-bar [filter]="query()" />
+@if (actions.error(); as text) {
+  <app-alert variant="destructive">{{ text }}</app-alert>
+}
+@if (data.error()) {
+  <app-alert variant="destructive">{{ i18n.errorText(data.error()) }}</app-alert>
+}
+<app-table-wrapper [label]="title()" [attr.aria-busy]="data.isLoading()">
+  <table appTable>
+    <thead appTableHeader>
+      <tr appTableRow>
+        @for (column of columns(); track column.key) {
+          <th appTableHead [class.text-end]="column.numeric">
+            {{ i18n.pick(column.labelAr, column.labelEn) }}
+          </th>
+        }
+      </tr>
+    </thead>
+    <tbody appTableBody>
+      @for (row of rows(); track $index) {
+        <tr appTableRow>
+          @for (column of columns(); track column.key) {
+            <td appTableCell [class.text-end]="column.numeric" [class.tabular]="column.numeric">
+              {{ cell(column, row[column.key]) }}
+            </td>
+          }
+        </tr>
+      } @empty {
+        @if (data.isLoading()) {
+          @for (i of [0, 1, 2, 3, 4]; track i) {
+            <tr app-skeleton-row [columns]="columns().length || 1" [index]="i"></tr>
+          }
+        } @else {
+          <tr app-table-empty [colSpan]="columns().length || 1">
+            {{
+              'reports.noRows' | t
+            }}
+          </tr>
+        }
+      }
+    </tbody>
+  </table>
+</app-table-wrapper>

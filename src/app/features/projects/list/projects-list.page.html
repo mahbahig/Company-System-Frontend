@@ -1,0 +1,99 @@
+<app-page-header
+  [heading]="'projects.title' | t"
+  [subtitle]="'projects.subtitle' | t"
+  class="!mb-0"
+/>
+<div class="flex flex-wrap items-start justify-between gap-2">
+  <app-saved-views-bar list="projects" />
+  <app-column-picker [columns]="columns" />
+</div>
+<app-list-toolbar [searchValue]="q() ?? ''" [filters]="filters()" [toggles]="toggles()" />
+@if (result.error()) {
+  <app-alert variant="destructive">{{ i18n.errorText(result.error()) }}</app-alert>
+}
+<app-table-wrapper [label]="'projects.title' | t" [attr.aria-busy]="result.isLoading()">
+  <table appTable>
+    <thead appTableHeader>
+      <tr appTableRow>
+        @if (columns.show('number')) {
+          <th appTableHead>{{ 'projects.columns.number' | t }}</th>
+        }
+        @if (columns.show('name')) {
+          <th appTableHead>{{ 'projects.columns.name' | t }}</th>
+        }
+        @if (columns.show('customer')) {
+          <th appTableHead>{{ 'prop.columns.customer' | t }}</th>
+        }
+        @if (columns.show('status')) {
+          <th appTableHead>{{ 'projects.columns.status' | t }}</th>
+        }
+        @if (columns.show('progress')) {
+          <th appTableHead>{{ 'projects.columns.progress' | t }}</th>
+        }
+        @if (columns.show('pm')) {
+          <th appTableHead>{{ 'projects.columns.pm' | t }}</th>
+        }
+        @if (columns.show('targetEnd')) {
+          <th appTableHead>{{ 'projects.columns.targetEnd' | t }}</th>
+        }
+      </tr>
+    </thead>
+    <tbody appTableBody>
+      @for (row of rows(); track row.id) {
+        <tr appTableRow [appRowLink]="row.id">
+          @if (columns.show('number')) {
+            <td appTableCell class="tabular whitespace-nowrap">
+              <a class="text-primary hover:underline" [routerLink]="row.id" dir="ltr">{{
+                row.projectNo
+              }}</a>
+            </td>
+          }
+          @if (columns.show('name')) {
+            <td appTableCell>{{ row.name }}</td>
+          }
+          @if (columns.show('customer')) {
+            <td appTableCell>{{ customer(row) }}</td>
+          }
+          @if (columns.show('status')) {
+            <td appTableCell>
+              <app-status-badge enum="projectStatus" [value]="row.status" />
+              @if (row.isDelayed) {
+                <app-badge tone="danger" class="ms-1">{{ 'projects.delayed' | t }}</app-badge>
+              }
+            </td>
+          }
+          @if (columns.show('progress')) {
+            <td appTableCell class="tabular">{{ row.installationProgressPct }}%</td>
+          }
+          @if (columns.show('pm')) {
+            <td appTableCell>{{ name(row.pmId) }}</td>
+          }
+          @if (columns.show('targetEnd')) {
+            <td appTableCell class="tabular whitespace-nowrap">
+              {{ i18n.formatDate(row.targetEndDate) || '—' }}
+            </td>
+          }
+        </tr>
+      } @empty {
+        @if (!result.isLoading()) {
+          <tr app-table-empty [colSpan]="columns.count()">
+            {{
+              'projects.empty' | t
+            }}
+          </tr>
+        }
+      }
+    </tbody>
+    @if (result.isLoading() && rows().length === 0) {
+      <tbody app-table-skeleton [columns]="columns.count()"></tbody>
+    }
+  </table>
+</app-table-wrapper>
+@if (result.hasValue()) {
+  <app-pagination
+    [page]="result.value().page"
+    [pageCount]="result.value().pageCount"
+    [total]="result.value().total"
+    [pageSize]="result.value().pageSize"
+  />
+}

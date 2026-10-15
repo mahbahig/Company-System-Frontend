@@ -1,0 +1,171 @@
+<app-page-header
+  [heading]="'admin.settings.title' | t"
+  [subtitle]="'admin.settings.subtitle' | t"
+  class="!mb-0"
+>
+  @if (canManage() || canManagePolicy()) {
+    <button type="button" appButton [disabled]="actions.busy() || !dirty()" (click)="save()">
+      {{ 'admin.settings.save' | t }}
+    </button>
+  }
+</app-page-header>
+<p class="text-sm text-muted-foreground">{{ 'admin.settings.policyHint' | t }}</p>
+@if (actions.message(); as text) {
+  <app-alert>{{ text }}</app-alert>
+}
+@if (actions.error(); as text) {
+  <app-alert variant="destructive">{{ text }}</app-alert>
+}
+<app-tabs [tabs]="tabs()" [(active)]="group" [label]="'admin.settings.title' | t" />
+
+@if (group() === 'gates') {
+  <app-table-wrapper [label]="'admin.settings.gates' | t" [attr.aria-busy]="gates.isLoading()">
+    <table appTable>
+      <thead appTableHeader>
+        <tr appTableRow>
+          <th appTableHead>{{ 'admin.settings.stage' | t }}</th>
+          <th appTableHead>{{ 'admin.settings.gate' | t }}</th>
+          <th appTableHead>{{ 'admin.settings.default' | t }}</th>
+          <th appTableHead>{{ 'admin.settings.effective' | t }}</th>
+        </tr>
+      </thead>
+      <tbody appTableBody>
+        @for (gate of gates.value() ?? []; track gate.stage + gate.code) {
+          <tr appTableRow>
+            <td appTableCell>{{ reference.label('pipeline_stage', gate.stage) }}</td>
+            <td appTableCell>
+              {{ 'crm.opportunities.gates.' + gate.code | t }}
+              @if (gate.locked) {
+                <app-badge tone="info" class="ms-1">{{ 'admin.settings.locked' | t }}</app-badge>
+              }
+            </td>
+            <td appTableCell>{{ gate.defaultSeverity | enum: 'gateSeverity' }}</td>
+            <td appTableCell>
+              <app-select>
+                <select
+                  appSelect
+                  [attr.aria-label]="'admin.settings.effective' | t"
+                  [disabled]="gate.locked || !mayEdit('gates.severityOverrides')"
+                  [value]="gateValue(gate)"
+                  (change)="setGate(gate, $any($event.target).value)"
+                >
+                  @for (severity of ['hard', 'soft', 'off']; track severity) {
+                    <option [value]="severity">{{ severity | enum: 'gateSeverity' }}</option>
+                  }
+                </select>
+              </app-select>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </app-table-wrapper>
+} @else {
+  <section appCard>
+    <div appCardContent class="grid gap-5 sm:grid-cols-2">
+      @for (key of keysIn(group()); track key) {
+        <div>
+          @switch (kind(key)) {
+            @case ('boolean') {
+              <label class="flex items-center gap-2 text-sm font-medium">
+                <input
+                  type="checkbox"
+                  [disabled]="!mayEdit(key)"
+                  [checked]="draft()[key]"
+                  (change)="set(key, $any($event.target).checked)"
+                />
+                {{ label(key) }}
+              </label>
+            }
+            @case ('number') {
+              <label appLabel [for]="'s-' + key">{{ label(key) }}</label>
+              <input
+                appInput
+                type="number"
+                min="0"
+                step="any"
+                inputmode="decimal"
+                dir="ltr"
+                [id]="'s-' + key"
+                [disabled]="!mayEdit(key)"
+                [value]="draft()[key]"
+                (keydown)="blockSign($event)"
+                (input)="setNumber(key, $event)"
+                [attr.aria-invalid]="rejected() === key ? true : null"
+                [attr.aria-describedby]="rejected() === key ? 's-' + key + '-error' : null"
+              />
+              @if (rejected() === key) {
+                <p [id]="'s-' + key + '-error'" role="alert" class="mt-1 text-sm text-destructive">
+                  {{ 'server.validation.notNegative' | t }}
+                </p>
+              }
+            }
+            @case ('choice') {
+              <label appLabel [for]="'s-' + key">{{ label(key) }}</label>
+              <app-select>
+                <select
+                  appSelect
+                  [id]="'s-' + key"
+                  [disabled]="!mayEdit(key)"
+                  [value]="draft()[key]"
+                  (change)="set(key, $any($event.target).value)"
+                >
+                  @for (choice of choices[key]; track choice) {
+                    <option [value]="choice">{{ choiceLabel(choice) }}</option>
+                  }
+                </select>
+              </app-select>
+            }
+            @case ('list') {
+              <label appLabel [for]="'s-' + key">{{ label(key) }}</label>
+              <input
+                appInput
+                dir="ltr"
+                [id]="'s-' + key"
+                [disabled]="!mayEdit(key)"
+                [value]="listText(key)"
+                (change)="set(key, list($any($event.target).value))"
+              />
+              <p class="mt-1 text-xs text-muted-foreground">
+                {{ 'admin.users.commaSeparated' | t }}
+              </p>
+            }
+            @case ('map') {
+              <label appLabel [for]="'s-' + key">{{ label(key) }}</label>
+              <textarea
+                appTextarea
+                rows="3"
+                dir="ltr"
+                class="font-mono text-xs"
+                [id]="'s-' + key"
+                [disabled]="!mayEdit(key)"
+                [value]="json(key)"
+                (change)="setJson(key, $any($event.target).value)"
+              ></textarea>
+            }
+            @default {
+              <label appLabel [for]="'s-' + key">{{ label(key) }}</label>
+              <input
+                appInput
+                dir="ltr"
+                [id]="'s-' + key"
+                [disabled]="!mayEdit(key)"
+                [value]="draft()[key]"
+                (input)="set(key, $any($event.target).value)"
+              />
+            }
+          }
+          @if (isPolicy(key)) {
+            <app-badge tone="info" class="mt-1">{{ 'admin.settings.policyBadge' | t }}</app-badge>
+          }
+          @if (isSecurity(key)) {
+            <app-badge tone="warning" class="mt-1">{{ 'ux.settings.securityBadge' | t }}</app-badge>
+          }
+          @if (mayEdit(key)) {
+            <p class="mt-1 font-mono text-[10px] text-muted-foreground" dir="ltr">{{ key }}</p>
+          }
+        </div>
+      }
+    </div>
+  </section>
+}

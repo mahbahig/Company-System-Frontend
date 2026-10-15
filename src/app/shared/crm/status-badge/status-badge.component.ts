@@ -13,7 +13,7 @@ import { statusTone } from './status-tone';
 @Component({
   selector: 'app-status-badge',
   imports: [BadgeComponent],
-  template: `<app-badge [tone]="effectiveTone()">{{ label() }}</app-badge>`,
+  templateUrl: './status-badge.component.html',
   host: { class: 'contents' },
 })
 export class StatusBadgeComponent {

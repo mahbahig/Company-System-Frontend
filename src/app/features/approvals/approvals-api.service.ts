@@ -45,7 +45,7 @@ export interface Delegation {
 export class ApprovalsApi {
   private readonly api = inject(ApiService);
 
-  list(query: { box?: string; status?: string; type?: string; page?: number; entityType?: string; entityId?: string; opportunityId?: string }): Observable<Page<Approval>> {
+  list(query: { box?: string; status?: string; open?: boolean; type?: string; page?: number; entityType?: string; entityId?: string; opportunityId?: string }): Observable<Page<Approval>> {
     return this.api.get('approvals', query);
   }
 

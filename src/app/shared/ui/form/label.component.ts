@@ -9,11 +9,7 @@ import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 @Component({
   selector: 'label[appLabel]',
   imports: [TranslatePipe],
-  template: `<ng-content />
-    @if (required()) {
-      <span aria-hidden="true" class="ms-1 text-destructive">*</span>
-      <span class="sr-only"> ({{ 'common.labels.required' | t }})</span>
-    }`,
+  templateUrl: './label.component.html',
   host: { 'data-slot': 'label', class: 'text-sm font-medium leading-none text-foreground peer-disabled:cursor-not-allowed peer-disabled:opacity-60' },
 })
 export class LabelComponent {

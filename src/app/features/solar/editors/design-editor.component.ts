@@ -12,65 +12,7 @@ type Long = 'mounting' | 'cablingProtection' | 'technicalSpecifications' | 'inst
 @Component({
   selector: 'app-design-editor',
   imports: [TranslatePipe, ButtonDirective, ...FORM_IMPORTS],
-  template: `
-    <fieldset class="flex flex-col gap-5" [disabled]="readonly()">
-      <div class="grid gap-4 sm:grid-cols-3">
-        @for (key of numeric; track key) {
-          @if (!(hideCapacity() && key === 'capacityKwp')) {
-            <div>
-              <label appLabel [for]="prefix() + key" [required]="isRequired(key)">{{ 'solar.design.' + key | t }}</label>
-              <input appInput type="number" step="any" min="0" dir="ltr" [id]="prefix() + key" [attr.aria-invalid]="invalid(key) ? 'true' : null" [value]="design()[key] ?? ''" (input)="setNumber(key, $any($event.target).value)" />
-              @if (invalid(key)) {
-                <p class="mt-1 text-xs text-destructive" role="alert">{{ 'common.labels.required' | t }}</p>
-              }
-            </div>
-          }
-        }
-      </div>
-
-      <div>
-        <h3 class="mb-2 text-sm font-semibold">{{ 'solar.design.panels' | t }}</h3>
-        <div class="grid gap-3 sm:grid-cols-4">
-          <input appInput [attr.aria-label]="'solar.design.manufacturer' | t" [placeholder]="'solar.design.manufacturer' | t" [value]="design().panels?.manufacturer ?? ''" (input)="setPanel('manufacturer', $any($event.target).value)" />
-          <input appInput [attr.aria-label]="'solar.design.model' | t" [placeholder]="'solar.design.model' | t" [value]="design().panels?.model ?? ''" (input)="setPanel('model', $any($event.target).value)" />
-          <input appInput type="number" dir="ltr" [attr.aria-label]="'solar.design.wattage' | t" [placeholder]="'solar.design.wattage' | t" [value]="design().panels?.wattage ?? ''" (input)="setPanel('wattage', +$any($event.target).value)" />
-          <input appInput type="number" dir="ltr" [attr.aria-label]="'solar.design.quantity' | t" [placeholder]="'solar.design.quantity' | t" [value]="design().panels?.quantity ?? ''" (input)="setPanel('quantity', +$any($event.target).value)" />
-        </div>
-      </div>
-
-      @for (group of groups; track group.key) {
-        <div>
-          <h3 class="mb-2 text-sm font-semibold">{{ 'solar.design.' + group.key | t }}</h3>
-          @for (row of rows(group.key); track $index; let index = $index) {
-            <div class="mb-2 grid gap-3 sm:grid-cols-5">
-              <input appInput [attr.aria-label]="'solar.design.manufacturer' | t" [placeholder]="'solar.design.manufacturer' | t" [value]="row.manufacturer ?? ''" (input)="setRow(group.key, index, 'manufacturer', $any($event.target).value)" />
-              <input appInput [attr.aria-label]="'solar.design.model' | t" [placeholder]="'solar.design.model' | t" [value]="row.model ?? ''" (input)="setRow(group.key, index, 'model', $any($event.target).value)" />
-              <input appInput type="number" dir="ltr" [attr.aria-label]="'solar.design.' + group.rating | t" [placeholder]="'solar.design.' + group.rating | t" [value]="$any(row)[group.rating] ?? ''" (input)="setRow(group.key, index, group.rating, +$any($event.target).value)" />
-              <input appInput type="number" dir="ltr" [attr.aria-label]="'solar.design.quantity' | t" [placeholder]="'solar.design.quantity' | t" [value]="row.quantity ?? ''" (input)="setRow(group.key, index, 'quantity', +$any($event.target).value)" />
-              @if (!readonly()) {
-                <button type="button" appButton variant="ghost" size="sm" (click)="removeRow(group.key, index)">{{ 'crm.common.delete' | t }}</button>
-              }
-            </div>
-          }
-          @if (!readonly()) {
-            <button type="button" appButton variant="outline" size="sm" (click)="addRow(group.key)">{{ 'solar.design.add' | t }}</button>
-          }
-        </div>
-      }
-
-      <div class="grid gap-4 sm:grid-cols-2">
-        @for (key of long; track key) {
-          <div>
-            <label appLabel [for]="prefix() + key" [required]="isRequired(key)">{{ 'solar.design.' + key | t }}</label>
-            <textarea appTextarea rows="3" [id]="prefix() + key" [attr.aria-invalid]="invalid(key) ? 'true' : null" [value]="design()[key] ?? ''" (input)="setText(key, $any($event.target).value)"></textarea>
-            @if (invalid(key)) {
-              <p class="mt-1 text-xs text-destructive" role="alert">{{ 'common.labels.required' | t }}</p>
-            }
-          </div>
-        }
-      </div>
-    </fieldset>
-  `,
+  templateUrl: './design-editor.component.html',
   host: { class: 'block' },
 })
 export class DesignEditorComponent {

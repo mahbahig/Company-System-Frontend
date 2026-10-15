@@ -9,13 +9,7 @@ import { formatKpi, kpiHint } from './kpi-format';
 @Component({
   selector: 'app-kpi-grid',
   imports: [StatCardComponent],
-  template: `
-    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      @for (code of codes(); track code) {
-        <app-stat-card [label]="i18n.t('kpi.label.' + code)" [value]="format(code)" [hint]="hint(code)" />
-      }
-    </div>
-  `,
+  templateUrl: './kpi-grid.component.html',
   host: { class: 'block' },
 })
 export class KpiGridComponent {

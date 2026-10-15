@@ -22,29 +22,7 @@ export interface GeoCapture {
 @Component({
   selector: 'app-gps-capture',
   imports: [TranslatePipe, ButtonDirective, ...FORM_IMPORTS],
-  template: `
-    <div class="flex flex-col gap-3">
-      <button type="button" appButton variant="outline" [disabled]="locating() || busy()" (click)="locate()">{{ (locating() ? 'gps.locating' : 'gps.capture') | t }}</button>
-      @if (position(); as pos) {
-        <p class="text-sm" role="status">
-          {{ 'gps.captured' | t }} <span class="tabular" dir="ltr">{{ pos.latitude.toFixed(5) }}, {{ pos.longitude.toFixed(5) }}</span>
-          · {{ 'gps.accuracy' | t: { meters: round(pos.accuracy) } }}
-        </p>
-      }
-      @if (failed()) {
-        <p class="text-sm text-destructive" role="alert">{{ 'gps.unavailable' | t }}</p>
-      }
-      <div>
-        <label appLabel [for]="idPrefix() + '-reason'" [required]="!position()">{{ 'gps.manualReason' | t }}</label>
-        <input appInput [id]="idPrefix() + '-reason'" [value]="reason()" (input)="reason.set($any($event.target).value)" />
-      </div>
-      <div>
-        <label appLabel [for]="idPrefix() + '-note'">{{ 'gps.note' | t }}</label>
-        <input appInput [id]="idPrefix() + '-note'" [value]="note()" (input)="note.set($any($event.target).value)" />
-      </div>
-      <button type="button" appButton [disabled]="busy() || (!position() && !reason().trim())" (click)="confirm()">{{ confirmLabel() }}</button>
-    </div>
-  `,
+  templateUrl: './gps-capture.component.html',
 })
 export class GpsCaptureComponent {
   private readonly i18n = inject(I18nService);

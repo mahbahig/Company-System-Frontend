@@ -43,18 +43,18 @@ describe('role-aware UI actions (no unauthorized navigation or buttons)', () => 
     it('installation crew sees only its field work', async () => {
       const links = await navFor('installation_crew');
       expect(links).toEqual(expect.arrayContaining(['/dashboard', '/tasks', '/projects']));
-      for (const hidden of ['/customers', '/leads', '/reports', '/approvals', '/contracts', '/admin/users'])
+      for (const hidden of ['/customers', '/leads', '/reports', '/approvals', '/contracts', '/employees'])
         expect(links).not.toContain(hidden);
     });
 
     it('the System Administrator sees administration, security and every business area', async () => {
       const links = await navFor('system_administrator');
-      expect(links).toEqual(expect.arrayContaining(['/admin/users', '/admin/roles', '/admin/audit', '/customers', '/leads', '/opportunities', '/projects', '/reports', '/approvals', '/admin/equipment']));
+      expect(links).toEqual(expect.arrayContaining(['/employees', '/admin/roles', '/admin/audit', '/customers', '/leads', '/opportunities', '/projects', '/reports', '/approvals', '/admin/equipment']));
     });
 
     it('the CEO sees users, settings and the business areas — not roles & permissions or the audit trail', async () => {
       const links = await navFor('ceo');
-      expect(links).toEqual(expect.arrayContaining(['/admin/users', '/admin/settings', '/customers', '/leads', '/approvals', '/reports']));
+      expect(links).toEqual(expect.arrayContaining(['/employees', '/admin/settings', '/customers', '/leads', '/approvals', '/reports']));
       for (const hidden of ['/admin/roles', '/admin/audit', '/admin/automation', '/admin/integrations']) expect(links).not.toContain(hidden);
     });
 

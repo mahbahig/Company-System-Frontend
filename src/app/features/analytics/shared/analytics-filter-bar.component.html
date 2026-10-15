@@ -1,0 +1,63 @@
+<form
+  class="grid gap-3 rounded-lg border border-border bg-card p-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7"
+  (submit)="apply($event)"
+  [attr.aria-label]="'analytics.filters.title' | t"
+>
+  <div>
+    <label appLabel for="af-from">{{ 'analytics.filters.from' | t }}</label>
+    <input
+      appInput
+      id="af-from"
+      type="date"
+      dir="ltr"
+      [value]="model().from ?? ''"
+      (change)="set('from', $any($event.target).value)"
+    />
+  </div>
+  <div>
+    <label appLabel for="af-to">{{ 'analytics.filters.to' | t }}</label>
+    <input
+      appInput
+      id="af-to"
+      type="date"
+      dir="ltr"
+      [value]="model().to ?? ''"
+      (change)="set('to', $any($event.target).value)"
+    />
+  </div>
+  @if (showRep()) {
+    <div>
+      <label appLabel for="af-rep">{{ 'analytics.filters.rep' | t }}</label>
+      <app-user-select
+        inputId="af-rep"
+        [placeholder]="'analytics.filters.allReps' | t"
+        [value]="model().ownerId ?? ''"
+        (valueChange)="set('ownerId', $event)"
+      />
+    </div>
+  }
+  @for (filter of selects; track filter.key) {
+    <div>
+      <label appLabel [for]="'af-' + filter.key">{{ filter.label | t }}</label>
+      <app-select>
+        <select
+          appSelect
+          [id]="'af-' + filter.key"
+          [value]="model()[filter.key] ?? ''"
+          (change)="set(filter.key, $any($event.target).value)"
+        >
+          <option value="">{{ 'analytics.filters.all' | t }}</option>
+          @for (option of reference.options(filter.type); track option.value) {
+            <option [value]="option.value">{{ option.label }}</option>
+          }
+        </select>
+      </app-select>
+    </div>
+  }
+  <div class="flex items-end gap-2">
+    <button type="submit" appButton size="sm">{{ 'analytics.filters.apply' | t }}</button>
+    <button type="button" appButton variant="ghost" size="sm" (click)="clear()">
+      {{ 'analytics.filters.clear' | t }}
+    </button>
+  </div>
+</form>

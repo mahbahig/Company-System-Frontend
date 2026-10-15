@@ -9,28 +9,7 @@ import { RouterLink } from '@angular/router';
 @Component({
   selector: 'app-stat-card',
   imports: [RouterLink],
-  template: `
-    <div
-      class="group/stat relative flex h-full flex-col gap-1.5 rounded-xl border border-border/80 bg-card p-5 shadow-sm transition-[box-shadow,transform,translate] duration-300 ease-premium hover:-translate-y-0.5 hover:shadow-md motion-reduce:hover:translate-y-0"
-      [class]="accent()"
-    >
-      <p class="text-2xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">{{ label() }}</p>
-      @if (link()) {
-        <a
-          [routerLink]="link()"
-          [queryParams]="queryParams()"
-          class="tabular text-3xl font-semibold tracking-tight text-foreground underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          dir="ltr"
-          >{{ value() }}</a
-        >
-      } @else {
-        <p class="tabular text-3xl font-semibold tracking-tight" dir="ltr">{{ value() }}</p>
-      }
-      @if (hint()) {
-        <p class="text-xs text-muted-foreground">{{ hint() }}</p>
-      }
-    </div>
-  `,
+  templateUrl: './stat-card.component.html',
   host: { class: 'block' },
 })
 export class StatCardComponent {

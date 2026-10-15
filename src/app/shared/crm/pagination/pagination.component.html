@@ -1,0 +1,73 @@
+@if (total() > 0) {
+  <nav
+    [attr.aria-label]="'crm.pagination.label' | t"
+    class="flex flex-col items-center justify-between gap-3 pt-4 sm:flex-row"
+  >
+    <p class="text-sm text-muted-foreground">
+      {{ 'crm.pagination.showing' | t: { from: firstRow(), to: lastRow(), total: total() } }}
+    </p>
+
+    @if (pageCount() > 1) {
+      <ul class="flex items-center gap-1">
+        <li>
+          @if (page() > 1) {
+            <a
+              [routerLink]="[]"
+              [queryParams]="{ page: pageParam(page() - 1) }"
+              queryParamsHandling="merge"
+              [class]="link"
+              [attr.aria-label]="'crm.pagination.previous' | t"
+              [appTooltip]="'crm.pagination.previous' | t"
+            >
+              <app-icon [icon]="previousIcon()" />
+            </a>
+          } @else {
+            <span [class]="link + ' pointer-events-none opacity-40'" aria-hidden="true"
+              ><app-icon [icon]="previousIcon()"
+            /></span>
+          }
+        </li>
+        @for (candidate of pages(); track $index) {
+          @if (candidate === null) {
+            <li aria-hidden="true" class="px-1 text-muted-foreground">…</li>
+          } @else {
+            <li>
+              <a
+                [routerLink]="[]"
+                [queryParams]="{ page: pageParam(candidate) }"
+                queryParamsHandling="merge"
+                [attr.aria-current]="candidate === page() ? 'page' : null"
+                [attr.aria-label]="'crm.pagination.goToPage' | t: { page: candidate }"
+                [class]="
+                  link +
+                  ' tabular' +
+                  (candidate === page() ? ' border-primary bg-primary text-primary-foreground' : '')
+                "
+              >
+                {{ candidate }}
+              </a>
+            </li>
+          }
+        }
+        <li>
+          @if (page() < pageCount()) {
+            <a
+              [routerLink]="[]"
+              [queryParams]="{ page: pageParam(page() + 1) }"
+              queryParamsHandling="merge"
+              [class]="link"
+              [attr.aria-label]="'crm.pagination.next' | t"
+              [appTooltip]="'crm.pagination.next' | t"
+            >
+              <app-icon [icon]="nextIcon()" />
+            </a>
+          } @else {
+            <span [class]="link + ' pointer-events-none opacity-40'" aria-hidden="true"
+              ><app-icon [icon]="nextIcon()"
+            /></span>
+          }
+        </li>
+      </ul>
+    }
+  </nav>
+}

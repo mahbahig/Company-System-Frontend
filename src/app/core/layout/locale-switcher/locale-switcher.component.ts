@@ -16,12 +16,7 @@ import { TooltipDirective } from '../../../shared/ui/tooltip/tooltip.directive';
 @Component({
   selector: 'app-locale-switcher',
   imports: [TooltipDirective, ButtonDirective, IconComponent],
-  template: `
-    <button type="button" appButton variant="ghost" size="sm" class="gap-2 px-2 sm:px-3" [attr.aria-label]="label()" [attr.lang]="target()" [appTooltip]="label()" appTooltipSide="bottom" (click)="switch()">
-      <app-icon [icon]="languages" />
-      <span class="hidden sm:inline">{{ targetName() }}</span>
-    </button>
-  `,
+  templateUrl: './locale-switcher.component.html',
 })
 export class LocaleSwitcherComponent {
   private readonly i18n = inject(I18nService);

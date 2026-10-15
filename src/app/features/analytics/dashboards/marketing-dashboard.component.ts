@@ -21,76 +21,7 @@ import { DashboardSkeletonComponent } from '../../../shared/ui/skeleton/skeleton
 @Component({
   selector: 'app-marketing-dashboard',
   imports: [DashboardSkeletonComponent, TranslatePipe, AlertComponent, KpiGridComponent, BarListComponent, ...CARD_IMPORTS, ...TABLE_IMPORTS],
-  template: `
-    @if (data.error()) {
-      <app-alert variant="destructive">{{ i18n.errorText(data.error()) }}</app-alert>
-    }
-    @if (data.value(); as d) {
-      <p class="text-sm text-muted-foreground">{{ 'analytics.marketing.attribution' | t }}</p>
-      <app-kpi-grid [kpis]="d.kpis" [codes]="kpiCodes()" />
-
-      <section class="flex flex-col gap-3" aria-labelledby="campaigns-heading">
-        <h2 id="campaigns-heading" class="text-lg font-semibold">{{ 'analytics.marketing.campaigns' | t }}</h2>
-        <app-table-wrapper [label]="'analytics.marketing.campaigns' | t">
-          <table appTable>
-            <thead appTableHeader>
-              <tr appTableRow>
-                <th appTableHead>{{ 'analytics.marketing.campaign' | t }}</th>
-                <th appTableHead>{{ 'analytics.marketing.leads' | t }}</th>
-                <th appTableHead>{{ 'analytics.marketing.qualified' | t }}</th>
-                <th appTableHead>{{ 'analytics.marketing.opportunities' | t }}</th>
-                <th appTableHead>{{ 'analytics.marketing.proposals' | t }}</th>
-                <th appTableHead>{{ 'analytics.marketing.contracts' | t }}</th>
-                <th appTableHead>{{ 'analytics.marketing.wonLost' | t }}</th>
-                @if (money()) {
-                  <th appTableHead>{{ 'analytics.marketing.spend' | t }}</th>
-                  <th appTableHead>{{ 'analytics.marketing.costPerLead' | t }}</th>
-                  <th appTableHead>{{ 'analytics.marketing.costPerWon' | t }}</th>
-                  <th appTableHead>{{ 'analytics.marketing.revenue' | t }}</th>
-                }
-                <th appTableHead>{{ 'analytics.marketing.topLoss' | t }}</th>
-              </tr>
-            </thead>
-            <tbody appTableBody>
-              @for (row of d.campaigns; track row.code) {
-                <tr appTableRow>
-                  <td appTableCell class="font-medium">{{ i18n.pick(row.nameAr, row.nameEn) }}</td>
-                  <td appTableCell class="tabular">{{ n(row.leads) }}</td>
-                  <td appTableCell class="tabular">{{ n(row.qualified) }}</td>
-                  <td appTableCell class="tabular">{{ n(row.opportunities) }}</td>
-                  <td appTableCell class="tabular">{{ n(row.proposals) }}</td>
-                  <td appTableCell class="tabular">{{ n(row.contracts) }}</td>
-                  <td appTableCell class="tabular">{{ n(row.won) }} / {{ n(row.lost) }}</td>
-                  @if (money()) {
-                    <td appTableCell class="tabular whitespace-nowrap">{{ i18n.formatMoney(row.spend) }}</td>
-                    <td appTableCell class="tabular whitespace-nowrap">{{ row.costPerLead === null ? '—' : i18n.formatMoney(row.costPerLead) }}</td>
-                    <td appTableCell class="tabular whitespace-nowrap">{{ row.costPerWon === null ? '—' : i18n.formatMoney(row.costPerWon) }}</td>
-                    <td appTableCell class="tabular whitespace-nowrap">{{ i18n.formatMoney(row.revenue) }}</td>
-                  }
-                  <td appTableCell>{{ topLoss(row) }}</td>
-                </tr>
-              } @empty {
-                <tr app-table-empty [colSpan]="12">{{ 'analytics.empty' | t }}</tr>
-              }
-            </tbody>
-          </table>
-        </app-table-wrapper>
-      </section>
-
-      <div class="grid gap-6 lg:grid-cols-2">
-        <section appCard aria-labelledby="sources-heading">
-          <div appCardHeader><h2 appCardTitle id="sources-heading">{{ 'analytics.marketing.bySource' | t }}</h2></div>
-          <div appCardContent><app-bar-list [items]="sources()" [emptyText]="'analytics.empty' | t" /></div>
-        </section>
-        <section appCard aria-labelledby="quality-heading">
-          <div appCardHeader><h2 appCardTitle id="quality-heading">{{ 'analytics.marketing.leadQuality' | t }}</h2></div>
-          <div appCardContent><app-bar-list [items]="quality()" [emptyText]="'analytics.empty' | t" /></div>
-        </section>
-      </div>
-    } @else if (data.isLoading()) {
-      <app-dashboard-skeleton [label]="'common.labels.loading' | t" />
-    }
-  `,
+  templateUrl: './marketing-dashboard.component.html',
   host: { class: 'flex flex-col gap-6' },
 })
 export class MarketingDashboardComponent {

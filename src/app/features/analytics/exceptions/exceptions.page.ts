@@ -26,104 +26,14 @@ import { ListSkeletonComponent } from '../../../shared/ui/skeleton/skeleton.comp
  * pre-scoped by the API (a rep sees their own, a manager their team). A card
  * does not show the records here: it opens the existing page for them (leads,
  * opportunities, tasks, projects …) with the matching filter applied, plus
- * `exception=<code>` so that page can say where the user came from. Cards for
+ * `exception=<code>` (`quality=<code>` from a Data quality row) so that page
+ * can say where the user came from. Cards for
  * a page the role cannot open are shown, but not as links.
  */
 @Component({
   selector: 'app-exceptions-page',
   imports: [NgTemplateOutlet, ListSkeletonComponent, RouterLink, TranslatePipe, StatusBadgeComponent, AlertComponent, PageHeaderComponent, TabsComponent, TooltipDirective, ...CARD_IMPORTS, ...TABLE_IMPORTS],
-  template: `
-    <app-page-header [heading]="'exceptionsCenter.title' | t" [subtitle]="'exceptionsCenter.subtitle' | t" class="!mb-0" />
-
-    @if (tabs().length > 1) {
-      <app-tabs [tabs]="tabs()" [active]="activeTab()" (activeChange)="selectTab($event)" [label]="'exceptionsCenter.title' | t" />
-    }
-
-    @if (activeTab() === 'exceptions') {
-      @if (summary.error()) {
-        <app-alert variant="destructive">{{ i18n.errorText(summary.error()) }}</app-alert>
-      }
-      @if (summary.isLoading()) {
-        <div role="status" [attr.aria-label]="'common.labels.loading' | t"><app-list-skeleton [rows]="4" /></div>
-      }
-      <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        @for (item of items(); track item.code) {
-          <li>
-            @if (canOpen(item.route)) {
-              <a
-                [routerLink]="link(item.route)"
-                [queryParams]="destinationQuery(item)"
-                class="flex h-full items-center justify-between gap-4 rounded-xl border border-border/80 bg-card p-5 text-start text-card-foreground shadow-sm outline-none transition-[transform,box-shadow] duration-200 ease-premium will-change-transform hover:scale-[1.03] hover:shadow-lg focus-visible:scale-[1.03] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 active:scale-[1.01] motion-reduce:hover:scale-100"
-                [attr.aria-label]="('exceptionsCenter.codes.' + item.code | t) + ': ' + i18n.formatNumber(item.count)"
-              >
-                <ng-container *ngTemplateOutlet="cardBody; context: { $implicit: item }" />
-              </a>
-            } @else {
-              <div
-                class="flex h-full items-center justify-between gap-4 rounded-xl border border-border/80 bg-card p-5 text-card-foreground opacity-80"
-                [appTooltip]="'ux.exceptions.noAccess' | t"
-                tabindex="0"
-              >
-                <ng-container *ngTemplateOutlet="cardBody; context: { $implicit: item }" />
-              </div>
-            }
-          </li>
-        }
-      </ul>
-      <ng-template #cardBody let-item>
-        <span class="flex min-w-0 flex-col items-start gap-2">
-          <span class="text-sm font-medium leading-snug">{{ 'exceptionsCenter.codes.' + item.code | t }}</span>
-          <app-status-badge enum="exceptionSeverity" [value]="item.severity" [tone]="item.count ? undefined : 'neutral'" />
-        </span>
-        <span class="tabular shrink-0 text-3xl font-semibold tracking-tight" [class.text-destructive]="item.count > 0 && (item.severity === 'critical' || item.severity === 'high')" [class.text-muted-foreground]="item.count === 0">
-          {{ i18n.formatNumber(item.count) }}
-        </span>
-      </ng-template>
-    } @else {
-      @if (quality.error()) {
-        <app-alert variant="destructive">{{ i18n.errorText(quality.error()) }}</app-alert>
-      }
-      @if (quality.value(); as q) {
-        <app-table-wrapper [label]="'exceptionsCenter.dataQuality' | t">
-          <table appTable>
-            <thead appTableHeader>
-              <tr appTableRow>
-                <th appTableHead>{{ 'exceptionsCenter.check' | t }}</th>
-                <th appTableHead>{{ 'exceptionsCenter.records' | t }}</th>
-                <th appTableHead>{{ 'exceptionsCenter.share' | t }}</th>
-                <th appTableHead><span class="sr-only">{{ 'crm.common.actions' | t }}</span></th>
-              </tr>
-            </thead>
-            <tbody appTableBody>
-              @for (item of q.items; track item.code) {
-                <tr appTableRow>
-                  <td appTableCell class="font-medium">{{ 'exceptionsCenter.quality.' + item.code | t }}</td>
-                  <td appTableCell class="tabular" [class.text-destructive]="item.count > 0">{{ i18n.formatNumber(item.count) }}</td>
-                  <td appTableCell class="tabular">{{ item.of === undefined ? '—' : pct(item.rate ?? null) + ' / ' + i18n.formatNumber(item.of) }}</td>
-                  <td appTableCell>
-                    @if (canOpen(item.route)) {
-                      <a [routerLink]="link(item.route)" [queryParams]="query(item.route)" class="text-sm text-primary hover:underline">{{ 'crm.common.view' | t }}</a>
-                    }
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </app-table-wrapper>
-        <section appCard aria-labelledby="completeness-heading">
-          <div appCardHeader><h2 appCardTitle id="completeness-heading">{{ 'exceptionsCenter.customerCompleteness' | t }}</h2></div>
-          <div appCardContent class="grid gap-3 sm:grid-cols-4">
-            @for (band of q.customerCompleteness; track band.band) {
-              <div class="rounded-md border border-border p-3 text-center">
-                <p class="tabular text-xl font-semibold">{{ i18n.formatNumber(band.count) }}</p>
-                <p class="text-xs text-muted-foreground" dir="ltr">{{ bandLabel(band.band) }}</p>
-              </div>
-            }
-          </div>
-        </section>
-      }
-    }
-  `,
+  templateUrl: './exceptions.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
 export class ExceptionsPage {
@@ -161,6 +71,11 @@ export class ExceptionsPage {
   /** The destination's own filter (from the API's route) plus where the user came from. */
   protected destinationQuery(item: ExceptionSummary): Record<string, string> {
     return { ...this.query(item.route), exception: item.code };
+  }
+
+  /** A Data quality row's filter plus its code, so the list can say where the user came from. */
+  protected qualityQuery(code: string, route: string): Record<string, string> {
+    return { ...this.query(route), quality: code };
   }
 
   /** Only offer a drill-down the user's role can actually open (same rule as the route guard). */

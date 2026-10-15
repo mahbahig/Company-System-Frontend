@@ -19,4 +19,7 @@ export interface OpportunityListQuery {
   dir?: 'asc' | 'desc';
   incomplete?: boolean;
   intakeIncomplete?: boolean;
+  /** Exceptions Center: health at risk or critical / technical data missing after the handoff. */
+  stagnant?: boolean;
+  technicalGap?: boolean;
 }

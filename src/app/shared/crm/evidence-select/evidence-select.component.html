@@ -1,0 +1,21 @@
+<app-select>
+  <select
+    appSelect
+    [id]="inputId()"
+    [value]="value()"
+    (change)="value.set($any($event.target).value)"
+  >
+    <option value="">
+      {{
+        documents().length ? i18n.t('crm.common.selectPlaceholder') : i18n.t('pipeline.noEvidence')
+      }}
+    </option>
+    @for (document of documents(); track document.id) {
+      <option [value]="document.id">
+        {{ reference.label('document_category', document.category) }} — {{ document.fileName }} (v{{
+          document.version
+        }})
+      </option>
+    }
+  </select>
+</app-select>

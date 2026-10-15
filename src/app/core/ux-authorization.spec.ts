@@ -99,7 +99,7 @@ describe('UX features never widen access', () => {
       signInAs('system_administrator');
       const commands = TestBed.inject(PaletteCommands);
       const paths = commands.pages().map((page) => page.path);
-      expect(paths).toEqual(expect.arrayContaining(['/admin/users', '/admin/roles', '/admin/audit', '/customers', '/leads', '/opportunities', '/projects', '/contracts']));
+      expect(paths).toEqual(expect.arrayContaining(['/employees', '/admin/roles', '/admin/audit', '/customers', '/leads', '/opportunities', '/projects', '/contracts']));
       expect(commands.creates().map((command) => command.path)).toEqual(expect.arrayContaining(['/customers/new', '/leads/new', '/calls/new']));
     });
 
@@ -107,7 +107,7 @@ describe('UX features never widen access', () => {
       signInAs('ceo');
       const commands = TestBed.inject(PaletteCommands);
       const paths = commands.pages().map((page) => page.path);
-      expect(paths).toEqual(expect.arrayContaining(['/admin/users', '/admin/settings', '/customers', '/leads', '/approvals', '/reports']));
+      expect(paths).toEqual(expect.arrayContaining(['/employees', '/admin/settings', '/customers', '/leads', '/approvals', '/reports']));
       for (const path of ['/admin/roles', '/admin/audit', '/admin/automation', '/admin/integrations']) expect(paths).not.toContain(path);
       expect(commands.creates().map((command) => command.path)).toEqual(expect.arrayContaining(['/customers/new', '/leads/new']));
     });

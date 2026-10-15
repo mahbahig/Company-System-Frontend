@@ -20,44 +20,7 @@ function toAsciiDigits(text: string): string {
  */
 @Component({
   selector: 'app-otp-input',
-  template: `
-    <div class="relative" dir="ltr" [attr.data-invalid]="invalid()">
-      <input
-        #field
-        type="text"
-        inputmode="numeric"
-        autocomplete="one-time-code"
-        spellcheck="false"
-        [id]="inputId()"
-        [value]="value()"
-        [attr.aria-invalid]="invalid() || null"
-        [attr.aria-describedby]="describedBy() || null"
-        class="absolute inset-0 z-10 size-full cursor-text appearance-none border-0 bg-transparent text-transparent caret-transparent outline-none selection:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
-        (input)="onInput(field)"
-        (focus)="focused.set(true); toEnd(field)"
-        (click)="toEnd(field)"
-        (keyup)="toEnd(field)"
-        (blur)="focused.set(false)"
-      />
-      <div aria-hidden="true" class="flex items-center gap-2 sm:gap-2.5">
-        @for (digit of cells(); track $index) {
-          @if ($index === splitAt()) {
-            <span class="h-px w-2.5 shrink-0 rounded-full bg-border sm:w-3.5"></span>
-          }
-          <div
-            class="relative flex h-14 min-w-0 flex-1 items-center justify-center rounded-xl border border-input bg-card text-[1.375rem] font-semibold text-foreground tabular shadow-xs transition-[border-color,box-shadow] duration-200 ease-premium data-[filled=true]:border-foreground/30 data-[active=true]:border-primary data-[active=true]:ring-4 data-[active=true]:ring-primary/15 [[data-invalid=true]_&]:border-destructive"
-            [attr.data-filled]="digit !== ''"
-            [attr.data-active]="focused() && $index === activeIndex()"
-          >
-            {{ digit }}
-            @if (focused() && $index === activeIndex() && digit === '') {
-              <span class="h-6 w-px bg-foreground animate-caret-blink"></span>
-            }
-          </div>
-        }
-      </div>
-    </div>
-  `,
+  templateUrl: './otp-input.component.html',
   host: { class: 'block' },
 })
 export class OtpInputComponent {

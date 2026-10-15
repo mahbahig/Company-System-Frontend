@@ -1,0 +1,50 @@
+<div class="relative">
+  @if (value() && selectedLabel()) {
+    <div
+      class="flex h-10 items-center justify-between gap-2 rounded-md border border-input bg-background px-3 text-sm"
+    >
+      <span class="truncate">{{ selectedLabel() }}</span>
+      <button type="button" class="text-xs text-primary hover:underline" (click)="clear()">
+        {{ 'picker.change' | t }}
+      </button>
+    </div>
+  } @else {
+    <input
+      type="search"
+      role="combobox"
+      autocomplete="off"
+      class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      [id]="inputId()"
+      [attr.aria-expanded]="open()"
+      [attr.aria-controls]="inputId() + '-list'"
+      [placeholder]="'picker.search' | t"
+      [value]="text()"
+      (input)="onInput($any($event.target).value)"
+      (focus)="open.set(true)"
+    />
+    @if (open() && rows().length) {
+      <ul
+        [id]="inputId() + '-list'"
+        role="listbox"
+        class="absolute z-20 mt-1 max-h-64 w-full overflow-y-auto rounded-md border border-border bg-popover p-1 shadow-md"
+      >
+        @for (row of rows(); track row.id) {
+          <li role="option" [attr.aria-selected]="false">
+            <button
+              type="button"
+              class="flex w-full items-center justify-between gap-2 rounded px-2 py-1.5 text-start text-sm hover:bg-secondary"
+              (click)="select(row)"
+            >
+              <span class="truncate">{{ row.label }}</span>
+              @if (row.number) {
+                <span class="tabular text-xs text-muted-foreground" dir="ltr">{{
+                  row.number
+                }}</span>
+              }
+            </button>
+          </li>
+        }
+      </ul>
+    }
+  }
+</div>

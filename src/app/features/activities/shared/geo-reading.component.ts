@@ -12,22 +12,7 @@ import type { GeoReading } from '../activities-api.service';
 @Component({
   selector: 'app-geo-reading',
   imports: [TranslatePipe],
-  template: `
-    @if (reading(); as r) {
-      <span class="tabular">{{ i18n.formatDate(r.at, true) }}</span>
-      @if (r.latitude !== undefined && r.longitude !== undefined) {
-        <span class="block text-xs text-muted-foreground" dir="ltr">{{ r.latitude.toFixed(5) }}, {{ r.longitude.toFixed(5) }} ± {{ r.accuracyM ?? '?' }} m</span>
-      }
-      @if (r.distanceM !== undefined && r.distanceM !== null) {
-        <span class="block text-xs" [class.text-destructive]="r.distanceM > 500">{{ 'gps.distance' | t: { meters: i18n.formatNumber(r.distanceM) } }}</span>
-      }
-      @if (r.manualReason) {
-        <span class="block text-xs text-muted-foreground">{{ 'gps.manualReason' | t }}: {{ r.manualReason }}</span>
-      }
-    } @else {
-      —
-    }
-  `,
+  templateUrl: './geo-reading.component.html',
 })
 export class GeoReadingComponent {
   protected readonly i18n = inject(I18nService);

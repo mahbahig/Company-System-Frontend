@@ -14,25 +14,7 @@ import { IconComponent } from '../../../shared/ui/icon/icon.component';
 @Component({
   selector: 'button[appAuthButton], a[appAuthButton]',
   imports: [IconComponent, TranslatePipe],
-  template: `
-    <span
-      aria-hidden="true"
-      class="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 ease-premium group-hover:translate-x-full"
-    ></span>
-    @if (busy()) {
-      <app-icon [icon]="spinnerIcon" svgClass="relative size-4 animate-spin" />
-      <span class="relative">{{ busyLabel() | t }}</span>
-    }
-    <span class="relative inline-flex items-center gap-2" [class.hidden]="busy()">
-      <ng-content />
-      @if (arrow()) {
-        <app-icon
-          [icon]="arrowIcon"
-          svgClass="size-4 transition-transform duration-300 ease-premium group-hover:translate-x-0.5 rtl:-scale-x-100 rtl:group-hover:-translate-x-0.5"
-        />
-      }
-    </span>
-  `,
+  templateUrl: './auth-button.component.html',
   host: {
     class:
       'group relative isolate inline-flex h-12 w-full select-none items-center justify-center gap-2 overflow-hidden rounded-xl px-5 text-[0.9375rem] font-semibold text-[hsl(var(--primary-fill-foreground))] ' +

@@ -8,7 +8,7 @@ import { alertVariants, type AlertVariant } from './alert-variants';
  */
 @Component({
   selector: 'app-alert',
-  template: '<ng-content />',
+  templateUrl: './alert.component.html',
   host: {
     '[class]': 'classes()',
     '[attr.role]': "urgent() ? 'alert' : 'status'",

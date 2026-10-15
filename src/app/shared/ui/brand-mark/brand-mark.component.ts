@@ -23,14 +23,7 @@ const SUN_MARK_PATH = (() => {
  */
 @Component({
   selector: 'app-brand-mark',
-  template: `<svg
-    viewBox="0 0 100 100"
-    class="block size-full"
-    aria-hidden="true"
-    focusable="false"
-  >
-    <path [attr.d]="path" fill="currentColor" fill-rule="evenodd" />
-  </svg>`,
+  templateUrl: './brand-mark.component.html',
   host: { class: 'inline-block shrink-0 text-brand-sun' },
 })
 export class BrandMarkComponent {

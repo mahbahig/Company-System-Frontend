@@ -17,33 +17,7 @@ import { DashboardSkeletonComponent } from '../../../shared/ui/skeleton/skeleton
 @Component({
   selector: 'app-platform-dashboard',
   imports: [DashboardSkeletonComponent, TranslatePipe, AlertComponent, StatCardComponent],
-  template: `
-    @if (data.error()) {
-      <app-alert variant="destructive">{{ i18n.errorText(data.error()) }}</app-alert>
-    }
-    @if (data.value(); as d) {
-      <section class="flex flex-col gap-3" aria-labelledby="platform-heading">
-        <div>
-          <h2 id="platform-heading" class="text-lg font-semibold">{{ 'analytics.platform.title' | t }}</h2>
-          <p class="text-sm text-muted-foreground">{{ 'analytics.platform.subtitle' | t }}</p>
-        </div>
-        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <app-stat-card [label]="'analytics.platform.activeUsers' | t" [value]="n(d.users.active)" [link]="adminLink('/admin/users', 'administration.manage_users')" />
-          <app-stat-card [label]="'analytics.platform.lockedUsers' | t" [value]="n(d.users.locked)" [tone]="d.users.locked ? 'warning' : 'neutral'" [link]="adminLink('/admin/users', 'administration.manage_users')" />
-          <app-stat-card [label]="'analytics.platform.pendingPasswordChange' | t" [value]="n(d.users.pendingPasswordChange)" />
-          <app-stat-card [label]="'analytics.platform.inactiveUsers' | t" [value]="n(d.users.inactive)" />
-          <app-stat-card [label]="'analytics.platform.activeSessions' | t" [value]="n(d.activeSessions)" />
-          <app-stat-card [label]="'analytics.platform.failedAutomations' | t" [value]="n(d.automation.failed)" [tone]="d.automation.failed ? 'danger' : 'neutral'" [link]="adminLink('/admin/automation', 'automation.manage')" />
-          <app-stat-card [label]="'analytics.platform.succeededAutomations' | t" [value]="n(d.automation.succeededLast24h)" />
-          <app-stat-card [label]="'analytics.platform.failedLogins' | t" [value]="n(d.security.failedLoginsLast24h)" [tone]="d.security.failedLoginsLast24h ? 'warning' : 'neutral'" [link]="adminLink('/admin/audit', 'audit.view_security')" />
-          <app-stat-card [label]="'analytics.platform.securityEvents' | t" [value]="n(d.security.eventsLast24h)" [link]="adminLink('/admin/audit', 'audit.view_security')" />
-          <app-stat-card [label]="'analytics.platform.integrationKeys' | t" [value]="n(d.integrations.activeKeys)" [link]="adminLink('/admin/integrations', 'integrations.manage')" />
-        </div>
-      </section>
-    } @else if (data.isLoading()) {
-      <app-dashboard-skeleton [label]="'common.labels.loading' | t" />
-    }
-  `,
+  templateUrl: './platform-dashboard.component.html',
   host: { class: 'flex flex-col gap-6' },
 })
 export class PlatformDashboardComponent {

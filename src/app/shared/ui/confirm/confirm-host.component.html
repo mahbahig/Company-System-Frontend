@@ -1,0 +1,30 @@
+<dialog
+  #dialog
+  role="alertdialog"
+  aria-modal="true"
+  aria-labelledby="confirm-heading"
+  aria-describedby="confirm-message"
+  class="app-dialog m-auto w-[min(28rem,calc(100vw-2rem))] rounded-lg border border-border bg-card p-0 text-card-foreground shadow-xl backdrop:bg-black/50"
+  (cancel)="$event.preventDefault(); confirm.answer(false)"
+  (click)="onBackdrop($event)"
+>
+  @if (confirm.pending(); as request) {
+    <div class="flex flex-col gap-2 p-5">
+      <h2 id="confirm-heading" class="text-base font-semibold">{{ request.heading }}</h2>
+      <p id="confirm-message" class="text-sm text-muted-foreground">{{ request.message }}</p>
+    </div>
+    <div class="flex flex-col-reverse gap-2 border-t border-border p-4 sm:flex-row sm:justify-end">
+      <button #cancel type="button" appButton variant="outline" (click)="confirm.answer(false)">
+        {{ request.cancelLabel }}
+      </button>
+      <button
+        type="button"
+        appButton
+        [variant]="request.tone === 'destructive' ? 'destructive' : 'default'"
+        (click)="confirm.answer(true)"
+      >
+        {{ request.confirmLabel }}
+      </button>
+    </div>
+  }
+</dialog>

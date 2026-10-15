@@ -1,0 +1,102 @@
+<app-dialog
+  [(open)]="open"
+  [heading]="'infoRequest.title' | t"
+  [description]="'infoRequest.description' | t"
+>
+  <form class="flex flex-col gap-4" (submit)="submit($event)">
+    @if (error(); as message) {
+      <app-alert variant="destructive">{{ message }}</app-alert>
+    }
+    <div>
+      <p class="text-sm font-medium">{{ 'infoRequest.items' | t }}</p>
+      <ul class="mt-1 list-disc ps-5 text-sm">
+        @for (item of items(); track item.id) {
+          <li>{{ item.label }}</li>
+        }
+      </ul>
+    </div>
+    <fieldset class="flex gap-4">
+      <legend class="mb-1 text-sm font-medium">{{ 'infoRequest.target' | t }}</legend>
+      <label class="flex items-center gap-2 text-sm"
+        ><input
+          type="radio"
+          name="target"
+          [checked]="target() === 'user'"
+          (change)="target.set('user')"
+        />
+        {{ 'infoRequest.targetUser' | t }}</label
+      >
+      <label class="flex items-center gap-2 text-sm"
+        ><input
+          type="radio"
+          name="target"
+          [checked]="target() === 'customer'"
+          (change)="target.set('customer')"
+        />
+        {{ 'infoRequest.targetCustomer' | t }}</label
+      >
+    </fieldset>
+    @if (target() === 'user') {
+      <div>
+        <label appLabel for="ir-assignee">{{ 'infoRequest.assignee' | t }}</label>
+        <app-user-select inputId="ir-assignee" [roles]="roles()" [(value)]="assigneeId" />
+        <p class="mt-1 text-xs text-muted-foreground">{{ 'infoRequest.assigneeHint' | t }}</p>
+      </div>
+    } @else {
+      <div>
+        <label appLabel for="ir-channel" required>{{ 'infoRequest.channel' | t }}</label>
+        <app-select>
+          <select
+            appSelect
+            id="ir-channel"
+            [value]="channel()"
+            (change)="channel.set($any($event.target).value)"
+          >
+            @for (value of channels; track value) {
+              <option [value]="value">{{ value | enum: 'activityChannel' }}</option>
+            }
+          </select>
+        </app-select>
+      </div>
+      @if (contactId()) {
+        <label class="flex items-center gap-2 text-sm"
+          ><input
+            type="checkbox"
+            [checked]="send()"
+            (change)="send.set($any($event.target).checked)"
+          />
+          {{ 'infoRequest.send' | t }}</label
+        >
+      }
+    }
+    <div class="grid gap-3 sm:grid-cols-2">
+      <div>
+        <label appLabel for="ir-due">{{ 'infoRequest.dueAt' | t }}</label>
+        <input
+          appInput
+          id="ir-due"
+          type="date"
+          dir="ltr"
+          [value]="dueAt()"
+          (change)="dueAt.set($any($event.target).value)"
+        />
+      </div>
+    </div>
+    <div>
+      <label appLabel for="ir-note">{{ 'infoRequest.note' | t }}</label>
+      <textarea
+        appTextarea
+        id="ir-note"
+        rows="3"
+        [value]="note()"
+        (input)="note.set($any($event.target).value)"
+      ></textarea>
+    </div>
+    <div class="flex justify-end gap-2">
+      <button type="button" appButton variant="ghost" (click)="open.set(false)">
+        {{ 'crm.common.cancel' | t }}
+      </button>
+      <button type="submit" appButton [disabled]="busy()">{{ 'infoRequest.submit' | t }}</button>
+    </div>
+  </form>
+</app-dialog>

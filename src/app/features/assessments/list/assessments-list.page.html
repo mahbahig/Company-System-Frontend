@@ -1,0 +1,68 @@
+<app-page-header
+  [heading]="'crm.assessments.title' | t"
+  [subtitle]="'crm.assessments.subtitle' | t"
+  class="!mb-0"
+/>
+<app-list-toolbar
+  [searchValue]="q() ?? ''"
+  [searchPlaceholder]="'crm.assessments.searchPlaceholder' | t"
+  [filters]="filters()"
+  [toggles]="toggles()"
+/>
+@if (result.error()) {
+  <app-alert variant="destructive">{{ i18n.errorText(result.error()) }}</app-alert>
+}
+<app-table-wrapper [label]="'crm.assessments.title' | t" [attr.aria-busy]="result.isLoading()">
+  <table appTable>
+    <thead appTableHeader>
+      <tr appTableRow>
+        <th appTableHead>{{ 'crm.assessments.columns.assessmentNo' | t }}</th>
+        <th appTableHead>{{ 'crm.assessments.columns.opportunity' | t }}</th>
+        <th appTableHead>{{ 'crm.assessments.columns.customer' | t }}</th>
+        <th appTableHead>{{ 'crm.assessments.columns.engineer' | t }}</th>
+        <th appTableHead>{{ 'crm.assessments.columns.version' | t }}</th>
+        <th appTableHead>{{ 'crm.assessments.columns.status' | t }}</th>
+        <th appTableHead>{{ 'crm.common.updatedAt' | t }}</th>
+      </tr>
+    </thead>
+    <tbody appTableBody>
+      @for (row of rows(); track row.id) {
+        <tr appTableRow [appRowLink]="row.id">
+          <td appTableCell class="tabular whitespace-nowrap font-medium">
+            <a [routerLink]="row.id" class="text-primary hover:underline" dir="ltr">{{
+              row.assessmentNo
+            }}</a>
+          </td>
+          <td appTableCell>{{ ref(row.opportunityId, 'name') }}</td>
+          <td appTableCell>{{ customer(row) }}</td>
+          <td appTableCell class="whitespace-nowrap">{{ name(row.engineerId) }}</td>
+          <td appTableCell class="tabular">v{{ row.currentVersion }}</td>
+          <td appTableCell><app-status-badge enum="assessmentStatus" [value]="row.status" /></td>
+          <td appTableCell class="tabular whitespace-nowrap">
+            {{ i18n.formatDate(row.createdAt) }}
+          </td>
+        </tr>
+      } @empty {
+        @if (result.isLoading()) {
+          @for (i of [0, 1, 2, 3, 4]; track i) {
+            <tr app-skeleton-row [columns]="7" [index]="i"></tr>
+          }
+        } @else {
+          <tr app-table-empty [colSpan]="7">
+            {{
+              'crm.assessments.empty' | t
+            }}
+          </tr>
+        }
+      }
+    </tbody>
+  </table>
+</app-table-wrapper>
+@if (result.hasValue()) {
+  <app-pagination
+    [page]="result.value().page"
+    [pageCount]="result.value().pageCount"
+    [total]="result.value().total"
+    [pageSize]="result.value().pageSize"
+  />
+}

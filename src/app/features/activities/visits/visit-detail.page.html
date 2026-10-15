@@ -1,0 +1,229 @@
+@if (data.error()) {
+  <app-alert variant="destructive">{{ i18n.errorText(data.error()) }}</app-alert>
+}
+@if (data.value(); as v) {
+  <app-page-header
+    [heading]="v.visitNo"
+    [subtitle]="(v.purpose | enum: 'visitPurpose') + ' · ' + i18n.formatDate(v.scheduledAt, true)"
+  >
+    <app-status-badge enum="visitStatus" [value]="v.status" />
+  </app-page-header>
+  @if (actions.message(); as text) {
+    <app-alert>{{ text }}</app-alert>
+  }
+  @if (actions.error(); as text) {
+    <app-alert variant="destructive">{{ text }}</app-alert>
+  }
+  @if (v.cancellationReason) {
+    <app-alert variant="destructive">{{ v.cancellationReason }}</app-alert>
+  }
+  <div class="grid gap-6 lg:grid-cols-3">
+    <div class="flex flex-col gap-6 lg:col-span-2">
+      <section appCard>
+        <dl appCardContent class="grid gap-4 sm:grid-cols-2">
+          <div appDetailItem [label]="'act.fields.customer' | t">
+            @if (refId(v.customerId)) {
+              <a
+                class="text-primary hover:underline"
+                [routerLink]="['/', i18n.locale(), 'customers', refId(v.customerId)]"
+                >{{ label(v.customerId) }}</a
+              >
+            }
+          </div>
+          <div appDetailItem [label]="'act.fields.opportunity' | t">
+            @if (refId(v.opportunityId)) {
+              <a
+                class="text-primary hover:underline"
+                [routerLink]="['/', i18n.locale(), 'opportunities', refId(v.opportunityId)]"
+                >{{ label(v.opportunityId) }}</a
+              >
+            } @else {
+              —
+            }
+          </div>
+          <div appDetailItem [label]="'act.fields.visitType' | t">
+            {{ v.visitTypeCode ? reference.label('visit_type', v.visitTypeCode) : '—' }}
+          </div>
+          <div appDetailItem [label]="'act.fields.plannedAddress' | t">
+            {{ v.plannedAddress || label(v.siteId) }}
+          </div>
+          <div appDetailItem [label]="'act.columns.owner' | t">{{ name(v.ownerId) }}</div>
+          <div appDetailItem [label]="'act.fields.participants' | t">
+            @for (p of v.participantIds; track $index) {
+              <span class="me-2 inline-block">{{ name(p) }}</span>
+            } @empty {
+              —
+            }
+          </div>
+          <div appDetailItem [label]="'act.fields.checkIn' | t">
+            <app-geo-reading [reading]="v.checkIn" />
+          </div>
+          <div appDetailItem [label]="'act.fields.checkOut' | t">
+            <app-geo-reading [reading]="v.checkOut" />
+          </div>
+          @if (v.durationMinutes) {
+            <div appDetailItem [label]="'act.fields.durationMinutes' | t">
+              <span class="tabular">{{ i18n.formatNumber(v.durationMinutes) }}</span>
+            </div>
+          }
+          @if (v.requiresTechnicalAssessment) {
+            <div appDetailItem [label]="'act.fields.requiresTechnicalAssessment' | t">✓</div>
+          }
+        </dl>
+      </section>
+
+      <form appCard aria-labelledby="vs-report" (submit)="saveReport($event)">
+        <div appCardHeader>
+          <h2 appCardTitle id="vs-report">{{ 'act.visits.report' | t }}</h2>
+        </div>
+        <fieldset appCardContent class="grid gap-4 sm:grid-cols-2" [disabled]="!editable()">
+          <div>
+            <label appLabel for="vs-outcome">{{ 'act.columns.outcome' | t }}</label>
+            <app-select>
+              <select
+                appSelect
+                id="vs-outcome"
+                [value]="report().outcomeCode"
+                (change)="setReport('outcomeCode', $any($event.target).value)"
+              >
+                <option value="">—</option>
+                @for (option of reference.options('visit_outcome'); track option.value) {
+                  <option [value]="option.value">{{ option.label }}</option>
+                }
+              </select>
+            </app-select>
+          </div>
+          <div>
+            <label appLabel for="vs-next">{{ 'act.fields.nextAction' | t }}</label>
+            <input
+              appInput
+              id="vs-next"
+              [value]="report().nextAction"
+              (input)="setReport('nextAction', $any($event.target).value)"
+            />
+          </div>
+          <div class="sm:col-span-2">
+            <label appLabel for="vs-report-text">{{ 'act.visits.report' | t }}</label>
+            <textarea
+              appTextarea
+              id="vs-report-text"
+              rows="4"
+              [value]="report().report"
+              (input)="setReport('report', $any($event.target).value)"
+            ></textarea>
+          </div>
+          <div class="sm:col-span-2">
+            <label appLabel for="vs-notes">{{ 'act.fields.notes' | t }}</label>
+            <textarea
+              appTextarea
+              id="vs-notes"
+              rows="2"
+              [value]="report().notes"
+              (input)="setReport('notes', $any($event.target).value)"
+            ></textarea>
+          </div>
+          <label class="flex items-center gap-2 text-sm"
+            ><input
+              type="checkbox"
+              [checked]="report().requiresTechnicalAssessment"
+              (change)="setReport('requiresTechnicalAssessment', $any($event.target).checked)"
+            />
+            {{ 'act.fields.requiresTechnicalAssessment' | t }}</label
+          >
+          <label class="flex items-center gap-2 text-sm"
+            ><input
+              type="checkbox"
+              [checked]="report().followUpRequired"
+              (change)="setReport('followUpRequired', $any($event.target).checked)"
+            />
+            {{ 'act.fields.followUpRequired' | t }}</label
+          >
+          @if (report().followUpRequired) {
+            <div>
+              <label appLabel for="vs-fu" required>{{ 'act.columns.followUp' | t }}</label>
+              <input
+                appInput
+                id="vs-fu"
+                type="datetime-local"
+                dir="ltr"
+                [value]="report().followUpAt"
+                (change)="setReport('followUpAt', $any($event.target).value)"
+              />
+            </div>
+          }
+          @if (editable()) {
+            <button
+              type="submit"
+              appButton
+              class="self-start sm:col-span-2"
+              [disabled]="actions.busy() || (report().followUpRequired && !report().followUpAt)"
+            >
+              {{ 'act.visits.saveReport' | t }}
+            </button>
+          }
+        </fieldset>
+      </form>
+    </div>
+
+    <div class="flex flex-col gap-6">
+      @if (canEdit() && !v.checkIn && open(v.status)) {
+        <section appCard aria-labelledby="vs-checkin">
+          <div appCardHeader>
+            <h2 appCardTitle id="vs-checkin">{{ 'act.fields.checkIn' | t }}</h2>
+          </div>
+          <div appCardContent>
+            <app-gps-capture
+              idPrefix="checkin"
+              [confirmLabel]="'act.visits.checkIn' | t"
+              [busy]="actions.busy()"
+              (captured)="checkIn($event)"
+            />
+          </div>
+        </section>
+      }
+      @if (canEdit() && v.checkIn && !v.checkOut && v.status === 'in_progress') {
+        <section appCard aria-labelledby="vs-checkout">
+          <div appCardHeader>
+            <h2 appCardTitle id="vs-checkout">{{ 'act.fields.checkOut' | t }}</h2>
+          </div>
+          <div appCardContent>
+            <app-gps-capture
+              idPrefix="checkout"
+              [confirmLabel]="'act.visits.checkOut' | t"
+              [busy]="actions.busy()"
+              (captured)="checkOut($event)"
+            />
+          </div>
+        </section>
+      }
+      @if (canEdit() && open(v.status)) {
+        <section appCard aria-labelledby="vs-cancel">
+          <div appCardHeader>
+            <h2 appCardTitle id="vs-cancel">{{ 'act.cancel' | t }}</h2>
+          </div>
+          <div appCardContent class="flex flex-col gap-2">
+            <label appLabel for="vs-cancel-reason" required>{{ 'handoffs.reason' | t }}</label>
+            <input
+              appInput
+              id="vs-cancel-reason"
+              [value]="cancelReason()"
+              (input)="cancelReason.set($any($event.target).value)"
+            />
+            <button
+              type="button"
+              appButton
+              variant="destructive"
+              [disabled]="actions.busy() || !cancelReason().trim()"
+              (click)="
+                actions.run(api.cancelVisit(id(), cancelReason().trim()), 'act.cancelled', reload)
+              "
+            >
+              {{ 'act.cancel' | t }}
+            </button>
+          </div>
+        </section>
+      }
+      <app-documents-panel entityType="visit" [entityId]="id()" />
+    </div>
+  </div>
+}

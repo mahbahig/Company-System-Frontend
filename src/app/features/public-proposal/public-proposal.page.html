@@ -1,0 +1,59 @@
+<!-- What the customer sees of the company: slow ribbons of light behind
+     the proposal card. Decorative only, beneath everything. -->
+@defer (on idle) {
+  <app-decor composition="ribbons" class="fixed inset-0 -z-10" />
+}
+<main
+  id="main-content"
+  class="w-full max-w-lg rounded-2xl border border-border bg-card p-8 shadow-xl"
+>
+  <div class="mb-6 flex items-center gap-3">
+    <span
+      aria-hidden="true"
+      class="flex size-10 items-center justify-center rounded-xl bg-primary text-primary-foreground"
+      ><app-icon [icon]="sun" svgClass="size-5"
+    /></span>
+    <span class="text-lg font-semibold">{{ 'app.companyName' | t }}</span>
+  </div>
+  @if (data.error()) {
+    <app-alert variant="destructive">{{ 'publicProposal.unavailable' | t }}</app-alert>
+  } @else if (data.value(); as p) {
+    <h1 class="text-xl font-semibold">{{ p.title || ('publicProposal.title' | t) }}</h1>
+    <p class="mt-1 text-sm text-muted-foreground">{{ p.customer }}</p>
+    <dl class="mt-6 grid grid-cols-2 gap-4 text-sm">
+      <div>
+        <dt class="text-muted-foreground">{{ 'publicProposal.number' | t }}</dt>
+        <dd class="tabular font-medium" dir="ltr">{{ p.proposalNo }} v{{ p.versionNo }}</dd>
+      </div>
+      @if (p.kwp) {
+        <div>
+          <dt class="text-muted-foreground">{{ 'publicProposal.capacity' | t }}</dt>
+          <dd class="tabular font-medium">{{ i18n.formatNumber(p.kwp) }} kWp</dd>
+        </div>
+      }
+      @if (p.priceWithVat) {
+        <div>
+          <dt class="text-muted-foreground">{{ 'publicProposal.price' | t }}</dt>
+          <dd class="tabular font-medium">{{ i18n.formatMoney(p.priceWithVat) }}</dd>
+        </div>
+      }
+      <div>
+        <dt class="text-muted-foreground">{{ 'publicProposal.validUntil' | t }}</dt>
+        <dd class="tabular font-medium">{{ i18n.formatDate(p.validUntil) }}</dd>
+      </div>
+    </dl>
+    @if (p.expired) {
+      <app-alert variant="destructive" class="mt-6">{{ 'publicProposal.expired' | t }}</app-alert>
+    }
+    @if (error()) {
+      <app-alert variant="destructive" class="mt-6">{{
+        'publicProposal.downloadFailed' | t
+      }}</app-alert>
+    }
+    <button type="button" appButton class="mt-6 w-full" [disabled]="busy()" (click)="download()">
+      {{ 'publicProposal.download' | t }}
+    </button>
+  } @else {
+    <app-detail-skeleton [label]="'common.labels.loading' | t" />
+  }
+</main>

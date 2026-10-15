@@ -1,0 +1,9 @@
+@for (row of rowList(); track row) {
+  <div class="flex items-start gap-3">
+    <app-skeleton class="mt-1 size-2.5 shrink-0 rounded-full" />
+    <div class="flex flex-1 flex-col gap-1.5">
+      <app-skeleton class="h-4" [style.width.%]="60 + (row % 3) * 12" />
+      <app-skeleton class="h-3 w-32" />
+    </div>
+  </div>
+}

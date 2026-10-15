@@ -18,7 +18,7 @@ import type {
   TechnicalProposalDetail,
 } from './proposals.models';
 
-type ListQuery = { status?: string; opportunityId?: string; customerId?: string; mine?: boolean; customerFacing?: boolean; page?: number; pageSize?: number; q?: string };
+type ListQuery = { status?: string; opportunityId?: string; customerId?: string; mine?: boolean; customerFacing?: boolean; expiring?: boolean; page?: number; pageSize?: number; q?: string };
 
 /** Typed client for technical, financial and combined proposals, the register, revisions and negotiations. */
 @Service()

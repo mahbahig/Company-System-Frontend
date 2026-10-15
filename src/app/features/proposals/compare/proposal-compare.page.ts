@@ -17,39 +17,7 @@ const MONEY = new Set(['price', 'priceWithVat']);
 @Component({
   selector: 'app-proposal-compare-page',
   imports: [TranslatePipe, AlertComponent, BadgeComponent, PageHeaderComponent, ...TABLE_IMPORTS],
-  template: `
-    <app-page-header [heading]="'prop.compareTitle' | t" class="!mb-0" />
-    @if (data.error()) {
-      <app-alert variant="destructive">{{ i18n.errorText(data.error()) }}</app-alert>
-    }
-    @if (data.value(); as d) {
-      <app-table-wrapper [label]="'prop.compareTitle' | t">
-        <table appTable>
-          <thead appTableHeader>
-            <tr appTableRow>
-              <th appTableHead></th>
-              <th appTableHead>v{{ d.a['versionNo'] }}</th>
-              <th appTableHead>v{{ d.b['versionNo'] }}</th>
-            </tr>
-          </thead>
-          <tbody appTableBody>
-            @for (field of fields(); track field) {
-              <tr appTableRow [class.bg-warning/10]="d.differences.includes(field)">
-                <th appTableCell scope="row" class="font-medium">
-                  {{ label(field) }}
-                  @if (d.differences.includes(field)) {
-                    <app-badge tone="warning" class="ms-1">{{ 'prop.difference' | t }}</app-badge>
-                  }
-                </th>
-                <td appTableCell class="align-top">{{ format(field, d.a[field]) }}</td>
-                <td appTableCell class="align-top">{{ format(field, d.b[field]) }}</td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </app-table-wrapper>
-    }
-  `,
+  templateUrl: './proposal-compare.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
 export class ProposalComparePage {

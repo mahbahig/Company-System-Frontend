@@ -339,6 +339,9 @@
   html {
     /* Prevents iOS Safari from inflating text in the field-visit views. */
     -webkit-text-size-adjust: 100%;
+    /* Pages outside the shell (sign-in, password reset, status pages) scroll the document:
+       give its scrollbar the same thin look as the shell's panes (the shell never scrolls it). */
+    @apply scroll-area;
   }
 
   body {

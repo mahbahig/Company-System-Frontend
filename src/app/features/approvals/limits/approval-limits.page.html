@@ -1,0 +1,100 @@
+<app-breadcrumbs [items]="crumbs()" />
+<app-page-header
+  [heading]="'ux.approvalLimits.title' | t"
+  [subtitle]="'ux.approvalLimits.subtitle' | t"
+  class="!mb-0"
+/>
+
+@if (data.error()) {
+  <app-alert variant="destructive">{{ i18n.errorText(data.error()) }}</app-alert>
+}
+@if (data.isLoading() && !data.hasValue()) {
+  <app-detail-skeleton [label]="'common.labels.loading' | t" />
+} @else if (data.hasValue()) {
+  <form class="flex max-w-4xl flex-col gap-6" novalidate appSaveShortcut (submit)="save($event)">
+    @if (actions.message(); as text) {
+      <app-alert variant="success">{{ text }}</app-alert>
+    }
+    @if (actions.error(); as text) {
+      <app-alert variant="destructive">{{ text }}</app-alert>
+    }
+
+    @for (section of sections; track section.id) {
+      <section appCard [attr.aria-labelledby]="'limits-' + section.id">
+        <div appCardHeader>
+          <h2 appCardTitle [id]="'limits-' + section.id">
+            {{ 'ux.approvalLimits.sections.' + section.id + '.title' | t }}
+          </h2>
+          <p appCardDescription>
+            {{ 'ux.approvalLimits.sections.' + section.id + '.description' | t }}
+          </p>
+        </div>
+        <div appCardContent class="grid gap-6 sm:grid-cols-2">
+          @for (field of section.fields; track field.key) {
+            <div>
+              <label appLabel [for]="fieldId(field)">{{ label(field) }}</label>
+              <div class="relative">
+                <input
+                  appInput
+                  type="text"
+                  inputmode="decimal"
+                  autocomplete="off"
+                  dir="ltr"
+                  class="pe-14 tabular"
+                  [id]="fieldId(field)"
+                  [value]="draft()[field.key] ?? ''"
+                  [disabled]="!mayEdit(field.key)"
+                  (keydown)="blockSign($event)"
+                  (input)="set(field.key, $any($event.target).value)"
+                  [attr.aria-invalid]="error(field) ? true : null"
+                  [attr.aria-describedby]="fieldId(field) + '-help'"
+                />
+                <span
+                  class="pointer-events-none absolute inset-y-0 end-3 flex items-center text-xs font-medium text-muted-foreground"
+                  aria-hidden="true"
+                  >{{ 'ux.approvalLimits.units.' + field.unit | t }}</span
+                >
+              </div>
+              @if (error(field); as key) {
+                <p [id]="fieldId(field) + '-help'" class="mt-1.5 text-sm text-destructive">
+                  {{ key | t: rangeParams(field) }}
+                </p>
+              } @else {
+                <p
+                  [id]="fieldId(field) + '-help'"
+                  class="mt-1.5 text-xs leading-relaxed text-muted-foreground"
+                >
+                  {{ help(field) }}
+                  @if (!mayEdit(field.key)) {
+                    <span class="block">{{ 'ux.approvalLimits.readOnly' | t }}</span>
+                  }
+                </p>
+              }
+            </div>
+          }
+        </div>
+      </section>
+    }
+
+    <div class="flex flex-wrap items-center gap-3 border-t border-border pt-4">
+      <button
+        type="submit"
+        appButton
+        [disabled]="actions.busy() || !dirty() || !canEditAny()"
+        aria-keyshortcuts="Control+S Meta+S"
+      >
+        {{ (actions.busy() ? 'crm.common.saving' : 'crm.common.save') | t }}
+      </button>
+      <button
+        type="button"
+        appButton
+        variant="ghost"
+        [disabled]="actions.busy() || !dirty()"
+        (click)="reset()"
+      >
+        {{ 'ux.approvalLimits.discard' | t }}
+      </button>
+      <a appButton variant="link" [routerLink]="['..']">{{ 'ux.approvalLimits.back' | t }}</a>
+    </div>
+  </form>
+}
