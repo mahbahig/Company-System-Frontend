@@ -1,0 +1,51 @@
+{
+  "sessions": {
+    "confirm": {
+      "revokeSession": "إنهاء الجلسة",
+      "revokeAll": "إنهاء جميع الجلسات",
+      "ownKeepsOthers": "تبقى مسجّل الدخول في جلساتك الأخرى.",
+      "employeeKeepsOthers": "يبقى {name} مسجّل الدخول في جلساته الأخرى.",
+      "allAgain": "يمكن لـ {name} تسجيل الدخول مجددًا بكلمة مروره."
+    }
+  },
+  "account": {
+    "picture": {
+      "removeAction": "إزالة الصورة",
+      "removeContextual": "ستُزال صورتك الحالية وتُعرض الصورة الافتراضية بدلًا منها."
+    }
+  },
+  "ux": {
+    "savedViews": {
+      "deleteAction": "حذف العرض"
+    }
+  },
+  "imports": {
+    "rollbackTitle": "التراجع عن استيراد {name}؟",
+    "rollbackAction": "التراجع عن الاستيراد",
+    "rollbackKept": "تبقى السجلات التي تغيّرت بعد الاستيراد."
+  },
+  "admin": {
+    "rules": {
+      "resetTitle": "استعادة القاعدة الافتراضية؟",
+      "resetBody": "ستحل القاعدة الافتراضية محل الإعدادات المخصصة لـ «{name}».",
+      "resetAction": "استعادة الافتراضي"
+    },
+    "duplicates": {
+      "mergeTitle": "دمج هذين العميلين؟",
+      "mergeBody": "تنتقل سجلات العميل المكرر إلى العميل الرئيسي، مع الاحتفاظ بالقيم التي اخترتها.",
+      "mergeUndo": "يمكن طلب التراجع عن الدمج لاحقًا.",
+      "mergeAction": "دمج العميلين"
+    }
+  },
+  "crm": {
+    "opportunities": {
+      "removeCollaboratorTitle": "إزالة {name} من هذه الفرصة؟",
+      "removeCollaboratorBody": "لن يعمل {name} على هذه الفرصة كمتعاون بعد الآن.",
+      "removeCollaboratorAction": "إزالة المتعاون"
+    }
+  },
+  "act": {
+    "cancelMeeting": "إلغاء الاجتماع",
+    "cancelVisit": "إلغاء الزيارة"
+  }
+}

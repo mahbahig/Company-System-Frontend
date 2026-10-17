@@ -20,6 +20,8 @@ import { AnalyticsApi } from '../analytics-api.service';
 import type { ExceptionSummary } from '../models/exceptions.interface';
 import { percent } from '../shared/kpi-format';
 import { ListSkeletonComponent } from '../../../shared/ui/skeleton/skeleton.component';
+import { LocalPager } from '../../../shared/crm/pagination/local-pager';
+import { PagerComponent } from '../../../shared/crm/pagination/pager.component';
 
 /**
  * EXC-01/02 Exception / Attention Center and DQ-01 data quality. Counts come
@@ -32,7 +34,7 @@ import { ListSkeletonComponent } from '../../../shared/ui/skeleton/skeleton.comp
  */
 @Component({
   selector: 'app-exceptions-page',
-  imports: [NgTemplateOutlet, ListSkeletonComponent, RouterLink, TranslatePipe, StatusBadgeComponent, AlertComponent, PageHeaderComponent, TabsComponent, TooltipDirective, ...CARD_IMPORTS, ...TABLE_IMPORTS],
+  imports: [NgTemplateOutlet, ListSkeletonComponent, RouterLink, TranslatePipe, StatusBadgeComponent, AlertComponent, PageHeaderComponent, TabsComponent, TooltipDirective, ...CARD_IMPORTS, ...TABLE_IMPORTS, PagerComponent],
   templateUrl: './exceptions.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
@@ -63,6 +65,8 @@ export class ExceptionsPage {
     params: () => (this.activeTab() === 'data-quality' ? true : undefined),
     stream: ({ params }) => (params ? this.api.dataQuality() : of(undefined)),
   });
+  /** Data-quality checks, paged in memory. */
+  protected readonly qualityPager = new LocalPager(() => this.quality.value()?.items);
 
   protected selectTab(tab: string): void {
     void this.router.navigate([], { queryParams: { tab: tab === 'exceptions' ? null : tab }, queryParamsHandling: 'merge' });

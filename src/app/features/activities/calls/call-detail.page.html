@@ -79,7 +79,14 @@
         <div appDetailItem [label]="'act.fields.purpose' | t">
           {{ c.purposeCode ? reference.label('call_purpose', c.purposeCode) : '—' }}
         </div>
-        <div appDetailItem [label]="'act.columns.owner' | t">{{ name(c.ownerId) }}</div>
+        <div appDetailItem [label]="'act.columns.owner' | t">
+          <span class="flex items-center gap-2">
+            @if (ownerRef(c); as ownerRef) {
+              <app-avatar [userId]="ownerRef.id" [name]="name(c.ownerId)" [version]="ownerRef.avatarVersion" size="sm" />
+            }
+            {{ name(c.ownerId) }}
+          </span>
+        </div>
       </dl>
     </section>
 

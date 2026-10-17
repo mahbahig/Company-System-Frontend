@@ -5,7 +5,7 @@ const TIP_RADIUS = 50;
 const VALLEY_RADIUS = 27;
 const HOLE_RADIUS = 16;
 
-/** The ECOTECH sun (ecotecheg.com): eighteen pointed rays round a hollow core, on a 100×100 grid. */
+/** The Ecotech sun (ecotecheg.com): eighteen pointed rays round a hollow core, on a 100×100 grid. */
 const SUN_MARK_PATH = (() => {
   const rays = Array.from({ length: RAYS * 2 }, (_, index) => {
     const radius = index % 2 === 0 ? TIP_RADIUS : VALLEY_RADIUS;
@@ -17,7 +17,7 @@ const SUN_MARK_PATH = (() => {
 })();
 
 /**
- * The ECOTECH sun mark as inline SVG, in solar yellow by default (`currentColor`,
+ * The Ecotech sun mark as inline SVG, in solar yellow by default (`currentColor`,
  * so a `text-*` class recolours it). Decorative: pair it with visible text or an
  * accessible name on the surrounding element.
  */

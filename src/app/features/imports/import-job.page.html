@@ -305,6 +305,7 @@
   </app-table-wrapper>
   @if (rows.hasValue()) {
     <app-pagination
+    [loading]="rows.isLoading()"
       [page]="rows.value().page"
       [pageCount]="rows.value().pageCount"
       [total]="rows.value().total"

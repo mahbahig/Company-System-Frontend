@@ -29,8 +29,12 @@ export interface ReportResult {
   code: string;
   scope: string;
   columns: ReportColumn[];
+  /** The requested page of rows; `total` counts every row in scope. */
   rows: Array<Record<string, string | number | boolean | null>>;
   total: number;
+  page: number;
+  pageSize: number;
+  pageCount: number;
 }
 
 export type ReportQuery = AnalyticsFilter & { status?: string; q?: string };
@@ -43,8 +47,8 @@ export class ReportsApi {
   list(): Observable<ReportSummary[]> {
     return this.api.get<{ reports: ReportSummary[] }>('reports').pipe(map((body) => body.reports));
   }
-  run(code: string, query: ReportQuery): Observable<ReportResult> {
-    return this.api.get(`reports/${code}`, { ...query });
+  run(code: string, query: ReportQuery, paging: { page: number; pageSize: number } = { page: 1, pageSize: 20 }): Observable<ReportResult> {
+    return this.api.get(`reports/${code}`, { ...query, ...paging });
   }
   export(code: string, query: ReportQuery & { format: 'csv' | 'xlsx' | 'pdf'; locale: string }): Observable<void> {
     return this.api.download(`reports/${code}/export`, { ...query }, `${code}.${query.format}`);

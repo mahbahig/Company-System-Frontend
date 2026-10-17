@@ -1,0 +1,287 @@
+<app-dialog
+  [(open)]="open"
+  [heading]="(editing() ? 'admin.users.edit' : 'admin.users.new') | t"
+>
+  <!-- Built only while the dialog is open: every opening starts from a fresh form, nothing typed survives a close. -->
+  @if (open()) {
+    <form class="grid gap-4 sm:grid-cols-2" (submit)="save($event)">
+      @if (actions.error(); as text) {
+        <app-alert variant="destructive" class="sm:col-span-2">{{ text }}</app-alert>
+      }
+      <div>
+        <label appLabel for="u-email" required>{{ 'auth.login.emailLabel' | t }}</label>
+        <input
+          appInput
+          id="u-email"
+          type="email"
+          dir="ltr"
+          [disabled]="!!editing()"
+          [value]="d().email"
+          (input)="set('email', $any($event.target).value)"
+        />
+      </div>
+      @if (!editing()) {
+        <!-- The initial password: for the first sign-in only (the employee must then choose their own). -->
+        <div class="sm:col-span-2 grid gap-4 sm:grid-cols-2">
+          <div>
+            <label appLabel for="u-password" required>{{ 'admin.users.initialPassword' | t }}</label>
+            <div class="relative">
+              <input
+                appInput
+                class="pe-11"
+                id="u-password"
+                [type]="showPassword() ? 'text' : 'password'"
+                autocomplete="new-password"
+                dir="ltr"
+                required
+                [value]="password()"
+                (input)="password.set($any($event.target).value)"
+                [attr.aria-invalid]="passwordProblem() ? true : null"
+                aria-describedby="u-password-hint"
+              />
+              <button
+                type="button"
+                class="absolute inset-y-0 end-0 flex w-11 items-center justify-center rounded-e-lg text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                [attr.aria-label]="(showPassword() ? 'ux.password.hide' : 'ux.password.show') | t"
+                [attr.aria-pressed]="showPassword()"
+                (click)="showPassword.set(!showPassword())"
+              >
+                <app-icon [icon]="showPassword() ? icons.hide : icons.show" />
+              </button>
+            </div>
+            <p
+              id="u-password-hint"
+              class="mt-1.5 text-xs"
+              [class.text-destructive]="!!passwordProblem()"
+              [class.text-muted-foreground]="!passwordProblem()"
+            >
+              {{ (passwordProblem() ? 'server.' + passwordProblem() : 'admin.users.initialPasswordHint') | t }}
+            </p>
+          </div>
+          <div>
+            <label appLabel for="u-password-confirm" required>{{ 'admin.users.confirmPassword' | t }}</label>
+            <input
+              appInput
+              id="u-password-confirm"
+              [type]="showPassword() ? 'text' : 'password'"
+              autocomplete="new-password"
+              dir="ltr"
+              required
+              [value]="confirmPassword()"
+              (input)="confirmPassword.set($any($event.target).value)"
+              [attr.aria-invalid]="passwordMismatch() ? true : null"
+              [attr.aria-describedby]="passwordMismatch() ? 'u-password-mismatch' : null"
+            />
+            @if (passwordMismatch()) {
+              <p id="u-password-mismatch" class="mt-1.5 text-xs text-destructive">
+                {{ 'account.password.mismatch' | t }}
+              </p>
+            }
+          </div>
+        </div>
+      }
+      <div>
+        <label appLabel for="u-empno">{{ 'admin.users.employeeNo' | t }}</label>
+        <input
+          appInput
+          id="u-empno"
+          dir="ltr"
+          [value]="d().employeeNo"
+          (input)="set('employeeNo', $any($event.target).value)"
+        />
+      </div>
+      <div>
+        <label appLabel for="u-name-ar" required>{{ 'admin.users.nameAr' | t }}</label>
+        <input
+          appInput
+          id="u-name-ar"
+          dir="rtl"
+          [value]="d().fullNameAr"
+          (input)="set('fullNameAr', $any($event.target).value)"
+        />
+      </div>
+      <div>
+        <label appLabel for="u-name-en" required>{{ 'admin.users.nameEn' | t }}</label>
+        <input
+          appInput
+          id="u-name-en"
+          dir="ltr"
+          [value]="d().fullNameEn"
+          (input)="set('fullNameEn', $any($event.target).value)"
+        />
+      </div>
+      <div>
+        <label appLabel for="u-job-ar">{{ 'admin.users.jobTitleAr' | t }}</label>
+        <input
+          appInput
+          id="u-job-ar"
+          dir="rtl"
+          [value]="d().jobTitleAr"
+          (input)="set('jobTitleAr', $any($event.target).value)"
+        />
+      </div>
+      <div>
+        <label appLabel for="u-job-en">{{ 'admin.users.jobTitleEn' | t }}</label>
+        <input
+          appInput
+          id="u-job-en"
+          dir="ltr"
+          [value]="d().jobTitleEn"
+          (input)="set('jobTitleEn', $any($event.target).value)"
+        />
+      </div>
+      <div>
+        <label appLabel for="u-mobile">{{ 'crm.customers.fields.mobile' | t }}</label>
+        <input
+          appInput
+          id="u-mobile"
+          type="tel"
+          dir="ltr"
+          [value]="d().mobile"
+          (input)="set('mobile', $any($event.target).value)"
+        />
+      </div>
+      <div>
+        <label appLabel for="u-dept">{{ 'admin.users.department' | t }}</label>
+        <input
+          appInput
+          id="u-dept"
+          [value]="d().department"
+          (input)="set('department', $any($event.target).value)"
+        />
+      </div>
+      <!-- Nobody changes their own roles (separation of duties); the API refuses it. -->
+      <fieldset class="sm:col-span-2" [disabled]="editingSelf()">
+        <legend class="mb-1 text-sm font-medium">{{ 'admin.users.roles' | t }} *</legend>
+        @if (editingSelf()) {
+          <p class="mb-1 text-xs text-muted-foreground">
+            {{ 'server.errors.cannotChangeOwnRoles' | t }}
+          </p>
+        }
+        <div class="grid gap-1 sm:grid-cols-2">
+          @for (role of roles(); track role.code) {
+            <label class="flex items-center gap-2 text-sm"
+              ><input
+                type="checkbox"
+                [checked]="d().roleCodes.includes(role.code)"
+                (change)="toggle('roleCodes', role.code, $any($event.target).checked)"
+              />
+              {{ i18n.pick(role.nameAr, role.nameEn) }}</label
+            >
+          }
+        </div>
+      </fieldset>
+      <fieldset class="sm:col-span-2">
+        <legend class="mb-1 text-sm font-medium">{{ 'admin.users.teams' | t }}</legend>
+        <div class="grid gap-1 sm:grid-cols-2">
+          @for (team of teams(); track team.id) {
+            <label class="flex items-center gap-2 text-sm"
+              ><input
+                type="checkbox"
+                [checked]="d().teamIds.includes(team.id)"
+                (change)="toggle('teamIds', team.id, $any($event.target).checked)"
+              />
+              {{ i18n.pick(team.nameAr, team.nameEn) }}</label
+            >
+          }
+        </div>
+      </fieldset>
+      <div>
+        <label appLabel for="u-manager">{{ 'admin.users.manager' | t }}</label>
+        <app-user-select
+          inputId="u-manager"
+          [value]="d().managerId"
+          (valueChange)="set('managerId', $event)"
+        />
+      </div>
+      <div>
+        <label appLabel for="u-capacity">{{ 'admin.users.capacity' | t }}</label>
+        <input
+          appInput
+          id="u-capacity"
+          type="number"
+          min="0"
+          dir="ltr"
+          [value]="d().leadCapacity"
+          (input)="set('leadCapacity', $any($event.target).value)"
+        />
+      </div>
+      <div>
+        <label appLabel for="u-territories">{{ 'admin.users.territories' | t }}</label>
+        <select
+          id="u-territories"
+          multiple
+          class="h-28 w-full rounded-md border border-input bg-background p-1 text-sm"
+          (change)="setTerritories($event)"
+        >
+          @for (option of reference.options('governorate'); track option.value) {
+            <option [value]="option.value" [selected]="d().territories.includes(option.value)">
+              {{ option.label }}
+            </option>
+          }
+        </select>
+      </div>
+      <div>
+        <label appLabel for="u-spec">{{ 'admin.users.specializations' | t }}</label>
+        <input
+          appInput
+          id="u-spec"
+          [value]="d().specializations"
+          (input)="set('specializations', $any($event.target).value)"
+        />
+        <p class="mt-1 text-xs text-muted-foreground">{{ 'admin.users.commaSeparated' | t }}</p>
+      </div>
+      <div>
+        <label appLabel for="u-avail">{{ 'admin.users.availability' | t }}</label>
+        <app-select>
+          <select
+            appSelect
+            id="u-avail"
+            [value]="d().availability"
+            (change)="set('availability', $any($event.target).value)"
+          >
+            @for (status of ['available', 'leave', 'out_of_office']; track status) {
+              <option [value]="status">{{ status | enum: 'availabilityStatus' }}</option>
+            }
+          </select>
+        </app-select>
+      </div>
+      @if (d().availability !== 'available') {
+        <div>
+          <label appLabel for="u-avail-to">{{ 'admin.users.availableFrom' | t }}</label>
+          <input
+            appInput
+            id="u-avail-to"
+            type="date"
+            dir="ltr"
+            [value]="d().availabilityTo"
+            (change)="set('availabilityTo', $any($event.target).value)"
+          />
+        </div>
+      }
+      <div>
+        <label appLabel for="u-locale">{{ 'admin.users.language' | t }}</label>
+        <app-select>
+          <select
+            appSelect
+            id="u-locale"
+            [value]="d().defaultLocale"
+            (change)="set('defaultLocale', $any($event.target).value)"
+          >
+            <option value="ar">العربية</option>
+            <option value="en">English</option>
+          </select>
+        </app-select>
+      </div>
+      <!-- One row across the whole dialog: Save, and a red Cancel that discards what was typed (nothing is kept or sent). -->
+      <div class="grid grid-cols-2 gap-3 sm:col-span-2" data-testid="employee-editor-actions">
+        <button type="submit" appButton fullWidth [disabled]="actions.busy() || !valid()">
+          {{ 'crm.common.save' | t }}
+        </button>
+        <button type="button" appButton variant="destructive" fullWidth (click)="cancelEditor()">
+          {{ 'crm.common.cancel' | t }}
+        </button>
+      </div>
+    </form>
+  }
+</app-dialog>

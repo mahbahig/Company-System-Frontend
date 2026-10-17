@@ -17,7 +17,7 @@
         appSelect
         id="if-type"
         [value]="selected()"
-        (change)="selected.set($any($event.target).value)"
+        (change)="selected.set($any($event.target).value); fieldsPager.reset()"
       >
         @for (form of data.value()?.forms ?? []; track form.code) {
           <option [value]="form.code">{{ i18n.pick(form.nameAr, form.nameEn) }}</option>
@@ -59,7 +59,7 @@
         </tr>
       </thead>
       <tbody appTableBody>
-        @for (field of fieldsInSections(); track field.section + field.id) {
+        @for (field of fieldsPager.rows(); track field.section + field.id) {
           <tr appTableRow>
             <td appTableCell class="text-xs">{{ 'intake.sections.' + field.section | t }}</td>
             <td appTableCell>
@@ -93,6 +93,7 @@
       </tbody>
     </table>
   </app-table-wrapper>
+  <app-pager [pager]="fieldsPager" />
 
   <section appCard aria-labelledby="if-custom">
     <div appCardHeader>
@@ -181,7 +182,7 @@
         class="self-start"
         (click)="addCustom()"
       >
-        {{ 'admin.intakeForms.addField' | t }}
+        <app-create-icon />{{ 'admin.intakeForms.addField' | t }}
       </button>
     </div>
   </section>

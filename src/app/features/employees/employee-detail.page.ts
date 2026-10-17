@@ -1,9 +1,14 @@
-import { Component, computed, inject, input } from '@angular/core';
+import { Component, computed, inject, input, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { Router, RouterLink } from '@angular/router';
-import { CalendarClock, ClipboardCheck, MapPin, PhoneCall, Target, UserRound, type IconNode } from 'lucide';
+import { CalendarClock, ClipboardCheck, History, KeyRound, LogOut, MapPin, Pencil, PhoneCall, ShieldCheck, Target, UserCheck, UserRound, UserX, type IconNode } from 'lucide';
+import { of } from 'rxjs';
+
+import { auditActionLabel } from '../../core/audit/audit-action-label';
 
 import { ApiError } from '../../core/api/api-error';
+import { AuthService } from '../../core/auth/auth.service';
+import { isSuperAdministrator } from '../../core/auth/super-administrator';
 import { I18nService } from '../../core/i18n/i18n.service';
 import { TranslatePipe } from '../../core/i18n/translate.pipe';
 import { NavigationService } from '../../core/navigation/navigation.service';
@@ -12,11 +17,18 @@ import { BreadcrumbsComponent } from '../../shared/crm/breadcrumbs/breadcrumbs.c
 import { TimelineTextService } from '../../shared/crm/timeline/timeline-text.service';
 import { AlertComponent } from '../../shared/ui/alert/alert.component';
 import { BadgeComponent } from '../../shared/ui/badge/badge.component';
+import { ButtonDirective } from '../../shared/ui/button/button.directive';
+import { ActionRunner } from '../../shared/utils/action-runner';
 import { CARD_IMPORTS } from '../../shared/ui/card/card.imports';
 import { IconComponent } from '../../shared/ui/icon/icon.component';
 import { DetailSkeletonComponent } from '../../shared/ui/skeleton/skeleton.component';
 import { StatusPageComponent } from '../errors/status-page.component';
-import { AdminApi, type EmployeePerformance } from '../admin/admin-api.service';
+import { AdminApi, type EmployeePerformance, type Role, type Team } from '../admin/admin-api.service';
+import { EmployeeAccountActions } from './employee-account-actions.service';
+import { EmployeeDeactivateComponent } from './employee-deactivate.component';
+import { EmployeeEditorComponent } from './employee-editor.component';
+import { EmployeeSessionsComponent } from './employee-sessions.component';
+import { AvatarComponent } from '../../shared/ui/avatar/avatar.component';
 
 type Period = '30d' | '90d' | 'year' | 'all';
 const PERIODS: Period[] = ['30d', '90d', 'year', 'all'];
@@ -42,10 +54,32 @@ interface MetricGroup {
  * recent actions — all from the operational records of THIS user, for the chosen
  * period (`?period=`; stock figures such as open leads are current). Won value is
  * shown only to financial viewers (the API omits it otherwise).
+ *
+ * For the Super Administrator the page also manages the account — Edit,
+ * Deactivate / Activate, Reset Password, Log Out All Sessions
+ * (`administration.manage_users`) — and shows its Security Activity (sign-ins,
+ * lockouts, password changes, recent security events from the audit trail,
+ * with a link to the audit log filtered to the employee) and its active
+ * sessions (`security.view_sessions`). Another Super Administrator's account
+ * is read only: none of that is offered (the API refuses it all too).
  */
 @Component({
   selector: 'app-employee-detail-page',
-  imports: [RouterLink, TranslatePipe, BreadcrumbsComponent, AlertComponent, BadgeComponent, IconComponent, DetailSkeletonComponent, StatusPageComponent, ...CARD_IMPORTS],
+  imports: [AvatarComponent, 
+    RouterLink,
+    TranslatePipe,
+    BreadcrumbsComponent,
+    AlertComponent,
+    BadgeComponent,
+    IconComponent,
+    DetailSkeletonComponent,
+    StatusPageComponent,
+    EmployeeSessionsComponent,
+    EmployeeEditorComponent,
+    EmployeeDeactivateComponent,
+    ButtonDirective,
+    ...CARD_IMPORTS,
+  ],
   templateUrl: './employee-detail.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
@@ -54,8 +88,12 @@ export class EmployeeDetailPage {
   private readonly router = inject(Router);
   private readonly navigation = inject(NavigationService);
   private readonly timelineText = inject(TimelineTextService);
+  protected readonly auth = inject(AuthService);
+  private readonly accountActions = inject(EmployeeAccountActions);
   protected readonly i18n = inject(I18nService);
   protected readonly reference = inject(ReferenceDataService);
+  protected readonly actions = new ActionRunner(this.i18n);
+  protected readonly icons = { edit: Pencil, deactivate: UserX, activate: UserCheck, reset: KeyRound, logOut: LogOut, security: ShieldCheck, audit: History, manage: UserRound };
 
   readonly id = input.required<string>();
   /** `30d` (default), `90d`, `year`, `all`. */
@@ -76,6 +114,28 @@ export class EmployeeDetailPage {
     const error = this.data.error();
     return ApiError.is(error) && error.status === 403;
   });
+  /** The employee's sessions: for the Super Administrator, about a normal employee other than themself. */
+  protected readonly showSessions = computed(() => {
+    const user = this.data.value()?.user;
+    return !!user && this.auth.can('security.view_sessions') && !isSuperAdministrator(user) && user.id !== this.auth.user()?.id;
+  });
+
+  protected readonly target = computed(() => this.data.value()?.user ?? null);
+  protected readonly isSelf = computed(() => !!this.target() && this.target()!.id === this.auth.user()?.id);
+  /** Another Super Administrator: read only — nothing of their account is managed or inspected from here. */
+  protected readonly isPeerAdmin = computed(() => !!this.target() && !this.isSelf() && isSuperAdministrator(this.target()!));
+  protected readonly canManage = computed(() => this.auth.can('administration.manage_users') && !!this.target() && !this.isPeerAdmin());
+  /** The full account record, for the editor and the account state (loaded only for those who manage it). */
+  protected readonly account = rxResource({ params: () => (this.canManage() ? this.id() : undefined), stream: ({ params }) => this.api.user(params) });
+  protected readonly roles = rxResource({ params: () => (this.canManage() ? true : undefined), stream: ({ params }) => (params ? this.api.roles() : of([] as Role[])) });
+  protected readonly teams = rxResource({ params: () => (this.canManage() ? true : undefined), stream: ({ params }) => (params ? this.api.teams() : of([] as Team[])) });
+  protected readonly showSecurity = computed(() => this.auth.can('security.view_sessions') && !!this.target() && !this.isPeerAdmin());
+  protected readonly security = rxResource({ params: () => (this.showSecurity() ? this.id() : undefined), stream: ({ params }) => this.api.securityActivity(params) });
+  /** "View Audit Logs" leads to the audit log filtered to this employee — offered only where the audit log can be opened. */
+  protected readonly canOpenAudit = computed(() => this.navigation.canOpen('/admin/audit'));
+  protected readonly editorOpen = signal(false);
+  protected readonly deactivateOpen = signal(false);
+  protected readonly secret = signal<string | null>(null);
   protected readonly crumbs = computed(() => {
     const user = this.data.value()?.user;
     return [{ label: this.i18n.t('navigation.items.employees'), path: '/employees' }, { label: user ? this.i18n.pick(user.fullNameAr, user.fullNameEn) : '' }];
@@ -151,12 +211,53 @@ export class EmployeeDetailPage {
     void this.reference.load();
   }
 
-  protected selectPeriod(period: Period): void {
-    void this.router.navigate([], { queryParams: { period: period === '30d' ? null : period }, queryParamsHandling: 'merge', replaceUrl: true });
+  /** Human-readable audit action (never the raw code). */
+  protected actionLabel(event: { action: string; actionLabel?: { en: string; ar: string } }): string {
+    return auditActionLabel(this.i18n, event.action, event.actionLabel);
   }
 
-  protected initial(p: EmployeePerformance): string {
-    return Array.from(this.i18n.pick(p.user.fullNameAr, p.user.fullNameEn).trim())[0]?.toUpperCase() ?? '?';
+  protected onSaved(messageKey: string): void {
+    this.actions.message.set(this.i18n.t(messageKey));
+    this.refresh();
+  }
+
+  protected onDeactivated(): void {
+    this.actions.message.set(this.i18n.t('admin.users.deactivated'));
+    this.refresh();
+  }
+
+  protected async reset(): Promise<void> {
+    const user = this.target();
+    if (!user) return;
+    const temporaryPassword = await this.accountActions.resetPassword(user);
+    if (temporaryPassword === null) return;
+    this.secret.set(temporaryPassword);
+    this.actions.message.set(this.i18n.t('admin.users.passwordReset'));
+    this.refresh();
+  }
+
+  protected async logOutEverywhere(): Promise<void> {
+    const user = this.target();
+    if (!user || !(await this.accountActions.logOutEverywhere(user))) return;
+    this.actions.message.set(this.i18n.t('admin.users.loggedOut'));
+    this.refresh();
+  }
+
+  protected async activate(): Promise<void> {
+    const user = this.target();
+    if (!user || !(await this.accountActions.activate(user))) return;
+    this.actions.message.set(this.i18n.t('admin.users.activated'));
+    this.refresh();
+  }
+
+  private refresh(): void {
+    this.data.reload();
+    this.account.reload();
+    this.security.reload();
+  }
+
+  protected selectPeriod(period: Period): void {
+    void this.router.navigate([], { queryParams: { period: period === '30d' ? null : period }, queryParamsHandling: 'merge', replaceUrl: true });
   }
 
   protected describe(event: EmployeePerformance['recentActivity'][number]): string {

@@ -18,6 +18,8 @@ import { userName } from '../../../shared/utils/display-name';
 import { ActivitiesApi, refLabel, type Visit } from '../activities-api.service';
 import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.component';
 import { ShortcutDirective } from '../../../core/shortcuts/shortcut.directive';
+import { DEFAULT_PAGE_SIZE, pageSizeAttribute } from '../../../shared/crm/pagination/page-size';
+import { CreateIconComponent } from '../../../shared/ui/create-icon/create-icon.component';
 
 const STATUSES = ['planned', 'in_progress', 'completed', 'cancelled', 'no_show', 'rescheduled'];
 const PURPOSES = ['survey', 'technical_assessment', 'presentation', 'installation_check', 'follow_up', 'other'];
@@ -25,7 +27,7 @@ const PURPOSES = ['survey', 'technical_assessment', 'presentation', 'installatio
 /** E13 site visits. */
 @Component({
   selector: 'app-visits-list-page',
-  imports: [ShortcutDirective, SkeletonRowComponent, RouterLink, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, AlertComponent, ButtonDirective, PageHeaderComponent, ListToolbarComponent, PaginationComponent, ...TABLE_IMPORTS],
+  imports: [ShortcutDirective, SkeletonRowComponent, RouterLink, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, AlertComponent, ButtonDirective, PageHeaderComponent, ListToolbarComponent, PaginationComponent, ...TABLE_IMPORTS, CreateIconComponent],
   templateUrl: './visits-list.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
@@ -38,9 +40,11 @@ export class VisitsListPage {
   readonly status = input<string>();
   readonly purpose = input<string>();
   readonly page = input(1, { transform: (value: unknown) => numberAttribute(value, 1) });
+  /** `?pageSize=` (10 / 20 / 50 / 100; default 20). */
+  readonly pageSize = input(DEFAULT_PAGE_SIZE, { transform: pageSizeAttribute });
 
   protected readonly result = rxResource({
-    params: () => ({ q: this.q(), status: this.status(), purpose: this.purpose(), page: this.page() }),
+    params: () => ({ q: this.q(), status: this.status(), purpose: this.purpose(), page: this.page(), pageSize: this.pageSize() }),
     stream: ({ params }) => this.api.visits(params),
   });
   protected readonly rows = computed(() => (this.result.hasValue() ? this.result.value().rows : []));

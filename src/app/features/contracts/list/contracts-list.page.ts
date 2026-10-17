@@ -17,6 +17,7 @@ import { AlertComponent } from '../../../shared/ui/alert/alert.component';
 import { PageHeaderComponent } from '../../../shared/ui/page-header/page-header.component';
 import { TABLE_IMPORTS } from '../../../shared/ui/table/table.imports';
 import { ContractsApi, type Contract } from '../contracts-api.service';
+import { DEFAULT_PAGE_SIZE, pageSizeAttribute } from '../../../shared/crm/pagination/page-size';
 
 const STATUSES = ['draft', 'under_review', 'approved', 'sent_for_signature', 'signed_by_customer', 'fully_executed', 'active', 'completed', 'terminated', 'expired'];
 
@@ -63,9 +64,11 @@ export class ContractsListPage {
   /** Exceptions Center: sent for signature and not yet signed by both parties. */
   readonly awaitingSignature = input<string>();
   readonly page = input(1, { transform: (value: unknown) => numberAttribute(value, 1) });
+  /** `?pageSize=` (10 / 20 / 50 / 100; default 20). */
+  readonly pageSize = input(DEFAULT_PAGE_SIZE, { transform: pageSizeAttribute });
 
   protected readonly result = rxResource({
-    params: () => ({ q: this.q(), status: this.status(), pending: this.pending() === '1' || undefined, awaitingSignature: this.awaitingSignature() === '1' || undefined, page: this.page() }),
+    params: () => ({ q: this.q(), status: this.status(), pending: this.pending() === '1' || undefined, awaitingSignature: this.awaitingSignature() === '1' || undefined, page: this.page(), pageSize: this.pageSize() }),
     stream: ({ params }) => this.api.list(params),
   });
   protected readonly rows = computed(() => (this.result.hasValue() ? this.result.value().rows : []));

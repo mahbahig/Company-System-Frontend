@@ -139,6 +139,8 @@ export type PermissionCode =
   | 'sites.create'
   | 'sites.edit'
   | 'sites.view'
+  | 'support.delete'
+  | 'support.manage'
   | 'system.monitor'
   | 'tasks.assign'
   | 'tasks.create'

@@ -5,12 +5,7 @@
   [attr.aria-label]="'common.labels.account' | t"
   class="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 >
-  <span
-    aria-hidden="true"
-    class="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground"
-  >
-    {{ initial() }}
-  </span>
+  <app-avatar [userId]="user()?.id" [name]="name()" [version]="user()?.avatarVersion ?? null" size="sm" />
   <span class="hidden text-start sm:block">
     <span class="block max-w-40 truncate font-medium leading-tight">{{ name() }}</span>
     @if (jobTitle()) {

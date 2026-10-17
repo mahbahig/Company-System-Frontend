@@ -31,7 +31,7 @@
           </tr>
         </thead>
         <tbody appTableBody>
-          @for (row of d.workload; track row.userId) {
+          @for (row of workloadPager.rows(); track row.userId) {
             <tr appTableRow>
               <td appTableCell class="font-medium">{{ name(row) }}</td>
               <td appTableCell class="tabular">{{ n(row.tasks) }}</td>
@@ -51,6 +51,7 @@
         </tbody>
       </table>
     </app-table-wrapper>
+    <app-pager [pager]="workloadPager" />
   </section>
 } @else if (data.isLoading()) {
   <app-dashboard-skeleton [label]="'common.labels.loading' | t" />

@@ -1,0 +1,47 @@
+<section class="flex flex-col gap-3" aria-labelledby="support-overview-heading">
+  <div class="flex flex-wrap items-end justify-between gap-3">
+    <div>
+      <h2 id="support-overview-heading" class="text-lg font-semibold">
+        {{ 'support.overview.title' | t }}
+      </h2>
+      <p class="text-sm text-muted-foreground">{{ 'support.overview.subtitle' | t }}</p>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <button
+        type="button"
+        appButton
+        variant="ghost"
+        size="sm"
+        [disabled]="stats.isLoading()"
+        (click)="stats.reload()"
+      >
+        <app-icon [icon]="icons.refresh" svgClass="size-4" />{{ 'sessions.refresh' | t }}
+      </button>
+      <a appButton variant="outline" size="sm" [routerLink]="deskLink()">
+        <app-icon [icon]="icons.desk" svgClass="size-4" />{{ 'support.overview.open' | t }}
+      </a>
+    </div>
+  </div>
+  @if (stats.error()) {
+    <app-alert variant="destructive">{{ i18n.errorText(stats.error()) }}</app-alert>
+  } @else {
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" [attr.aria-busy]="stats.isLoading()">
+      <app-stat-card
+        [label]="'support.overview.newTickets' | t"
+        [value]="stats.value() ? i18n.formatNumber(stats.value()!.newTickets) : '—'"
+        [hint]="'support.overview.newTicketsHint' | t"
+        [tone]="stats.value()?.newTickets ? 'warning' : 'neutral'"
+        [link]="deskLink()"
+        [queryParams]="newQuery"
+      />
+      <app-stat-card
+        [label]="'support.overview.criticalTickets' | t"
+        [value]="stats.value() ? i18n.formatNumber(stats.value()!.criticalNewTickets) : '—'"
+        [hint]="'support.overview.criticalTicketsHint' | t"
+        [tone]="stats.value()?.criticalNewTickets ? 'danger' : 'neutral'"
+        [link]="deskLink()"
+        [queryParams]="criticalQuery"
+      />
+    </div>
+  }
+</section>

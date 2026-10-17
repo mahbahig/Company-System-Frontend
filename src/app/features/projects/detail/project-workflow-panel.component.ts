@@ -19,6 +19,7 @@ import { CardDirective } from '../../../shared/ui/card/card.directive';
 import { InputDirective } from '../../../shared/ui/form/input.directive';
 import { TextareaDirective } from '../../../shared/ui/form/textarea.directive';
 import { type ChangeRequest, type Project, ProjectsApi, type WorkOrder } from '../projects-api.service';
+import { CreateIconComponent } from '../../../shared/ui/create-icon/create-icon.component';
 
 const GATES = ['design', 'materials', 'permits', 'safety', 'access', 'finance'] as const;
 
@@ -43,8 +44,7 @@ const GATES = ['design', 'materials', 'permits', 'safety', 'access', 'finance'] 
     CardContentDirective,
     InputDirective,
     TextareaDirective,
-    UserSelectComponent,
-  ],
+    UserSelectComponent, CreateIconComponent],
   templateUrl: './project-workflow-panel.component.html',
   host: { class: 'flex flex-col gap-6' },
 })

@@ -13,4 +13,6 @@ export interface NavItem {
   permission: PermissionCode | readonly PermissionCode[] | null;
   /** Additional permissions that must all be held (mirrors the route data `requiresAll`). */
   requiresAll?: readonly PermissionCode[];
+  /** Hidden from whoever holds this permission: a page with nothing for them (filing support tickets, for the support desk). */
+  hiddenWith?: PermissionCode;
 }

@@ -9,7 +9,7 @@ const kerning: Readonly<Record<string, number>> = BRAND_WORDMARK_GLYPHS.kerning;
 const optical: Readonly<Record<string, number>> = BRAND_WORDMARK.optical;
 
 /**
- * Sets `text` (the logotype or its descriptor) at `tracking` em: each letter
+ * Sets `text` (the logotype's letters) at `tracking` em: each letter
  * after the first moves on by the previous advance, the tracking, the font's
  * kerning and the optical spacing for the pair.
  */

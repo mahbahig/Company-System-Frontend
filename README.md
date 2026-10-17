@@ -1,6 +1,6 @@
-# EcoTech CRM — Frontend
+# Ecotech — Frontend
 
-Bilingual (Arabic RTL / English LTR) web client for the EcoTech CRM, a CRM for a
+Bilingual (Arabic RTL / English LTR) web client for Ecotech, a
 solar / renewable-energy company. It covers the full commercial lifecycle —
 leads → opportunities → assessments → proposals → contracts → projects — plus the
 supporting activity, approval, reporting and administration tooling.
@@ -98,8 +98,6 @@ in [`FINAL_SRS_FRONTEND.md`](./FINAL_SRS_FRONTEND.md).
   [`proxy.conf.json`](./proxy.conf.json). Point it elsewhere by editing that file.
 - In production, serve the built app and the API from the same origin (or put a
   reverse proxy in front so `/api` reaches the backend).
-- `environment.environmentBadge` renders a small badge in the top bar outside
-  production; set it to `null` to hide.
 
 ## Project structure
 
@@ -109,7 +107,7 @@ in [`FINAL_SRS_FRONTEND.md`](./FINAL_SRS_FRONTEND.md).
 │   └── i18n/                    generated locale catalogues (do not edit — see i18n)
 ├── scripts/
 │   ├── sync-messages.mjs        merges i18n sources → public/i18n
-│   └── build-wordmark-glyphs.mjs  regenerates the ECOTECH logotype's glyphs (2D and 3D)
+│   └── build-wordmark-glyphs.mjs  regenerates the Ecotech logotype's glyphs (2D and 3D)
 ├── src/
 │   ├── main.ts                  standalone bootstrap
 │   ├── index.html
@@ -133,7 +131,7 @@ in [`FINAL_SRS_FRONTEND.md`](./FINAL_SRS_FRONTEND.md).
 │       ├── shared/
 │       │   ├── ui/              primitives: button, card, dialog, table, tabs, form, badge,
 │       │   │                    icon, alert, page-header, stat-card
-│       │   ├── crm/             CRM widgets: timeline, documents panel, saved views,
+│       │   ├── crm/             record widgets: timeline, documents panel, saved views,
 │       │   │                    list toolbar, pagination, record picker, completeness
 │       │   │                    panel, GPS capture, status badge, user select, …
 │       │   └── utils/
@@ -161,7 +159,10 @@ re-checks everything server-side). Which role opens which page is documented in
 
 Feature areas (all lazy-loaded under the authenticated app shell):
 
-- **Dashboard** — personal dashboard and executive dashboard.
+- **Dashboard** — the dashboards each role opens (personal, executive, sales …). The Super
+  Administrator's `/dashboard` is operational instead: `SupportOverviewComponent` (new and critical
+  tickets from `GET /support/tickets/stats`, each opening the desk filtered alike) and platform
+  health — no business KPIs or quick links there; their business pages stay in the navigation.
 - **Customers** — list, 360° detail, form, contacts, sites.
 - **Leads** — list, "my leads", detail, form, quick-add, convert, distribute.
 - **Opportunities & Pipeline** — list/detail/form and a kanban pipeline board.
@@ -171,7 +172,7 @@ Feature areas (all lazy-loaded under the authenticated app shell):
 - **Contracts** — contract list and detail.
 - **Projects** — delivery project list and detail.
 - **Activities** — calls, meetings, visits, and a combined activity log.
-- **Tasks** — list, detail, form.
+- **Tasks** — list (My Tasks by default; Team Tasks for team managers), detail, form.
 - **Handoffs** — sales → delivery handoff inbox and detail.
 - **Approvals** — approval queues and delegations.
 - **Campaigns** — marketing campaigns.
@@ -179,6 +180,58 @@ Feature areas (all lazy-loaded under the authenticated app shell):
 - **Reports** / **Analytics** — reporting, search, and an exceptions center.
 - **Admin** — users, roles, teams, reference data, equipment, rules, automation,
   duplicates, ownership requests, intake forms, integrations, audit, settings.
+- **Tables** — every table is paged with the one centred footer (`shared/crm/pagination`: Previous / pages /
+  Next, "Showing x–y of z", Items per page 10 / 20 / 50 / 100, default 20). List pages keep `?page=` and
+  `?pageSize=` in the URL and send both to the API; embedded server lists use `PagerState`; a record's bounded
+  sub-lists and small configuration sets use `LocalPager` + `<app-pager>`. Search / filters reset to page 1; a
+  page emptied by a deletion moves back; controls are disabled while a page loads.
+- **Confirmations** — `ConfirmService.confirm({ heading, message, details?, irreversible?, confirmLabel,
+  cancelLabel, variant: 'danger' | 'warning' | 'default', requireText?, action? })`: contextual (the action and
+  record, the consequence, a button named after the action — never "Are you sure?" / "OK"); with `action` the
+  request runs inside the dialog (busy, no double submit, closes only on success, shows the error otherwise).
+  The API authorizes every action; the dialog is UX only.
+- **Create actions** — `<app-create-icon />` before the label of every create / add action ("+ New Employee",
+  "+ Add Milestone"), also in list empty states, shown only with the permission the API requires.
+- **Audit log** (Super Administrator) — date and time on the 12-hour clock, who did it ("System" for jobs,
+  "Not signed in" for unauthenticated requests), the readable action from the API (`actionLabel`, never the
+  code); every row opens `/admin/audit/:id` (click or Enter); `?userId=` filters to one employee (an employee's
+  "View Audit Logs").
+- **Session credentials** — the access token lives in memory only (`TokenStore`); the refresh token
+  is the API's HttpOnly `SameSite=Strict` cookie, which no script can read: `auth/refresh` is a POST
+  with no body and `withCredentials`, and the API rotates the cookie each time. A reload resumes the
+  session through that refresh; a password change adopts the new access token it answers (the old
+  one stops working). Nothing credential-like is stored in localStorage (an older build's
+  `ecotech.session` is deleted at start-up).
+- **Expired sessions** — `authInterceptor` (the one HTTP hook): a 401 for an expired access token
+  refreshes it once through `AuthService.refreshAccessToken` (concurrent failures share one refresh;
+  the refresh call itself is never retried) and replays the request; when the refresh fails, or the API says the session is over
+  (`sessionEndReason`: revoked, password changed elsewhere, account deactivated, expired),
+  `SessionExpiry.end` clears the tokens and the signed-in user (once, however many requests failed)
+  and opens sign-in with `?reason=` — each reason has its own notice. Signing out sends
+  `QUIET_SESSION_END`, so it never shows "expired". `authGuard` drops a session the API no
+  longer accepts (reload / deep link) and says why (the refused refresh's reason, else "expired").
+- **Profile** — `/account/profile` for every user (`/account` opens it; user menu and palette):
+  account details from `/auth/me`, the shared `ChangePasswordFormComponent` (also the forced
+  first-login page `/account/password`; other sessions end, this one stays), and their own active
+  sessions (`SessionListComponent`: current first, no Log out on it, no "log out all"). The
+  employee page (`/employees/:id`) shows the same list for `security.view_sessions` with Log out and
+  Log out all sessions (`EmployeeSessionsComponent`) — never for a Super Administrator
+  (`isSuperAdministrator`, mirroring the API) or oneself; the Employees list hides lock / reset /
+  log-out-all on Super Administrator rows. `index.html` sends `Accept-CH: Sec-CH-UA-Platform-Version`
+  so sessions can say "Windows 11".
+- **Severity** — every support ticket has one (`SUPPORT_SEVERITIES`, `SupportSeverityBadgeComponent`:
+  critical is red with a warning icon); the form picks it (medium by default) and the desk filters by
+  it (`?severity=`, applied by the API).
+- **Dialogs** — `DialogComponent` keeps its title and ✕ fixed; only the body scrolls inside the dialog.
+- **Help & Support** — every employee reports problems (`/support`: My tickets, a
+  new-ticket form with screenshot drop zone, previews and upload progress, and the
+  ticket conversation). The System Administrator files no tickets (the nav item is
+  `hiddenWith: 'support.manage'`; `notSupportDeskGuard` sends `/support` and
+  `/support/new` to the desk); its desk is `/admin/support-tickets`
+  (search by title / number / name / e-mail, status filter, resolve / reopen,
+  delete one or all with a typed `DELETE ALL`). Management controls follow the
+  ticket's server-computed `permissions`; screenshots load from short-lived signed
+  links (`SupportApi.attachmentUrl`).
 - **Account** — password, security, notification preferences.
 - **Notifications**, **Forbidden** / **Not-found** pages.
 
@@ -211,18 +264,17 @@ place.
 Custom thin, theme-aware scrollbar utilities (`scroll-area`, `scroll-area-sidebar`)
 are used by the shell's independently-scrolling panes.
 
-The ECOTECH brand colours from [ecotecheg.com](https://ecotecheg.com) live as
+The Ecotech brand colours from [ecotecheg.com](https://ecotecheg.com) live as
 theme-independent constants (`--brand-petrol`, `--brand-sun`, `--brand-leaf`, …,
 exposed as `bg-brand-*` / `text-brand-*`). The sign-in screens apply the
 `.auth-theme` class, which re-points the shared token names at that palette, so
 every primitive inside them follows without per-page overrides.
 
-The company name is a **logotype**, not text: "ECOTECH" set in Archivo Expanded
+The company name is a **logotype**, not text: "Ecotech" set in Archivo Expanded
 (a wide grotesque, weight 350, SIL OFL) with its own tracking and optical
 spacing (`shared/ui/brand-wordmark/brand-wordmark.config.ts`).
 `<app-brand-wordmark>` draws it as inline SVG from the font's outlines — no web
-font — sized by cap height (`class="h-[0.5625rem]"`); with `text` it sets the
-"CRM" descriptor in the same face. Its two finishes are `text-brand-ink` and
+font — sized by cap height (`class="h-[0.5625rem]"`). Its two finishes are `text-brand-ink` and
 `text-brand-champagne`. The sign-in scene's 3D wordmark uses the same letters
 and the same layout function, so the two match letter for letter.
 
@@ -231,7 +283,7 @@ and the same layout function, so the two match letter for letter.
 Login, forgot-password and reset-password are children of one layout route
 (`features/auth/shared/auth-layout.component`), so they share an interactive
 Three.js scene — a shader-driven sun with a turning crown of rays and the
-"ECOTECH" logotype as extruded 3D type (deep petrol ink by day, champagne
+"Ecotech" logotype as extruded 3D type (deep petrol ink by day, champagne
 white by night, each letter traced by a champagne hairline) — that stays
 mounted while moving between them.
 On wide screens the page is one layer: a sky filling the whole viewport, with
@@ -272,7 +324,7 @@ between them. On narrow screens the sun is a compact hero with its own sky.
 ## Decorative 3D
 
 A few quiet three.js pieces make the authenticated app feel finished. They
-are presentation only — no CRM data, no business logic — and the app works
+are presentation only — no business data, no business logic — and the app works
 the same without them (no WebGL simply means no canvas).
 
 | Where | Composition | What it is |
@@ -359,7 +411,7 @@ main
  ├─ feat/i18n            localization resources + sync tooling
  ├─ feat/core-services   api, auth, navigation, notifications, storage, theme
  ├─ feat/layout          app shell + chrome
- ├─ feat/shared          UI primitives + CRM widgets
+ ├─ feat/shared          UI primitives + record widgets
  ├─ feat/auth-and-home   auth, account, dashboard, notifications, errors
  ├─ feat/crm-records     customers, leads, intake, campaigns
  ├─ feat/sales-cycle     opportunities, pipeline, assessments, proposals, contracts, solar

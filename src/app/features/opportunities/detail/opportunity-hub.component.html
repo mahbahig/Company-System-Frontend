@@ -112,7 +112,7 @@
           size="sm"
           [routerLink]="['/', i18n.locale(), 'calls', 'new']"
           [queryParams]="activityParams()"
-          >{{ 'act.calls.new' | t }}</a
+          ><app-create-icon />{{ 'act.calls.new' | t }}</a
         >
       }
       @if (auth.can('meetings.create')) {
@@ -122,7 +122,7 @@
           size="sm"
           [routerLink]="['/', i18n.locale(), 'meetings', 'new']"
           [queryParams]="activityParams()"
-          >{{ 'act.meetings.new' | t }}</a
+          ><app-create-icon />{{ 'act.meetings.new' | t }}</a
         >
       }
       @if (auth.can('visits.create')) {
@@ -132,7 +132,7 @@
           size="sm"
           [routerLink]="['/', i18n.locale(), 'visits', 'new']"
           [queryParams]="activityParams()"
-          >{{ 'act.visits.new' | t }}</a
+          ><app-create-icon />{{ 'act.visits.new' | t }}</a
         >
       }
       @if (auth.can('tasks.create')) {
@@ -142,7 +142,7 @@
           size="sm"
           [routerLink]="['/', i18n.locale(), 'tasks', 'new']"
           [queryParams]="{ opportunityId: opportunityId() }"
-          >{{ 'oppHub.newTask' | t }}</a
+          ><app-create-icon />{{ 'oppHub.newTask' | t }}</a
         >
       }
     </div>

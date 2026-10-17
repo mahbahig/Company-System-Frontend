@@ -264,7 +264,7 @@
           [disabled]="busy() || !changeReason().trim()"
           (click)="act(api.newVersion(id(), changeReason().trim()), 'assess.versionCreated')"
         >
-          {{ 'assess.createVersion' | t }}
+          <app-create-icon />{{ 'assess.createVersion' | t }}
         </button>
       </div>
     </section>

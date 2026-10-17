@@ -103,7 +103,7 @@
                 </tr>
               </thead>
               <tbody appTableBody>
-                @for (version of h.versions; track version.version) {
+                @for (version of versionsPager.rows(); track version.version) {
                   <tr appTableRow>
                     <td appTableCell class="tabular">v{{ version.version }}</td>
                     <td appTableCell>{{ name(version.submittedBy) }}</td>
@@ -116,6 +116,7 @@
               </tbody>
             </table>
           </app-table-wrapper>
+          <app-pager [pager]="versionsPager" />
         </section>
       }
 

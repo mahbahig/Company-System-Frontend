@@ -102,7 +102,7 @@
             </tr>
           </thead>
           <tbody appTableBody>
-            @for (m of p.milestones; track $index) {
+            @for (m of milestonesPager.rows(); track $index) {
               <tr appTableRow>
                 <td appTableCell>{{ m.title }}</td>
                 <td appTableCell>{{ m.phaseCode ? (m.phaseCode | enum: 'projectStatus') : '—' }}</td>
@@ -123,6 +123,7 @@
           </tbody>
         </table>
       </app-table-wrapper>
+      <app-pager [pager]="milestonesPager" />
       @if (perms.canManage) {
         <div class="grid gap-3 rounded-md border border-border p-4 sm:grid-cols-4">
           <input appInput [attr.aria-label]="'projects.milestone' | t" [placeholder]="'projects.milestone' | t" [value]="milestone().title" (input)="patch(milestone, 'title', $any($event.target).value)" />
@@ -132,7 +133,7 @@
             }
           </select>
           <input appInput type="date" dir="ltr" [attr.aria-label]="'approvals.columns.due' | t" [value]="milestone().dueAt" (change)="patch(milestone, 'dueAt', $any($event.target).value)" />
-          <button type="button" appButton variant="outline" [disabled]="actions.busy() || !milestone().title.trim()" (click)="addMilestone()">{{ 'projects.addMilestone' | t }}</button>
+          <button type="button" appButton variant="outline" [disabled]="actions.busy() || !milestone().title.trim()" (click)="addMilestone()"><app-create-icon />{{ 'projects.addMilestone' | t }}</button>
         </div>
       }
 
@@ -169,7 +170,7 @@
             </tr>
           </thead>
           <tbody appTableBody>
-            @for (item of p.procurement; track $index) {
+            @for (item of procurementPager.rows(); track $index) {
               <tr appTableRow>
                 <td appTableCell>{{ item.description }} @if (item.model) {<span class="block text-xs text-muted-foreground">{{ item.model }}</span>}</td>
                 <td appTableCell class="tabular">{{ item.quantity }}</td>
@@ -194,13 +195,14 @@
           </tbody>
         </table>
       </app-table-wrapper>
+      <app-pager [pager]="procurementPager" />
       @if (perms.canExecute) {
         <div class="grid gap-3 rounded-md border border-border p-4 sm:grid-cols-3 lg:grid-cols-6">
           <input appInput class="lg:col-span-2" [attr.aria-label]="'prop.costs.description' | t" [placeholder]="'prop.costs.description' | t" [value]="procurement().description" (input)="patch(procurement, 'description', $any($event.target).value)" />
           <input appInput type="number" min="0" dir="ltr" [attr.aria-label]="'prop.costs.quantity' | t" [value]="procurement().quantity" (input)="patch(procurement, 'quantity', +$any($event.target).value)" />
           <input appInput [attr.aria-label]="'projects.supplier' | t" [placeholder]="'projects.supplier' | t" [value]="procurement().supplier" (input)="patch(procurement, 'supplier', $any($event.target).value)" />
           <input appInput type="date" dir="ltr" [attr.aria-label]="'projects.expected' | t" [value]="procurement().expectedAt" (change)="patch(procurement, 'expectedAt', $any($event.target).value)" />
-          <button type="button" appButton variant="outline" [disabled]="actions.busy() || !procurement().description.trim()" (click)="addProcurement()">{{ 'projects.addItem' | t }}</button>
+          <button type="button" appButton variant="outline" [disabled]="actions.busy() || !procurement().description.trim()" (click)="addProcurement()"><app-create-icon />{{ 'projects.addItem' | t }}</button>
         </div>
       }
     }
@@ -218,7 +220,7 @@
             </tr>
           </thead>
           <tbody appTableBody>
-            @for (pay of p.payments ?? []; track $index) {
+            @for (pay of paymentsPager.rows(); track $index) {
               <tr appTableRow>
                 <td appTableCell>{{ pay.name }}</td>
                 <td appTableCell class="tabular">{{ pay.pct }}%</td>
@@ -242,6 +244,7 @@
           </tbody>
         </table>
       </app-table-wrapper>
+      <app-pager [pager]="paymentsPager" />
     }
 
     @case ('commissioning') {
@@ -257,7 +260,7 @@
             </div>
           }
           @if (perms.canAcceptTechnically) {
-            <button type="button" appButton variant="ghost" size="sm" class="self-start" (click)="tests.update((rows) => [...rows, { test: '', result: '', passed: false }])">{{ 'projects.addTest' | t }}</button>
+            <button type="button" appButton variant="ghost" size="sm" class="self-start" (click)="tests.update((rows) => [...rows, { test: '', result: '', passed: false }])"><app-create-icon />{{ 'projects.addTest' | t }}</button>
           }
           <div class="grid gap-3 sm:grid-cols-3">
             <div>
@@ -301,7 +304,7 @@
             </div>
           }
           @if (perms.canManage) {
-            <button type="button" appButton variant="ghost" size="sm" class="self-start" (click)="warranties.update((rows) => [...rows, { item: '', years: 1 }])">{{ 'projects.addWarranty' | t }}</button>
+            <button type="button" appButton variant="ghost" size="sm" class="self-start" (click)="warranties.update((rows) => [...rows, { item: '', years: 1 }])"><app-create-icon />{{ 'projects.addWarranty' | t }}</button>
           }
           <div class="grid gap-3 sm:grid-cols-2">
             <div>

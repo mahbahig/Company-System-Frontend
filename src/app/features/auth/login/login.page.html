@@ -5,50 +5,28 @@
     heading="account.mfa.verifyTitle"
     lead="account.mfa.verifyHint"
   />
+  <p class="mt-3 text-sm text-muted-foreground" role="status">
+    {{ 'account.mfa.codeSentTo' | t: { destination: mfaDestination() } }}
+  </p>
 
   <form class="mt-8 space-y-6" novalidate (submit)="onVerify($event)">
     @if (errorKey(); as errorKey) {
       <app-auth-notice variant="destructive" class="animate-shake">{{
         errorKey | t
       }}</app-auth-notice>
+    } @else if (resentNotice()) {
+      <app-auth-notice>{{ 'account.mfa.codeResent' | t }}</app-auth-notice>
     }
 
-    @if (useRecoveryCode()) {
-      <app-auth-field
-        class="animate-fade-in-up"
-        [fieldId]="mfaFieldId"
-        label="account.mfa.recoveryLabel"
-        hint="account.mfa.recoveryUseHint"
-        [icon]="recoveryIcon"
-        required
-      >
-        <input
-          #recoveryCode
-          appAuthInput
-          [id]="mfaFieldId"
-          autocomplete="off"
-          autocapitalize="none"
-          spellcheck="false"
-          dir="ltr"
-          placeholder="xxxxx-xxxxx"
-          class="ps-11 tabular ltr:tracking-[0.08em]"
-          [value]="mfaCode()"
-          [attr.aria-invalid]="errorKey() ? true : null"
-          [attr.aria-describedby]="mfaFieldId + '-hint'"
-          (input)="mfaCode.set(recoveryCode.value)"
-        />
-      </app-auth-field>
-    } @else {
-      <div class="animate-fade-in-up">
-        <label appLabel [for]="mfaFieldId" required>{{ 'account.mfa.code' | t }}</label>
-        <app-otp-input
-          class="mt-2"
-          [inputId]="mfaFieldId"
-          [invalid]="!!errorKey()"
-          [(value)]="mfaCode"
-        />
-      </div>
-    }
+    <div class="animate-fade-in-up">
+      <label appLabel [for]="mfaFieldId" required>{{ 'account.mfa.code' | t }}</label>
+      <app-otp-input
+        class="mt-2"
+        [inputId]="mfaFieldId"
+        [invalid]="!!errorKey()"
+        [(value)]="mfaCode"
+      />
+    </div>
 
     <button
       type="submit"
@@ -61,8 +39,8 @@
     </button>
 
     <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-      <button type="button" appAuthLink (click)="toggleRecoveryCode()">
-        {{ (useRecoveryCode() ? 'account.mfa.useAuthenticator' : 'account.mfa.useRecovery') | t }}
+      <button type="button" appAuthLink [disabled]="resending() || resendIn() > 0" (click)="resend()">
+        {{ resendIn() > 0 ? ('account.mfa.resendIn' | t: { seconds: resendIn() }) : ('account.mfa.resend' | t) }}
       </button>
       <button type="button" appAuthLink tone="muted" (click)="cancelMfa()">
         {{ 'account.mfa.back' | t }}

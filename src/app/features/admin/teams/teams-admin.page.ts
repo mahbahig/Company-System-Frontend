@@ -16,13 +16,16 @@ import { ActionRunner } from '../../../shared/utils/action-runner';
 import { userName } from '../../../shared/utils/display-name';
 import { AdminApi, type Team } from '../admin-api.service';
 import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.component';
+import { LocalPager } from '../../../shared/crm/pagination/local-pager';
+import { PagerComponent } from '../../../shared/crm/pagination/pager.component';
+import { CreateIconComponent } from '../../../shared/ui/create-icon/create-icon.component';
 
 const idOf = (value: string | { id: string } | null | undefined): string => (!value ? '' : typeof value === 'string' ? value : value.id);
 
 /** USER-02 sales / delivery teams: manager, members and region (team scope for RBAC and dashboards). */
 @Component({
   selector: 'app-teams-admin-page',
-  imports: [SkeletonRowComponent, TranslatePipe, UserSelectComponent, AlertComponent, BadgeComponent, ButtonDirective, DialogComponent, PageHeaderComponent, ...TABLE_IMPORTS, ...FORM_IMPORTS],
+  imports: [SkeletonRowComponent, TranslatePipe, UserSelectComponent, AlertComponent, BadgeComponent, ButtonDirective, DialogComponent, PageHeaderComponent, ...TABLE_IMPORTS, ...FORM_IMPORTS, PagerComponent, CreateIconComponent],
   templateUrl: './teams-admin.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
@@ -32,6 +35,8 @@ export class TeamsAdminPage {
   protected readonly actions = new ActionRunner(this.i18n);
 
   protected readonly data = rxResource({ stream: () => this.api.teams() });
+  /** Teams are a small set loaded whole (the editors pick from all of them): paged here in memory. */
+  protected readonly teamsPager = new LocalPager(() => this.data.value());
   protected readonly open = signal(false);
   protected readonly editing = signal<string | null>(null);
   protected readonly d = signal({ code: '', nameAr: '', nameEn: '', region: '', managerId: '', memberIds: [] as string[], isActive: true });

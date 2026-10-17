@@ -1,0 +1,57 @@
+<app-dialog
+  [(open)]="open"
+  [heading]="'admin.users.confirm.deactivateTitle' | t: { name: name() }"
+  [description]="'admin.users.confirm.deactivateBody' | t: { name: name() }"
+>
+  <!-- Built only while open: a fresh reason and reassignment every time. -->
+  @if (open()) {
+    <form class="flex flex-col gap-4" (submit)="submit($event)">
+      @if (actions.error(); as text) {
+        <app-alert variant="destructive">{{ text }}</app-alert>
+      }
+      @if (openWork.value(); as work) {
+        @if (work.length) {
+          <div class="rounded-md border border-border p-3 text-sm">
+            <p class="mb-1 font-medium">{{ 'admin.users.openWork' | t }}</p>
+            <ul class="grid grid-cols-2 gap-1">
+              @for (w of work; track w.module) {
+                <li>
+                  {{ 'admin.users.modules.' + w.module | t }}:
+                  <span class="tabular font-medium">{{ i18n.formatNumber(w.count) }}</span>
+                </li>
+              }
+            </ul>
+          </div>
+        } @else {
+          <p class="text-sm text-muted-foreground">{{ 'admin.users.noOpenWork' | t }}</p>
+        }
+      }
+      <div>
+        <label appLabel for="dz-reassign">{{ 'admin.users.reassignTo' | t }}</label>
+        <app-user-select inputId="dz-reassign" [(value)]="reassignTo" />
+      </div>
+      <div>
+        <label appLabel for="dz-reason">{{ 'ux.users.reasonOptional' | t }}</label>
+        <input
+          appInput
+          id="dz-reason"
+          maxlength="300"
+          [placeholder]="'ux.users.reasonPlaceholder' | t"
+          [value]="reason()"
+          (input)="reason.set($any($event.target).value)"
+        />
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <button type="button" appButton variant="outline" fullWidth [disabled]="actions.busy()" (click)="open.set(false)">
+          {{ 'crm.common.cancel' | t }}
+        </button>
+        <button type="submit" appButton variant="destructive" fullWidth [disabled]="actions.busy()" [attr.aria-busy]="actions.busy()">
+          @if (actions.busy()) {
+            <span class="size-4 animate-spin rounded-full border-2 border-current border-e-transparent" aria-hidden="true"></span>
+          }
+          {{ 'admin.users.confirm.deactivateAction' | t }}
+        </button>
+      </div>
+    </form>
+  }
+</app-dialog>

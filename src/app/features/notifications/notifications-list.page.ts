@@ -17,6 +17,7 @@ import { ButtonDirective } from '../../shared/ui/button/button.directive';
 import { IconComponent } from '../../shared/ui/icon/icon.component';
 import { PageHeaderComponent } from '../../shared/ui/page-header/page-header.component';
 import { ListSkeletonComponent } from '../../shared/ui/skeleton/skeleton.component';
+import { DEFAULT_PAGE_SIZE, pageSizeAttribute } from '../../shared/crm/pagination/page-size';
 
 const flag = (value: string | undefined) => value === '1';
 
@@ -45,6 +46,8 @@ export class NotificationsListPage {
 
   readonly unread = input<string>();
   readonly page = input(1, { transform: (value: unknown) => numberAttribute(value, 1) });
+  /** `?pageSize=` (10 / 20 / 50 / 100; default 20). */
+  readonly pageSize = input(DEFAULT_PAGE_SIZE, { transform: pageSizeAttribute });
 
   protected readonly checkIcon = Check;
   protected readonly checkAllIcon = CheckCheck;

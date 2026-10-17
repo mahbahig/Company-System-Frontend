@@ -21,6 +21,9 @@ import type { TabItem } from '../../../shared/ui/tabs/tab-item.interface';
 import { userName } from '../../../shared/utils/display-name';
 import type { NegotiationEvent, Person, RegisterRow, RevisionRequest } from '../proposals.models';
 import { ProposalsApi } from '../proposals-api.service';
+import { LocalPager } from '../../../shared/crm/pagination/local-pager';
+import { PagerComponent } from '../../../shared/crm/pagination/pager.component';
+import { CreateIconComponent } from '../../../shared/ui/create-icon/create-icon.component';
 
 /**
  * One opportunity's commercial workspace: technical, financial and combined
@@ -30,7 +33,7 @@ import { ProposalsApi } from '../proposals-api.service';
  */
 @Component({
   selector: 'app-proposals-workspace-page',
-  imports: [RouterLink, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, AlertComponent, BadgeComponent, ButtonDirective, PageHeaderComponent, TabsComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, ...TABLE_IMPORTS],
+  imports: [RouterLink, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, AlertComponent, BadgeComponent, ButtonDirective, PageHeaderComponent, TabsComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, ...TABLE_IMPORTS, PagerComponent, CreateIconComponent],
   templateUrl: './proposals-workspace.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
@@ -59,12 +62,24 @@ export class ProposalsWorkspacePage {
   );
   protected readonly active = computed(() => (this.tabs().some((tab) => tab.id === this.tab()) ? (this.tab() as string) : (this.tabs()[0]?.id ?? 'combined')));
 
-  protected readonly technical = rxResource({ params: () => (this.active() === 'technical' || this.active() === 'financial' || this.active() === 'combined' ? this.id() : undefined), stream: ({ params }) => (params ? this.api.technicalList({ opportunityId: params, pageSize: 100 }) : of(undefined)) });
-  protected readonly financial = rxResource({ params: () => (this.active() === 'financial' || this.active() === 'combined' ? this.id() : undefined), stream: ({ params }) => (params ? this.api.financialList({ opportunityId: params, pageSize: 100 }) : of(undefined)) });
-  protected readonly combined = rxResource({ params: () => (['combined', 'revisions', 'negotiations'].includes(this.active()) ? this.id() : undefined), stream: ({ params }) => (params ? this.api.combinedList({ opportunityId: params, pageSize: 100 }) : of(undefined)) });
+  protected readonly technical = rxResource({ params: () => (this.active() === 'technical' || this.active() === 'financial' || this.active() === 'combined' ? this.id() : undefined), stream: ({ params }) => (params ? this.api.technicalList({ opportunityId: params, pageSize: 200 }) : of(undefined)) });
+  /** The opportunity's technical versions (a bounded set per opportunity), paged in memory. */
+  protected readonly technicalPager = new LocalPager(() => this.technical.value()?.rows);
+  protected readonly financial = rxResource({ params: () => (this.active() === 'financial' || this.active() === 'combined' ? this.id() : undefined), stream: ({ params }) => (params ? this.api.financialList({ opportunityId: params, pageSize: 200 }) : of(undefined)) });
+  /** The opportunity's financial versions (a bounded set per opportunity), paged in memory. */
+  protected readonly financialPager = new LocalPager(() => this.financial.value()?.rows);
+  protected readonly combined = rxResource({ params: () => (['combined', 'revisions', 'negotiations'].includes(this.active()) ? this.id() : undefined), stream: ({ params }) => (params ? this.api.combinedList({ opportunityId: params, pageSize: 200 }) : of(undefined)) });
+  /** The opportunity's combined versions (a bounded set per opportunity), paged in memory. */
+  protected readonly combinedPager = new LocalPager(() => this.combined.value()?.rows);
   protected readonly register = rxResource({ params: () => (this.active() === 'register' ? this.id() : undefined), stream: ({ params }) => (params ? this.api.register(params) : of(undefined)) });
-  protected readonly revisions = rxResource({ params: () => (this.active() === 'revisions' ? this.id() : undefined), stream: ({ params }) => (params ? this.api.revisions({ opportunityId: params, pageSize: 100 }) : of(undefined)) });
+  /** The opportunity's register versions (a bounded set per opportunity), paged in memory. */
+  protected readonly registerPager = new LocalPager(() => this.register.value()?.rows);
+  protected readonly revisions = rxResource({ params: () => (this.active() === 'revisions' ? this.id() : undefined), stream: ({ params }) => (params ? this.api.revisions({ opportunityId: params, pageSize: 200 }) : of(undefined)) });
+  /** The opportunity's revision requests, paged in memory. */
+  protected readonly revisionsPager = new LocalPager(() => this.revisions.value()?.rows);
   protected readonly negotiations = rxResource({ params: () => (this.active() === 'negotiations' ? this.id() : undefined), stream: ({ params }) => (params ? this.api.negotiations({ opportunityId: params }) : of(undefined)) });
+  /** The opportunity's negotiation rounds, paged in memory. */
+  protected readonly negotiationsPager = new LocalPager(() => this.negotiations.value()?.rows);
 
   protected readonly approvedTps = computed(() => (this.technical.value()?.rows ?? []).filter((row) => row.status === 'approved'));
   protected readonly approvedFps = computed(() => (this.financial.value()?.rows ?? []).filter((row) => row.status === 'approved'));

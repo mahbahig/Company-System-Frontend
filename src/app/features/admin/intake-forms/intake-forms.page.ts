@@ -11,6 +11,9 @@ import { FORM_IMPORTS } from '../../../shared/ui/form/form.imports';
 import { PageHeaderComponent } from '../../../shared/ui/page-header/page-header.component';
 import { TABLE_IMPORTS } from '../../../shared/ui/table/table.imports';
 import { ActionRunner } from '../../../shared/utils/action-runner';
+import { LocalPager } from '../../../shared/crm/pagination/local-pager';
+import { PagerComponent } from '../../../shared/crm/pagination/pager.component';
+import { CreateIconComponent } from '../../../shared/ui/create-icon/create-icon.component';
 
 type Section = 'goals' | 'electricity' | 'site' | 'storage' | 'pumping' | 'constraints';
 
@@ -48,7 +51,7 @@ type Mode = 'hidden' | 'required' | 'optional' | 'default';
  */
 @Component({
   selector: 'app-intake-forms-page',
-  imports: [TranslatePipe, AlertComponent, ButtonDirective, PageHeaderComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, ...TABLE_IMPORTS],
+  imports: [TranslatePipe, AlertComponent, ButtonDirective, PageHeaderComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, ...TABLE_IMPORTS, PagerComponent, CreateIconComponent],
   templateUrl: './intake-forms.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
@@ -64,6 +67,8 @@ export class IntakeFormsPage {
     const m = this.meta();
     return m ? (this.data.value()?.defaults ?? []).filter((f) => m.intakeSections.includes(f.section)) : [];
   });
+  /** The fields of the chosen form, paged in memory. */
+  protected readonly fieldsPager = new LocalPager(() => this.fieldsInSections());
 
   constructor() {
     effect(() => {

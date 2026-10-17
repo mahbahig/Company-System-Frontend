@@ -158,7 +158,7 @@
       "show": "Show password",
       "hide": "Hide password",
       "ruleMatch": "Both new passwords match",
-      "signOutNote": "Changing your password signs you out on every device, including this one. Sign in again with the new password."
+      "signOutNote": "Changing your password signs you out on every other device. You stay signed in here."
     },
     "reports": {
       "exportable": "Exportable"

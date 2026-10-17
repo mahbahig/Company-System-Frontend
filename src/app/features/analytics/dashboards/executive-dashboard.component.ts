@@ -17,11 +17,13 @@ import type { AnalyticsFilter } from '../models/analytics-filter.interface';
 import { KpiGridComponent } from '../shared/kpi-grid.component';
 import { percent } from '../shared/kpi-format';
 import { DashboardSkeletonComponent } from '../../../shared/ui/skeleton/skeleton.component';
+import { LocalPager } from '../../../shared/crm/pagination/local-pager';
+import { PagerComponent } from '../../../shared/crm/pagination/pager.component';
 
 /** DASH-01 executive dashboard. */
 @Component({
   selector: 'app-executive-dashboard',
-  imports: [DashboardSkeletonComponent, TranslatePipe, AlertComponent, StatCardComponent, KpiGridComponent, BarListComponent, ...CARD_IMPORTS, ...TABLE_IMPORTS],
+  imports: [DashboardSkeletonComponent, TranslatePipe, AlertComponent, StatCardComponent, KpiGridComponent, BarListComponent, ...CARD_IMPORTS, ...TABLE_IMPORTS, PagerComponent],
   templateUrl: './executive-dashboard.component.html',
   host: { class: 'flex flex-col gap-6' },
 })
@@ -35,6 +37,8 @@ export class ExecutiveDashboardComponent {
   readonly filter = input<AnalyticsFilter>({});
 
   protected readonly data = rxResource({ params: () => this.filter(), stream: ({ params }) => this.api.executive(params) });
+  /** The monthly trend, paged in memory. */
+  protected readonly trendPager = new LocalPager(() => this.data.value()?.trend);
   protected readonly money = computed(() => this.auth.can('financials.view'));
 
   protected readonly kpiCodes = computed(() => {

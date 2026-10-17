@@ -1,0 +1,144 @@
+@if (user(); as u) {
+  <header
+    class="flex flex-col gap-5 rounded-xl border border-border/80 bg-card p-6 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:px-7"
+  >
+    <div class="flex min-w-0 items-center gap-4">
+      <app-avatar [userId]="u.id" [name]="name()" [version]="u.avatarVersion ?? null" size="lg" />
+      <div class="min-w-0">
+        <h1 class="truncate text-2xl font-semibold tracking-tight">{{ name() }}</h1>
+        <p class="truncate text-sm text-muted-foreground" dir="ltr">{{ u.email }}</p>
+        <div class="mt-2 flex flex-wrap gap-1.5">
+          @for (role of u.roles; track role.id) {
+            <app-badge tone="info">{{ i18n.pick(role.nameAr, role.nameEn) }}</app-badge>
+          }
+        </div>
+      </div>
+    </div>
+    <p class="text-sm text-muted-foreground sm:max-w-xs sm:text-end">{{ 'account.profile.subtitle' | t }}</p>
+  </header>
+
+  <div class="grid gap-6 lg:grid-cols-[minmax(0,20rem)_minmax(0,1fr)] lg:items-start">
+    <section appCard aria-labelledby="profile-picture">
+      <div appCardHeader class="flex flex-row items-center gap-3">
+        <span class="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary" aria-hidden="true">
+          <app-icon [icon]="icons.picture" svgClass="size-4" />
+        </span>
+        <h2 appCardTitle id="profile-picture">{{ 'account.picture.title' | t }}</h2>
+      </div>
+      <div appCardContent>
+        <app-profile-picture-card />
+      </div>
+    </section>
+
+    <section appCard aria-labelledby="profile-account">
+      <div appCardHeader class="flex flex-row items-center gap-3">
+        <span class="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary" aria-hidden="true">
+          <app-icon [icon]="icons.account" svgClass="size-4" />
+        </span>
+        <h2 appCardTitle id="profile-account">{{ 'account.profile.account' | t }}</h2>
+      </div>
+      <dl appCardContent class="grid gap-x-6 gap-y-5 sm:grid-cols-2">
+        <div appDetailItem [label]="'account.profile.nameEn' | t">{{ u.fullNameEn }}</div>
+        <div appDetailItem [label]="'account.profile.nameAr' | t"><span dir="rtl">{{ u.fullNameAr }}</span></div>
+        <div appDetailItem [label]="'account.profile.email' | t"><span dir="ltr">{{ u.email }}</span></div>
+        @if (jobTitle()) {
+          <div appDetailItem [label]="'account.profile.jobTitle' | t">{{ jobTitle() }}</div>
+        }
+        @if (u.employeeNo) {
+          <div appDetailItem [label]="'account.profile.employeeNo' | t"><span dir="ltr">{{ u.employeeNo }}</span></div>
+        }
+        @if (u.department) {
+          <div appDetailItem [label]="'account.profile.department' | t">{{ u.department }}</div>
+        }
+        @if (u.mobile) {
+          <div appDetailItem [label]="'account.profile.mobile' | t"><span dir="ltr">{{ u.mobile }}</span></div>
+        }
+        @if (teams()) {
+          <div appDetailItem [label]="'account.profile.teams' | t">{{ teams() }}</div>
+        }
+        @if (manager()) {
+          <div appDetailItem [label]="'account.profile.manager' | t">{{ manager() }}</div>
+        }
+        @if (u.lastLoginAt) {
+          <div appDetailItem [label]="'account.profile.lastLogin' | t">
+            <time [attr.datetime]="u.lastLoginAt">{{ i18n.formatDate(u.lastLoginAt, true) }}</time>
+          </div>
+        }
+      </dl>
+    </section>
+  </div>
+
+  <div class="grid gap-6 xl:grid-cols-2 xl:items-start">
+    <section appCard aria-labelledby="profile-password">
+      <div appCardHeader>
+        <div class="flex flex-row items-center gap-3">
+          <span class="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary" aria-hidden="true">
+            <app-icon [icon]="icons.password" svgClass="size-4" />
+          </span>
+          <h2 appCardTitle id="profile-password">{{ 'account.password.title' | t }}</h2>
+        </div>
+        <p appCardDescription>{{ 'ux.password.signOutNote' | t }}</p>
+      </div>
+      <div appCardContent>
+        <app-change-password-form (changed)="passwordChanged()" />
+      </div>
+    </section>
+
+    <section appCard aria-labelledby="profile-security">
+      <div appCardHeader>
+        <div class="flex flex-row items-center gap-3">
+          <span class="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary" aria-hidden="true">
+            <app-icon [icon]="icons.security" svgClass="size-4" />
+          </span>
+          <h2 appCardTitle id="profile-security">{{ 'account.mfa.settingTitle' | t }}</h2>
+        </div>
+        <p appCardDescription>{{ 'account.mfa.settingHint' | t }}</p>
+      </div>
+      <div appCardContent>
+        <app-two-factor-setting />
+      </div>
+    </section>
+  </div>
+
+  <section appCard aria-labelledby="profile-sessions">
+    <div appCardHeader class="flex flex-row flex-wrap items-start justify-between gap-3">
+      <div class="flex min-w-0 items-start gap-3">
+        <span class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary" aria-hidden="true">
+          <app-icon [icon]="icons.sessions" svgClass="size-4" />
+        </span>
+        <div class="min-w-0">
+          <h2 appCardTitle id="profile-sessions">{{ 'sessions.title' | t }}</h2>
+          <p appCardDescription>{{ 'sessions.ownHint' | t }}</p>
+        </div>
+      </div>
+      <button
+        type="button"
+        appButton
+        variant="ghost"
+        size="sm"
+        [disabled]="sessions.isLoading()"
+        (click)="sessions.reload()"
+      >
+        <app-icon [icon]="icons.refresh" svgClass="size-4" />
+        {{ 'sessions.refresh' | t }}
+      </button>
+    </div>
+    <div appCardContent class="flex flex-col gap-4" [attr.aria-busy]="sessions.isLoading()">
+      @if (sessionActions.error(); as text) {
+        <app-alert variant="destructive">{{ text }}</app-alert>
+      } @else if (sessionActions.message(); as text) {
+        <app-alert variant="success">{{ text }}</app-alert>
+      }
+      @if (sessions.error()) {
+        <app-alert variant="destructive">{{ i18n.errorText(sessions.error()) }}</app-alert>
+      } @else if (sessions.value(); as list) {
+        <app-session-list [sessions]="list" [canRevoke]="true" [busyId]="revoking()" (revoke)="revoke($event)" />
+        @if (!otherSessions()) {
+          <p class="text-sm text-muted-foreground">{{ 'sessions.noOtherSessions' | t }}</p>
+        }
+      } @else {
+        <p class="text-sm text-muted-foreground" role="status">{{ 'common.labels.loading' | t }}</p>
+      }
+    </div>
+  </section>
+}

@@ -91,6 +91,7 @@
 </app-table-wrapper>
 @if (jobs.hasValue()) {
   <app-pagination
+    [loading]="jobs.isLoading()"
     [page]="jobs.value().page"
     [pageCount]="jobs.value().pageCount"
     [total]="jobs.value().total"

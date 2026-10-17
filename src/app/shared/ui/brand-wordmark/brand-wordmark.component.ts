@@ -5,14 +5,13 @@ import { BRAND_WORDMARK } from './brand-wordmark.config';
 import { layoutBrandWordmark } from './layout-brand-wordmark';
 
 /**
- * The ECOTECH logotype — or, with `text`, its "CRM" descriptor — as inline
- * SVG, drawn from the brand typeface's own outlines (no web font to load,
- * identical everywhere) in `currentColor`.
+ * The Ecotech logotype as inline SVG, drawn from the brand typeface's own
+ * outlines (no web font to load, identical everywhere) in `currentColor`.
  *
  * Size it by height: the box is exactly the cap height, so `h-*` sets how tall
- * the capitals are and the width follows (the round letters' overshoot spills
- * a hair past it, as in type). Decorative: give the surrounding element an
- * accessible name.
+ * the E is and the width follows (the h's ascender and the round letters'
+ * overshoot spill a hair past it, as in type). Decorative: give the
+ * surrounding element an accessible name.
  */
 @Component({
   selector: 'app-brand-wordmark',
@@ -20,7 +19,7 @@ import { layoutBrandWordmark } from './layout-brand-wordmark';
   host: { class: 'inline-block shrink-0' },
 })
 export class BrandWordmarkComponent {
-  /** The word to set: the logotype, or the descriptor (its letters only). */
+  /** The word to set, from the logotype's letters. */
   readonly text = input<string>(BRAND_WORDMARK.text);
   /** Letter-spacing in em; the default suits the logotype at small sizes. */
   readonly tracking = input<number>(BRAND_WORDMARK.tracking.small);

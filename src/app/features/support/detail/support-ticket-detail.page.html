@@ -1,0 +1,298 @@
+@if (notFound()) {
+  <app-status-page [code]="404" titleKey="errors.notFound.title" bodyKey="errors.db.notFound" />
+} @else if (detail.error() && !data()) {
+  <app-alert variant="destructive">{{ i18n.errorText(detail.error()) }}</app-alert>
+} @else if (data(); as d) {
+  <app-breadcrumbs [items]="crumbs()" />
+  <app-page-header class="!mb-0" [heading]="d.ticket.title" [subtitle]="'support.detail.heading' | t: { number: d.ticket.ticketNo }">
+    <div class="flex flex-wrap items-center gap-2">
+      <app-support-severity-badge [severity]="d.ticket.severity" />
+      <app-badge [tone]="tone[d.ticket.status]" class="text-sm" data-testid="ticket-status">
+        @if (d.ticket.status === 'closed') {
+          <app-icon [icon]="icons.close" svgClass="size-3.5" />
+        }
+        {{ 'support.status.' + d.ticket.status | t }}
+      </app-badge>
+    </div>
+  </app-page-header>
+
+  @if (notice(); as key) {
+    <app-alert variant="success">{{ key | t }}</app-alert>
+  }
+  @if (actions.message(); as text) {
+    <app-alert variant="success">{{ text }}</app-alert>
+  }
+  @if (actions.error(); as text) {
+    <app-alert variant="destructive">{{ text }}</app-alert>
+  }
+
+  <!-- Where the ticket stands, in words: resolved (and can still be reopened) vs closed (final). -->
+  @if (d.ticket.status === 'closed') {
+    <app-alert data-testid="ticket-closed-banner">
+      <span class="flex items-start gap-2">
+        <app-icon [icon]="icons.close" svgClass="mt-0.5 size-4 shrink-0" />
+        <span>
+          <strong class="block">{{ 'support.lifecycle.closedTitle' | t }}</strong>
+          {{ (manages() || auth.can('support.manage') ? 'support.lifecycle.deskClosedBody' : 'support.lifecycle.closedBody') | t }}
+        </span>
+      </span>
+    </app-alert>
+  } @else if (d.permissions.canReopen) {
+    <section class="flex flex-col gap-3 rounded-lg border border-success/40 bg-success/10 p-4" aria-labelledby="ticket-resolved-heading" data-testid="ticket-resolved-banner">
+      <div>
+        <h2 id="ticket-resolved-heading" class="font-semibold text-success-tint">{{ 'support.lifecycle.resolvedTitle' | t }}</h2>
+        <p class="text-sm">{{ 'support.lifecycle.resolvedBody' | t }}</p>
+      </div>
+      <div>
+        <label appLabel for="ticket-reopen-reason">{{ 'support.lifecycle.reopenReason' | t }}</label>
+        <textarea appTextarea id="ticket-reopen-reason" rows="2" maxlength="5000" [value]="reopenReason()" (input)="reopenReason.set($any($event.target).value)"></textarea>
+      </div>
+      <button type="button" appButton variant="outline" class="self-start" (click)="reopen()">
+        <app-icon [icon]="icons.reopen" />{{ 'support.actions.reopenTicket' | t }}
+      </button>
+    </section>
+  } @else if (d.ticket.status === 'reopened' && !manages()) {
+    <app-alert>
+      <strong class="block">{{ 'support.lifecycle.reopenedTitle' | t }}</strong>
+      {{ 'support.lifecycle.reopenedBody' | t }}
+    </app-alert>
+  }
+
+  <div class="grid gap-6 lg:grid-cols-3">
+    <div class="flex flex-col gap-6 lg:col-span-2">
+      <section appCard aria-labelledby="description-heading">
+        <div appCardHeader>
+          <h2 appCardTitle id="description-heading">{{ 'support.detail.description' | t }}</h2>
+        </div>
+        <div appCardContent>
+          <p class="whitespace-pre-wrap break-words text-sm leading-relaxed">{{ d.ticket.description }}</p>
+        </div>
+      </section>
+
+      <section appCard aria-labelledby="attachments-heading">
+        <div appCardHeader>
+          <h2 appCardTitle id="attachments-heading">{{ 'support.detail.attachments' | t }}</h2>
+        </div>
+        <div appCardContent>
+          @if (d.attachments.length) {
+            <ul class="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              @for (attachment of d.attachments; track attachment.id) {
+                <li class="flex flex-col gap-1.5">
+                  <button
+                    type="button"
+                    class="group overflow-hidden rounded-lg border border-border bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    [attr.aria-label]="'support.detail.open' | t"
+                    (click)="open(attachment)"
+                  >
+                    <img
+                      [src]="url(attachment)"
+                      [alt]="'support.detail.attachmentAlt' | t: { name: attachment.fileName }"
+                      loading="lazy"
+                      class="aspect-video w-full object-cover transition-transform group-hover:scale-[1.02]"
+                      (error)="linkExpired()"
+                    />
+                  </button>
+                  <div class="flex items-start justify-between gap-2">
+                    <div class="min-w-0">
+                      <p class="truncate text-sm font-medium" [title]="attachment.fileName">{{ attachment.fileName }}</p>
+                      <p class="text-xs tabular text-muted-foreground">{{ size(attachment.bytes) }}</p>
+                    </div>
+                    @if (d.permissions.canDeleteAttachments) {
+                      <button
+                        type="button"
+                        appButton
+                        variant="ghost"
+                        size="icon"
+                        class="size-8 shrink-0 text-destructive"
+                        [disabled]="actions.busy()"
+                        [attr.aria-label]="'support.actions.deleteAttachment' | t"
+                        (click)="deleteAttachment(attachment)"
+                      >
+                        <app-icon [icon]="icons.remove" />
+                      </button>
+                    }
+                  </div>
+                </li>
+              }
+            </ul>
+          } @else {
+            <p class="text-sm text-muted-foreground">{{ 'support.detail.noAttachments' | t }}</p>
+          }
+        </div>
+      </section>
+
+      <section appCard aria-labelledby="conversation-heading">
+        <div appCardHeader>
+          <h2 appCardTitle id="conversation-heading">{{ 'support.detail.conversation' | t }}</h2>
+        </div>
+        <div appCardContent class="flex flex-col gap-4">
+          @if (d.comments.length) {
+            <ol class="flex flex-col gap-3">
+              @for (comment of d.comments; track comment.id) {
+                <!-- The support desk's messages are tinted and labelled, so the employee sees at a glance who answered. -->
+                <li
+                  class="rounded-lg border px-4 py-3"
+                  [class.border-primary/30]="comment.authorRole === 'support'"
+                  [class.bg-primary/5]="comment.authorRole === 'support'"
+                  [class.border-border]="comment.authorRole !== 'support'"
+                >
+                  <div class="mb-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+                    <app-avatar [userId]="authorRef(comment)?.id" [name]="author(comment)" [version]="authorRef(comment)?.avatarVersion" size="xs" />
+                    <span class="font-medium text-foreground">{{ author(comment) }}</span>
+                    @if (comment.authorRole === 'support') {
+                      <app-badge tone="info">{{ 'support.detail.support' | t }}</app-badge>
+                    }
+                    <span class="tabular">{{ i18n.formatDate(comment.createdAt, true) }}</span>
+                  </div>
+                  <p class="whitespace-pre-wrap break-words text-sm">{{ comment.body }}</p>
+                </li>
+              }
+            </ol>
+          } @else {
+            <p class="text-sm text-muted-foreground">{{ 'support.detail.noComments' | t }}</p>
+          }
+
+          @if (d.permissions.canComment) {
+            <form class="flex flex-col gap-2 border-t border-border pt-4" novalidate (submit)="send($event)">
+              <label appLabel for="ticket-reply">{{ 'support.detail.addComment' | t }}</label>
+              <textarea
+                appTextarea
+                id="ticket-reply"
+                rows="3"
+                maxlength="5000"
+                [placeholder]="'support.detail.commentPlaceholder' | t"
+                [value]="reply()"
+                (input)="reply.set($any($event.target).value)"
+              ></textarea>
+              <button type="submit" appButton class="self-end" [disabled]="actions.busy() || !reply().trim()">
+                <app-icon [icon]="icons.send" />{{ (actions.busy() ? 'support.detail.sending' : 'support.detail.send') | t }}
+              </button>
+            </form>
+          } @else if (d.ticket.status === 'closed') {
+            <p class="border-t border-border pt-4 text-sm text-muted-foreground">{{ 'support.lifecycle.deskClosedBody' | t }}</p>
+          }
+        </div>
+      </section>
+    </div>
+
+    <div class="flex flex-col gap-6">
+      <section appCard aria-labelledby="ticket-details-heading">
+        <div appCardHeader>
+          <h2 appCardTitle id="ticket-details-heading">{{ 'support.detail.details' | t }}</h2>
+        </div>
+        <div appCardContent>
+          <dl class="flex flex-col gap-4">
+            <div appDetailItem [label]="'support.columns.status' | t">
+              <app-badge [tone]="tone[d.ticket.status]">
+                @if (d.ticket.status === 'closed') {
+                  <app-icon [icon]="icons.close" svgClass="size-3.5" />
+                }
+                {{ 'support.status.' + d.ticket.status | t }}
+              </app-badge>
+            </div>
+            <div appDetailItem [label]="'support.columns.severity' | t">
+              <app-support-severity-badge [severity]="d.ticket.severity" />
+            </div>
+            <div appDetailItem [label]="'support.detail.category' | t">{{ 'support.category.' + d.ticket.category | t }}</div>
+            <div appDetailItem [label]="'support.detail.createdBy' | t">
+              <span class="flex items-center gap-2">
+                <app-avatar [userId]="d.ticket.requesterId" [name]="requester()" size="sm" />
+                {{ requester() }}
+              </span>
+              <a class="block break-all text-sm text-primary hover:underline" dir="ltr" [href]="'mailto:' + d.ticket.requesterEmail">{{ d.ticket.requesterEmail }}</a>
+            </div>
+            <div appDetailItem [label]="'support.detail.created' | t"><span class="tabular">{{ i18n.formatDate(d.ticket.createdAt, true) }}</span></div>
+            <div appDetailItem [label]="'support.detail.updated' | t"><span class="tabular">{{ i18n.formatDate(d.ticket.lastActivityAt, true) }}</span></div>
+            @if (d.ticket.resolvedAt) {
+              <div appDetailItem [label]="'support.detail.resolved' | t"><span class="tabular">{{ i18n.formatDate(d.ticket.resolvedAt, true) }}</span></div>
+              <div appDetailItem [label]="'support.detail.resolvedBy' | t">{{ resolver() }}</div>
+            }
+          </dl>
+        </div>
+      </section>
+
+      @if (d.permissions.canChangeStatus || d.permissions.canDelete) {
+        <section appCard aria-labelledby="ticket-actions-heading">
+          <div appCardHeader>
+            <h2 appCardTitle id="ticket-actions-heading">{{ 'support.actions.title' | t }}</h2>
+          </div>
+          <div appCardContent class="flex flex-col gap-3">
+            @if (d.permissions.nextStatuses.length) {
+              <div>
+                <label appLabel for="ticket-note">{{ 'support.actions.note' | t }}</label>
+                <textarea appTextarea id="ticket-note" rows="2" maxlength="5000" [value]="note()" (input)="note.set($any($event.target).value)"></textarea>
+              </div>
+              <!-- Resolve (the employee may still reopen) and Close Permanently (final) are distinct actions, each saying what it means. -->
+              @if (d.permissions.nextStatuses.includes('resolved')) {
+                <div class="flex flex-col gap-1">
+                  <button type="button" appButton data-testid="ticket-resolve" (click)="move('resolved')">
+                    <app-icon [icon]="icons.resolve" />{{ 'support.actions.resolveTicket' | t }}
+                  </button>
+                  <p class="text-xs text-muted-foreground">{{ 'support.lifecycle.resolveHint' | t }}</p>
+                </div>
+              }
+              @if (d.permissions.nextStatuses.includes('closed')) {
+                <div class="flex flex-col gap-1">
+                  <button type="button" appButton variant="soft-destructive" data-testid="ticket-close" (click)="move('closed')">
+                    <app-icon [icon]="icons.close" />{{ 'support.actions.closePermanently' | t }}
+                  </button>
+                  <p class="text-xs text-muted-foreground">{{ 'support.lifecycle.closeHint' | t }}</p>
+                </div>
+              }
+            }
+            @if (d.permissions.canDelete) {
+              <button type="button" appButton variant="destructive" (click)="deleteTicket()">
+                <app-icon [icon]="icons.remove" />{{ 'support.actions.deleteTicket' | t }}
+              </button>
+            }
+          </div>
+        </section>
+      }
+
+      @if (d.ticket.history?.length) {
+        <section appCard aria-labelledby="ticket-history-heading" data-testid="ticket-history">
+          <div appCardHeader>
+            <h2 appCardTitle id="ticket-history-heading">{{ 'support.history.title' | t }}</h2>
+          </div>
+          <ol appCardContent class="flex flex-col">
+            @for (step of d.ticket.history; track $index; let last = $last) {
+              <li class="relative flex gap-3 pb-4" [class.pb-0]="last">
+                @if (!last) {
+                  <span class="absolute start-[0.3125rem] top-3 h-full w-px bg-border" aria-hidden="true"></span>
+                }
+                <span
+                  class="relative mt-1.5 size-2.5 shrink-0 rounded-full ring-4 ring-border/40"
+                  [class.bg-muted-foreground]="step.to === 'closed'"
+                  [class.bg-success]="step.to === 'resolved'"
+                  [class.bg-info]="step.to === 'reopened'"
+                  [class.bg-warning]="step.to === 'pending'"
+                  aria-hidden="true"
+                ></span>
+                <div class="min-w-0">
+                  <p class="text-sm">{{ historyText(step) }}</p>
+                  <p class="text-xs text-muted-foreground"><time class="tabular" [attr.datetime]="step.at">{{ i18n.formatDate(step.at, true) }}</time></p>
+                </div>
+              </li>
+            }
+          </ol>
+        </section>
+      }
+    </div>
+  </div>
+
+  <app-dialog [(open)]="lightboxOpen" [heading]="viewing()?.fileName ?? ''">
+    @if (viewing(); as attachment) {
+      <div class="flex flex-col gap-3">
+        <img [src]="url(attachment)" [alt]="'support.detail.attachmentAlt' | t: { name: attachment.fileName }" class="max-h-[70dvh] w-full rounded-md object-contain" (error)="linkExpired()" />
+        <div class="flex flex-wrap items-center justify-between gap-2 text-sm text-muted-foreground">
+          <span class="tabular">{{ size(attachment.bytes) }} · {{ attachment.width }} × {{ attachment.height }}</span>
+          <a appButton variant="outline" size="sm" [href]="url(attachment)" target="_blank" rel="noopener noreferrer">
+            <app-icon [icon]="icons.open" />{{ 'support.detail.openNewTab' | t }}
+          </a>
+        </div>
+      </div>
+    }
+  </app-dialog>
+} @else {
+  <app-detail-skeleton [label]="'common.labels.loading' | t" />
+}

@@ -34,7 +34,7 @@ const SWEEP_MARGIN = 0.8;
 const REVEAL_OVERSHOOT = 1.15;
 
 /**
- * The ECOTECH logotype as real extruded type — the brand wordmark's letters
+ * The Ecotech logotype as real extruded type — the brand wordmark's letters
  * (Archivo Expanded) set exactly as the 2D logotype is — one mesh per letter
  * so the letters can stand up one after another when the scene opens and
  * carry a slow wave afterwards.

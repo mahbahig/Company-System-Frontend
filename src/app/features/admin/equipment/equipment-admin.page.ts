@@ -20,6 +20,8 @@ import { ActionRunner } from '../../../shared/utils/action-runner';
 import { CatalogApi } from '../../solar/catalog-api.service';
 import { EQUIPMENT_CATEGORIES, type EquipmentItem } from '../../solar/solar.models';
 import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.component';
+import { DEFAULT_PAGE_SIZE, pageSizeAttribute } from '../../../shared/crm/pagination/page-size';
+import { CreateIconComponent } from '../../../shared/ui/create-icon/create-icon.component';
 
 /**
  * §10 equipment catalog: panels, inverters, batteries, mounting, cabling,
@@ -28,7 +30,7 @@ import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.compo
  */
 @Component({
   selector: 'app-equipment-admin-page',
-  imports: [SkeletonRowComponent, TranslatePipe, EnumLabelPipe, AlertComponent, BadgeComponent, ButtonDirective, DialogComponent, PageHeaderComponent, ListToolbarComponent, PaginationComponent, ...TABLE_IMPORTS, ...FORM_IMPORTS],
+  imports: [SkeletonRowComponent, TranslatePipe, EnumLabelPipe, AlertComponent, BadgeComponent, ButtonDirective, DialogComponent, PageHeaderComponent, ListToolbarComponent, PaginationComponent, ...TABLE_IMPORTS, ...FORM_IMPORTS, CreateIconComponent],
   templateUrl: './equipment-admin.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
@@ -42,11 +44,13 @@ export class EquipmentAdminPage {
   readonly q = input<string>();
   readonly category = input<string>();
   readonly page = input(1, { transform: (value: unknown) => numberAttribute(value, 1) });
+  /** `?pageSize=` (10 / 20 / 50 / 100; default 20). */
+  readonly pageSize = input(DEFAULT_PAGE_SIZE, { transform: pageSizeAttribute });
 
   protected readonly showCost = computed(() => this.auth.can('financials.view_cost') || this.auth.can('pricing.manage'));
   /** Reference costs are pricing (CFO, `pricing.manage`); technical specs are `catalog.manage` (Technical Lead). */
   protected readonly canSetCost = computed(() => this.auth.can('pricing.manage'));
-  protected readonly data = rxResource({ params: () => ({ q: this.q(), category: this.category(), page: this.page() }), stream: ({ params }) => this.api.list({ ...params, includeInactive: true, pageSize: 50 }) });
+  protected readonly data = rxResource({ params: () => ({ q: this.q(), category: this.category(), page: this.page(), pageSize: this.pageSize() }), stream: ({ params }) => this.api.list({ ...params, includeInactive: true, pageSize: 50 }) });
   protected readonly rows = computed(() => (this.data.hasValue() ? this.data.value().rows : []));
   protected readonly filters = computed<FilterDefinition[]>(() => [
     { name: 'category', label: this.i18n.t('admin.equipment.category'), options: EQUIPMENT_CATEGORIES.map((value) => ({ value, label: this.i18n.t(`enums.equipmentCategory.${value}`) })), value: this.category() ?? '' },

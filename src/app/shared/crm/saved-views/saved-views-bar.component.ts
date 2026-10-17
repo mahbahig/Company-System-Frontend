@@ -109,20 +109,16 @@ export class SavedViewsBarComponent {
   }
 
   protected async remove(view: SavedView): Promise<void> {
-    const confirmed = await this.confirmService.confirm({
+    const deleted = await this.confirmService.confirm({
       heading: this.i18n.t('ux.savedViews.deleteTitle'),
       message: this.i18n.t('ux.savedViews.deleteMessage', { name: view.name }),
-      confirmLabel: this.i18n.t('crm.common.delete'),
+      irreversible: true,
+      confirmLabel: this.i18n.t('ux.savedViews.deleteAction'),
       cancelLabel: this.i18n.t('crm.common.cancel'),
-      tone: 'destructive',
+      variant: 'danger',
+      action: () => this.api.delete(`saved-views/${view.id}`),
     });
-    if (!confirmed) return;
-    try {
-      await firstValueFrom(this.api.delete(`saved-views/${view.id}`));
-      this.views.reload();
-    } catch (error) {
-      this.message.set(this.i18n.errorText(error));
-    }
+    if (deleted) this.views.reload();
   }
 
   protected async export(format: 'xlsx' | 'csv'): Promise<void> {

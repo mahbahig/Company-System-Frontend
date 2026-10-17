@@ -1,7 +1,7 @@
 {
   "app": {
-    "name": "EcoTech CRM",
-    "companyName": "EcoTech for Business and Trade",
+    "name": "Ecotech",
+    "companyName": "Ecotech for Business and Trade",
     "tagline": "Solar energy systems and electrical services",
     "environment": {
       "development": "Development",
@@ -44,7 +44,7 @@
   },
   "auth": {
     "login": {
-      "title": "Sign in to EcoTech CRM",
+      "title": "Sign in to Ecotech",
       "subtitle": "Use your company account to continue",
       "emailLabel": "Work email",
       "emailPlaceholder": "name@ecotech.com",
@@ -58,7 +58,7 @@
     "errors": {
       "invalidCredentials": "The email or password is incorrect.",
       "accountInactive": "This account is deactivated. Contact your system administrator.",
-      "noProfile": "This account has no CRM profile yet. Contact your system administrator.",
+      "noProfile": "This account has no profile in the system yet. Contact your system administrator.",
       "emailNotConfirmed": "Confirm your email address before signing in.",
       "rateLimited": "Too many attempts. Please wait a moment and try again.",
       "unexpected": "Sign-in could not be completed. Please try again."
@@ -69,7 +69,7 @@
       "passwordRequired": "Enter your password."
     },
     "logout": {
-      "confirmTitle": "Sign out of EcoTech CRM?",
+      "confirmTitle": "Sign out of Ecotech?",
       "confirmBody": "Any unsaved changes will be lost."
     }
   },
@@ -1506,7 +1506,7 @@
   "imports": {
     "title": "Imports",
     "subtitle": "Validate customer and lead CSV files before any production data is changed.",
-    "previewReady": "Import preview created. No CRM records were inserted; review the result report before running a production import.",
+    "previewReady": "Import preview created. No records were inserted; review the result report before running a production import.",
     "target": "Import target",
     "file": "CSV file",
     "validate": "Validate import",

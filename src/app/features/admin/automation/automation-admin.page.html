@@ -25,7 +25,7 @@
       </tr>
     </thead>
     <tbody appTableBody>
-      @for (d of definitions.value() ?? []; track d.code) {
+      @for (d of definitionsPager.rows(); track d.code) {
         <tr appTableRow>
           <td appTableCell class="font-mono text-xs" dir="ltr">{{ d.code }}</td>
           <td appTableCell>{{ i18n.pick(d.nameAr, d.nameEn) }}</td>
@@ -48,6 +48,7 @@
     </tbody>
   </table>
 </app-table-wrapper>
+<app-pager [pager]="definitionsPager" />
 
 <h2 class="text-lg font-semibold">{{ 'admin.automation.runs' | t }}</h2>
 <app-list-toolbar [searchable]="false" [filters]="filters()" />
@@ -115,6 +116,7 @@
 </app-table-wrapper>
 @if (runs.hasValue()) {
   <app-pagination
+    [loading]="runs.isLoading()"
     [page]="runs.value().page"
     [pageCount]="runs.value().pageCount"
     [total]="runs.value().total"

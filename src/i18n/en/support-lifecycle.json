@@ -1,0 +1,62 @@
+{
+  "support": {
+    "status": {
+      "reopened": "Reopened",
+      "closed": "Closed",
+      "awaiting": "Waiting for the support desk"
+    },
+    "lifecycle": {
+      "resolvedTitle": "Resolved",
+      "resolvedBody": "You can reopen this ticket if the issue has not been resolved.",
+      "reopenReason": "What is still not working? (optional)",
+      "reopenedTitle": "Reopened",
+      "reopenedBody": "You reopened this ticket. It is back with the support desk.",
+      "closedTitle": "Closed",
+      "closedBody": "This ticket has been permanently closed and cannot be reopened.",
+      "deskClosedBody": "Permanently closed: it can no longer change or receive comments. Its history stays available.",
+      "resolveHint": "Resolved: the employee can still reopen it if the issue is not solved.",
+      "closeHint": "Closed permanently: final — the employee can no longer reopen it."
+    },
+    "actions": {
+      "resolveTicket": "Resolve Ticket",
+      "closePermanently": "Close Ticket Permanently",
+      "reopenTicket": "Reopen Ticket",
+      "deleteTicket": "Delete Ticket",
+      "deleteScreenshot": "Delete Screenshot"
+    },
+    "confirm": {
+      "resolveTicketTitle": "Resolve ticket {number}?",
+      "resolveTicketBody": "This marks the ticket as resolved and tells {name}.",
+      "resolveTicketReopen": "{name} can reopen it if the issue has not been solved.",
+      "closeTicketTitle": "Close ticket {number} permanently?",
+      "closeTicketBody": "This permanently closes the ticket. {name} will no longer be able to reopen it.",
+      "closeTicketKept": "All ticket history, comments and audit records remain available.",
+      "reopenTicketTitle": "Reopen ticket {number}?",
+      "reopenTicketBody": "This reopens the ticket and returns it to the support workflow.",
+      "reopenTicketSame": "You can keep adding information and comments to the same ticket.",
+      "deleteTicketTitle": "Delete ticket {number}?",
+      "deleteTicketBody": "This permanently deletes the ticket, its comments and its screenshots.",
+      "deleteScreenshotTitle": "Delete screenshot {name}?",
+      "deleteScreenshotBody": "The screenshot is removed from the ticket permanently."
+    },
+    "notices": {
+      "closed": "The ticket was closed permanently.",
+      "resolvedDesk": "The ticket was resolved.",
+      "reopenedByYou": "You reopened the ticket. The support desk has been told."
+    },
+    "history": {
+      "title": "Ticket history",
+      "created": "Created by {name}",
+      "resolved": "Resolved by {name}",
+      "reopened": "Reopened by {name}",
+      "closed": "Permanently closed by {name}",
+      "pending": "Moved back to pending by {name}"
+    }
+  },
+  "server": {
+    "errors": {
+      "supportTicketClosed": "This ticket is permanently closed: it can no longer be reopened, changed or commented on.",
+      "supportTicketTransitionNotAllowed": "This status change is not possible for the ticket as it stands now."
+    }
+  }
+}

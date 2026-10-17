@@ -1,6 +1,7 @@
 import { Component, computed, inject, input, numberAttribute, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
+import { ChevronRight } from 'lucide';
 
 import { ApiService } from '../../../core/api/api.service';
 import type { Page } from '../../../core/api/page.interface';
@@ -13,39 +14,31 @@ import { UserSelectComponent } from '../../../shared/crm/user-select/user-select
 import { AlertComponent } from '../../../shared/ui/alert/alert.component';
 import { ButtonDirective } from '../../../shared/ui/button/button.directive';
 import { FORM_IMPORTS } from '../../../shared/ui/form/form.imports';
+import { IconComponent } from '../../../shared/ui/icon/icon.component';
 import { PageHeaderComponent } from '../../../shared/ui/page-header/page-header.component';
 import { TABLE_IMPORTS } from '../../../shared/ui/table/table.imports';
 import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.component';
 import { applyWhenTypingStops } from '../../../shared/utils/live-search';
+import type { AuditEntry } from './audit-entry.interface';
+import { auditAction, auditActor, auditRecord, auditTime } from './audit-presenter';
+import { DEFAULT_PAGE_SIZE, pageSizeAttribute } from '../../../shared/crm/pagination/page-size';
 
-const FILTER_KEYS = ['entityType', 'entityId', 'action', 'severity', 'actorId', 'from', 'to'] as const;
+const FILTER_KEYS = ['entityType', 'entityId', 'action', 'severity', 'actorId', 'userId', 'from', 'to'] as const;
 type FilterKey = (typeof FILTER_KEYS)[number];
 /** The filters as one comparable value (empty and absent are the same). */
 const filterKey = (source: Partial<Record<FilterKey, string | undefined>>): string => JSON.stringify(FILTER_KEYS.map((key) => source[key] || ''));
 
-interface AuditEntry {
-  id: string;
-  createdAt: string;
-  actorName?: string;
-  action: string;
-  entityType: string;
-  entityId?: string | null;
-  changedFields: string[];
-  before?: Record<string, unknown> | null;
-  after?: Record<string, unknown> | null;
-  source: string;
-  severity: string;
-  ip?: string;
-}
-
 /**
- * AUD-01..03 audit viewer: who changed what and when (before / after values),
- * filtered by record, action, severity, person and period — applied as the
- * user types (once typing pauses). Read-only.
+ * AUD-01..03 audit viewer (Super Administrator only — the API refuses anyone
+ * else): every event with its date and time (12-hour clock), who did it, the
+ * readable action — never a raw code — and the record, filtered by record,
+ * action, severity, person, employee and period (applied once typing
+ * pauses). Every row opens the event's details (`/admin/audit/:id`), by
+ * click or keyboard. Read-only.
  */
 @Component({
   selector: 'app-audit-log-page',
-  imports: [SkeletonRowComponent, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, UserSelectComponent, AlertComponent, ButtonDirective, PageHeaderComponent, PaginationComponent, ...TABLE_IMPORTS, ...FORM_IMPORTS],
+  imports: [SkeletonRowComponent, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, UserSelectComponent, AlertComponent, ButtonDirective, IconComponent, PageHeaderComponent, PaginationComponent, ...TABLE_IMPORTS, ...FORM_IMPORTS],
   templateUrl: './audit-log.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
@@ -59,9 +52,13 @@ export class AuditLogPage {
   readonly action = input<string>();
   readonly severity = input<string>();
   readonly actorId = input<string>();
+  /** One employee: what they did and what was done to their account (from an employee's "View Audit Logs"). */
+  readonly userId = input<string>();
   readonly from = input<string>();
   readonly to = input<string>();
   readonly page = input(1, { transform: (value: unknown) => numberAttribute(value, 1) });
+  /** `?pageSize=` (10 / 20 / 50 / 100; default 20). */
+  readonly pageSize = input(DEFAULT_PAGE_SIZE, { transform: pageSizeAttribute });
 
   protected readonly query = computed(() => ({
     entityType: this.entityType(),
@@ -69,14 +66,19 @@ export class AuditLogPage {
     action: this.action(),
     severity: this.severity(),
     actorId: this.actorId(),
+    userId: this.userId(),
     from: this.from(),
     to: this.to(),
-    page: this.page(),
+    page: this.page(), pageSize: this.pageSize(),
   }));
   protected readonly data = rxResource({ params: () => this.query(), stream: ({ params }) => this.api.get<Page<AuditEntry>>('audit', params) });
   protected readonly rows = computed(() => (this.data.hasValue() ? this.data.value().rows : []));
-  protected readonly expanded = signal<string | null>(null);
-  protected readonly f = signal({ entityType: '', entityId: '', action: '', severity: '', actorId: '', from: '', to: '' });
+  protected readonly chevron = ChevronRight;
+  protected readonly actionText = (entry: AuditEntry) => auditAction(this.i18n, entry);
+  protected readonly actor = (entry: AuditEntry) => auditActor(this.i18n, entry);
+  protected readonly time = (entry: AuditEntry) => auditTime(this.i18n, entry);
+  protected readonly record = (entry: AuditEntry) => auditRecord(this.i18n, entry);
+  protected readonly f = signal({ entityType: '', entityId: '', action: '', severity: '', actorId: '', userId: '', from: '', to: '' });
 
   constructor() {
     const q = this.query;
@@ -88,6 +90,7 @@ export class AuditLogPage {
         action: current.action ?? '',
         severity: current.severity ?? '',
         actorId: current.actorId ?? '',
+        userId: current.userId ?? '',
         from: current.from ?? '',
         to: current.to ?? '',
       });
@@ -116,14 +119,12 @@ export class AuditLogPage {
   }
 
   protected clear(): void {
-    this.f.set({ entityType: '', entityId: '', action: '', severity: '', actorId: '', from: '', to: '' });
+    this.f.set({ entityType: '', entityId: '', action: '', severity: '', actorId: '', userId: '', from: '', to: '' });
     void this.router.navigate([], { queryParams: {} });
   }
 
-  protected show(source: Record<string, unknown> | null | undefined, field: string): string {
-    const value = source?.[field];
-    if (value === undefined || value === null || value === '') return '∅';
-    const text = typeof value === 'object' ? JSON.stringify(value) : String(value);
-    return text.length > 120 ? text.slice(0, 120) + '…' : text;
+  /** Opens the event's details (row click, Enter). */
+  protected open(entry: AuditEntry): void {
+    void this.router.navigate(['/', this.i18n.locale(), 'admin', 'audit', entry.id]);
   }
 }

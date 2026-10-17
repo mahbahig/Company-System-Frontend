@@ -26,7 +26,7 @@
       </tr>
     </thead>
     <tbody appTableBody>
-      @for (rule of rules(); track rule.id) {
+      @for (rule of rulesPager.rows(); track rule.id) {
         <tr appTableRow>
           <td appTableCell>
             <span class="font-medium">{{ label(rule) }}</span>
@@ -127,6 +127,7 @@
     </tbody>
   </table>
 </app-table-wrapper>
+<app-pager [pager]="rulesPager" />
 
 @if (canManage()) {
   <form appCard (submit)="addCustom($event)" aria-labelledby="rules-custom">
@@ -215,7 +216,7 @@
       </div>
       <div class="flex items-end">
         <button type="submit" appButton [disabled]="actions.busy() || !customValid()">
-          {{ 'admin.rules.add' | t }}
+          <app-create-icon />{{ 'admin.rules.add' | t }}
         </button>
       </div>
     </div>

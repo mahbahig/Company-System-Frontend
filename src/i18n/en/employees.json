@@ -1,0 +1,60 @@
+{
+  "confirm": {
+    "irreversible": "This action cannot be undone.",
+    "typeToContinue": "Type {text} to continue."
+  },
+  "admin": {
+    "users": {
+      "confirm": {
+        "deactivateTitle": "Deactivate {name}?",
+        "deactivateBody": "{name} will immediately lose access to Ecotech. All active sessions will be ended and {name} will no longer be able to sign in.",
+        "deactivateAction": "Deactivate Employee",
+        "activateTitle": "Reactivate {name}?",
+        "activateBody": "{name} will be able to sign in to Ecotech again with their password.",
+        "activateAction": "Activate Employee",
+        "resetTitle": "Reset {name}'s password?",
+        "resetBody": "A new temporary password will be generated for {name}.",
+        "resetSessions": "All of {name}'s active sessions will end immediately.",
+        "resetNextSignIn": "{name} must choose a new password at the next sign-in.",
+        "resetShownOnce": "The temporary password is shown to you once — share it securely.",
+        "resetAction": "Reset Password",
+        "logoutTitle": "Log out {name} from all sessions?",
+        "logoutBody": "Every active session of {name} will be signed out immediately — including the one they are using now.",
+        "logoutAgain": "{name} can sign in again with their password.",
+        "logoutAction": "Log Out All Sessions"
+      }
+    },
+    "audit": {
+      "employee": "Employee"
+    }
+  },
+  "employees": {
+    "manage": {
+      "title": "Account management",
+      "subtitle": "Changes take effect immediately, and every action is recorded in the audit log.",
+      "protected": "This is another Super Administrator's account. It is read only: it cannot be edited, deactivated, reset or signed out.",
+      "ownAccount": "Your own password, two-factor sign-in and sessions are managed on your profile.",
+      "openProfile": "Open my profile"
+    },
+    "security": {
+      "title": "Security activity",
+      "subtitle": "Sign-ins and security events recorded for this account.",
+      "successfulLogins": "Successful sign-ins",
+      "failedLogins": "Failed sign-ins",
+      "last30": "{count} in the last 30 days",
+      "lockouts": "Lockouts",
+      "passwordChanges": "Password changes",
+      "activeSessions": "Active sessions",
+      "lastLogin": "Last sign-in",
+      "twoFactor": "Two-factor sign-in",
+      "on": "On",
+      "off": "Off",
+      "lockedUntil": "Locked until {time}",
+      "recent": "Recent security events",
+      "empty": "No security events recorded yet.",
+      "by": "by {name}",
+      "viewAuditLogs": "View Audit Logs",
+      "never": "Never"
+    }
+  }
+}

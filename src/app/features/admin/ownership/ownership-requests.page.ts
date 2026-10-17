@@ -18,6 +18,7 @@ import { TabsComponent } from '../../../shared/ui/tabs/tabs.component';
 import { ActionRunner } from '../../../shared/utils/action-runner';
 import { userName } from '../../../shared/utils/display-name';
 import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.component';
+import { DEFAULT_PAGE_SIZE, pageSizeAttribute } from '../../../shared/crm/pagination/page-size';
 
 type Ref = { id: string; customerNo?: string; nameAr?: string; nameEn?: string; primaryContactName?: string; fullNameAr?: string; fullNameEn?: string } | string | null | undefined;
 
@@ -57,6 +58,8 @@ export class OwnershipRequestsPage {
   /** Exceptions Center / Data Quality: only `pending` requests. */
   readonly status = input<string>();
   readonly page = input(1, { transform: (value: unknown) => numberAttribute(value, 1) });
+  /** `?pageSize=` (10 / 20 / 50 / 100; default 20). */
+  readonly pageSize = input(DEFAULT_PAGE_SIZE, { transform: pageSizeAttribute });
 
   protected readonly tabs = computed(() => [
     ...(this.auth.can('ownership.request') ? [{ id: 'mine', label: this.i18n.t('admin.ownership.mine') }] : []),
@@ -64,7 +67,7 @@ export class OwnershipRequestsPage {
     ...(this.auth.can('ownership.decide') ? [{ id: 'all', label: this.i18n.t('admin.ownership.all') }] : []),
   ]);
   protected readonly activeBox = computed(() => this.box() ?? this.tabs()[0]?.id ?? 'on_my_customers');
-  protected readonly data = rxResource({ params: () => ({ box: this.activeBox(), status: this.status(), page: this.page() }), stream: ({ params }) => this.api.get<Page<OwnershipRequest>>('ownership/requests', params) });
+  protected readonly data = rxResource({ params: () => ({ box: this.activeBox(), status: this.status(), page: this.page(), pageSize: this.pageSize() }), stream: ({ params }) => this.api.get<Page<OwnershipRequest>>('ownership/requests', params) });
   protected readonly rows = computed(() => (this.data.hasValue() ? this.data.value().rows : []));
 
   protected pickBox(box: string): void {

@@ -1,0 +1,172 @@
+<app-breadcrumbs [items]="crumbs()" />
+<app-page-header [heading]="'support.newTitle' | t" [subtitle]="'support.newSubtitle' | t" class="!mb-0" />
+
+<form appCard class="max-w-3xl" appSaveShortcut novalidate (submit)="submit($event)">
+  <div appCardContent class="flex flex-col gap-5">
+    @if (error(); as text) {
+      <app-alert variant="destructive">{{ text }}</app-alert>
+    }
+
+    <div>
+      <label appLabel for="ticket-title" required>{{ 'support.fields.title' | t }}</label>
+      <input
+        appInput
+        id="ticket-title"
+        autocomplete="off"
+        [attr.maxlength]="titleMax"
+        [value]="form().title"
+        (input)="set('title', $any($event.target).value)"
+        [attr.aria-invalid]="titleError() ? true : null"
+        [attr.aria-describedby]="titleError() ? 'ticket-title-error' : 'ticket-title-hint'"
+      />
+      @if (titleError(); as key) {
+        <p id="ticket-title-error" class="mt-1 text-sm text-destructive">{{ key | t }}</p>
+      } @else {
+        <p id="ticket-title-hint" class="mt-1 text-xs text-muted-foreground">{{ 'support.fields.titleHint' | t }}</p>
+      }
+    </div>
+
+    <div>
+      <label appLabel for="ticket-description" required>{{ 'support.fields.description' | t }}</label>
+      <textarea
+        appTextarea
+        id="ticket-description"
+        rows="6"
+        [attr.maxlength]="descriptionMax"
+        [value]="form().description"
+        (input)="set('description', $any($event.target).value)"
+        [attr.aria-invalid]="descriptionError() ? true : null"
+        [attr.aria-describedby]="descriptionError() ? 'ticket-description-error' : 'ticket-description-hint'"
+      ></textarea>
+      <div class="mt-1 flex items-start justify-between gap-4">
+        @if (descriptionError(); as key) {
+          <p id="ticket-description-error" class="text-sm text-destructive">{{ key | t }}</p>
+        } @else {
+          <p id="ticket-description-hint" class="text-xs text-muted-foreground">{{ 'support.fields.descriptionHint' | t }}</p>
+        }
+        <span class="shrink-0 text-xs tabular text-muted-foreground" aria-hidden="true">{{ form().description.length }} / {{ descriptionMax }}</span>
+      </div>
+    </div>
+
+    <div class="grid gap-5 sm:grid-cols-2">
+      <div>
+        <label appLabel for="ticket-category">{{ 'support.fields.category' | t }}</label>
+        <app-select>
+          <select appSelect id="ticket-category" [value]="form().category" (change)="set('category', $any($event.target).value)">
+            @for (category of categories; track category) {
+              <option [value]="category" [selected]="category === form().category">{{ 'support.category.' + category | t }}</option>
+            }
+          </select>
+        </app-select>
+      </div>
+      <div>
+        <label appLabel for="ticket-severity">{{ 'support.fields.severity' | t }}</label>
+        <app-select>
+          <select appSelect id="ticket-severity" aria-describedby="ticket-severity-hint" [value]="form().severity" (change)="set('severity', $any($event.target).value)">
+            @for (severity of severities; track severity) {
+              <option [value]="severity" [selected]="severity === form().severity">{{ 'support.severity.' + severity | t }}</option>
+            }
+          </select>
+        </app-select>
+        <p id="ticket-severity-hint" class="mt-1.5 text-xs text-muted-foreground" [class.text-destructive]="form().severity === 'critical'">
+          {{ 'support.severityHint.' + form().severity | t }}
+        </p>
+      </div>
+    </div>
+
+    <fieldset class="flex flex-col gap-3">
+      <legend class="mb-1.5 text-sm font-medium">
+        {{ 'support.fields.screenshots' | t }}
+        <span class="font-normal text-muted-foreground">({{ 'support.fields.optional' | t }})</span>
+      </legend>
+
+      @if (policy().available) {
+        <!-- Drop zone: dragging files here or choosing them with the button adds them; nothing is uploaded yet. -->
+        <div
+          class="flex flex-col items-center gap-2 rounded-lg border-2 border-dashed px-6 py-8 text-center transition-colors"
+          [class.border-primary]="dragging()"
+          [class.bg-primary/5]="dragging()"
+          [class.border-border]="!dragging()"
+          (dragover)="dragOver($event)"
+          (dragleave)="dragging.set(false)"
+          (drop)="drop($event)"
+        >
+          <app-icon [icon]="icons.upload" svgClass="size-8 text-muted-foreground" />
+          <p class="text-sm font-medium">{{ 'support.screenshots.drop' | t }}</p>
+          <p class="text-xs text-muted-foreground">{{ 'support.screenshots.or' | t }}</p>
+          <label
+            for="ticket-screenshots"
+            class="inline-flex h-9 cursor-pointer items-center rounded-md border border-input bg-background px-3 text-sm font-medium shadow-xs hover:bg-secondary focus-within:ring-2 focus-within:ring-ring"
+            [class.pointer-events-none]="busy()"
+            [class.opacity-50]="busy()"
+          >
+            {{ 'support.screenshots.browse' | t }}
+            <input id="ticket-screenshots" type="file" class="sr-only" multiple [accept]="accept()" [disabled]="busy()" (change)="browse($event)" />
+          </label>
+          <p class="text-xs text-muted-foreground">{{ 'support.screenshots.hint' | t: limits() }}</p>
+        </div>
+
+        @if (overflow()) {
+          <p class="text-sm text-destructive" role="alert">{{ 'support.screenshots.tooMany' | t: limits() }}</p>
+        }
+
+        @if (screenshots().length) {
+          <ul class="grid gap-3 sm:grid-cols-2" [attr.aria-label]="'support.fields.screenshots' | t">
+            @for (shot of screenshots(); track shot.id) {
+              <li class="flex items-center gap-3 rounded-lg border p-2" [class.border-destructive]="shot.problem" [class.border-border]="!shot.problem">
+                @if (shot.problem === 'wrongType') {
+                  <span class="flex size-16 shrink-0 items-center justify-center rounded-md bg-secondary text-xs text-muted-foreground">?</span>
+                } @else {
+                  <img [src]="shot.previewUrl" [alt]="'support.detail.attachmentAlt' | t: { name: shot.file.name }" class="size-16 shrink-0 rounded-md object-cover" />
+                }
+                <div class="min-w-0 flex-1">
+                  <p class="truncate text-sm font-medium" [title]="shot.file.name">{{ shot.file.name }}</p>
+                  <p class="text-xs tabular text-muted-foreground">{{ size(shot.file.size) }}</p>
+                  @if (shot.problem) {
+                    <p class="mt-0.5 text-xs text-destructive">{{ problemText(shot) }}</p>
+                  }
+                </div>
+                <button
+                  type="button"
+                  appButton
+                  variant="ghost"
+                  size="icon"
+                  class="shrink-0"
+                  [disabled]="busy()"
+                  [attr.aria-label]="'support.screenshots.remove' | t: { name: shot.file.name }"
+                  (click)="remove(shot)"
+                >
+                  <app-icon [icon]="icons.remove" />
+                </button>
+              </li>
+            }
+          </ul>
+        }
+      } @else {
+        <p class="rounded-md bg-secondary px-3 py-2 text-sm text-muted-foreground">{{ 'support.screenshots.unavailable' | t }}</p>
+      }
+    </fieldset>
+
+    <div class="flex flex-col gap-2">
+      @if (busy()) {
+        <div class="flex flex-col gap-1.5" role="status" aria-live="polite">
+          <p class="text-sm text-muted-foreground">
+            @if (screenshots().length && progress() < 1) {
+              {{ 'support.uploading' | t: { percent: (progress() * 100).toFixed(0) } }}
+            } @else {
+              {{ 'support.creating' | t }}
+            }
+          </p>
+          @if (screenshots().length) {
+            <div class="h-1.5 w-full overflow-hidden rounded-full bg-secondary">
+              <div class="h-full rounded-full bg-primary transition-[width]" [style.width.%]="progress() * 100"></div>
+            </div>
+          }
+        </div>
+      }
+      <button type="submit" appButton class="self-start" [disabled]="busy() || (attempted() && !canSubmit())" aria-keyshortcuts="Control+S Meta+S">
+        {{ (busy() ? 'support.submitting' : 'support.submit') | t }}
+      </button>
+    </div>
+  </div>
+</form>

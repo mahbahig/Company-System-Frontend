@@ -39,6 +39,8 @@ import { daysSince, formatPhone, isOverdue } from '../../../shared/utils/format'
 import { LeadsApi } from '../leads-api.service';
 import type { Lead } from '../models/lead.interface';
 import { RowLinkDirective } from '../../../shared/ui/table/row-link.directive';
+import { DEFAULT_PAGE_SIZE, pageSizeAttribute } from '../../../shared/crm/pagination/page-size';
+import { CreateIconComponent } from '../../../shared/ui/create-icon/create-icon.component';
 
 const flag = (value: string | undefined) => value === '1' || value === 'true';
 const SLA_TONE: Record<string, 'success' | 'warning' | 'danger' | 'neutral'> = {
@@ -108,8 +110,7 @@ interface AssignModel {
     TableEmptyComponent,
     TableSkeletonComponent,
     ColumnPickerComponent,
-    ShortcutDirective,
-  ],
+    ShortcutDirective, CreateIconComponent],
   templateUrl: './leads-list.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
@@ -133,6 +134,8 @@ export class LeadsListPage {
   /** Data-quality drill-down: `phone` or `governorate`. */
   readonly missing = input<string>();
   readonly page = input(1, { transform: (value: unknown) => numberAttribute(value, 1) });
+  /** `?pageSize=` (10 / 20 / 50 / 100; default 20). */
+  readonly pageSize = input(DEFAULT_PAGE_SIZE, { transform: pageSizeAttribute });
 
   protected readonly formatPhone = formatPhone;
   protected readonly columns = new TableColumns('lead_bank', LEAD_COLUMNS);
@@ -152,7 +155,7 @@ export class LeadsListPage {
       sla: this.sla(),
       unassigned: flag(this.unassigned()) || undefined,
       includeClosed: flag(this.includeClosed()) || undefined,
-      page: this.page(),
+      page: this.page(), pageSize: this.pageSize(),
     }),
     stream: ({ params }) => this.leads.bank(params),
   });

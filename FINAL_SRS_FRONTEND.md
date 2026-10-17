@@ -1,12 +1,12 @@
 # Software Requirements Specification — Frontend / Client Application
 
-## EcoTech Solar CRM & Business Operations Platform
+## Ecotech Solar Business Operations Platform
 
 | Item | Value |
 |---|---|
 | **Document Version** | 1.0 (Final, consolidated) |
 | **Document Type** | Software Requirements Specification — Frontend Subsystem |
-| **System** | EcoTech — شركة إيكوتك للأعمال والتجارة — Integrated Solar CRM & Business Operations Platform |
+| **System** | Ecotech — شركة إيكوتك للأعمال والتجارة — Integrated Solar Business Operations Platform |
 | **Scope of this document** | Client application: screens, navigation, design system, bilingual/RTL behavior, accessibility, mobile/PWA, and every requirement whose home is the presentation layer |
 | **Companion document** | `FINAL_SRS_BACKEND.md` — server-side data model, business rules, API and security requirements |
 | **Status** | Final — consolidated from every specification and status document in this repository |
@@ -122,7 +122,6 @@ The Angular rewrite **shall look identical** to the current Next.js application.
    - Sidebar: `w-64 bg-sidebar`, a `Sun` logo tile in `bg-sidebar-accent`, section headings in small uppercase tracked type, active item highlighted at 20% accent opacity.
    - Sticky top bar, `h-14`, backdrop-blur background.
    - Mobile drawer, `w-72`, with a 50%-opacity black scrim and `role="dialog"` (with a real focus trap — a `<div role="dialog">`, not `role="dialog"` on an `<aside>`, which automated accessibility checks reject).
-   - An environment badge (warning tone) visible outside production.
    - Right-hand cluster: notification bell with a destructive-tone unread-count badge, theme toggle (Light/Dark/System with a check mark on the active choice), language switcher showing the *other* language rendered in its own script, user menu (initial avatar, name, job title, e-mail forced LTR, a red Sign-out item).
 4. **Primitives**: Button variants (`default/destructive/outline/secondary/ghost/link`) and sizes (`default/sm/lg/icon`); Badge tones (`neutral/info/success/warning/danger/outline`); Card family; Alert variants; Table (bordered rounded wrapper, `bg-muted/50` header, `h-11` uppercase head cells, `bg-muted/40` row hover, a distinct empty state with generous padding); Input/Select at `h-10` with `aria-invalid` driving a destructive border. Every primitive reproduces the exact class strings of the reference implementation, not a visually-similar approximation.
 5. **Page anatomy**:
@@ -154,7 +153,7 @@ The Angular rewrite **shall look identical** to the current Next.js application.
 | Icons | The same icon set as the reference app (`lucide`), rendered through a small shared icon component. |
 | Overlays / drag-and-drop | Angular CDK (Overlay/Menu/Dialog/DragDrop/A11y). |
 | i18n | Runtime Arabic/English catalogues — the shared `messages/ar.json` / `messages/en.json` remain the single source of truth (extended, not forked); `dir`/`lang` set on `<html>`; locale-prefixed URLs (`/ar/...`, `/en/...`) exactly matching the reference app's routing convention. |
-| Structure | `core/` (singletons: auth, i18n, theme, api, layout, reference data, navigation) · `shared/` (UI kit, CRM-specific shared components, pipes) · `features/<domain>/` (lazy-loaded pages), one feature folder per domain listed in §8. |
+| Structure | `core/` (singletons: auth, i18n, theme, api, layout, reference data, navigation) · `shared/` (UI kit, domain-specific shared components, pipes) · `features/<domain>/` (lazy-loaded pages), one feature folder per domain listed in §8. |
 | Security | JWT access token held in memory, refresh token persisted (rotation handled by the backend); **the UI hides what a user cannot do, but the backend is the security boundary** (§9, `RBAC-05`). |
 | Accessibility | A skip link, a visible focus ring on every interactive element, `aria-*` attributes on every control, `role="alert"` for error regions, keyboard-navigable menus (via CDK), RTL-aware icon mirroring. |
 | Images | `NgOptimizedImage` for static images. |
@@ -199,7 +198,7 @@ frontend/src/app
 
 ## 5. Stakeholders
 
-See `FINAL_SRS_BACKEND.md` §4 for the full role/responsibility table (CEO/Management, Sales Manager, Sales Representative, Marketing, PM, Technical Lead, Technical/Solar Engineer, Finance/CFO, Operations, CRM Administrator) — reused unmodified. §7 below states what each role's **workspace** contains on the client.
+See `FINAL_SRS_BACKEND.md` §4 for the full role/responsibility table (CEO/Management, Sales Manager, Sales Representative, Marketing, PM, Technical Lead, Technical/Solar Engineer, Finance/CFO, Operations, System Administrator) — reused unmodified. §7 below states what each role's **workspace** contains on the client.
 
 ---
 
@@ -245,7 +244,7 @@ Campaigns · lead import & integrations · Lead Bank (view) · lead-quality feed
 ### 7.9 Operations
 Project task board, procurement, installation progress, commissioning & handover records · site-visit schedule.
 
-### 7.10 CRM Administrator
+### 7.10 System Administrator
 Users, roles, permissions, teams, territories, capacity · Solution catalog & intake forms · completeness rules · stage gates · SLA, approval matrix, routing rules · templates · notification rules · automation monitor & retry · imports & duplicate review queue · audit viewer.
 
 ---
@@ -258,7 +257,7 @@ This section is organized as a screen-by-screen inventory. Each row states the r
 
 | Route | Requirement |
 |---|---|
-| `/login` | E-mail/password login form. Reason-specific notice alerts for: signed out, session expired, account inactive, no profile found, return-to redirect after re-authentication. An environment badge outside production. A theme toggle available before sign-in. |
+| `/login` | E-mail/password login form. Reason-specific notice alerts for: signed out, session expired, account inactive, no profile found, return-to redirect after re-authentication. A theme toggle available before sign-in. |
 | user menu → `/account/password` | Change password, including a forced flow when the account is flagged `mustChangePassword`; a self-service reset request entry point. |
 | (interceptor-driven) | A session-expiry response redirects to `/login` with the correct notice; a deactivated-account response is blocked with its own notice — never a generic error. |
 
@@ -409,7 +408,7 @@ Mobile field users shall be able to, from a phone: add a lead, add a customer, a
 
 Mobile forms shall be optimized for: large touch targets, minimal typing, progressive disclosure, camera-driven uploads, a clear save-status indicator, draft preservation across navigation, and slow/unreliable connections. Where practical, calls, visits, notes, and assessment drafts support offline drafting with safe synchronization when connectivity returns — **the UI shall never claim a successful server sync before the server has actually confirmed it.**
 
-PWA acceptance checks (from `docs/uat/milestone-6-checklist.md`): the manifest declares `display=standalone` and a sensible authenticated `start_url`; the manifest and any robots directive mark the CRM as non-indexable (`noindex`) since it is private; pinch-zoom is never disabled; a mobile viewport (390px width) renders the Arabic login RTL correctly before any interaction, and the sidebar drawer opens/closes correctly with forms remaining usable at that width.
+PWA acceptance checks (from `docs/uat/milestone-6-checklist.md`): the manifest declares `display=standalone` and a sensible authenticated `start_url`; the manifest and any robots directive mark the app as non-indexable (`noindex`) since it is private; pinch-zoom is never disabled; a mobile viewport (390px width) renders the Arabic login RTL correctly before any interaction, and the sidebar drawer opens/closes correctly with forms remaining usable at that width.
 
 ---
 
@@ -474,8 +473,8 @@ Everything below already exists in the current production Next.js client (`FRONT
 
 | # | Area | Route(s) | Baseline behavior |
 |---|---|---|---|
-| E1 | Auth | `/[locale]/login` | E-mail/password login, reason notices (signed out, session expired, account inactive, no profile), return-to redirect, environment badge, theme toggle before sign-in, sign-out. |
-| E2 | App shell | all authenticated routes | Permission-filtered sidebar (Overview/Sales/Solar workflow/Analytics/Operations), mobile drawer, top bar, environment badge, notification bell (unread count, recent list, mark-all-read on open, deep links), theme toggle, locale switcher preserving path+query, user menu, skip link. |
+| E1 | Auth | `/[locale]/login` | E-mail/password login, reason notices (signed out, session expired, account inactive, no profile), return-to redirect, theme toggle before sign-in, sign-out. |
+| E2 | App shell | all authenticated routes | Permission-filtered sidebar (Overview/Sales/Solar workflow/Analytics/Operations), mobile drawer, top bar, notification bell (unread count, recent list, mark-all-read on open, deep links), theme toggle, locale switcher preserving path+query, user menu, skip link. |
 | E3 | i18n | global | Arabic RTL default + English LTR, full catalogues, localized dates/numbers. |
 | E4 | Dashboard | `/dashboard` | Welcome + profile summary, KPI cards, analytics filters, opportunities-by-stage, SLA-driven action list, performance-by-governorate/service, data-quality summary, rep leaderboard, financial values permission-hidden. |
 | E5 | Executive dashboard | `/dashboard/executive` | Company-wide KPIs, top reps, data quality, link to reports, gated by permission. |

@@ -1,4 +1,4 @@
-import { Component, computed, inject, input, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import type { Observable } from 'rxjs';
@@ -17,6 +17,9 @@ import { PageHeaderComponent } from '../../../shared/ui/page-header/page-header.
 import { TABLE_IMPORTS } from '../../../shared/ui/table/table.imports';
 import { ActionRunner } from '../../../shared/utils/action-runner';
 import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.component';
+import { LocalPager } from '../../../shared/crm/pagination/local-pager';
+import { PagerComponent } from '../../../shared/crm/pagination/pager.component';
+import { CreateIconComponent } from '../../../shared/ui/create-icon/create-icon.component';
 
 /** Lists editable here; campaigns have their own page (they carry budgets and ads). */
 const TYPES = [
@@ -56,7 +59,7 @@ const TYPES = [
  */
 @Component({
   selector: 'app-reference-admin-page',
-  imports: [SkeletonRowComponent, TranslatePipe, AlertComponent, BadgeComponent, ButtonDirective, DialogComponent, PageHeaderComponent, ...TABLE_IMPORTS, ...FORM_IMPORTS],
+  imports: [SkeletonRowComponent, TranslatePipe, AlertComponent, BadgeComponent, ButtonDirective, DialogComponent, PageHeaderComponent, ...TABLE_IMPORTS, ...FORM_IMPORTS, PagerComponent, CreateIconComponent],
   templateUrl: './reference-admin.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
@@ -74,12 +77,19 @@ export class ReferenceAdminPage {
   protected readonly hasTone = computed(() => ['lead_status', 'customer_status', 'pipeline_stage', 'lead_quality', 'task_priority'].includes(this.activeType()));
 
   protected readonly items = rxResource({ params: () => this.activeType(), stream: ({ params }) => this.api.get<ReferenceItem[]>(`reference/${params}`, { all: true }) });
+  /** One type's reference items, loaded whole (every picker uses them all): paged here in memory. */
+  protected readonly itemsPager = new LocalPager(() => this.items.value());
   protected readonly open = signal(false);
   protected readonly editing = signal<ReferenceItem | null>(null);
   protected readonly d = signal({ code: '', nameAr: '', nameEn: '', order: '', parentCode: '', tone: '', probability: '', isActive: true });
   protected readonly valid = computed(() => /^[a-z0-9][a-z0-9_-]{0,60}$/.test(this.d().code) && !!this.d().nameAr.trim() && !!this.d().nameEn.trim() && (this.activeType() !== 'city' || !!this.d().parentCode));
 
   constructor() {
+    // Another type of items starts again from the first page.
+    effect(() => {
+      this.activeType();
+      untracked(() => this.itemsPager.reset());
+    });
     void this.reference.load();
   }
 

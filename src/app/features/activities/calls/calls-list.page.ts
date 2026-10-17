@@ -14,16 +14,19 @@ import { AlertComponent } from '../../../shared/ui/alert/alert.component';
 import { ButtonDirective } from '../../../shared/ui/button/button.directive';
 import { PageHeaderComponent } from '../../../shared/ui/page-header/page-header.component';
 import { TABLE_IMPORTS } from '../../../shared/ui/table/table.imports';
-import { userName } from '../../../shared/utils/display-name';
+import { asUserRef, userName } from '../../../shared/utils/display-name';
 import { formatPhone } from '../../../shared/utils/format';
 import { ActivitiesApi, refLabel, type Call } from '../activities-api.service';
 import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.component';
 import { ShortcutDirective } from '../../../core/shortcuts/shortcut.directive';
+import { AvatarComponent } from '../../../shared/ui/avatar/avatar.component';
+import { DEFAULT_PAGE_SIZE, pageSizeAttribute } from '../../../shared/crm/pagination/page-size';
+import { CreateIconComponent } from '../../../shared/ui/create-icon/create-icon.component';
 
 /** E11 call log. */
 @Component({
   selector: 'app-calls-list-page',
-  imports: [ShortcutDirective, SkeletonRowComponent, RouterLink, TranslatePipe, EnumLabelPipe, AlertComponent, ButtonDirective, PageHeaderComponent, ListToolbarComponent, PaginationComponent, ...TABLE_IMPORTS],
+  imports: [AvatarComponent, ShortcutDirective, SkeletonRowComponent, RouterLink, TranslatePipe, EnumLabelPipe, AlertComponent, ButtonDirective, PageHeaderComponent, ListToolbarComponent, PaginationComponent, ...TABLE_IMPORTS, CreateIconComponent],
   templateUrl: './calls-list.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
@@ -37,8 +40,10 @@ export class CallsListPage {
   readonly q = input<string>();
   readonly direction = input<string>();
   readonly page = input(1, { transform: (value: unknown) => numberAttribute(value, 1) });
+  /** `?pageSize=` (10 / 20 / 50 / 100; default 20). */
+  readonly pageSize = input(DEFAULT_PAGE_SIZE, { transform: pageSizeAttribute });
 
-  protected readonly result = rxResource({ params: () => ({ q: this.q(), direction: this.direction(), page: this.page() }), stream: ({ params }) => this.api.calls(params) });
+  protected readonly result = rxResource({ params: () => ({ q: this.q(), direction: this.direction(), page: this.page(), pageSize: this.pageSize() }), stream: ({ params }) => this.api.calls(params) });
   protected readonly rows = computed(() => (this.result.hasValue() ? this.result.value().rows : []));
   protected readonly filters = computed<FilterDefinition[]>(() => [
     { name: 'direction', label: this.i18n.t('act.columns.direction'), options: ['inbound', 'outbound'].map((value) => ({ value, label: this.i18n.t(`enums.callDirection.${value}`) })), value: this.direction() ?? '' },
@@ -55,5 +60,10 @@ export class CallsListPage {
 
   protected owner(row: Call): string {
     return userName((ar, en) => this.i18n.pick(ar, en), row.ownerId);
+  }
+
+  /** The owner as a reference (for their picture). */
+  protected ownerRef(row: Call) {
+    return asUserRef(row.ownerId);
   }
 }

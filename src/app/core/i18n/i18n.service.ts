@@ -113,18 +113,20 @@ export class I18nService {
     return this.formatNumber(value, { style: 'currency', currency, notation: 'compact', maximumFractionDigits: 1 });
   }
 
-  /** Date (optionally with time) in Cairo time — same options as the Next app. */
+  /** Date (optionally with time) in Cairo time; times on the 12-hour clock with AM/PM ("Oct 17, 2026, 2:45 PM"). */
   formatDate(value: string | Date | null | undefined, withTime = false): string {
     if (!value) return '';
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return '';
-    return new Intl.DateTimeFormat(this.intlLocale(), {
+    const parts = new Intl.DateTimeFormat(this.intlLocale(), {
       year: 'numeric',
       month: 'short',
       day: '2-digit',
-      ...(withTime ? { hour: '2-digit', minute: '2-digit' } : {}),
+      ...(withTime ? { hour: 'numeric', minute: '2-digit', hour12: true } : {}),
       timeZone: TIME_ZONE,
-    }).format(date);
+    }).formatToParts(date);
+    // en-GB writes "pm": the day period is always shown as AM / PM (Arabic keeps ص / م).
+    return parts.map((part) => (part.type === 'dayPeriod' ? part.value.toUpperCase() : part.value)).join('');
   }
 
   /** "10 seconds ago", "in 2 days" — for drafts, notifications and other recent moments. */

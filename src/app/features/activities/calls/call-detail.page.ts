@@ -16,9 +16,10 @@ import { CARD_IMPORTS } from '../../../shared/ui/card/card.imports';
 import { IconComponent } from '../../../shared/ui/icon/icon.component';
 import { PageHeaderComponent } from '../../../shared/ui/page-header/page-header.component';
 import { DetailSkeletonComponent } from '../../../shared/ui/skeleton/skeleton.component';
-import { userName } from '../../../shared/utils/display-name';
+import { asUserRef, userName } from '../../../shared/utils/display-name';
 import { formatPhone } from '../../../shared/utils/format';
 import { ActivitiesApi, refId, refLabel, type Call } from '../activities-api.service';
+import { AvatarComponent } from '../../../shared/ui/avatar/avatar.component';
 
 /**
  * E11 one logged call: outcome and direction up front, the call's facts, the
@@ -27,7 +28,7 @@ import { ActivitiesApi, refId, refLabel, type Call } from '../activities-api.ser
  */
 @Component({
   selector: 'app-call-detail-page',
-  imports: [RouterLink, TranslatePipe, EnumLabelPipe, BreadcrumbsComponent, DetailItemComponent, AlertComponent, BadgeComponent, IconComponent, PageHeaderComponent, DetailSkeletonComponent, ...CARD_IMPORTS],
+  imports: [AvatarComponent, RouterLink, TranslatePipe, EnumLabelPipe, BreadcrumbsComponent, DetailItemComponent, AlertComponent, BadgeComponent, IconComponent, PageHeaderComponent, DetailSkeletonComponent, ...CARD_IMPORTS],
   templateUrl: './call-detail.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
@@ -70,6 +71,11 @@ export class CallDetailPage {
 
   protected label(value: Parameters<typeof refLabel>[1]): string {
     return refLabel((ar, en) => this.i18n.pick(ar, en), value) || '—';
+  }
+
+  /** The owner as a reference (for their picture). */
+  protected ownerRef(call: { ownerId: Parameters<typeof asUserRef>[0] }) {
+    return asUserRef(call.ownerId);
   }
 
   protected name(value: Parameters<typeof userName>[1]): string {

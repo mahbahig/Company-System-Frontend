@@ -20,11 +20,15 @@ export interface CurrentUser {
   defaultLocale: Locale;
   mustChangePassword: boolean;
   mfaEnabled?: boolean;
+  /** Profile picture version (`GET /users/:id/avatar?v=…`); null without a picture. */
+  avatarVersion?: string | null;
   /** AUTH-06: the user's role requires two-factor sign-in (enrol before working). */
   mfaRequired?: boolean;
   lastLoginAt?: string;
   roles: RoleRef[];
   teams: TeamRef[];
+  /** Active teams this user manages (a team names them as its manager); empty for members and people in no team. */
+  managedTeamIds: string[];
   manager: UserRef | null;
   /** Widest scope per granted permission; absent = not granted. */
   permissions: Partial<Record<PermissionCode, Scope>>;

@@ -52,6 +52,18 @@
         </tbody>
       </table>
     </app-table-wrapper>
+    @if (unassigned.value(); as pageOfUnassignedPager) {
+      <app-pagination
+        mode="state"
+        [loading]="unassigned.isLoading()"
+        [page]="pageOfUnassignedPager.page"
+        [pageCount]="pageOfUnassignedPager.pageCount"
+        [total]="pageOfUnassignedPager.total"
+        [pageSize]="pageOfUnassignedPager.pageSize"
+        (pageChange)="unassignedPager.setPage($event)"
+        (pageSizeChange)="unassignedPager.setPageSize($event)"
+      />
+    }
 
     <form class="flex flex-wrap items-end gap-3" novalidate (submit)="onAssignSubmit($event)">
       <div>
@@ -102,7 +114,7 @@
             </tr>
           </thead>
           <tbody appTableBody>
-            @for (row of rows; track row.leadId) {
+            @for (row of proposalsPager.rows(); track row.leadId) {
               <tr appTableRow>
                 <td appTableCell class="tabular whitespace-nowrap" dir="ltr">{{ row.leadNo }}</td>
                 <td appTableCell>{{ row.leadName }}</td>
@@ -115,6 +127,7 @@
           </tbody>
         </table>
       </app-table-wrapper>
+      <app-pager [pager]="proposalsPager" />
     }
   </div>
 </section>

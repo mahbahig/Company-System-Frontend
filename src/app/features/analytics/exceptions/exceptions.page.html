@@ -87,7 +87,7 @@
           </tr>
         </thead>
         <tbody appTableBody>
-          @for (item of q.items; track item.code) {
+          @for (item of qualityPager.rows(); track item.code) {
             <tr appTableRow>
               <td appTableCell class="font-medium">
                 {{ 'exceptionsCenter.quality.' + item.code | t }}
@@ -117,6 +117,7 @@
         </tbody>
       </table>
     </app-table-wrapper>
+    <app-pager [pager]="qualityPager" />
     <section appCard aria-labelledby="completeness-heading">
       <div appCardHeader>
         <h2 appCardTitle id="completeness-heading">

@@ -1,0 +1,59 @@
+<div class="flex flex-col items-center gap-4 text-center">
+  <div class="relative">
+    <app-avatar
+      [userId]="user()?.id"
+      [name]="name()"
+      [version]="user()?.avatarVersion ?? null"
+      [preview]="chosen()?.preview ?? null"
+      [label]="'account.picture.alt' | t: { name: name() }"
+      size="xl"
+    />
+    @if (progress() !== null) {
+      <span class="absolute inset-0 flex items-center justify-center rounded-full bg-black/45 text-sm font-semibold text-white tabular" role="status">
+        {{ i18n.formatNumber(progress()!, { style: 'percent' }) }}
+      </span>
+    }
+  </div>
+
+  @if (actions.error(); as text) {
+    <app-alert variant="destructive" class="w-full text-start">{{ text }}</app-alert>
+  } @else if (actions.message(); as text) {
+    <app-alert variant="success" class="w-full text-start">{{ text }}</app-alert>
+  }
+
+  @if (!limits().available) {
+    <p class="text-sm text-muted-foreground">{{ 'account.picture.unavailable' | t }}</p>
+  } @else if (chosen()) {
+    <p class="text-sm text-muted-foreground">{{ 'account.picture.previewHint' | t }}</p>
+    <div class="flex flex-wrap justify-center gap-2">
+      <button type="button" appButton size="sm" [disabled]="actions.busy()" (click)="save()">
+        {{ (actions.busy() ? 'account.picture.saving' : 'account.picture.save') | t }}
+      </button>
+      <button type="button" appButton variant="ghost" size="sm" [disabled]="actions.busy()" (click)="cancel()">
+        {{ 'crm.common.cancel' | t }}
+      </button>
+    </div>
+  } @else {
+    <input
+      #picker
+      type="file"
+      class="sr-only"
+      id="profile-picture-input"
+      [accept]="accept()"
+      (change)="choose(picker)"
+    />
+    <div class="flex flex-wrap justify-center gap-2">
+      <button type="button" appButton variant="outline" size="sm" [disabled]="actions.busy()" (click)="picker.click()">
+        <app-icon [icon]="icons.change" svgClass="size-4" />
+        {{ (hasPicture() ? 'account.picture.change' : 'account.picture.upload') | t }}
+      </button>
+      @if (hasPicture()) {
+        <button type="button" appButton variant="ghost" size="sm" [disabled]="actions.busy()" (click)="remove()">
+          <app-icon [icon]="icons.remove" svgClass="size-4" />
+          {{ 'account.picture.remove' | t }}
+        </button>
+      }
+    </div>
+    <p class="text-xs text-muted-foreground">{{ 'account.picture.rules' | t: { size: maxMb() } }}</p>
+  }
+</div>

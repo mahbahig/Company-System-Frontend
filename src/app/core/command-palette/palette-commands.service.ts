@@ -1,6 +1,6 @@
 import { Service, computed, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { Bell, KeyRound, Keyboard, Languages, LogOut, Moon, PanelLeftClose, PanelLeftOpen, Search, ShieldCheck, Sun, type IconNode } from 'lucide';
+import { Bell, KeyRound, Keyboard, Languages, LogOut, Moon, PanelLeftClose, PanelLeftOpen, Search, ShieldCheck, Sun, UserRound, type IconNode } from 'lucide';
 
 import { AuthService } from '../auth/auth.service';
 import { I18nService } from '../i18n/i18n.service';
@@ -33,6 +33,7 @@ export interface PaletteCommand {
 const PERSONAL_PAGES: ReadonlyArray<{ id: string; labelKey: string; path: string; icon: IconNode }> = [
   { id: 'notifications', labelKey: 'notifications.title', path: '/notifications', icon: Bell },
   { id: 'search', labelKey: 'search.title', path: '/search', icon: Search },
+  { id: 'profile', labelKey: 'account.profile.title', path: '/account/profile', icon: UserRound },
   { id: 'password', labelKey: 'account.password.title', path: '/account/password', icon: KeyRound },
   { id: 'security', labelKey: 'account.mfa.title', path: '/account/security', icon: ShieldCheck },
   { id: 'notification-preferences', labelKey: 'account.notifications.title', path: '/account/notifications', icon: Bell },

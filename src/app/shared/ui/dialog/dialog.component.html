@@ -1,11 +1,12 @@
 <dialog
   #dialog
-  class="app-dialog m-auto w-[min(42rem,calc(100vw-2rem))] max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-lg border border-border bg-card p-0 text-card-foreground shadow-lg backdrop:bg-black/50"
+  class="app-dialog m-auto w-[min(42rem,calc(100vw-2rem))] max-h-[calc(100dvh-2rem)] overflow-hidden rounded-lg border border-border bg-card p-0 text-card-foreground shadow-lg backdrop:bg-black/50 open:flex open:flex-col"
   [attr.aria-labelledby]="headingId"
   (close)="open.set(false)"
   (cancel)="requestClose($event)"
 >
-  <div class="flex items-start justify-between gap-4 border-b border-border p-5">
+  <!-- The header (title + close) never scrolls away: only the body below scrolls, inside the dialog. -->
+  <div class="flex shrink-0 items-start justify-between gap-4 border-b border-border p-5">
     <div>
       <h2 [id]="headingId" class="text-lg font-semibold">{{ heading() }}</h2>
       @if (description()) {
@@ -31,7 +32,7 @@
       </svg>
     </button>
   </div>
-  <div class="p-5">
+  <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain p-5">
     @if (open()) {
       <ng-content />
     }

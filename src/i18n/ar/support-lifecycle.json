@@ -1,0 +1,62 @@
+{
+  "support": {
+    "status": {
+      "reopened": "أُعيد فتحها",
+      "closed": "مغلقة",
+      "awaiting": "بانتظار فريق الدعم"
+    },
+    "lifecycle": {
+      "resolvedTitle": "تم حلّها",
+      "resolvedBody": "يمكنك إعادة فتح هذه التذكرة إذا لم تُحل المشكلة.",
+      "reopenReason": "ما الذي لا يزال لا يعمل؟ (اختياري)",
+      "reopenedTitle": "أُعيد فتحها",
+      "reopenedBody": "أعدت فتح هذه التذكرة، وهي الآن لدى فريق الدعم.",
+      "closedTitle": "مغلقة",
+      "closedBody": "أُغلقت هذه التذكرة نهائيًا ولا يمكن إعادة فتحها.",
+      "deskClosedBody": "مغلقة نهائيًا: لا يمكن تغييرها أو إضافة تعليقات إليها، ويبقى سجلها متاحًا.",
+      "resolveHint": "تم الحل: يمكن للموظف إعادة فتحها إذا لم تُحل المشكلة.",
+      "closeHint": "إغلاق نهائي: لا رجعة فيه — لا يمكن للموظف إعادة فتحها."
+    },
+    "actions": {
+      "resolveTicket": "حل التذكرة",
+      "closePermanently": "إغلاق التذكرة نهائيًا",
+      "reopenTicket": "إعادة فتح التذكرة",
+      "deleteTicket": "حذف التذكرة",
+      "deleteScreenshot": "حذف لقطة الشاشة"
+    },
+    "confirm": {
+      "resolveTicketTitle": "حل التذكرة {number}؟",
+      "resolveTicketBody": "سيتم تمييز التذكرة على أنها محلولة وإبلاغ {name}.",
+      "resolveTicketReopen": "يمكن لـ {name} إعادة فتحها إذا لم تُحل المشكلة.",
+      "closeTicketTitle": "إغلاق التذكرة {number} نهائيًا؟",
+      "closeTicketBody": "سيتم إغلاق التذكرة نهائيًا، ولن يتمكن {name} من إعادة فتحها.",
+      "closeTicketKept": "يبقى سجل التذكرة وتعليقاتها وسجلات التدقيق متاحة.",
+      "reopenTicketTitle": "إعادة فتح التذكرة {number}؟",
+      "reopenTicketBody": "ستُعاد فتح التذكرة وتعود إلى فريق الدعم.",
+      "reopenTicketSame": "يمكنك مواصلة إضافة المعلومات والتعليقات إلى التذكرة نفسها.",
+      "deleteTicketTitle": "حذف التذكرة {number}؟",
+      "deleteTicketBody": "سيتم حذف التذكرة وتعليقاتها ولقطات الشاشة نهائيًا.",
+      "deleteScreenshotTitle": "حذف لقطة الشاشة {name}؟",
+      "deleteScreenshotBody": "ستُحذف لقطة الشاشة من التذكرة نهائيًا."
+    },
+    "notices": {
+      "closed": "أُغلقت التذكرة نهائيًا.",
+      "resolvedDesk": "تم حل التذكرة.",
+      "reopenedByYou": "أعدت فتح التذكرة وتم إبلاغ فريق الدعم."
+    },
+    "history": {
+      "title": "سجل التذكرة",
+      "created": "أنشأها {name}",
+      "resolved": "حلّها {name}",
+      "reopened": "أعاد فتحها {name}",
+      "closed": "أغلقها نهائيًا {name}",
+      "pending": "أعادها إلى قيد الانتظار {name}"
+    }
+  },
+  "server": {
+    "errors": {
+      "supportTicketClosed": "هذه التذكرة مغلقة نهائيًا: لا يمكن إعادة فتحها أو تغييرها أو التعليق عليها.",
+      "supportTicketTransitionNotAllowed": "لا يمكن تغيير الحالة بهذا الشكل في وضع التذكرة الحالي."
+    }
+  }
+}

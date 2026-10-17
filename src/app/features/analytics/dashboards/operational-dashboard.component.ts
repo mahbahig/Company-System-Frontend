@@ -11,11 +11,13 @@ import { AnalyticsApi } from '../analytics-api.service';
 import type { AnalyticsFilter } from '../models/analytics-filter.interface';
 import type { WorkloadRow } from '../models/dashboards.interface';
 import { DashboardSkeletonComponent } from '../../../shared/ui/skeleton/skeleton.component';
+import { LocalPager } from '../../../shared/crm/pagination/local-pager';
+import { PagerComponent } from '../../../shared/crm/pagination/pager.component';
 
 /** DASH-04 operational / PM dashboard: handoffs, visits, assessments, proposals, contracts, projects and resource workload. */
 @Component({
   selector: 'app-operational-dashboard',
-  imports: [DashboardSkeletonComponent, TranslatePipe, AlertComponent, StatCardComponent, ...TABLE_IMPORTS],
+  imports: [DashboardSkeletonComponent, TranslatePipe, AlertComponent, StatCardComponent, ...TABLE_IMPORTS, PagerComponent],
   templateUrl: './operational-dashboard.component.html',
   host: { class: 'flex flex-col gap-6' },
 })
@@ -27,6 +29,8 @@ export class OperationalDashboardComponent {
   readonly filter = input<AnalyticsFilter>({});
 
   protected readonly data = rxResource({ params: () => this.filter(), stream: ({ params }) => this.api.operational(params) });
+  /** Workload per person, paged in memory. */
+  protected readonly workloadPager = new LocalPager(() => this.data.value()?.workload);
   protected readonly cards: Array<{ key: string; path?: string; tone?: 'warning' | 'danger' | 'info' }> = [
     { key: 'pendingHandoffs', path: '/handoffs', tone: 'warning' },
     { key: 'upcomingVisits', path: '/visits' },

@@ -1,7 +1,7 @@
 {
-  "name": "EcoTech CRM",
-  "short_name": "EcoTech CRM",
-  "description": "EcoTech solar sales, delivery and service CRM",
+  "name": "Ecotech",
+  "short_name": "Ecotech",
+  "description": "Ecotech solar sales, delivery and service platform",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

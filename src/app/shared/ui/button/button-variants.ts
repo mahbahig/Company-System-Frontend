@@ -23,6 +23,15 @@ export const buttonVariants = cva(
           'bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 hover:-translate-y-px hover:shadow-md active:translate-y-0 active:shadow-sm',
         destructive:
           'bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90 hover:-translate-y-px hover:shadow-md active:translate-y-0 active:shadow-sm',
+        warning:
+          'bg-warning text-warning-foreground shadow-sm hover:bg-warning/90 hover:-translate-y-px hover:shadow-md active:translate-y-0 active:shadow-sm',
+        // Soft semantic actions (row and toolbar actions): the badge recipe — a light wash with an AA-tested tint text —
+        // so a table's actions say what they do (edit, warn, destroy, restore) without shouting.
+        'soft-primary': 'bg-primary/10 text-primary hover:bg-primary/15',
+        'soft-info': 'bg-info/15 text-info-tint hover:bg-info/25',
+        'soft-success': 'bg-success/15 text-success-tint hover:bg-success/25',
+        'soft-warning': 'bg-warning/15 text-warning-tint hover:bg-warning/25',
+        'soft-destructive': 'bg-destructive/15 text-destructive-tint hover:bg-destructive/25',
         outline:
           'border border-input bg-background shadow-xs hover:border-foreground/20 hover:bg-secondary hover:text-secondary-foreground',
         secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',

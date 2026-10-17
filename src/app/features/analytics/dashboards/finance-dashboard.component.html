@@ -71,7 +71,7 @@
           </tr>
         </thead>
         <tbody appTableBody>
-          @for (row of d.margins; track $index) {
+          @for (row of marginsPager.rows(); track $index) {
             <tr
               appTableRow
               [appRowLink]="row.id ? ['/', i18n.locale(), 'proposals', 'financial', row.id] : null"
@@ -115,6 +115,7 @@
         </tbody>
       </table>
     </app-table-wrapper>
+    <app-pager [pager]="marginsPager" />
   </section>
 
   <div class="grid gap-6 lg:grid-cols-2">
@@ -165,7 +166,7 @@
               </tr>
             </thead>
             <tbody appTableBody>
-              @for (row of d.paymentSchedule; track row.month) {
+              @for (row of schedulePager.rows(); track row.month) {
                 <tr appTableRow>
                   <td appTableCell class="tabular" dir="ltr">
                     {{
@@ -191,6 +192,7 @@
             </tbody>
           </table>
         </app-table-wrapper>
+        <app-pager [pager]="schedulePager" />
       </div>
     </section>
   </div>

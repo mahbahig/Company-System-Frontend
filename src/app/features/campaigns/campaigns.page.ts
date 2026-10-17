@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, input, numberAttribute, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import type { Observable } from 'rxjs';
@@ -16,6 +16,10 @@ import { PageHeaderComponent } from '../../shared/ui/page-header/page-header.com
 import { TABLE_IMPORTS } from '../../shared/ui/table/table.imports';
 import { ActionRunner } from '../../shared/utils/action-runner';
 import { SkeletonRowComponent } from '../../shared/ui/skeleton/skeleton.component';
+import type { Page } from '../../core/api/page.interface';
+import { DEFAULT_PAGE_SIZE, pageSizeAttribute } from '../../shared/crm/pagination/page-size';
+import { PaginationComponent } from '../../shared/crm/pagination/pagination.component';
+import { CreateIconComponent } from '../../shared/ui/create-icon/create-icon.component';
 
 interface CampaignAd {
   code: string;
@@ -63,7 +67,7 @@ interface Draft {
  */
 @Component({
   selector: 'app-campaigns-page',
-  imports: [SkeletonRowComponent, RouterLink, TranslatePipe, AlertComponent, ButtonDirective, DialogComponent, PageHeaderComponent, ...TABLE_IMPORTS, ...FORM_IMPORTS],
+  imports: [SkeletonRowComponent, RouterLink, TranslatePipe, AlertComponent, ButtonDirective, DialogComponent, PageHeaderComponent, PaginationComponent, ...TABLE_IMPORTS, ...FORM_IMPORTS, CreateIconComponent],
   templateUrl: './campaigns.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
@@ -74,8 +78,11 @@ export class CampaignsPage {
   protected readonly i18n = inject(I18nService);
   protected readonly actions = new ActionRunner(this.i18n);
 
-  protected readonly data = rxResource({ stream: () => this.api.get<Campaign[]>('campaigns') });
-  protected readonly rows = computed(() => this.data.value() ?? []);
+  /** `?page=` and `?pageSize=`: the API returns one page of campaigns. */
+  readonly page = input(1, { transform: (value: unknown) => numberAttribute(value, 1) });
+  readonly pageSize = input(DEFAULT_PAGE_SIZE, { transform: pageSizeAttribute });
+  protected readonly data = rxResource({ params: () => ({ page: this.page(), pageSize: this.pageSize() }), stream: ({ params }) => this.api.get<Page<Campaign>>('campaigns', params) });
+  protected readonly rows = computed(() => (this.data.hasValue() ? this.data.value().rows : []));
   protected readonly canManage = computed(() => this.auth.can('campaigns.manage'));
   protected readonly dialogOpen = signal(false);
   protected readonly editing = signal<string | null>(null);

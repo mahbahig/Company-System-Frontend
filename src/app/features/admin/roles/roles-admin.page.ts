@@ -13,6 +13,9 @@ import { PageHeaderComponent } from '../../../shared/ui/page-header/page-header.
 import { TABLE_IMPORTS } from '../../../shared/ui/table/table.imports';
 import { ActionRunner } from '../../../shared/utils/action-runner';
 import { AdminApi, type Role } from '../admin-api.service';
+import { LocalPager } from '../../../shared/crm/pagination/local-pager';
+import { PagerComponent } from '../../../shared/crm/pagination/pager.component';
+import { CreateIconComponent } from '../../../shared/ui/create-icon/create-icon.component';
 
 type ScopeValue = '' | 'own' | 'team' | 'all';
 
@@ -27,7 +30,7 @@ const FIXED_ROLES = new Set(['system_administrator', 'ceo']);
 
 @Component({
   selector: 'app-roles-admin-page',
-  imports: [TranslatePipe, AlertComponent, BadgeComponent, ButtonDirective, DialogComponent, PageHeaderComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, ...TABLE_IMPORTS],
+  imports: [TranslatePipe, AlertComponent, BadgeComponent, ButtonDirective, DialogComponent, PageHeaderComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, ...TABLE_IMPORTS, PagerComponent, CreateIconComponent],
   templateUrl: './roles-admin.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
@@ -51,6 +54,8 @@ export class RolesAdminPage {
     const f = this.filter().trim().toLowerCase();
     return (this.catalogue.value() ?? []).filter((p) => !f || p.code.includes(f));
   });
+  /** The permission catalogue of the matrix, paged in memory (a fixed, code-defined list); a new filter starts from page 1. */
+  protected readonly permissionsPager = new LocalPager(() => this.visiblePermissions());
 
   protected readonly newOpen = signal(false);
   protected readonly newRole = signal({ code: '', nameAr: '', nameEn: '', copyFrom: '' });

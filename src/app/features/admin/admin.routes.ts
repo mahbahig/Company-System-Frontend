@@ -13,4 +13,6 @@ export const ADMIN_ROUTES: Routes = [
   { path: 'automation', title: 'admin.automation.title', data: { permission: 'automation.manage' }, loadComponent: () => import('./automation/automation-admin.page').then((m) => m.AutomationAdminPage) },
   { path: 'integrations', title: 'admin.integrations.title', data: { permission: 'integrations.manage' }, loadComponent: () => import('./integrations/integrations-admin.page').then((m) => m.IntegrationsAdminPage) },
   { path: 'audit', title: 'admin.audit.title', data: { permission: ['audit.view', 'audit.view_security'] }, loadComponent: () => import('./audit/audit-log.page').then((m) => m.AuditLogPage) },
+  { path: 'audit/:id', title: 'admin.audit.detail.title', data: { permission: ['audit.view', 'audit.view_security'] }, loadComponent: () => import('./audit/audit-event.page').then((m) => m.AuditEventPage) },
+  { path: 'support-tickets', title: 'support.desk.title', data: { permission: 'support.manage' }, loadComponent: () => import('../support/manage/support-tickets-admin.page').then((m) => m.SupportTicketsAdminPage) },
 ];

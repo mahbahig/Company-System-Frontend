@@ -12,18 +12,11 @@ import { AuthFieldComponent } from '../shared/auth-field.component';
 import { AuthHeadingComponent } from '../shared/auth-heading.component';
 import { AuthInputDirective } from '../shared/auth-input.directive';
 import { AuthLinkDirective } from '../shared/auth-link.directive';
+import { PASSWORD_LETTER, PASSWORD_MIN_LENGTH } from '../../../core/auth/password-policy';
 import { AuthNoticeComponent } from '../shared/auth-notice.component';
 import { AuthResultComponent } from '../shared/auth-result.component';
 import { PasswordToggleComponent } from '../shared/password-toggle.component';
 
-/**
- * The API's password policy (AUTH-02): at least 12 characters with a letter
- * (Latin or Arabic) and a digit. Mirrored here only to guide the user as they
- * type — the server stays the authority and its errors are shown as-is.
- */
-const PASSWORD_MIN_LENGTH = 12;
-const LETTER = /[A-Za-z\u0600-\u06FF]/;
-const DIGIT = /[0-9]/;
 
 /** AUTH-02 reset from the e-mailed link (`?token=`); the link is single-use and expires. */
 @Component({
@@ -72,8 +65,7 @@ export class ResetPasswordPage {
     const password = this.password();
     return [
       { key: 'account.password.ruleLength', met: password.length >= PASSWORD_MIN_LENGTH },
-      { key: 'account.password.ruleLetter', met: LETTER.test(password) },
-      { key: 'account.password.ruleNumber', met: DIGIT.test(password) },
+      { key: 'account.password.ruleLetter', met: PASSWORD_LETTER.test(password) },
     ];
   });
 

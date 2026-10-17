@@ -21,6 +21,8 @@ import { TABLE_IMPORTS } from '../../../shared/ui/table/table.imports';
 import { ActionRunner } from '../../../shared/utils/action-runner';
 import { userName } from '../../../shared/utils/display-name';
 import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.component';
+import { DEFAULT_PAGE_SIZE, pageSizeAttribute } from '../../../shared/crm/pagination/page-size';
+import { ConfirmService } from '../../../shared/ui/confirm/confirm.service';
 
 interface CustomerSide {
   id: string;
@@ -68,13 +70,16 @@ export class DuplicatesPage {
   private readonly api = inject(ApiService);
   private readonly auth = inject(AuthService);
   protected readonly i18n = inject(I18nService);
+  private readonly confirm = inject(ConfirmService);
   protected readonly actions = new ActionRunner(this.i18n);
 
   readonly status = input<string>();
   readonly page = input(1, { transform: (value: unknown) => numberAttribute(value, 1) });
+  /** `?pageSize=` (10 / 20 / 50 / 100; default 20). */
+  readonly pageSize = input(DEFAULT_PAGE_SIZE, { transform: pageSizeAttribute });
 
   protected readonly data = rxResource({
-    params: () => (this.auth.canAny(['duplicates.review', 'customers.merge']) ? { status: this.status(), page: this.page() } : undefined),
+    params: () => (this.auth.canAny(['duplicates.review', 'customers.merge']) ? { status: this.status(), page: this.page(), pageSize: this.pageSize() } : undefined),
     stream: ({ params }) => (params ? this.api.get<Page<Suggestion>>('duplicates', params) : of({ rows: [], page: 1, pageCount: 0, total: 0, pageSize: 20 } as Page<Suggestion>)),
   });
   protected readonly rows = computed(() => (this.data.hasValue() ? this.data.value().rows : []));
@@ -119,9 +124,21 @@ export class DuplicatesPage {
     return typeof value === 'object' ? JSON.stringify(value) : String(value);
   }
 
-  protected merge(asRequest: boolean): void {
+  protected async merge(asRequest: boolean): Promise<void> {
     const c = this.comparison.value();
     if (!c) return;
+    // Merging (not a request for one) asks first: what moves where, named after the action.
+    if (!asRequest) {
+      const go = await this.confirm.confirm({
+        heading: this.i18n.t('admin.duplicates.mergeTitle'),
+        message: this.i18n.t('admin.duplicates.mergeBody'),
+        details: [this.i18n.t('admin.duplicates.mergeUndo')],
+        confirmLabel: this.i18n.t('admin.duplicates.mergeAction'),
+        cancelLabel: this.i18n.t('crm.common.cancel'),
+        variant: 'danger',
+      });
+      if (!go) return;
+    }
     const masterSide = this.masterIsA() ? 'a' : 'b';
     const masterId = masterSide === 'a' ? c.a.id : c.b.id;
     const mergedId = masterSide === 'a' ? c.b.id : c.a.id;

@@ -18,6 +18,8 @@ import { TABLE_IMPORTS } from '../../shared/ui/table/table.imports';
 import { ActionRunner } from '../../shared/utils/action-runner';
 import { ImportsApi, type ImportRow } from './imports-api.service';
 import { SkeletonRowComponent } from '../../shared/ui/skeleton/skeleton.component';
+import { DEFAULT_PAGE_SIZE, pageSizeAttribute } from '../../shared/crm/pagination/page-size';
+import { ConfirmService } from '../../shared/ui/confirm/confirm.service';
 
 const ROW_FILTERS = ['', 'valid', 'duplicate', 'invalid', 'imported', 'linked', 'skipped'];
 
@@ -37,6 +39,7 @@ export class ImportJobPage {
   private readonly router = inject(Router);
   protected readonly reference = inject(ReferenceDataService);
   protected readonly i18n = inject(I18nService);
+  private readonly confirm = inject(ConfirmService);
   protected readonly actions = new ActionRunner(this.i18n);
   protected readonly rowFilters = ROW_FILTERS;
   protected readonly countKeys = ['valid', 'duplicate', 'invalid', 'imported', 'linked', 'skipped'];
@@ -44,10 +47,12 @@ export class ImportJobPage {
   readonly id = input.required<string>();
   readonly status = input<string>();
   readonly page = input(1, { transform: (value: unknown) => numberAttribute(value, 1) });
+  /** `?pageSize=` (10 / 20 / 50 / 100; default 20). */
+  readonly pageSize = input(DEFAULT_PAGE_SIZE, { transform: pageSizeAttribute });
 
   protected readonly job = rxResource({ params: () => this.id(), stream: ({ params }) => this.api.get(params) });
   protected readonly fields = rxResource({ params: () => this.job.value()?.entity, stream: ({ params }) => this.api.fields(params) });
-  protected readonly rows = rxResource({ params: () => ({ id: this.id(), status: this.status(), page: this.page() }), stream: ({ params }) => this.api.rows(params.id, { status: params.status, page: params.page }) });
+  protected readonly rows = rxResource({ params: () => ({ id: this.id(), status: this.status(), page: this.page(), pageSize: this.pageSize() }), stream: ({ params }) => this.api.rows(params.id, { status: params.status, page: params.page }) });
   protected readonly rowList = computed(() => (this.rows.hasValue() ? this.rows.value().rows : []));
   protected readonly editable = computed(() => ['uploaded', 'review', 'failed'].includes(this.job.value()?.status ?? ''));
 
@@ -91,9 +96,22 @@ export class ImportJobPage {
     });
   }
 
-  protected rollback(): void {
-    if (!confirm(this.i18n.t('imports.rollbackConfirm'))) return;
-    this.run(this.api.rollback(this.id()), 'imports.rolledBackNotice');
+  /** Removes what the import created — asked in the application's own dialog, which stays busy until the API is done. */
+  protected async rollback(): Promise<void> {
+    const rolledBack = await this.confirm.confirm({
+      heading: this.i18n.t('imports.rollbackTitle', { name: this.job.value()?.fileName ?? '' }),
+      message: this.i18n.t('imports.rollbackConfirm'),
+      details: [this.i18n.t('imports.rollbackKept')],
+      irreversible: true,
+      confirmLabel: this.i18n.t('imports.rollbackAction'),
+      cancelLabel: this.i18n.t('crm.common.cancel'),
+      variant: 'danger',
+      action: () => this.api.rollback(this.id()),
+    });
+    if (!rolledBack) return;
+    this.actions.message.set(this.i18n.t('imports.rolledBackNotice'));
+    this.job.reload();
+    this.rows.reload();
   }
 
   protected filterRows(status: string): void {

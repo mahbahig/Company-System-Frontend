@@ -19,6 +19,7 @@ import type { TabItem } from '../../../shared/ui/tabs/tab-item.interface';
 import { userName } from '../../../shared/utils/display-name';
 import { ApprovalsApi, type Approval } from '../approvals-api.service';
 import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.component';
+import { DEFAULT_PAGE_SIZE, pageSizeAttribute } from '../../../shared/crm/pagination/page-size';
 
 const TYPES = ['discount', 'margin_floor', 'payment_terms', 'financial_proposal', 'combined_proposal_release', 'contract_value', 'ownership_transfer', 'ownership_collaboration', 'gate_override', 'expired_proposal_resend', 'customer_merge'];
 const STATUSES = ['pending', 'approved', 'rejected', 'returned', 'expired', 'escalated'];
@@ -42,6 +43,8 @@ export class ApprovalsListPage {
   /** Exceptions Center: still waiting for a decision (pending or escalated). */
   readonly open = input<string>();
   readonly page = input(1, { transform: (value: unknown) => numberAttribute(value, 1) });
+  /** `?pageSize=` (10 / 20 / 50 / 100; default 20). */
+  readonly pageSize = input(DEFAULT_PAGE_SIZE, { transform: pageSizeAttribute });
 
   protected readonly activeBox = computed(() => (['inbox', 'requested', 'decided', 'all'].includes(this.box() ?? '') ? (this.box() as string) : 'inbox'));
   protected readonly counts = rxResource({ stream: () => this.api.counts() });
@@ -53,7 +56,7 @@ export class ApprovalsListPage {
   ]);
 
   protected readonly result = rxResource({
-    params: () => ({ box: this.activeBox(), status: this.status(), open: this.open() === '1' || undefined, type: this.type(), page: this.page() }),
+    params: () => ({ box: this.activeBox(), status: this.status(), open: this.open() === '1' || undefined, type: this.type(), page: this.page(), pageSize: this.pageSize() }),
     stream: ({ params }) => this.api.list(params),
   });
   protected readonly rows = computed(() => (this.result.hasValue() ? this.result.value().rows : []));

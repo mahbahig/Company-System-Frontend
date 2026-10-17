@@ -121,7 +121,7 @@
       </tr>
     </thead>
     <tbody appTableBody>
-      @for (k of keys.value() ?? []; track k.id) {
+      @for (k of keysPager.rows(); track k.id) {
         <tr appTableRow>
           <td appTableCell class="font-medium">{{ k.name }}</td>
           <td appTableCell class="font-mono text-xs" dir="ltr">{{ k.keyPrefix }}…</td>
@@ -171,6 +171,7 @@
     </tbody>
   </table>
 </app-table-wrapper>
+<app-pager [pager]="keysPager" />
 
 <h2 class="text-lg font-semibold">{{ 'admin.integrations.inbound' | t }}</h2>
 <app-table-wrapper
@@ -234,6 +235,7 @@
 </app-table-wrapper>
 @if (inbound.hasValue()) {
   <app-pagination
+    [loading]="inbound.isLoading()"
     [page]="inbound.value().page"
     [pageCount]="inbound.value().pageCount"
     [total]="inbound.value().total"

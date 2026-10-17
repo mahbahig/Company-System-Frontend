@@ -14,6 +14,7 @@ import type { TabItem } from '../../../shared/ui/tabs/tab-item.interface';
 import { userName } from '../../../shared/utils/display-name';
 import { HandoffsApi, type Handoff, type HandoffOpportunityRef } from '../handoffs-api.service';
 import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.component';
+import { DEFAULT_PAGE_SIZE, pageSizeAttribute } from '../../../shared/crm/pagination/page-size';
 
 /** §11.3 PM / Technical Lead handoff inbox (Accept / Return / Clarify), with SLA highlighting (HAND-08). */
 @Component({
@@ -29,12 +30,14 @@ export class HandoffsInboxPage {
 
   readonly view = input<string>();
   readonly page = input(1, { transform: (value: unknown) => numberAttribute(value, 1) });
+  /** `?pageSize=` (10 / 20 / 50 / 100; default 20). */
+  readonly pageSize = input(DEFAULT_PAGE_SIZE, { transform: pageSizeAttribute });
 
   protected readonly tabs: TabItem[] = ['pending', 'mine', 'overdue', 'all'].map((id) => ({ id, label: this.i18n.t(`handoffs.views.${id}`) }));
   protected readonly activeView = computed(() => (['pending', 'mine', 'overdue', 'all'].includes(this.view() ?? '') ? (this.view() as string) : 'pending'));
 
   protected readonly result = rxResource({
-    params: () => ({ all: this.activeView() === 'all' || undefined, mine: this.activeView() === 'mine' || undefined, overdue: this.activeView() === 'overdue' || undefined, page: this.page() }),
+    params: () => ({ all: this.activeView() === 'all' || undefined, mine: this.activeView() === 'mine' || undefined, overdue: this.activeView() === 'overdue' || undefined, page: this.page(), pageSize: this.pageSize() }),
     stream: ({ params }) => this.api.inbox(params),
   });
   protected readonly rows = computed(() => (this.result.hasValue() ? this.result.value().rows : []));

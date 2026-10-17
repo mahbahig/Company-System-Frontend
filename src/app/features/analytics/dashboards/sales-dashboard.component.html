@@ -28,7 +28,7 @@
           </tr>
         </thead>
         <tbody appTableBody>
-          @for (rep of d.reps; track rep.userId) {
+          @for (rep of repsPager.rows(); track rep.userId) {
             <tr appTableRow>
               <td appTableCell class="font-medium whitespace-nowrap">{{ name(rep) }}</td>
               <td appTableCell class="tabular">{{ n(rep.leads) }}</td>
@@ -62,6 +62,7 @@
         </tbody>
       </table>
     </app-table-wrapper>
+    <app-pager [pager]="repsPager" />
   </section>
 
   <section appCard aria-labelledby="sales-funnel-heading">

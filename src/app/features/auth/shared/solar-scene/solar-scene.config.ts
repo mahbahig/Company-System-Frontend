@@ -2,7 +2,7 @@ import { AdditiveBlending, NormalBlending } from 'three';
 
 /**
  * Every tunable of the sign-in solar scene in one place. Colours come from the
- * ECOTECH brand (ecotecheg.com: petrol #006584, solar yellow #ffd400); world
+ * Ecotech brand (ecotecheg.com: petrol #006584, solar yellow #ffd400); world
  * units are arbitrary because the camera is fitted to `composition`, so the
  * scene reads the same in a tall desktop panel and a short mobile hero.
  *
@@ -66,7 +66,7 @@ export const SOLAR_SCENE = {
     radius: 1.08,
     /** Corona billboard half-width, in sun radii. */
     coronaExtent: 3.3,
-    /** The crown's rays — the eighteen of the ECOTECH sun mark. */
+    /** The crown's rays — the eighteen of the Ecotech sun mark. */
     rays: 18,
     /** Surface rotation: about a turn a minute, so the plasma visibly travels. */
     spin: 0.1,

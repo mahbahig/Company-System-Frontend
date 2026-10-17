@@ -16,6 +16,7 @@ import { FORM_IMPORTS } from '../../../shared/ui/form/form.imports';
 import { PageHeaderComponent } from '../../../shared/ui/page-header/page-header.component';
 import { ActionRunner } from '../../../shared/utils/action-runner';
 import { ActivitiesApi } from '../activities-api.service';
+import { CreateIconComponent } from '../../../shared/ui/create-icon/create-icon.component';
 
 interface Attendee {
   userId?: string;
@@ -29,7 +30,7 @@ const EMPTY_FORM = { subject: '', scheduledAt: '', endsAt: '', mode: 'in_person'
 /** E12 schedule a meeting with internal, contact and external attendees. */
 @Component({
   selector: 'app-meeting-form-page',
-  imports: [SaveShortcutDirective, BreadcrumbsComponent, TranslatePipe, EnumLabelPipe, RecordPickerComponent, UserSelectComponent, AlertComponent, ButtonDirective, PageHeaderComponent, ...CARD_IMPORTS, ...FORM_IMPORTS],
+  imports: [SaveShortcutDirective, BreadcrumbsComponent, TranslatePipe, EnumLabelPipe, RecordPickerComponent, UserSelectComponent, AlertComponent, ButtonDirective, PageHeaderComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, CreateIconComponent],
   templateUrl: './meeting-form.page.html',
   host: { class: 'flex flex-col gap-6' },
 })

@@ -18,6 +18,7 @@ import { SelectDirective } from '../../../shared/ui/form/select.directive';
 import type { FieldFact } from '../models/field-fact.interface';
 import type { Opportunity } from '../models/opportunity.interface';
 import { OpportunitiesApi } from '../opportunities-api.service';
+import { CreateIconComponent } from '../../../shared/ui/create-icon/create-icon.component';
 
 /** O1 discovery facts the technical request needs (each must be known or explicitly declared). */
 const FACTS = [
@@ -41,7 +42,7 @@ const STATES: FieldFact['state'][] = ['known', 'unknown', 'not_applicable', 'awa
  */
 @Component({
   selector: 'app-opportunity-discovery-panel',
-  imports: [TranslatePipe, AlertComponent, BadgeComponent, ButtonDirective, CardDirective, CardHeaderDirective, CardTitleDirective, CardContentDirective, InputDirective, SelectComponent, SelectDirective],
+  imports: [TranslatePipe, AlertComponent, BadgeComponent, ButtonDirective, CardDirective, CardHeaderDirective, CardTitleDirective, CardContentDirective, InputDirective, SelectComponent, SelectDirective, CreateIconComponent],
   templateUrl: './opportunity-discovery-panel.component.html',
 })
 export class OpportunityDiscoveryPanelComponent {

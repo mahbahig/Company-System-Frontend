@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal, untracked } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs';
 
@@ -17,6 +17,11 @@ import { PageHeaderComponent } from '../../../shared/ui/page-header/page-header.
 import { TABLE_IMPORTS } from '../../../shared/ui/table/table.imports';
 import { TabsComponent } from '../../../shared/ui/tabs/tabs.component';
 import { ActionRunner } from '../../../shared/utils/action-runner';
+import { LocalPager } from '../../../shared/crm/pagination/local-pager';
+import { PagerComponent } from '../../../shared/crm/pagination/pager.component';
+import { ConfirmService } from '../../../shared/ui/confirm/confirm.service';
+import { tap } from 'rxjs';
+import { CreateIconComponent } from '../../../shared/ui/create-icon/create-icon.component';
 
 interface Rule {
   id: string;
@@ -45,7 +50,7 @@ const ROLES = ['sales_representative', 'sales_manager', 'telesales', 'marketing'
  */
 @Component({
   selector: 'app-completeness-rules-page',
-  imports: [TranslatePipe, EnumLabelPipe, AlertComponent, BadgeComponent, ButtonDirective, PageHeaderComponent, TabsComponent, ...CARD_IMPORTS, ...TABLE_IMPORTS, ...FORM_IMPORTS],
+  imports: [TranslatePipe, EnumLabelPipe, AlertComponent, BadgeComponent, ButtonDirective, PageHeaderComponent, TabsComponent, ...CARD_IMPORTS, ...TABLE_IMPORTS, ...FORM_IMPORTS, PagerComponent, CreateIconComponent],
   templateUrl: './completeness-rules.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
@@ -54,6 +59,7 @@ export class CompletenessRulesPage {
   private readonly auth = inject(AuthService);
   protected readonly reference = inject(ReferenceDataService);
   protected readonly i18n = inject(I18nService);
+  private readonly confirm = inject(ConfirmService);
   protected readonly actions = new ActionRunner(this.i18n);
   protected readonly levels = ['save', 'gate', 'recommended'];
   protected readonly roles = ROLES;
@@ -64,6 +70,8 @@ export class CompletenessRulesPage {
   protected readonly canManage = computed(() => this.auth.can('settings.manage'));
   protected readonly tabs = computed(() => (this.data.value() ?? []).map((e) => ({ id: e.entity, label: this.i18n.t(`enums.completenessEntity.${e.entity}`), count: e.rules.length })));
   protected readonly rules = computed(() => this.data.value()?.find((e) => e.entity === this.entity())?.rules ?? []);
+  /** The selected record type's completeness rules, paged in memory. */
+  protected readonly rulesPager = new LocalPager(() => this.rules());
   protected readonly custom = signal({ id: '', field: '', documentCategory: '', level: 'recommended', gate: '', responsibleRole: 'sales_representative' });
   protected readonly customValid = computed(() => {
     const c = this.custom();
@@ -75,6 +83,8 @@ export class CompletenessRulesPage {
     effect(() => {
       this.entity();
       this.edits.set({});
+      // Another record type starts from the first page of its rules.
+      untracked(() => this.rulesPager.reset());
     });
   }
 
@@ -104,8 +114,20 @@ export class CompletenessRulesPage {
     });
   }
 
-  protected reset(rule: Rule): void {
-    void this.actions.run(this.api.delete<{ entities: EntityRules[] }>(`completeness/rules/${this.entity()}/${rule.id}`), 'admin.saved', (result) => this.data.set(result.entities));
+  /** Back to the default rule — asked first; the dialog stays busy until the API restored it. */
+  protected async reset(rule: Rule): Promise<void> {
+    let entities: EntityRules[] | null = null;
+    const restored = await this.confirm.confirm({
+      heading: this.i18n.t('admin.rules.resetTitle'),
+      message: this.i18n.t('admin.rules.resetBody', { name: this.i18n.t(`completeness.items.${this.entity()}.${rule.id}`) }),
+      confirmLabel: this.i18n.t('admin.rules.resetAction'),
+      cancelLabel: this.i18n.t('crm.common.cancel'),
+      variant: 'warning',
+      action: () => this.api.delete<{ entities: EntityRules[] }>(`completeness/rules/${this.entity()}/${rule.id}`).pipe(tap((result) => (entities = result.entities))),
+    });
+    if (!restored || !entities) return;
+    this.data.set(entities);
+    this.actions.message.set(this.i18n.t('admin.saved'));
   }
 
   protected setCustom(key: 'id' | 'field' | 'documentCategory' | 'level' | 'gate' | 'responsibleRole', value: string): void {

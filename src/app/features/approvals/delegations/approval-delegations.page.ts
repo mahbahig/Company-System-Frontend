@@ -11,11 +11,12 @@ import { CARD_IMPORTS } from '../../../shared/ui/card/card.imports';
 import { FORM_IMPORTS } from '../../../shared/ui/form/form.imports';
 import { PageHeaderComponent } from '../../../shared/ui/page-header/page-header.component';
 import { ApprovalsApi, type Delegation } from '../approvals-api.service';
+import { CreateIconComponent } from '../../../shared/ui/create-icon/create-icon.component';
 
 /** USER-06: delegate my approvals to another authorised user for a date range (e.g. during leave). */
 @Component({
   selector: 'app-approval-delegations-page',
-  imports: [TranslatePipe, UserSelectComponent, AlertComponent, ButtonDirective, PageHeaderComponent, ...CARD_IMPORTS, ...FORM_IMPORTS],
+  imports: [TranslatePipe, UserSelectComponent, AlertComponent, ButtonDirective, PageHeaderComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, CreateIconComponent],
   templateUrl: './approval-delegations.page.html',
   host: { class: 'flex flex-col gap-6' },
 })

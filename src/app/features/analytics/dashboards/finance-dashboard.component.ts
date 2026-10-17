@@ -15,11 +15,13 @@ import { AnalyticsApi } from '../analytics-api.service';
 import type { AnalyticsFilter } from '../models/analytics-filter.interface';
 import { formatKpi } from '../shared/kpi-format';
 import { DashboardSkeletonComponent } from '../../../shared/ui/skeleton/skeleton.component';
+import { LocalPager } from '../../../shared/crm/pagination/local-pager';
+import { PagerComponent } from '../../../shared/crm/pagination/pager.component';
 
 /** DASH-05 finance dashboard: approvals, discount distribution, margins, contract values and the payment schedule. */
 @Component({
   selector: 'app-finance-dashboard',
-  imports: [DashboardSkeletonComponent, RouterLink, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, AlertComponent, BarListComponent, ...CARD_IMPORTS, ...TABLE_IMPORTS],
+  imports: [DashboardSkeletonComponent, RouterLink, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, AlertComponent, BarListComponent, ...CARD_IMPORTS, ...TABLE_IMPORTS, PagerComponent],
   templateUrl: './finance-dashboard.component.html',
   host: { class: 'flex flex-col gap-6' },
 })
@@ -30,6 +32,10 @@ export class FinanceDashboardComponent {
   readonly filter = input<AnalyticsFilter>({});
 
   protected readonly data = rxResource({ params: () => this.filter(), stream: ({ params }) => this.api.finance(params) });
+  /** The payment schedule by month, paged in memory. */
+  protected readonly schedulePager = new LocalPager(() => this.data.value()?.paymentSchedule);
+  /** Margins, paged in memory. */
+  protected readonly marginsPager = new LocalPager(() => this.data.value()?.margins);
   protected readonly discounts = computed<BarListItem[]>(() =>
     (this.data.value()?.discountDistribution ?? []).map((row) => ({ label: this.bucket(row.bucket), value: row.count, display: `${this.n(row.count)} · ${this.i18n.formatMoneyCompact(row.value)}` })),
   );

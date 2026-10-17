@@ -16,6 +16,9 @@ import { PageHeaderComponent } from '../../../shared/ui/page-header/page-header.
 import { TABLE_IMPORTS } from '../../../shared/ui/table/table.imports';
 import { ActionRunner } from '../../../shared/utils/action-runner';
 import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.component';
+import { DEFAULT_PAGE_SIZE, pageSizeAttribute } from '../../../shared/crm/pagination/page-size';
+import { LocalPager } from '../../../shared/crm/pagination/local-pager';
+import { PagerComponent } from '../../../shared/crm/pagination/pager.component';
 
 interface Definition {
   code: string;
@@ -46,7 +49,7 @@ interface Run {
  */
 @Component({
   selector: 'app-automation-admin-page',
-  imports: [SkeletonRowComponent, TranslatePipe, StatusBadgeComponent, AlertComponent, ButtonDirective, PageHeaderComponent, ListToolbarComponent, PaginationComponent, ...TABLE_IMPORTS],
+  imports: [SkeletonRowComponent, TranslatePipe, StatusBadgeComponent, AlertComponent, ButtonDirective, PageHeaderComponent, ListToolbarComponent, PaginationComponent, ...TABLE_IMPORTS, PagerComponent],
   templateUrl: './automation-admin.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
@@ -58,9 +61,13 @@ export class AutomationAdminPage {
   readonly status = input<string>();
   readonly code = input<string>();
   readonly page = input(1, { transform: (value: unknown) => numberAttribute(value, 1) });
+  /** `?pageSize=` (10 / 20 / 50 / 100; default 20). */
+  readonly pageSize = input(DEFAULT_PAGE_SIZE, { transform: pageSizeAttribute });
 
   protected readonly definitions = rxResource({ stream: () => this.api.get<{ rows: Definition[] }>('automation/definitions').pipe(map((b) => b.rows)) });
-  protected readonly runs = rxResource({ params: () => ({ status: this.status(), code: this.code(), page: this.page() }), stream: ({ params }) => this.api.get<Page<Run>>('automation/runs', params) });
+  /** The automation catalogue (defined in code), paged in memory. */
+  protected readonly definitionsPager = new LocalPager(() => this.definitions.value());
+  protected readonly runs = rxResource({ params: () => ({ status: this.status(), code: this.code(), page: this.page(), pageSize: this.pageSize() }), stream: ({ params }) => this.api.get<Page<Run>>('automation/runs', params) });
   protected readonly runRows = computed(() => (this.runs.hasValue() ? this.runs.value().rows : []));
   protected readonly filters = computed<FilterDefinition[]>(() => [
     { name: 'status', label: this.i18n.t('admin.users.status'), options: ['running', 'succeeded', 'failed', 'skipped'].map((value) => ({ value, label: this.i18n.t(`enums.automationRunStatus.${value}`) })), value: this.status() ?? '' },

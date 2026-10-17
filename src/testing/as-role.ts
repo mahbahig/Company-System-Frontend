@@ -23,6 +23,7 @@ export function userWithRoles(...roles: RoleKey[]): CurrentUser {
     mustChangePassword: false,
     roles: [],
     teams: [],
+    managedTeamIds: [],
     manager: null,
     permissions,
     isAdmin: roles.includes('system_administrator'),

@@ -5,6 +5,4 @@
  */
 export const environment = {
   apiBaseUrl: '/api/v1',
-  /** Shown as a badge in the top bar outside production; null hides it. */
-  environmentBadge: 'development' as 'development' | 'staging' | null,
 };

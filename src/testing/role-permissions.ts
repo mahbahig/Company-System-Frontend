@@ -157,6 +157,8 @@ export const ROLE_PERMISSIONS: Record<RoleKey, Partial<Record<PermissionCode, Sc
     'sites.create': 'all',
     'sites.edit': 'all',
     'sites.view': 'all',
+    'support.delete': 'all',
+    'support.manage': 'all',
     'system.monitor': 'all',
     'tasks.assign': 'all',
     'tasks.create': 'all',

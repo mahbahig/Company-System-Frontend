@@ -1,18 +1,23 @@
 import { CdkMenu, CdkMenuItem, CdkMenuTrigger } from '@angular/cdk/menu';
 import { Component, computed, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { Bell, ChevronDown, KeyRound, LogOut, ShieldCheck } from 'lucide';
+import { Bell, ChevronDown, LogOut, UserRound } from 'lucide';
 
+import { AvatarComponent } from '../../../shared/ui/avatar/avatar.component';
 import { IconComponent } from '../../../shared/ui/icon/icon.component';
 import { AuthService } from '../../auth/auth.service';
 import { I18nService } from '../../i18n/i18n.service';
 import { TranslatePipe } from '../../i18n/translate.pipe';
 import { END_ALIGNED_BELOW } from '../menu-positions';
 
-/** Avatar initial, name and job title; the menu shows the e-mail (LTR) and Sign out. */
+/**
+ * The signed-in user's picture (or initial), name and job title; the menu
+ * shows the e-mail (LTR), the profile (where the password and two-factor
+ * sign-in are managed), notification preferences and Sign out.
+ */
 @Component({
   selector: 'app-user-menu',
-  imports: [CdkMenuTrigger, CdkMenu, CdkMenuItem, IconComponent, TranslatePipe],
+  imports: [CdkMenuTrigger, CdkMenu, CdkMenuItem, AvatarComponent, IconComponent, TranslatePipe],
   templateUrl: './user-menu.component.html',
 })
 export class UserMenuComponent {
@@ -24,8 +29,7 @@ export class UserMenuComponent {
   protected readonly logOut = LogOut;
   protected readonly positions = END_ALIGNED_BELOW;
   protected readonly accountLinks = [
-    { path: 'password', label: 'account.password.title', icon: KeyRound },
-    { path: 'security', label: 'account.mfa.title', icon: ShieldCheck },
+    { path: 'profile', label: 'account.profile.title', icon: UserRound },
     { path: 'notifications', label: 'account.notifications.title', icon: Bell },
   ];
 
@@ -42,7 +46,7 @@ export class UserMenuComponent {
     return user ? this.i18n.pick(user.jobTitleAr, user.jobTitleEn) : '';
   });
   protected readonly email = computed(() => this.auth.user()?.email ?? '');
-  protected readonly initial = computed(() => Array.from(this.name().trim())[0]?.toUpperCase() ?? '?');
+  protected readonly user = this.auth.user;
 
   protected async signOut(): Promise<void> {
     await this.auth.logout();

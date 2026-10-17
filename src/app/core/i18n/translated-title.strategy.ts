@@ -6,7 +6,7 @@ import { I18nService } from './i18n.service';
 
 /**
  * Route `title` values are i18n keys; the document title becomes
- * "<page> · EcoTech CRM" in the active language (Next metadata template).
+ * "<page> · Ecotech" in the active language (Next metadata template).
  */
 @Service()
 export class TranslatedTitleStrategy extends TitleStrategy {

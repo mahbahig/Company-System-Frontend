@@ -32,6 +32,8 @@ import { formatPhone, isOverdue } from '../../../shared/utils/format';
 import { CustomersApi } from '../customers-api.service';
 import type { Customer } from '../models/customer.interface';
 import { RowLinkDirective } from '../../../shared/ui/table/row-link.directive';
+import { DEFAULT_PAGE_SIZE, pageSizeAttribute } from '../../../shared/crm/pagination/page-size';
+import { CreateIconComponent } from '../../../shared/ui/create-icon/create-icon.component';
 
 const flag = (value: string | undefined) => value === '1' || value === 'true';
 
@@ -72,8 +74,7 @@ const CUSTOMER_COLUMNS: ColumnDef[] = [
     TableEmptyComponent,
     TableSkeletonComponent,
     ColumnPickerComponent,
-    ShortcutDirective,
-  ],
+    ShortcutDirective, CreateIconComponent],
   templateUrl: './customers-list.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
@@ -94,6 +95,8 @@ export class CustomersListPage {
   /** Data-quality drill-down: `phone` or `governorate`. */
   readonly missing = input<string>();
   readonly page = input(1, { transform: (value: unknown) => numberAttribute(value, 1) });
+  /** `?pageSize=` (10 / 20 / 50 / 100; default 20). */
+  readonly pageSize = input(DEFAULT_PAGE_SIZE, { transform: pageSizeAttribute });
 
   protected readonly formatPhone = formatPhone;
   protected readonly columns = new TableColumns('customers', CUSTOMER_COLUMNS);
@@ -108,7 +111,7 @@ export class CustomersListPage {
       mine: flag(this.mine()) || undefined,
       overdue: flag(this.overdue()) || undefined,
       enrichmentOverdue: flag(this.enrichmentOverdue()) || undefined,
-      page: this.page(),
+      page: this.page(), pageSize: this.pageSize(),
     }),
     stream: ({ params }) => this.customers.list(params),
   });

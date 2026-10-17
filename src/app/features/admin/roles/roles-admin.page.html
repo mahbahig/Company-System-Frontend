@@ -4,7 +4,7 @@
   class="!mb-0"
 >
   <button type="button" appButton variant="outline" (click)="newOpen.set(true)">
-    {{ 'admin.roles.new' | t }}
+    <app-create-icon />{{ 'admin.roles.new' | t }}
   </button>
 </app-page-header>
 @if (actions.message(); as text) {
@@ -52,7 +52,7 @@
         id="role-filter"
         dir="ltr"
         [value]="filter()"
-        (input)="filter.set($any($event.target).value)"
+        (input)="filter.set($any($event.target).value); permissionsPager.reset()"
       />
     </div>
     <button
@@ -81,7 +81,7 @@
       </tr>
     </thead>
     <tbody appTableBody>
-      @for (p of visiblePermissions(); track p.code) {
+      @for (p of permissionsPager.rows(); track p.code) {
         <tr appTableRow>
           <td appTableCell class="text-xs text-muted-foreground" dir="ltr">{{ p.module }}</td>
           <td appTableCell dir="ltr" class="font-mono text-xs">{{ p.code }}</td>
@@ -106,6 +106,7 @@
     </tbody>
   </table>
 </app-table-wrapper>
+<app-pager [pager]="permissionsPager" />
 
 <app-dialog [(open)]="newOpen" [heading]="'admin.roles.new' | t">
   <form class="grid gap-4 sm:grid-cols-2" (submit)="create($event)">

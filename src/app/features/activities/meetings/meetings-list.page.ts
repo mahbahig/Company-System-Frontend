@@ -18,13 +18,15 @@ import { userName } from '../../../shared/utils/display-name';
 import { ActivitiesApi, refLabel, type Meeting } from '../activities-api.service';
 import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.component';
 import { ShortcutDirective } from '../../../core/shortcuts/shortcut.directive';
+import { DEFAULT_PAGE_SIZE, pageSizeAttribute } from '../../../shared/crm/pagination/page-size';
+import { CreateIconComponent } from '../../../shared/ui/create-icon/create-icon.component';
 
 const STATUSES = ['planned', 'confirmed', 'completed', 'cancelled', 'rescheduled', 'no_show'];
 
 /** E12 meetings. */
 @Component({
   selector: 'app-meetings-list-page',
-  imports: [ShortcutDirective, SkeletonRowComponent, RouterLink, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, AlertComponent, ButtonDirective, PageHeaderComponent, ListToolbarComponent, PaginationComponent, ...TABLE_IMPORTS],
+  imports: [ShortcutDirective, SkeletonRowComponent, RouterLink, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, AlertComponent, ButtonDirective, PageHeaderComponent, ListToolbarComponent, PaginationComponent, ...TABLE_IMPORTS, CreateIconComponent],
   templateUrl: './meetings-list.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
@@ -36,8 +38,10 @@ export class MeetingsListPage {
   readonly q = input<string>();
   readonly status = input<string>();
   readonly page = input(1, { transform: (value: unknown) => numberAttribute(value, 1) });
+  /** `?pageSize=` (10 / 20 / 50 / 100; default 20). */
+  readonly pageSize = input(DEFAULT_PAGE_SIZE, { transform: pageSizeAttribute });
 
-  protected readonly result = rxResource({ params: () => ({ q: this.q(), status: this.status(), page: this.page() }), stream: ({ params }) => this.api.meetings(params) });
+  protected readonly result = rxResource({ params: () => ({ q: this.q(), status: this.status(), page: this.page(), pageSize: this.pageSize() }), stream: ({ params }) => this.api.meetings(params) });
   protected readonly rows = computed(() => (this.result.hasValue() ? this.result.value().rows : []));
   protected readonly filters = computed<FilterDefinition[]>(() => [
     { name: 'status', label: this.i18n.t('act.columns.status'), options: STATUSES.map((value) => ({ value, label: this.i18n.t(`enums.meetingStatus.${value}`) })), value: this.status() ?? '' },

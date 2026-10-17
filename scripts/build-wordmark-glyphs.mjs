@@ -1,11 +1,10 @@
 /**
- * Generates the ECOTECH logotype's letters from the brand wordmark typeface,
+ * Generates the Ecotech logotype's letters from the brand wordmark typeface,
  * so the app ships a few kilobytes of vectors instead of a font file:
  *
  * - src/app/shared/ui/brand-wordmark/brand-wordmark-glyphs.ts — SVG paths,
- *   advances, ink bounds and kerning, for the 2D lockup (logotype and "CRM"
- *   descriptor) and the spacing of the 3D logotype, so both are set letter
- *   for letter alike;
+ *   advances, ink bounds and kerning, for the 2D logotype and the spacing of
+ *   the 3D one, so both are set letter for letter alike;
  * - src/app/features/auth/shared/solar-scene/wordmark-typeface.ts — the same
  *   outlines in three.js typeface format, for the extruded sign-in wordmark.
  *
@@ -25,9 +24,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import opentype from 'opentype.js';
 
-const WORD = 'ECOTECH';
-/** The product name set after the logotype in the 2D lockup, in the same face. */
-const DESCRIPTOR = 'CRM';
+const WORD = 'Ecotech';
 const EM = 1000;
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const app = join(root, 'src', 'app');
@@ -63,8 +60,6 @@ const outline = (commands) =>
     })
     .join(' ');
 
-// The 3D wordmark needs only the logotype's letters; the 2D lockup also sets
-// the descriptor.
 const typefaceGlyphs = {};
 for (const char of new Set(WORD)) {
   const glyph = glyphOf(char);
@@ -78,7 +73,7 @@ for (const char of new Set(WORD)) {
 }
 
 const svgGlyphs = {};
-for (const char of new Set(WORD + DESCRIPTOR)) {
+for (const char of new Set(WORD)) {
   const glyph = glyphOf(char);
   const box = glyph.getBoundingBox();
   svgGlyphs[char] = {
@@ -91,12 +86,10 @@ for (const char of new Set(WORD + DESCRIPTOR)) {
 }
 
 const kerning = {};
-for (const text of [WORD, DESCRIPTOR]) {
-  for (let index = 1; index < text.length; index++) {
-    const pair = text.slice(index - 1, index + 1);
-    const value = units(font.getKerningValue(glyphOf(pair[0]), glyphOf(pair[1])));
-    if (value !== 0) kerning[pair] = value;
-  }
+for (let index = 1; index < WORD.length; index++) {
+  const pair = WORD.slice(index - 1, index + 1);
+  const value = units(font.getKerningValue(glyphOf(pair[0]), glyphOf(pair[1])));
+  if (value !== 0) kerning[pair] = value;
 }
 
 const head = font.tables.head;
@@ -133,9 +126,9 @@ writeFileSync(
   `${banner}
 
 /**
- * The letters of the "${WORD}" logotype and its "${DESCRIPTOR}" descriptor, on a
- * ${EM}-unit em: SVG paths (y down, baseline at 0), advances, ink bounds and
- * the font's kerning for the pairs the two words use.
+ * The letters of the "${WORD}" logotype, on a ${EM}-unit em: SVG paths (y down,
+ * baseline at 0), advances, ink bounds and the font's kerning for the pairs
+ * the word uses.
  *
  * ${credit}
  */

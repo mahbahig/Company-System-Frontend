@@ -17,6 +17,9 @@ import { PageHeaderComponent } from '../../../shared/ui/page-header/page-header.
 import { TABLE_IMPORTS } from '../../../shared/ui/table/table.imports';
 import { ActionRunner } from '../../../shared/utils/action-runner';
 import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.component';
+import { DEFAULT_PAGE_SIZE, pageSizeAttribute } from '../../../shared/crm/pagination/page-size';
+import { LocalPager } from '../../../shared/crm/pagination/local-pager';
+import { PagerComponent } from '../../../shared/crm/pagination/pager.component';
 
 interface IntegrationKey {
   id: string;
@@ -53,7 +56,7 @@ interface Status {
  */
 @Component({
   selector: 'app-integrations-admin-page',
-  imports: [SkeletonRowComponent, RouterLink, TranslatePipe, AlertComponent, BadgeComponent, ButtonDirective, PageHeaderComponent, PaginationComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, ...TABLE_IMPORTS],
+  imports: [SkeletonRowComponent, RouterLink, TranslatePipe, AlertComponent, BadgeComponent, ButtonDirective, PageHeaderComponent, PaginationComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, ...TABLE_IMPORTS, PagerComponent],
   templateUrl: './integrations-admin.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
@@ -65,10 +68,14 @@ export class IntegrationsAdminPage {
   protected readonly endpoint = this.api.url('public/leads');
 
   readonly page = input(1, { transform: (value: unknown) => numberAttribute(value, 1) });
+  /** `?pageSize=` (10 / 20 / 50 / 100; default 20). */
+  readonly pageSize = input(DEFAULT_PAGE_SIZE, { transform: pageSizeAttribute });
 
   protected readonly status = rxResource({ stream: () => this.api.get<Status>('integrations/status') });
   protected readonly keys = rxResource({ stream: () => this.api.get<IntegrationKey[]>('integrations/keys') });
-  protected readonly inbound = rxResource({ params: () => ({ page: this.page() }), stream: ({ params }) => this.api.get<Page<Inbound>>('integrations/inbound', params) });
+  /** API keys: a short list, paged in memory. */
+  protected readonly keysPager = new LocalPager(() => this.keys.value());
+  protected readonly inbound = rxResource({ params: () => ({ page: this.page(), pageSize: this.pageSize() }), stream: ({ params }) => this.api.get<Page<Inbound>>('integrations/inbound', params) });
   protected readonly inboundRows = computed(() => (this.inbound.hasValue() ? this.inbound.value().rows : []));
   protected readonly draft = signal({ name: '', sourceCode: '', campaignCode: '' });
   protected readonly newKey = signal<string | null>(null);

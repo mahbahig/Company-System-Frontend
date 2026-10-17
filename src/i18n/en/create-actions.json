@@ -1,0 +1,113 @@
+{
+  "act": {
+    "calls": {
+      "new": "New Call"
+    },
+    "log": {
+      "new": "New Interaction"
+    },
+    "meetings": {
+      "new": "New Meeting"
+    },
+    "visits": {
+      "new": "New Visit"
+    },
+    "fields": {
+      "addAttendee": "Add Attendee"
+    }
+  },
+  "admin": {
+    "equipment": {
+      "new": "New Equipment"
+    },
+    "reference": {
+      "new": "New Item"
+    },
+    "roles": {
+      "new": "New Role"
+    },
+    "teams": {
+      "new": "New Team",
+      "addMember": "Add Member"
+    },
+    "users": {
+      "new": "New Employee"
+    },
+    "intakeForms": {
+      "addField": "Add Field"
+    },
+    "rules": {
+      "add": "Add Rule"
+    }
+  },
+  "approvals": {
+    "delegations": {
+      "add": "Add Delegation"
+    }
+  },
+  "assess": {
+    "createVersion": "New Version"
+  },
+  "campaigns": {
+    "new": "New Campaign",
+    "addAd": "Add Ad"
+  },
+  "contracts": {
+    "addSignatory": "Add Signatory"
+  },
+  "crm": {
+    "customers": {
+      "new": "New Customer",
+      "detail": {
+        "newSite": "New Site"
+      }
+    },
+    "leads": {
+      "new": "New Lead"
+    },
+    "opportunities": {
+      "new": "New Opportunity",
+      "risks": {
+        "add": "Add Risk"
+      }
+    },
+    "tasks": {
+      "new": "New Task"
+    },
+    "contacts": {
+      "new": "New Contact"
+    }
+  },
+  "oppHub": {
+    "newTask": "New Task"
+  },
+  "pipeline": {
+    "delivery": {
+      "newWorkOrder": "New Work Order",
+      "newChangeRequest": "New Change Request"
+    }
+  },
+  "prop": {
+    "createVersion": "New Version",
+    "costs": {
+      "add": "Add Cost Line"
+    },
+    "milestones": {
+      "add": "Add Milestone"
+    },
+    "financing": {
+      "add": "Add Financing Option"
+    }
+  },
+  "solar": {
+    "bom": {
+      "add": "Add Item"
+    },
+    "design": {
+      "add": "Add Row"
+    }
+  },
+  "support": {
+    "new": "New Ticket"
+  }
+}

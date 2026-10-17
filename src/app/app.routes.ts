@@ -18,6 +18,7 @@ import { PIPELINE_ROUTES } from './features/pipeline/pipeline.routes';
 import { PROJECTS_ROUTES } from './features/projects/projects.routes';
 import { PROPOSALS_ROUTES } from './features/proposals/proposals.routes';
 import { REPORTS_ROUTES } from './features/reports/reports.routes';
+import { SUPPORT_ROUTES } from './features/support/support.routes';
 import { TASKS_ROUTES } from './features/tasks/tasks.routes';
 
 import { guestGuard } from './core/auth/guest.guard';
@@ -229,6 +230,11 @@ export const routes: Routes = [
           {
             path: 'notifications',
             children: NOTIFICATIONS_ROUTES,
+          },
+          {
+            // Help & Support: every signed-in employee (the API scopes what each one sees); the support desk only answers.
+            path: 'support',
+            children: SUPPORT_ROUTES,
           },
           {
             path: 'account',

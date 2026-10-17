@@ -83,5 +83,6 @@
 </app-table-wrapper>
 
 @if (result.hasValue()) {
-  <app-pagination [page]="result.value().page" [pageCount]="result.value().pageCount" [total]="result.value().total" [pageSize]="result.value().pageSize" />
+  <app-pagination
+    [loading]="result.isLoading()" [page]="result.value().page" [pageCount]="result.value().pageCount" [total]="result.value().total" [pageSize]="result.value().pageSize" />
 }

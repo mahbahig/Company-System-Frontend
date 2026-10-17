@@ -4,7 +4,7 @@
   class="!mb-0"
 >
   @if (auth.can('calls.create')) {
-    <a appButton routerLink="new" appShortcut="n">{{ 'act.calls.new' | t }}</a>
+    <a appButton routerLink="new" appShortcut="n"><app-create-icon />{{ 'act.calls.new' | t }}</a>
   }
 </app-page-header>
 <app-list-toolbar
@@ -42,7 +42,14 @@
             {{ row.phoneNumber ? formatPhone(row.phoneNumber) : '—' }}
           </td>
           <td appTableCell>{{ reference.label('call_outcome', row.outcomeCode) }}</td>
-          <td appTableCell>{{ owner(row) }}</td>
+          <td appTableCell>
+            <span class="flex items-center gap-2">
+              @if (ownerRef(row); as ownerRef) {
+                <app-avatar [userId]="ownerRef.id" [name]="owner(row)" [version]="ownerRef.avatarVersion" size="xs" />
+              }
+              {{ owner(row) }}
+            </span>
+          </td>
           <td appTableCell class="tabular whitespace-nowrap">
             {{ i18n.formatDate(row.followUpAt) || '—' }}
           </td>
@@ -57,6 +64,10 @@
             {{
               'act.empty' | t
             }}
+            <!-- The same create action as the page header (and the same permission). -->
+            @if (auth.can('calls.create')) {
+              <div class="mt-3"><a appButton routerLink="new"><app-create-icon />{{ 'act.calls.new' | t }}</a></div>
+            }
           </tr>
         }
       }
@@ -65,6 +76,7 @@
 </app-table-wrapper>
 @if (result.hasValue()) {
   <app-pagination
+    [loading]="result.isLoading()"
     [page]="result.value().page"
     [pageCount]="result.value().pageCount"
     [total]="result.value().total"

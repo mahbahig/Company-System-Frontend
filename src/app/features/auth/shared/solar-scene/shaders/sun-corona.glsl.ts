@@ -15,7 +15,7 @@ export const SUN_CORONA_VERTEX = /* glsl */ `
  *
  * - a limb glow whose flares travel round the rim,
  * - a wide warm haze with faint streamers,
- * - the crown: the eighteen tapered rays of the ECOTECH sun mark, turning
+ * - the crown: the eighteen tapered rays of the Ecotech sun mark, turning
  *   slowly, each ray's reach breathing on its own,
  * - a soft wave of light that leaves the limb every few seconds.
  *

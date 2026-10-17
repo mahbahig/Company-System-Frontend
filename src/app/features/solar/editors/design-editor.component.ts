@@ -4,6 +4,7 @@ import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { ButtonDirective } from '../../../shared/ui/button/button.directive';
 import { FORM_IMPORTS } from '../../../shared/ui/form/form.imports';
 import type { SystemDesign } from '../solar.models';
+import { CreateIconComponent } from '../../../shared/ui/create-icon/create-icon.component';
 
 type Numeric = 'capacityKwp' | 'expectedAnnualGenerationKwh' | 'specificYield' | 'performanceRatio' | 'expectedSelfConsumptionPct';
 type Long = 'mounting' | 'cablingProtection' | 'technicalSpecifications' | 'installationRequirements' | 'scope' | 'assumptions' | 'exclusions' | 'technicalTerms';
@@ -11,7 +12,7 @@ type Long = 'mounting' | 'cablingProtection' | 'technicalSpecifications' | 'inst
 /** TECH-03 system design editor: capacity, panels, inverters, batteries, yield, scope and terms. */
 @Component({
   selector: 'app-design-editor',
-  imports: [TranslatePipe, ButtonDirective, ...FORM_IMPORTS],
+  imports: [TranslatePipe, ButtonDirective, ...FORM_IMPORTS, CreateIconComponent],
   templateUrl: './design-editor.component.html',
   host: { class: 'block' },
 })

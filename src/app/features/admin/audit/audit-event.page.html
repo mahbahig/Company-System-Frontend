@@ -1,0 +1,108 @@
+@if (notFound()) {
+  <app-status-page [code]="404" titleKey="errors.notFound.title" bodyKey="admin.audit.detail.notFound" />
+} @else if (event.error()) {
+  <app-alert variant="destructive">{{ i18n.errorText(event.error()) }}</app-alert>
+} @else if (event.value(); as e) {
+  <app-breadcrumbs [items]="crumbs()" />
+  <header class="flex flex-col gap-4 rounded-xl border border-border/80 bg-card p-6 shadow-sm sm:flex-row sm:items-start sm:justify-between">
+    <div class="min-w-0">
+      <p class="text-2xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">{{ 'admin.audit.detail.title' | t }}</p>
+      <h1 class="mt-1 text-2xl font-semibold tracking-tight [overflow-wrap:anywhere]" data-testid="audit-action">{{ action(e) }}</h1>
+      <p class="mt-1 text-sm text-muted-foreground">
+        <time [attr.datetime]="e.occurredAt">{{ time(e) }}</time>
+      </p>
+    </div>
+    <div class="flex items-center gap-2">
+      <app-status-badge enum="auditSeverity" [value]="e.severity" />
+      <a appButton variant="outline" size="sm" [routerLink]="['/', i18n.locale(), 'admin', 'audit']">{{ 'admin.audit.detail.back' | t }}</a>
+    </div>
+  </header>
+
+  <section appCard aria-labelledby="audit-event-facts">
+    <div appCardHeader><h2 appCardTitle id="audit-event-facts">{{ 'admin.audit.detail.details' | t }}</h2></div>
+    <dl appCardContent class="grid gap-x-8 gap-y-5 sm:grid-cols-2 lg:grid-cols-3">
+      <div>
+        <dt class="text-2xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">{{ 'admin.audit.detail.action' | t }}</dt>
+        <dd class="mt-1 font-medium">{{ action(e) }}</dd>
+      </div>
+      <div>
+        <dt class="text-2xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">{{ 'admin.audit.detail.by' | t }}</dt>
+        <dd class="mt-1 font-medium" data-testid="audit-actor">{{ actor(e) }}</dd>
+      </div>
+      <div>
+        <dt class="text-2xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">{{ 'admin.audit.detail.dateTime' | t }}</dt>
+        <dd class="tabular mt-1 font-medium" data-testid="audit-time"><time [attr.datetime]="e.occurredAt">{{ time(e) }}</time></dd>
+      </div>
+      <div>
+        <dt class="text-2xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">{{ 'admin.audit.detail.severity' | t }}</dt>
+        <dd class="mt-1"><app-status-badge enum="auditSeverity" [value]="e.severity" /></dd>
+      </div>
+      <div>
+        <dt class="text-2xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">{{ 'admin.audit.detail.source' | t }}</dt>
+        <dd class="mt-1">{{ e.source | enum: 'auditSource' }}</dd>
+      </div>
+      <div>
+        <dt class="text-2xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">{{ 'admin.audit.detail.record' | t }}</dt>
+        <dd class="mt-1">
+          {{ record(e) }}
+          @if (recordLink(e); as link) {
+            <a class="ms-2 text-sm text-primary underline-offset-4 hover:underline" [routerLink]="link">{{ 'admin.audit.detail.openRecord' | t }}</a>
+          }
+        </dd>
+      </div>
+      @if (e.ip) {
+        <div>
+          <dt class="text-2xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">{{ 'admin.audit.detail.ip' | t }}</dt>
+          <dd class="mt-1 font-mono text-sm" dir="ltr">{{ e.ip }}</dd>
+        </div>
+      }
+      @if (e.userAgent) {
+        <div class="sm:col-span-2">
+          <dt class="text-2xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">{{ 'admin.audit.detail.device' | t }}</dt>
+          <dd class="mt-1 text-sm [overflow-wrap:anywhere]" dir="ltr">{{ e.userAgent }}</dd>
+        </div>
+      }
+    </dl>
+  </section>
+
+  <section appCard aria-labelledby="audit-event-changes">
+    <div appCardHeader><h2 appCardTitle id="audit-event-changes">{{ 'admin.audit.detail.changes' | t }}</h2></div>
+    <div appCardContent>
+      @if (e.changedFields.length) {
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-border text-start text-xs text-muted-foreground">
+                <th class="py-2 pe-4 text-start font-medium">{{ 'admin.audit.detail.field' | t }}</th>
+                <th class="py-2 pe-4 text-start font-medium">{{ 'admin.audit.detail.before' | t }}</th>
+                <th class="py-2 text-start font-medium">{{ 'admin.audit.detail.after' | t }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (field of e.changedFields; track field) {
+                <tr class="border-b border-border/60 align-top">
+                  <td class="py-2 pe-4 font-mono text-xs" dir="ltr">{{ field }}</td>
+                  <td class="py-2 pe-4 font-mono text-xs text-destructive-tint [overflow-wrap:anywhere]" dir="ltr">{{ show(e.before, field) }}</td>
+                  <td class="py-2 font-mono text-xs text-success-tint [overflow-wrap:anywhere]" dir="ltr">{{ show(e.after, field) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else if (extra(e).length) {
+        <dl class="grid gap-3 sm:grid-cols-2">
+          @for (item of extra(e); track item.key) {
+            <div>
+              <dt class="font-mono text-xs text-muted-foreground" dir="ltr">{{ item.key }}</dt>
+              <dd class="font-mono text-xs [overflow-wrap:anywhere]" dir="ltr">{{ item.value }}</dd>
+            </div>
+          }
+        </dl>
+      } @else {
+        <p class="text-sm text-muted-foreground">{{ 'admin.audit.detail.noChanges' | t }}</p>
+      }
+    </div>
+  </section>
+} @else {
+  <app-detail-skeleton [label]="'common.labels.loading' | t" />
+}

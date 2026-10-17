@@ -96,7 +96,7 @@
               </table>
             </app-table-wrapper>
             @if (canEdit()) {
-              <button type="button" appButton variant="outline" size="sm" class="mt-3" (click)="addLine()">{{ 'prop.costs.add' | t }}</button>
+              <button type="button" appButton variant="outline" size="sm" class="mt-3" (click)="addLine()"><app-create-icon />{{ 'prop.costs.add' | t }}</button>
             }
           </div>
         </section>
@@ -160,7 +160,7 @@
           }
           <p class="text-sm" [class.text-destructive]="milestoneTotal() !== 100 && milestones().length > 0">{{ 'prop.milestones.total' | t: { pct: milestoneTotal() } }}</p>
           @if (canEdit()) {
-            <button type="button" appButton variant="outline" size="sm" class="self-start" (click)="addMilestone()">{{ 'prop.milestones.add' | t }}</button>
+            <button type="button" appButton variant="outline" size="sm" class="self-start" (click)="addMilestone()"><app-create-icon />{{ 'prop.milestones.add' | t }}</button>
           }
         </fieldset>
       </section>
@@ -179,7 +179,7 @@
             </div>
           }
           @if (canEdit()) {
-            <button type="button" appButton variant="outline" size="sm" class="self-start" (click)="addFinancing()">{{ 'prop.financing.add' | t }}</button>
+            <button type="button" appButton variant="outline" size="sm" class="self-start" (click)="addFinancing()"><app-create-icon />{{ 'prop.financing.add' | t }}</button>
           }
         </fieldset>
       </section>

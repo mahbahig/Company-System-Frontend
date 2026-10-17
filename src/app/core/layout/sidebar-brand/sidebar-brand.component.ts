@@ -4,7 +4,7 @@ import { TranslatePipe } from '../../i18n/translate.pipe';
 
 /**
  * Logo + product name at the top of the sidebar (the logo alone when collapsed).
- * The logo is the ECOTECH sun from ecotecheg.com (the same image as the tab
+ * The logo is the Ecotech sun from ecotecheg.com (the same image as the tab
  * icon), turning slowly in 2D.
  */
 @Component({

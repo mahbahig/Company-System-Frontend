@@ -9,6 +9,7 @@ import { FORM_IMPORTS } from '../../../shared/ui/form/form.imports';
 import { TABLE_IMPORTS } from '../../../shared/ui/table/table.imports';
 import { CatalogApi } from '../catalog-api.service';
 import { EQUIPMENT_CATEGORIES, type BomItem } from '../solar.models';
+import { CreateIconComponent } from '../../../shared/ui/create-icon/create-icon.component';
 
 /**
  * TECH-04 bill of materials. Lines can be picked from the equipment catalog
@@ -17,7 +18,7 @@ import { EQUIPMENT_CATEGORIES, type BomItem } from '../solar.models';
  */
 @Component({
   selector: 'app-bom-editor',
-  imports: [TranslatePipe, EnumLabelPipe, ButtonDirective, ...FORM_IMPORTS, ...TABLE_IMPORTS],
+  imports: [TranslatePipe, EnumLabelPipe, ButtonDirective, ...FORM_IMPORTS, ...TABLE_IMPORTS, CreateIconComponent],
   templateUrl: './bom-editor.component.html',
   host: { class: 'block' },
 })

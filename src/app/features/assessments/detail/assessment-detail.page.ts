@@ -19,6 +19,7 @@ import { DesignEditorComponent } from '../../solar/editors/design-editor.compone
 import type { BomItem, SystemDesign } from '../../solar/solar.models';
 import { AssessmentsApi, type AssessmentVersion } from '../assessments-api.service';
 import { DetailSkeletonComponent } from '../../../shared/ui/skeleton/skeleton.component';
+import { CreateIconComponent } from '../../../shared/ui/create-icon/create-icon.component';
 
 const MONTHS = 12;
 const FIELD_GROUPS = {
@@ -36,7 +37,7 @@ type Group = keyof typeof FIELD_GROUPS;
  */
 @Component({
   selector: 'app-assessment-detail-page',
-  imports: [DetailSkeletonComponent, RouterLink, TranslatePipe, StatusBadgeComponent, DocumentsPanelComponent, AlertComponent, ButtonDirective, PageHeaderComponent, DesignEditorComponent, BomEditorComponent, ...CARD_IMPORTS, ...FORM_IMPORTS],
+  imports: [DetailSkeletonComponent, RouterLink, TranslatePipe, StatusBadgeComponent, DocumentsPanelComponent, AlertComponent, ButtonDirective, PageHeaderComponent, DesignEditorComponent, BomEditorComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, CreateIconComponent],
   templateUrl: './assessment-detail.page.html',
   host: { class: 'flex flex-col gap-6' },
 })

@@ -28,7 +28,7 @@ interface SharedProposal {
 /**
  * PROP-07 customer-facing proposal link (no sign-in): summary and the PDF.
  * Opening it is recorded and notifies the owner; the link expires and can be
- * revoked from the CRM.
+ * revoked from the app.
  */
 @Component({
   selector: 'app-public-proposal-page',

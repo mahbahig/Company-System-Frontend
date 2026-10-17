@@ -3,6 +3,7 @@ import { rxResource } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 
 import { AuthService } from '../../core/auth/auth.service';
+import { isSuperAdministrator } from '../../core/auth/super-administrator';
 import { I18nService } from '../../core/i18n/i18n.service';
 import { TranslatePipe } from '../../core/i18n/translate.pipe';
 import { BadgeComponent } from '../../shared/ui/badge/badge.component';
@@ -23,6 +24,7 @@ import type { AnalyticsFilter } from '../analytics/models/analytics-filter.inter
 import type { DashboardCode } from '../analytics/models/dashboards.interface';
 import { AnalyticsFilterBarComponent } from '../analytics/shared/analytics-filter-bar.component';
 import { QuickAccessComponent } from './quick-access.component';
+import { SupportOverviewComponent } from './support-overview.component';
 
 /**
  * §11 role workspace: exactly the dashboards the user's roles open, as decided
@@ -30,6 +32,12 @@ import { QuickAccessComponent } from './quick-access.component';
  * operational, finance, or the administrator's platform dashboard — selected
  * by `?view=` so a tab can be bookmarked. Filters live in the URL too. Every
  * signed-in user lands here; a role without dashboards gets a plain notice.
+ *
+ * The Super Administrator's dashboard is operational instead: the support
+ * desk (new and critical tickets, counted by the API) and platform health —
+ * no business KPIs, charts or quick links here. Their business pages stay
+ * where they are (navigation: Executive dashboard, Pipeline, Reports,
+ * Exceptions …); only what this page renders for them changes.
  */
 @Component({
   selector: 'app-dashboard-page',
@@ -48,6 +56,7 @@ import { QuickAccessComponent } from './quick-access.component';
     OperationalDashboardComponent,
     FinanceDashboardComponent,
     PlatformDashboardComponent,
+    SupportOverviewComponent,
     ...CARD_IMPORTS,
   ],
   templateUrl: './dashboard.page.html',
@@ -71,6 +80,13 @@ export class DashboardPage {
 
   protected readonly user = this.auth.user;
   protected readonly available = rxResource({ stream: () => this.analytics.available() });
+  /** The Super Administrator gets the operational workspace (support desk + platform), not the business dashboards. */
+  protected readonly adminWorkspace = computed(() => {
+    const user = this.user();
+    return !!user && isSuperAdministrator(user);
+  });
+  protected readonly showSupport = computed(() => this.auth.can('support.manage'));
+  protected readonly showPlatform = computed(() => !!this.available.value()?.dashboards.includes('platform'));
 
   protected readonly tabs = computed<TabItem[]>(() => {
     // Fail closed: only the dashboards the server says the role opens (none while loading).

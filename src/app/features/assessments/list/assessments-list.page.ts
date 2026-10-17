@@ -15,6 +15,7 @@ import { TABLE_IMPORTS } from '../../../shared/ui/table/table.imports';
 import { userName } from '../../../shared/utils/display-name';
 import { AssessmentsApi, type Assessment } from '../assessments-api.service';
 import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.component';
+import { DEFAULT_PAGE_SIZE, pageSizeAttribute } from '../../../shared/crm/pagination/page-size';
 
 /** §11.4/11.5 engineer assignments and the Technical Lead review queue. */
 @Component({
@@ -31,9 +32,11 @@ export class AssessmentsListPage {
   readonly status = input<string>();
   readonly mine = input<string>();
   readonly page = input(1, { transform: (value: unknown) => numberAttribute(value, 1) });
+  /** `?pageSize=` (10 / 20 / 50 / 100; default 20). */
+  readonly pageSize = input(DEFAULT_PAGE_SIZE, { transform: pageSizeAttribute });
 
   protected readonly result = rxResource({
-    params: () => ({ q: this.q(), status: this.status(), mine: this.mine() === '1' || undefined, page: this.page() }),
+    params: () => ({ q: this.q(), status: this.status(), mine: this.mine() === '1' || undefined, page: this.page(), pageSize: this.pageSize() }),
     stream: ({ params }) => this.api.list(params),
   });
   protected readonly rows = computed(() => (this.result.hasValue() ? this.result.value().rows : []));

@@ -13,7 +13,7 @@
           </tr>
         </thead>
         <tbody appTableBody>
-          @for (row of d.proposals; track row.id) {
+          @for (row of proposalsPager.rows(); track row.id) {
             <tr
               appTableRow
               [appRowLink]="['/', i18n.locale(), 'opportunities', row.opportunityId, 'proposals']"
@@ -50,6 +50,7 @@
         </tbody>
       </table>
     </app-table-wrapper>
+    <app-pager [pager]="proposalsPager" />
   </section>
 
   <section class="flex flex-col gap-3" aria-labelledby="c360-contracts">
@@ -65,7 +66,7 @@
           </tr>
         </thead>
         <tbody appTableBody>
-          @for (row of d.contracts; track row.id) {
+          @for (row of contractsPager.rows(); track row.id) {
             <tr appTableRow [appRowLink]="['/', i18n.locale(), 'contracts', row.id]">
               <td appTableCell class="tabular" dir="ltr">
                 <a
@@ -90,6 +91,7 @@
         </tbody>
       </table>
     </app-table-wrapper>
+    <app-pager [pager]="contractsPager" />
   </section>
 
   <section class="flex flex-col gap-3" aria-labelledby="c360-projects">
@@ -106,7 +108,7 @@
           </tr>
         </thead>
         <tbody appTableBody>
-          @for (row of d.projects; track row.id) {
+          @for (row of projectsPager.rows(); track row.id) {
             <tr appTableRow [appRowLink]="['/', i18n.locale(), 'projects', row.id]">
               <td appTableCell class="tabular" dir="ltr">
                 <a
@@ -139,6 +141,7 @@
         </tbody>
       </table>
     </app-table-wrapper>
+    <app-pager [pager]="projectsPager" />
   </section>
 
   <section class="flex flex-col gap-3" aria-labelledby="c360-leads">
@@ -154,7 +157,7 @@
           </tr>
         </thead>
         <tbody appTableBody>
-          @for (row of d.leads; track row.id) {
+          @for (row of leadsPager.rows(); track row.id) {
             <tr appTableRow [appRowLink]="['/', i18n.locale(), 'leads', row.id]">
               <td appTableCell class="tabular" dir="ltr">
                 <a
@@ -177,6 +180,7 @@
         </tbody>
       </table>
     </app-table-wrapper>
+    <app-pager [pager]="leadsPager" />
   </section>
 } @else {
   <app-detail-skeleton [label]="'common.labels.loading' | t" />

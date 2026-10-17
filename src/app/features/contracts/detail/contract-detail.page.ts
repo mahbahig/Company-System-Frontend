@@ -25,6 +25,7 @@ import { ActionRunner } from '../../../shared/utils/action-runner';
 import { userName } from '../../../shared/utils/display-name';
 import type { Person } from '../../proposals/proposals.models';
 import { ContractsApi } from '../contracts-api.service';
+import { CreateIconComponent } from '../../../shared/ui/create-icon/create-icon.component';
 
 /**
  * CONTR-01..08 contract generated from the final proposal: value, payment
@@ -33,7 +34,7 @@ import { ContractsApi } from '../contracts-api.service';
  */
 @Component({
   selector: 'app-contract-detail-page',
-  imports: [BreadcrumbsComponent, FavoriteToggleComponent, DetailSkeletonComponent, EvidenceSelectComponent, BadgeComponent, RouterLink, TranslatePipe, StatusBadgeComponent, CompletenessPanelComponent, DetailItemComponent, DocumentsPanelComponent, AlertComponent, ButtonDirective, PageHeaderComponent, ...CARD_IMPORTS, ...FORM_IMPORTS],
+  imports: [BreadcrumbsComponent, FavoriteToggleComponent, DetailSkeletonComponent, EvidenceSelectComponent, BadgeComponent, RouterLink, TranslatePipe, StatusBadgeComponent, CompletenessPanelComponent, DetailItemComponent, DocumentsPanelComponent, AlertComponent, ButtonDirective, PageHeaderComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, CreateIconComponent],
   templateUrl: './contract-detail.page.html',
   host: { class: 'flex flex-col gap-6' },
 })

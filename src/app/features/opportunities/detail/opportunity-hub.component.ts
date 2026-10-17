@@ -16,6 +16,7 @@ import { CARD_IMPORTS } from '../../../shared/ui/card/card.imports';
 import { FORM_IMPORTS } from '../../../shared/ui/form/form.imports';
 import { ActionRunner } from '../../../shared/utils/action-runner';
 import type { Contact } from '../../customers/models/contact.interface';
+import { CreateIconComponent } from '../../../shared/ui/create-icon/create-icon.component';
 
 const ROLES = ['decision_maker', 'technical_contact', 'finance_contact', 'site_contact', 'procurement', 'influencer', 'other'];
 
@@ -41,7 +42,7 @@ interface ContactRole {
  */
 @Component({
   selector: 'app-opportunity-hub',
-  imports: [RouterLink, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, AlertComponent, ButtonDirective, ...CARD_IMPORTS, ...FORM_IMPORTS],
+  imports: [RouterLink, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, AlertComponent, ButtonDirective, ...CARD_IMPORTS, ...FORM_IMPORTS, CreateIconComponent],
   templateUrl: './opportunity-hub.component.html',
   styles: `
     .hub-link {

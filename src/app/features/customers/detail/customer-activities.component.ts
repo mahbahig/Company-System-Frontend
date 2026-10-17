@@ -8,6 +8,8 @@ import { StatusBadgeComponent } from '../../../shared/crm/status-badge/status-ba
 import { TABLE_IMPORTS } from '../../../shared/ui/table/table.imports';
 import type { Customer360 } from '../models/customer-360.interface';
 import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.component';
+import { LocalPager } from '../../../shared/crm/pagination/local-pager';
+import { PagerComponent } from '../../../shared/crm/pagination/pager.component';
 
 interface Row {
   id: string;
@@ -22,7 +24,7 @@ interface Row {
 /** CUST-03 recent calls, meetings, visits and logged interactions, plus open tasks. */
 @Component({
   selector: 'app-customer-activities',
-  imports: [SkeletonRowComponent, RouterLink, TranslatePipe, StatusBadgeComponent, ...TABLE_IMPORTS],
+  imports: [SkeletonRowComponent, RouterLink, TranslatePipe, StatusBadgeComponent, ...TABLE_IMPORTS, PagerComponent],
   templateUrl: './customer-activities.component.html',
   host: { class: 'flex flex-col gap-6' },
 })
@@ -30,6 +32,8 @@ export class CustomerActivitiesComponent {
   protected readonly i18n = inject(I18nService);
   private readonly reference = inject(ReferenceDataService);
   readonly data = input<Customer360 | undefined>();
+  /** The customer's open tasks, paged in memory. */
+  protected readonly tasksPager = new LocalPager(() => this.data()?.tasks);
 
   protected readonly rows = computed<Row[]>(() => {
     const d = this.data();
@@ -43,4 +47,6 @@ export class CustomerActivitiesComponent {
     ];
     return rows.sort((a, b) => (a.at < b.at ? 1 : -1));
   });
+  /** The customer's recent activity, paged in memory. */
+  protected readonly activityPager = new LocalPager(() => this.rows());
 }

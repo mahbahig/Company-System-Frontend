@@ -5,14 +5,12 @@ import { RouterOutlet } from '@angular/router';
 import { Rotate3d } from 'lucide';
 import { map } from 'rxjs';
 
-import { environment } from '../../../../environments/environment';
 import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { LocaleSwitcherComponent } from '../../../core/layout/locale-switcher/locale-switcher.component';
 import { ThemeToggleComponent } from '../../../core/layout/theme-toggle/theme-toggle.component';
 import { ThemeService } from '../../../core/theme/theme.service';
 import { BrandMarkComponent } from '../../../shared/ui/brand-mark/brand-mark.component';
 import { BrandWordmarkComponent } from '../../../shared/ui/brand-wordmark/brand-wordmark.component';
-import { BRAND_WORDMARK } from '../../../shared/ui/brand-wordmark/brand-wordmark.config';
 import { IconComponent } from '../../../shared/ui/icon/icon.component';
 import type { SceneFraming } from './solar-scene/scene-framing.interface';
 import { SolarSceneComponent } from './solar-scene/solar-scene.component';
@@ -109,10 +107,8 @@ const HERO_FRAMING: SceneFraming = { centerY: 0.47, fillWidth: 0.8, fillHeight: 
   },
 })
 export class AuthLayoutComponent {
-  protected readonly environmentBadge = environment.environmentBadge;
   protected readonly year = new Date().getFullYear();
   protected readonly hintIcon = Rotate3d;
-  protected readonly brand = BRAND_WORDMARK;
   protected readonly theme = inject(ThemeService).resolved;
 
   protected readonly wide = toSignal(

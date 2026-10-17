@@ -19,6 +19,8 @@ import { ActionRunner } from '../../../shared/utils/action-runner';
 import { userName } from '../../../shared/utils/display-name';
 import { ActivitiesApi, refLabel, type Activity } from '../activities-api.service';
 import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.component';
+import { DEFAULT_PAGE_SIZE, pageSizeAttribute } from '../../../shared/crm/pagination/page-size';
+import { CreateIconComponent } from '../../../shared/ui/create-icon/create-icon.component';
 
 const CHANNELS = ['whatsapp', 'sms', 'email', 'social', 'customer_request', 'follow_up', 'note', 'other'];
 
@@ -29,7 +31,7 @@ const CHANNELS = ['whatsapp', 'sms', 'email', 'social', 'customer_request', 'fol
  */
 @Component({
   selector: 'app-activity-log-page',
-  imports: [SkeletonRowComponent, TranslatePipe, EnumLabelPipe, RecordPickerComponent, DialogComponent, AlertComponent, ButtonDirective, PageHeaderComponent, ListToolbarComponent, PaginationComponent, ...TABLE_IMPORTS, ...FORM_IMPORTS],
+  imports: [SkeletonRowComponent, TranslatePipe, EnumLabelPipe, RecordPickerComponent, DialogComponent, AlertComponent, ButtonDirective, PageHeaderComponent, ListToolbarComponent, PaginationComponent, ...TABLE_IMPORTS, ...FORM_IMPORTS, CreateIconComponent],
   templateUrl: './activity-log.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
@@ -43,8 +45,10 @@ export class ActivityLogPage {
   readonly q = input<string>();
   readonly channel = input<string>();
   readonly page = input(1, { transform: (value: unknown) => numberAttribute(value, 1) });
+  /** `?pageSize=` (10 / 20 / 50 / 100; default 20). */
+  readonly pageSize = input(DEFAULT_PAGE_SIZE, { transform: pageSizeAttribute });
 
-  protected readonly result = rxResource({ params: () => ({ q: this.q(), channel: this.channel(), page: this.page() }), stream: ({ params }) => this.api.activities(params) });
+  protected readonly result = rxResource({ params: () => ({ q: this.q(), channel: this.channel(), page: this.page(), pageSize: this.pageSize() }), stream: ({ params }) => this.api.activities(params) });
   protected readonly rows = computed(() => (this.result.hasValue() ? this.result.value().rows : []));
   protected readonly filters = computed<FilterDefinition[]>(() => [
     { name: 'channel', label: this.i18n.t('act.fields.channel'), options: CHANNELS.map((value) => ({ value, label: this.i18n.t(`enums.activityChannel.${value}`) })), value: this.channel() ?? '' },

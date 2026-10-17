@@ -1,7 +1,7 @@
 /*
  * NFR-009 PWA service worker: shows push notifications sent by the API
  * ({ title, body, url, tag, critical }) and opens the linked page on click.
- * It does not cache CRM data (customer data must not linger on shared devices).
+ * It does not cache business data (customer data must not linger on shared devices).
  */
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', (event) => event.waitUntil(self.clients.claim()));
@@ -13,7 +13,7 @@ self.addEventListener('push', (event) => {
   } catch {
     data = { title: event.data ? event.data.text() : '' };
   }
-  const title = data.title || 'EcoTech CRM';
+  const title = data.title || 'Ecotech';
   event.waitUntil(
     self.registration.showNotification(title, {
       body: data.body || '',

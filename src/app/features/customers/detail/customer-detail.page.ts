@@ -55,6 +55,11 @@ import { CustomersApi } from '../customers-api.service';
 import { SitesApi } from '../sites/sites-api.service';
 import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.component';
 import { RowLinkDirective } from '../../../shared/ui/table/row-link.directive';
+import { LocalPager } from '../../../shared/crm/pagination/local-pager';
+import { PagerComponent } from '../../../shared/crm/pagination/pager.component';
+import { PagerState } from '../../../shared/crm/pagination/local-pager';
+import { PaginationComponent } from '../../../shared/crm/pagination/pagination.component';
+import { CreateIconComponent } from '../../../shared/ui/create-icon/create-icon.component';
 
 /**
  * Customer 360 (first slice): details, assignment, completeness, contacts
@@ -100,8 +105,7 @@ import { RowLinkDirective } from '../../../shared/ui/table/row-link.directive';
     TabsComponent,
     CustomerActivitiesComponent,
     CustomerDeliveryComponent,
-    ...FORM_IMPORTS,
-  ],
+    ...FORM_IMPORTS, PagerComponent, PaginationComponent, CreateIconComponent],
   templateUrl: './customer-detail.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
@@ -127,13 +131,19 @@ export class CustomerDetailPage {
     params: () => (this.auth.can('contacts.view') ? this.id() : undefined),
     stream: ({ params }) => this.customers.contacts(params),
   });
+  /** The customer's contacts (a handful per customer, loaded with it), paged in memory. */
+  protected readonly contactsPager = new LocalPager(() => this.contacts.value());
   protected readonly sites = rxResource({
     params: () => (this.auth.can('sites.view') ? this.id() : undefined),
     stream: ({ params }) => this.sitesApi.list(params),
   });
+  /** The customer's sites, paged in memory. */
+  protected readonly sitesPager = new LocalPager(() => this.sites.value());
+  /** The customer's opportunities: paged by the API (no silent cut-off). */
+  protected readonly opportunitiesPager = new PagerState();
   protected readonly opportunities = rxResource({
-    params: () => (this.auth.can('opportunities.view') ? this.id() : undefined),
-    stream: ({ params }) => this.opportunitiesApi.list({ customerId: params, pageSize: 50 }),
+    params: () => (this.auth.can('opportunities.view') ? { customerId: this.id(), page: this.opportunitiesPager.page(), pageSize: this.opportunitiesPager.pageSize() } : undefined),
+    stream: ({ params }) => this.opportunitiesApi.list(params),
   });
 
   protected readonly customer = computed(() => (this.detail.hasValue() ? this.detail.value().customer : null));
@@ -221,7 +231,7 @@ export class CustomerDetailPage {
   constructor() {
     void this.reference.load();
     trackRecentView('customer', () => this.id(), () => (this.customer() ? 'loaded' : this.notFound() ? 'missing' : 'pending'));
-    // "<name> · <number> · EcoTech CRM", like the Next page metadata.
+    // "<name> · <number> · Ecotech", like the Next page metadata.
     effect(() => {
       const customer = this.customer();
       if (customer) this.title.setTitle(`${this.displayName()} · ${customer.customerNo} · ${this.i18n.t('app.name')}`);

@@ -3,7 +3,7 @@
   [subtitle]="'admin.reference.subtitle' | t"
   class="!mb-0"
 >
-  <button type="button" appButton (click)="edit(null)">{{ 'admin.reference.new' | t }}</button>
+  <button type="button" appButton (click)="edit(null)"><app-create-icon />{{ 'admin.reference.new' | t }}</button>
 </app-page-header>
 @if (actions.message(); as text) {
   <app-alert>{{ text }}</app-alert>
@@ -44,7 +44,7 @@
       </tr>
     </thead>
     <tbody appTableBody>
-      @for (item of items.value() ?? []; track item.id) {
+      @for (item of itemsPager.rows(); track item.id) {
         <tr appTableRow>
           <td appTableCell class="tabular">{{ item.order }}</td>
           <td appTableCell class="font-mono text-xs" dir="ltr">{{ item.code }}</td>
@@ -77,12 +77,15 @@
             {{
               'admin.empty' | t
             }}
+            <!-- The same create action as the page header (and the same permission). -->
+            <div class="mt-3"><button type="button" appButton (click)="edit(null)"><app-create-icon />{{ 'admin.reference.new' | t }}</button></div>
           </tr>
         }
       }
     </tbody>
   </table>
 </app-table-wrapper>
+<app-pager [pager]="itemsPager" />
 
 <app-dialog
   [(open)]="open"

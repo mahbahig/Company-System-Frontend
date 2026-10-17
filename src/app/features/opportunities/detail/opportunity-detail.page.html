@@ -280,7 +280,7 @@
             </tr>
           </thead>
           <tbody appTableBody>
-            @for (collaborator of o.collaborators ?? []; track $index) {
+            @for (collaborator of collaboratorsPager.rows(); track $index) {
               <tr appTableRow>
                 <td appTableCell>{{ ref(collaborator.userId) }}</td>
                 <td appTableCell>{{ 'crm.opportunities.collaboratorRole.' + collaborator.role | t }}</td>
@@ -291,9 +291,9 @@
                       appButton
                       variant="outline"
                       size="sm"
-                      (click)="removeCollaborator(idOf(collaborator.userId))"
+                      (click)="removeCollaborator(idOf(collaborator.userId), ref(collaborator.userId))"
                     >
-                      {{ 'common.actions.delete' | t }}
+                      {{ 'crm.opportunities.removeCollaboratorAction' | t }}
                     </button>
                   }
                 </td>
@@ -304,6 +304,7 @@
           </tbody>
         </table>
       </app-table-wrapper>
+      <app-pager [pager]="collaboratorsPager" />
 
       @if (canManageCollaborators()) {
         <form class="flex flex-wrap items-end gap-3 border-t border-border pt-4" (submit)="addCollaborator($event)">

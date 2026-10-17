@@ -16,11 +16,13 @@ import type { SalesRepRow } from '../models/dashboards.interface';
 import { KpiGridComponent } from '../shared/kpi-grid.component';
 import { percent } from '../shared/kpi-format';
 import { DashboardSkeletonComponent } from '../../../shared/ui/skeleton/skeleton.component';
+import { LocalPager } from '../../../shared/crm/pagination/local-pager';
+import { PagerComponent } from '../../../shared/crm/pagination/pager.component';
 
 /** DASH-02 sales dashboard: team KPIs and per-rep performance (self-sourced vs assigned, contact, qualification, pipeline, follow-ups, enrichment). */
 @Component({
   selector: 'app-sales-dashboard',
-  imports: [DashboardSkeletonComponent, TranslatePipe, AlertComponent, KpiGridComponent, BarListComponent, ...CARD_IMPORTS, ...TABLE_IMPORTS],
+  imports: [DashboardSkeletonComponent, TranslatePipe, AlertComponent, KpiGridComponent, BarListComponent, ...CARD_IMPORTS, ...TABLE_IMPORTS, PagerComponent],
   templateUrl: './sales-dashboard.component.html',
   host: { class: 'flex flex-col gap-6' },
 })
@@ -33,6 +35,8 @@ export class SalesDashboardComponent {
   readonly filter = input<AnalyticsFilter>({});
 
   protected readonly data = rxResource({ params: () => this.filter(), stream: ({ params }) => this.api.sales(params) });
+  /** Results by representative, paged in memory (one row per person in scope). */
+  protected readonly repsPager = new LocalPager(() => this.data.value()?.reps);
   protected readonly money = computed(() => this.auth.can('financials.view'));
   protected readonly kpiCodes = computed(() => {
     const base = ['total_leads', 'contact_rate', 'first_response_time', 'sla_compliance', 'lead_to_qualified', 'qualified_to_opportunity', 'lead_to_customer', 'enrichment_completion', 'win_rate', 'proposal_to_win', 'average_sales_cycle', 'proposal_versions_to_close'];

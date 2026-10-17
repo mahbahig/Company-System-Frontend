@@ -51,6 +51,9 @@ import type { Opportunity } from '../models/opportunity.interface';
 import type { UpdateTeamPayload } from '../models/update-team-payload.interface';
 import { OpportunitiesApi } from '../opportunities-api.service';
 import { UsersLookupApi } from '../users-lookup-api.service';
+import { LocalPager } from '../../../shared/crm/pagination/local-pager';
+import { PagerComponent } from '../../../shared/crm/pagination/pager.component';
+import { ConfirmService } from '../../../shared/ui/confirm/confirm.service';
 
 /**
  * Opportunity detail: the O0–O8 and D0–D7 trackers (stage, history,
@@ -97,8 +100,7 @@ import { UsersLookupApi } from '../users-lookup-api.service';
     OpportunityWorkflowPanelComponent,
     OpportunityDiscoveryPanelComponent,
     DeliveryHandoverPanelComponent,
-    UserSelectComponent,
-  ],
+    UserSelectComponent, PagerComponent],
   templateUrl: './opportunity-detail.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
@@ -108,6 +110,7 @@ export class OpportunityDetailPage {
   private readonly auth = inject(AuthService);
   private readonly title = inject(Title);
   protected readonly i18n = inject(I18nService);
+  private readonly confirm = inject(ConfirmService);
   protected readonly reference = inject(ReferenceDataService);
 
   readonly id = input.required<string>();
@@ -116,6 +119,8 @@ export class OpportunityDetailPage {
 
   protected readonly detail = rxResource({ params: () => this.id(), stream: ({ params }) => this.opportunitiesApi.get(params) });
   protected readonly opportunity = computed(() => (this.detail.hasValue() ? this.detail.value().opportunity : null));
+  /** The opportunity's collaborators, paged in memory. */
+  protected readonly collaboratorsPager = new LocalPager(() => this.opportunity()?.collaborators);
   protected readonly notFound = computed(() => {
     const error = this.detail.error();
     return ApiError.is(error) && (error.status === 404 || error.status === 400);
@@ -289,9 +294,17 @@ export class OpportunityDetailPage {
     return typeof value === 'string' ? value : value.id;
   }
 
-  protected async removeCollaborator(userId: string): Promise<void> {
-    await firstValueFrom(this.opportunitiesApi.removeCollaborator(this.id(), userId));
-    this.detail.reload();
+  /** Asks first, naming the person; the dialog stays busy until the API removed them. */
+  protected async removeCollaborator(userId: string, name: string): Promise<void> {
+    const removed = await this.confirm.confirm({
+      heading: this.i18n.t('crm.opportunities.removeCollaboratorTitle', { name }),
+      message: this.i18n.t('crm.opportunities.removeCollaboratorBody', { name }),
+      confirmLabel: this.i18n.t('crm.opportunities.removeCollaboratorAction'),
+      cancelLabel: this.i18n.t('crm.common.cancel'),
+      variant: 'warning',
+      action: () => this.opportunitiesApi.removeCollaborator(this.id(), userId),
+    });
+    if (removed) this.detail.reload();
   }
 
   protected async toggleReadiness(itemId: string, done: boolean): Promise<void> {

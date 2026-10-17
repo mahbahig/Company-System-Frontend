@@ -1,0 +1,51 @@
+{
+  "sessions": {
+    "confirm": {
+      "revokeSession": "Revoke Session",
+      "revokeAll": "Revoke All Sessions",
+      "ownKeepsOthers": "You stay signed in on your other sessions.",
+      "employeeKeepsOthers": "{name} stays signed in on their other sessions.",
+      "allAgain": "{name} can sign in again with their password."
+    }
+  },
+  "account": {
+    "picture": {
+      "removeAction": "Remove Picture",
+      "removeContextual": "Your current profile picture will be removed and your default avatar will be displayed."
+    }
+  },
+  "ux": {
+    "savedViews": {
+      "deleteAction": "Delete View"
+    }
+  },
+  "imports": {
+    "rollbackTitle": "Roll back the import of {name}?",
+    "rollbackAction": "Roll Back Import",
+    "rollbackKept": "Records changed since the import are kept."
+  },
+  "admin": {
+    "rules": {
+      "resetTitle": "Restore the default rule?",
+      "resetBody": "The custom settings of “{name}” are replaced by the default rule.",
+      "resetAction": "Restore Default"
+    },
+    "duplicates": {
+      "mergeTitle": "Merge these customers?",
+      "mergeBody": "The duplicate’s records move to the master customer, which keeps the values you chose.",
+      "mergeUndo": "An unmerge can be requested afterwards.",
+      "mergeAction": "Merge Customers"
+    }
+  },
+  "crm": {
+    "opportunities": {
+      "removeCollaboratorTitle": "Remove {name} from this opportunity?",
+      "removeCollaboratorBody": "{name} will no longer work on this opportunity as a collaborator.",
+      "removeCollaboratorAction": "Remove Collaborator"
+    }
+  },
+  "act": {
+    "cancelMeeting": "Cancel Meeting",
+    "cancelVisit": "Cancel Visit"
+  }
+}

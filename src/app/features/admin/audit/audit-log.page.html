@@ -63,6 +63,14 @@
     />
   </div>
   <div>
+    <label appLabel for="au-employee">{{ 'admin.audit.employee' | t }}</label>
+    <app-user-select
+      inputId="au-employee"
+      [value]="f().userId"
+      (valueChange)="set('userId', $event)"
+    />
+  </div>
+  <div>
     <label appLabel for="au-from">{{ 'analytics.filters.from' | t }}</label>
     <input
       appInput
@@ -97,59 +105,44 @@
   <table appTable>
     <thead appTableHeader>
       <tr appTableRow>
-        <th appTableHead>{{ 'admin.automation.when' | t }}</th>
-        <th appTableHead>{{ 'admin.audit.actor' | t }}</th>
+        <th appTableHead>{{ 'admin.audit.dateTime' | t }}</th>
+        <th appTableHead>{{ 'admin.audit.by' | t }}</th>
         <th appTableHead>{{ 'admin.audit.action' | t }}</th>
         <th appTableHead>{{ 'admin.audit.record' | t }}</th>
-        <th appTableHead>{{ 'admin.audit.changes' | t }}</th>
         <th appTableHead>{{ 'admin.audit.severity' | t }}</th>
+        <th appTableHead class="w-10"><span class="sr-only">{{ 'admin.audit.viewDetails' | t }}</span></th>
       </tr>
     </thead>
     <tbody appTableBody>
       @for (row of rows(); track row.id) {
-        <tr appTableRow>
+        <!-- The whole row opens the event: a pointer and a hover / focus highlight say so; Enter opens it from the keyboard. -->
+        <tr
+          appTableRow
+          tabindex="0"
+          role="link"
+          data-testid="audit-row"
+          class="cursor-pointer transition-colors hover:bg-muted/60 focus-visible:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+          [attr.aria-label]="'admin.audit.openEvent' | t: { action: actionText(row), time: time(row) }"
+          (click)="open(row)"
+          (keydown.enter)="open(row)"
+        >
           <td appTableCell class="tabular whitespace-nowrap">
-            {{ i18n.formatDate(row.createdAt, true) }}
+            <time [attr.datetime]="row.occurredAt">{{ time(row) }}</time>
           </td>
           <td appTableCell>
-            {{ row.actorName || '—' }}
-            <span class="block text-xs text-muted-foreground">{{
-              row.source | enum: 'auditSource'
-            }}</span>
+            <span [class.text-muted-foreground]="row.actorKind !== 'user'">{{ actor(row) }}</span>
           </td>
-          <td appTableCell class="font-mono text-xs" dir="ltr">{{ row.action }}</td>
-          <td appTableCell class="font-mono text-xs" dir="ltr">
-            {{ row.entityType }}<span class="block text-muted-foreground">{{ row.entityId }}</span>
-          </td>
-          <td appTableCell class="max-w-md text-xs">
+          <td appTableCell class="font-medium">{{ actionText(row) }}</td>
+          <td appTableCell>
+            {{ record(row) }}
             @if (row.changedFields.length) {
-              <button
-                type="button"
-                class="text-start text-primary hover:underline"
-                (click)="expanded.set(expanded() === row.id ? null : row.id)"
-              >
-                {{ row.changedFields.slice(0, 6).join(', ')
-                }}{{ row.changedFields.length > 6 ? '…' : '' }}
-              </button>
-              @if (expanded() === row.id) {
-                <div class="mt-2 flex flex-col gap-1" dir="ltr">
-                  @for (field of row.changedFields; track field) {
-                    <div class="rounded bg-muted p-1 font-mono">
-                      <span class="font-semibold">{{ field }}:</span>
-                      <span class="text-destructive line-through">{{
-                        show(row.before, field)
-                      }}</span>
-                      →
-                      <span class="text-success">{{ show(row.after, field) }}</span>
-                    </div>
-                  }
-                </div>
-              }
-            } @else {
-              —
+              <span class="block text-xs text-muted-foreground">{{ 'admin.audit.changedFields' | t: { count: i18n.formatNumber(row.changedFields.length) } }}</span>
             }
           </td>
           <td appTableCell><app-status-badge enum="auditSeverity" [value]="row.severity" /></td>
+          <td appTableCell class="text-muted-foreground">
+            <app-icon [icon]="chevron" svgClass="size-4 rtl:rotate-180" />
+          </td>
         </tr>
       } @empty {
         @if (data.isLoading()) {
@@ -169,6 +162,7 @@
 </app-table-wrapper>
 @if (data.hasValue()) {
   <app-pagination
+    [loading]="data.isLoading()"
     [page]="data.value().page"
     [pageCount]="data.value().pageCount"
     [total]="data.value().total"

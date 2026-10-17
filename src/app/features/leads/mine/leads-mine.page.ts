@@ -22,6 +22,7 @@ import { LeadsApi } from '../leads-api.service';
 import type { MyLeadsQuery } from '../models/my-leads-query.interface';
 import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.component';
 import { RowLinkDirective } from '../../../shared/ui/table/row-link.directive';
+import { DEFAULT_PAGE_SIZE, pageSizeAttribute } from '../../../shared/crm/pagination/page-size';
 
 const TABS = ['new', 'assigned', 'self_sourced', 'follow_ups_due', 'nurture'] as const;
 type Tab = (typeof TABS)[number];
@@ -71,12 +72,14 @@ export class LeadsMinePage {
 
   readonly tab = input<Tab>('assigned');
   readonly page = input(1, { transform: (value: unknown) => numberAttribute(value, 1) });
+  /** `?pageSize=` (10 / 20 / 50 / 100; default 20). */
+  readonly pageSize = input(DEFAULT_PAGE_SIZE, { transform: pageSizeAttribute });
 
   protected readonly tabs = TABS;
   protected readonly formatPhone = formatPhone;
 
   protected readonly result = rxResource({
-    params: (): MyLeadsQuery => ({ tab: TABS.includes(this.tab()) ? this.tab() : 'assigned', page: this.page() }),
+    params: (): MyLeadsQuery => ({ tab: TABS.includes(this.tab()) ? this.tab() : 'assigned', page: this.page(), pageSize: this.pageSize() }),
     stream: ({ params }) => this.leads.mine(params),
   });
 

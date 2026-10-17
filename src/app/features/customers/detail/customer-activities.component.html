@@ -11,7 +11,7 @@
         </tr>
       </thead>
       <tbody appTableBody>
-        @for (row of rows(); track row.kind + row.id) {
+        @for (row of activityPager.rows(); track row.kind + row.id) {
           <tr appTableRow [appRowLink]="row.link">
             <td appTableCell class="tabular whitespace-nowrap">
               {{ i18n.formatDate(row.at, true) }}
@@ -48,6 +48,7 @@
       </tbody>
     </table>
   </app-table-wrapper>
+  <app-pager [pager]="activityPager" />
 </section>
 
 <section class="flex flex-col gap-3" aria-labelledby="c360-tasks">
@@ -62,7 +63,7 @@
         </tr>
       </thead>
       <tbody appTableBody>
-        @for (task of data()?.tasks ?? []; track task.id) {
+        @for (task of tasksPager.rows(); track task.id) {
           <tr appTableRow [appRowLink]="['/', i18n.locale(), 'tasks', task.id]">
             <td appTableCell>
               <a
@@ -86,4 +87,5 @@
       </tbody>
     </table>
   </app-table-wrapper>
+  <app-pager [pager]="tasksPager" />
 </section>

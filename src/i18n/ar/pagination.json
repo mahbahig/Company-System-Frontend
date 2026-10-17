@@ -1,0 +1,10 @@
+{
+  "crm": {
+    "pagination": {
+      "previousShort": "السابق",
+      "nextShort": "التالي",
+      "perPage": "عناصر في الصفحة",
+      "pageOf": "صفحة {page} من {count}"
+    }
+  }
+}

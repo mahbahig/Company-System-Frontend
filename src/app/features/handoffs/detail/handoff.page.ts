@@ -19,6 +19,8 @@ import { TABLE_IMPORTS } from '../../../shared/ui/table/table.imports';
 import { userName } from '../../../shared/utils/display-name';
 import { HandoffsApi } from '../handoffs-api.service';
 import { DetailSkeletonComponent } from '../../../shared/ui/skeleton/skeleton.component';
+import { LocalPager } from '../../../shared/crm/pagination/local-pager';
+import { PagerComponent } from '../../../shared/crm/pagination/pager.component';
 
 const SUBMITTABLE = ['draft', 'returned', 'withdrawn'];
 const DECIDABLE = ['submitted', 'under_review', 'resubmitted', 'clarification_requested'];
@@ -31,7 +33,7 @@ const DECIDABLE = ['submitted', 'under_review', 'resubmitted', 'clarification_re
  */
 @Component({
   selector: 'app-handoff-page',
-  imports: [DetailSkeletonComponent, RouterLink, TranslatePipe, StatusBadgeComponent, CompletenessPanelComponent, DocumentsPanelComponent, UserSelectComponent, AlertComponent, ButtonDirective, PageHeaderComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, ...TABLE_IMPORTS],
+  imports: [DetailSkeletonComponent, RouterLink, TranslatePipe, StatusBadgeComponent, CompletenessPanelComponent, DocumentsPanelComponent, UserSelectComponent, AlertComponent, ButtonDirective, PageHeaderComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, ...TABLE_IMPORTS, PagerComponent],
   templateUrl: './handoff.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
@@ -44,6 +46,8 @@ export class HandoffPage {
   readonly id = input.required<string>();
 
   protected readonly view = rxResource({ params: () => this.id(), stream: ({ params }) => this.api.get(params) });
+  /** The handoff's versions, paged in memory. */
+  protected readonly versionsPager = new LocalPager(() => this.view.value()?.handoff.versions);
   protected readonly busy = signal(false);
   protected readonly message = signal<string | null>(null);
   protected readonly error = signal<string | null>(null);

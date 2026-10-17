@@ -1,73 +1,113 @@
 @if (total() > 0) {
   <nav
     [attr.aria-label]="'crm.pagination.label' | t"
-    class="flex flex-col items-center justify-between gap-3 pt-4 sm:flex-row"
+    [attr.aria-busy]="loading()"
+    class="flex flex-col items-center gap-3 pt-4"
+    data-testid="pagination"
   >
-    <p class="text-sm text-muted-foreground">
-      {{ 'crm.pagination.showing' | t: { from: firstRow(), to: lastRow(), total: total() } }}
-    </p>
-
     @if (pageCount() > 1) {
-      <ul class="flex items-center gap-1">
+      <ul class="flex flex-wrap items-center justify-center gap-1">
         <li>
-          @if (page() > 1) {
-            <a
-              [routerLink]="[]"
-              [queryParams]="{ page: pageParam(page() - 1) }"
-              queryParamsHandling="merge"
-              [class]="link"
-              [attr.aria-label]="'crm.pagination.previous' | t"
-              [appTooltip]="'crm.pagination.previous' | t"
-            >
-              <app-icon [icon]="previousIcon()" />
-            </a>
+          @if (page() > 1 && !loading()) {
+            @if (mode() === 'url') {
+              <a
+                [routerLink]="[]"
+                [queryParams]="{ page: pageParam(page() - 1) }"
+                queryParamsHandling="merge"
+                [class]="control"
+                [attr.aria-label]="'crm.pagination.previous' | t"
+                data-testid="pagination-previous"
+                ><app-icon [icon]="previousIcon()" /><span class="hidden sm:inline">{{ 'crm.pagination.previousShort' | t }}</span></a
+              >
+            } @else {
+              <button type="button" [class]="control" [attr.aria-label]="'crm.pagination.previous' | t" data-testid="pagination-previous" (click)="go(page() - 1)">
+                <app-icon [icon]="previousIcon()" /><span class="hidden sm:inline">{{ 'crm.pagination.previousShort' | t }}</span>
+              </button>
+            }
           } @else {
-            <span [class]="link + ' pointer-events-none opacity-40'" aria-hidden="true"
-              ><app-icon [icon]="previousIcon()"
-            /></span>
+            <span [class]="control + disabledClass" aria-disabled="true" data-testid="pagination-previous"
+              ><app-icon [icon]="previousIcon()" /><span class="hidden sm:inline">{{ 'crm.pagination.previousShort' | t }}</span></span
+            >
           }
+        </li>
+        <!-- Phones: "Page 6 of 20" instead of the numbers. -->
+        <li class="px-2 text-sm text-muted-foreground sm:hidden" aria-current="page">
+          {{ 'crm.pagination.pageOf' | t: { page: page(), count: lastPage() } }}
         </li>
         @for (candidate of pages(); track $index) {
           @if (candidate === null) {
-            <li aria-hidden="true" class="px-1 text-muted-foreground">…</li>
+            <li aria-hidden="true" class="hidden px-1 text-muted-foreground sm:block">…</li>
           } @else {
-            <li>
-              <a
-                [routerLink]="[]"
-                [queryParams]="{ page: pageParam(candidate) }"
-                queryParamsHandling="merge"
-                [attr.aria-current]="candidate === page() ? 'page' : null"
-                [attr.aria-label]="'crm.pagination.goToPage' | t: { page: candidate }"
-                [class]="
-                  link +
-                  ' tabular' +
-                  (candidate === page() ? ' border-primary bg-primary text-primary-foreground' : '')
-                "
-              >
-                {{ candidate }}
-              </a>
+            <li class="hidden sm:block">
+              @if (candidate === page() || loading()) {
+                <span
+                  [class]="control + ' tabular' + (candidate === page() ? currentClass : disabledClass)"
+                  [attr.aria-current]="candidate === page() ? 'page' : null"
+                  [attr.aria-label]="'crm.pagination.goToPage' | t: { page: candidate }"
+                  >{{ candidate }}</span
+                >
+              } @else if (mode() === 'url') {
+                <a
+                  [routerLink]="[]"
+                  [queryParams]="{ page: pageParam(candidate) }"
+                  queryParamsHandling="merge"
+                  [attr.aria-label]="'crm.pagination.goToPage' | t: { page: candidate }"
+                  [class]="control + ' tabular'"
+                  >{{ candidate }}</a
+                >
+              } @else {
+                <button type="button" [class]="control + ' tabular'" [attr.aria-label]="'crm.pagination.goToPage' | t: { page: candidate }" (click)="go(candidate)">
+                  {{ candidate }}
+                </button>
+              }
             </li>
           }
         }
         <li>
-          @if (page() < pageCount()) {
-            <a
-              [routerLink]="[]"
-              [queryParams]="{ page: pageParam(page() + 1) }"
-              queryParamsHandling="merge"
-              [class]="link"
-              [attr.aria-label]="'crm.pagination.next' | t"
-              [appTooltip]="'crm.pagination.next' | t"
-            >
-              <app-icon [icon]="nextIcon()" />
-            </a>
+          @if (page() < pageCount() && !loading()) {
+            @if (mode() === 'url') {
+              <a
+                [routerLink]="[]"
+                [queryParams]="{ page: pageParam(page() + 1) }"
+                queryParamsHandling="merge"
+                [class]="control"
+                [attr.aria-label]="'crm.pagination.next' | t"
+                data-testid="pagination-next"
+                ><span class="hidden sm:inline">{{ 'crm.pagination.nextShort' | t }}</span><app-icon [icon]="nextIcon()"
+              /></a>
+            } @else {
+              <button type="button" [class]="control" [attr.aria-label]="'crm.pagination.next' | t" data-testid="pagination-next" (click)="go(page() + 1)">
+                <span class="hidden sm:inline">{{ 'crm.pagination.nextShort' | t }}</span><app-icon [icon]="nextIcon()" />
+              </button>
+            }
           } @else {
-            <span [class]="link + ' pointer-events-none opacity-40'" aria-hidden="true"
-              ><app-icon [icon]="nextIcon()"
+            <span [class]="control + disabledClass" aria-disabled="true" data-testid="pagination-next"
+              ><span class="hidden sm:inline">{{ 'crm.pagination.nextShort' | t }}</span><app-icon [icon]="nextIcon()"
             /></span>
           }
         </li>
       </ul>
     }
+
+    <div class="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-muted-foreground">
+      <p role="status" data-testid="pagination-summary">
+        {{ 'crm.pagination.showing' | t: { from: firstRow(), to: lastRow(), total: total() } }}
+      </p>
+      <label class="flex items-center gap-2" [for]="selectId">
+        {{ 'crm.pagination.perPage' | t }}
+        <select
+          [id]="selectId"
+          class="h-9 rounded-md border border-input bg-background px-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
+          data-testid="pagination-size"
+          [disabled]="loading()"
+          [value]="pageSize()"
+          (change)="changeSize($event)"
+        >
+          @for (size of sizes(); track size) {
+            <option [value]="size" [selected]="size === pageSize()">{{ size }}</option>
+          }
+        </select>
+      </label>
+    </div>
   </nav>
 }

@@ -86,7 +86,7 @@
           <div class="flex flex-wrap gap-2">
             @for (action of creates(); track action.id) {
               <a appButton variant="outline" size="sm" [routerLink]="navigation.link(action.path!)">
-                <app-icon [icon]="action.icon" />
+                <app-create-icon />
                 {{ action.label }}
               </a>
             }

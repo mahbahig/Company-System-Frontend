@@ -3,6 +3,7 @@ import type { Observable } from 'rxjs';
 
 import { ApiService } from '../../core/api/api.service';
 import type { Page } from '../../core/api/page.interface';
+import type { UserSession } from '../../shared/crm/session-list/user-session.interface';
 
 export interface AdminUser {
   id: string;
@@ -15,6 +16,8 @@ export interface AdminUser {
   mobile?: string;
   department?: string;
   roleCodes: string[];
+  /** Profile picture version (`GET /users/:id/avatar?v=…`); null without a picture. */
+  avatarVersion?: string | null;
   teamIds: Array<string | { id: string; nameAr: string; nameEn: string }>;
   managerId?: string | { id: string; fullNameAr: string; fullNameEn: string } | null;
   territories: string[];
@@ -72,6 +75,24 @@ export interface Team {
   isActive: boolean;
 }
 
+/** `GET /users/:id/security-activity`: from the account, its sessions and the audit trail. */
+export interface SecurityActivity {
+  userId: string;
+  isActive: boolean;
+  mfaEnabled: boolean;
+  lastLoginAt: string | null;
+  passwordChangedAt: string | null;
+  lockedUntil: string | null;
+  activeSessions: number;
+  successfulLogins: number;
+  successfulLogins30d: number;
+  failedLogins: number;
+  failedLogins30d: number;
+  lockouts: number;
+  passwordChanges: number;
+  recent: Array<{ id: string; action: string; actionLabel: { en: string; ar: string }; actorName: string | null; severity: string; ip: string | null; occurredAt: string }>;
+}
+
 /** Administration endpoints: users, roles, teams (USER-01..05, RBAC-01..03). */
 @Service()
 export class AdminApi {
@@ -86,7 +107,8 @@ export class AdminApi {
   openWork(id: string): Observable<Array<{ module: string; count: number }>> {
     return this.api.get(`users/${id}/open-work`);
   }
-  createUser(body: Record<string, unknown>): Observable<AdminUser & { temporaryPassword?: string }> {
+  /** Invites an employee with the initial password the administrator chose (`password` + `confirmPassword`). */
+  createUser(body: Record<string, unknown>): Observable<{ user: AdminUser }> {
     return this.api.post('users', body);
   }
   updateUser(id: string, body: Record<string, unknown>): Observable<AdminUser> {
@@ -106,8 +128,20 @@ export class AdminApi {
   resetPassword(id: string): Observable<{ temporaryPassword: string }> {
     return this.api.post(`users/${id}/reset-password`);
   }
-  forceLogout(id: string): Observable<void> {
-    return this.api.post(`auth/${id}/logout`);
+  /** An employee's sign-ins and security events (`security.view_sessions`; never another Super Administrator's). */
+  securityActivity(id: string): Observable<SecurityActivity> {
+    return this.api.get(`users/${id}/security-activity`);
+  }
+  /** An employee's sessions (`security.view_sessions`; never a Super Administrator's). */
+  userSessions(id: string): Observable<UserSession[]> {
+    return this.api.get(`users/${id}/sessions`);
+  }
+  revokeUserSession(id: string, sessionId: string): Observable<void> {
+    return this.api.delete(`users/${id}/sessions/${encodeURIComponent(sessionId)}`);
+  }
+  /** Logs the employee out everywhere, the session they are using included. */
+  revokeAllUserSessions(id: string): Observable<{ revokedSessions: number }> {
+    return this.api.delete(`users/${id}/sessions`);
   }
 
   roles(): Observable<Role[]> {

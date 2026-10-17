@@ -1,4 +1,4 @@
-import { Component, computed, inject, input } from '@angular/core';
+import { Component, computed, inject, input, numberAttribute } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 
@@ -16,6 +16,8 @@ import { ActionRunner } from '../../shared/utils/action-runner';
 import { AnalyticsFilterBarComponent } from '../analytics/shared/analytics-filter-bar.component';
 import { ReportsApi, type ReportColumn, type ReportQuery } from './reports-api.service';
 import { SkeletonRowComponent } from '../../shared/ui/skeleton/skeleton.component';
+import { DEFAULT_PAGE_SIZE, pageSizeAttribute } from '../../shared/crm/pagination/page-size';
+import { PaginationComponent } from '../../shared/crm/pagination/pagination.component';
 
 /**
  * RPT-02/03 one report: the same filters as the dashboards (from the URL),
@@ -25,7 +27,7 @@ import { SkeletonRowComponent } from '../../shared/ui/skeleton/skeleton.componen
  */
 @Component({
   selector: 'app-report-viewer-page',
-  imports: [SkeletonRowComponent, RouterLink, TranslatePipe, AlertComponent, ButtonDirective, PageHeaderComponent, AnalyticsFilterBarComponent, ...TABLE_IMPORTS],
+  imports: [SkeletonRowComponent, RouterLink, TranslatePipe, AlertComponent, ButtonDirective, PageHeaderComponent, AnalyticsFilterBarComponent, ...TABLE_IMPORTS, PaginationComponent],
   templateUrl: './report-viewer.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
@@ -45,6 +47,9 @@ export class ReportViewerPage {
   readonly campaignCode = input<string>();
   readonly governorateCode = input<string>();
   readonly solutionTypeCode = input<string>();
+  /** `?page=` / `?pageSize=` of the rows (exports always hold every row). */
+  readonly page = input(1, { transform: (value: unknown) => numberAttribute(value, 1) });
+  readonly pageSize = input(DEFAULT_PAGE_SIZE, { transform: pageSizeAttribute });
 
   protected readonly query = computed<ReportQuery>(() => ({
     from: this.from(),
@@ -57,7 +62,10 @@ export class ReportViewerPage {
   }));
 
   private readonly catalogue = rxResource({ stream: () => this.api.list() });
-  protected readonly data = rxResource({ params: () => ({ code: this.code(), query: this.query() }), stream: ({ params }) => this.api.run(params.code, params.query) });
+  protected readonly data = rxResource({
+    params: () => ({ code: this.code(), query: this.query(), paging: { page: this.page(), pageSize: this.pageSize() } }),
+    stream: ({ params }) => this.api.run(params.code, params.query, params.paging),
+  });
   protected readonly columns = computed(() => this.data.value()?.columns ?? []);
   protected readonly rows = computed(() => this.data.value()?.rows ?? []);
   protected readonly title = computed(() => {

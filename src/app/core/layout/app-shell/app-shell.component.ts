@@ -4,7 +4,6 @@ import { Component, DestroyRef, ElementRef, effect, inject, signal, viewChild } 
 import { Router, RouterOutlet } from '@angular/router';
 import { Menu, PanelLeftClose, PanelLeftOpen, X } from 'lucide';
 
-import { environment } from '../../../../environments/environment';
 import { ConfirmHostComponent } from '../../../shared/ui/confirm/confirm-host.component';
 import { ButtonDirective } from '../../../shared/ui/button/button.directive';
 import { IconComponent } from '../../../shared/ui/icon/icon.component';
@@ -83,7 +82,6 @@ export class AppShellComponent {
   protected readonly closeIcon = X;
   protected readonly collapseIcon = PanelLeftClose;
   protected readonly expandIcon = PanelLeftOpen;
-  protected readonly environmentBadge = environment.environmentBadge;
   protected readonly drawerOpen = signal(false);
 
   constructor() {

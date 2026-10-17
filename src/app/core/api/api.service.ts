@@ -1,9 +1,10 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpEventType, HttpParams } from '@angular/common/http';
 import { Service, inject } from '@angular/core';
-import { map, type Observable } from 'rxjs';
+import { filter, map, type Observable } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import type { QueryParams } from './query-params.type';
+import type { UploadProgress } from './upload-progress.interface';
 
 /**
  * Thin typed wrapper over HttpClient for the NestJS API.
@@ -20,8 +21,12 @@ export class ApiService {
     return this.http.get<unknown>(this.url(path), { params: this.params(query) }).pipe(map((body) => this.unwrap<T>(body)));
   }
 
-  post<T>(path: string, body: unknown = {}): Observable<T> {
-    return this.http.post<unknown>(this.url(path), body).pipe(map((response) => this.unwrap<T>(response)));
+  /**
+   * `context` carries per-request flags for the interceptors (e.g. `QUIET_SESSION_END` when signing out);
+   * `withCredentials` sends the HttpOnly session cookie also when the API is on another origin.
+   */
+  post<T>(path: string, body: unknown = {}, options: { context?: HttpContext; withCredentials?: boolean } = {}): Observable<T> {
+    return this.http.post<unknown>(this.url(path), body, options).pipe(map((response) => this.unwrap<T>(response)));
   }
 
   patch<T>(path: string, body: unknown = {}): Observable<T> {
@@ -39,6 +44,18 @@ export class ApiService {
   /** Multipart upload (`FormData`), e.g. documents and import files. */
   upload<T>(path: string, body: FormData): Observable<T> {
     return this.http.post<unknown>(this.url(path), body).pipe(map((response) => this.unwrap<T>(response)));
+  }
+
+  /** Multipart upload that reports how much was sent (`progress` 0–1), then the response (`result`); POST unless `method` says PUT. */
+  uploadWithProgress<T>(path: string, body: FormData, method: 'POST' | 'PUT' = 'POST'): Observable<UploadProgress<T>> {
+    return this.http.request<unknown>(method, this.url(path), { body, reportProgress: true, observe: 'events' }).pipe(
+      filter((event) => event.type === HttpEventType.UploadProgress || event.type === HttpEventType.Response),
+      map((event) =>
+        event.type === HttpEventType.Response
+          ? { progress: 1, result: this.unwrap<T>(event.body) }
+          : { progress: event.type === HttpEventType.UploadProgress && event.total ? event.loaded / event.total : 0 },
+      ),
+    );
   }
 
   /**

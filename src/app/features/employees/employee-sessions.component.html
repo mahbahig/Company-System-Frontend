@@ -1,0 +1,46 @@
+<section appCard aria-labelledby="employee-sessions">
+  <div appCardHeader class="flex flex-row flex-wrap items-start justify-between gap-3">
+    <div class="flex min-w-0 items-start gap-3">
+      <span
+        class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"
+        aria-hidden="true"
+      >
+        <app-icon [icon]="icons.sessions" svgClass="size-4" />
+      </span>
+      <div class="min-w-0">
+        <h2 appCardTitle id="employee-sessions">{{ 'sessions.title' | t }}</h2>
+        <p appCardDescription>{{ 'sessions.employeeHint' | t }}</p>
+      </div>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <button type="button" appButton variant="ghost" size="sm" [disabled]="sessions.isLoading()" (click)="sessions.reload()">
+        <app-icon [icon]="icons.refresh" svgClass="size-4" />
+        {{ 'sessions.refresh' | t }}
+      </button>
+      @if (canRevoke() && sessions.value()?.length) {
+        <button type="button" appButton variant="destructive" size="sm" [disabled]="!!busy()" (click)="revokeAll()">
+          <app-icon [icon]="icons.logOut" svgClass="size-4" />
+          {{ (busy() === 'all' ? 'sessions.loggingOut' : 'sessions.logOutAll') | t }}
+        </button>
+      }
+    </div>
+  </div>
+  <div appCardContent class="flex flex-col gap-4" [attr.aria-busy]="sessions.isLoading()">
+    @if (actions.error(); as text) {
+      <app-alert variant="destructive">{{ text }}</app-alert>
+    } @else if (actions.message(); as text) {
+      <app-alert variant="success">{{ text }}</app-alert>
+    }
+    @if (sessions.error()) {
+      <app-alert variant="destructive">{{ i18n.errorText(sessions.error()) }}</app-alert>
+    } @else if (sessions.value(); as list) {
+      @if (list.length) {
+        <app-session-list [sessions]="list" [canRevoke]="canRevoke()" [busyId]="busy()" (revoke)="revoke($event)" />
+      } @else {
+        <p class="text-sm text-muted-foreground">{{ 'sessions.noneForEmployee' | t }}</p>
+      }
+    } @else {
+      <p class="text-sm text-muted-foreground" role="status">{{ 'common.labels.loading' | t }}</p>
+    }
+  </div>
+</section>

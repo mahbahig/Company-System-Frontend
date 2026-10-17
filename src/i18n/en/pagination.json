@@ -1,0 +1,10 @@
+{
+  "crm": {
+    "pagination": {
+      "previousShort": "Previous",
+      "nextShort": "Next",
+      "perPage": "Items per page",
+      "pageOf": "Page {page} of {count}"
+    }
+  }
+}

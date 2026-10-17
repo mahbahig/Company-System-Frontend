@@ -2,7 +2,7 @@
 @import '@angular/cdk/overlay-prebuilt.css';
 
 /**
- * EcoTech design tokens — copied verbatim from the Next.js app
+ * Ecotech design tokens — copied verbatim from the Next.js app
  * (src/app/globals.css + tailwind.config.ts) so both apps look identical.
  *
  * Every colour is an HSL triplet behind a CSS variable so that the light
@@ -172,7 +172,7 @@
 
     --radius: 0.5rem;
 
-    /* ECOTECH brand constants, taken from ecotecheg.com's own stylesheet
+    /* Ecotech brand constants, taken from ecotecheg.com's own stylesheet
        (maincolor / secendcolor / therrtcolor). Theme-independent on purpose:
        they are facts about the brand, which the themed tokens draw on. */
     --brand-petrol: 194 100% 26%; /* #006584 — primary brand colour */
@@ -472,7 +472,7 @@
   animation: aurora 16s var(--ease-emphasized) infinite;
 }
 
-/* The ECOTECH sun in the sidebar turns slowly and continuously — a flat 2D
+/* The Ecotech sun in the sidebar turns slowly and continuously — a flat 2D
    rotation in the page plane (the `rotate` property, no 3D tilt). Stopped by
    the prefers-reduced-motion rule below. */
 @keyframes brand-spin {

@@ -46,8 +46,7 @@
     class="pointer-events-none absolute inset-x-12 top-0 h-px bg-gradient-to-r from-transparent via-white/80 to-transparent dark:via-white/25 lg:hidden"
   ></div>
 
-  <!-- The brand lockup: sun mark, the ECOTECH logotype (drawn, not typed) and
-       the product descriptor, quieter and smaller, after a hairline. -->
+  <!-- The brand lockup: sun mark and the Ecotech logotype (drawn, not typed). -->
   <div class="pointer-events-none relative p-4 sm:p-6 lg:p-8 xl:p-10">
     <p class="inline-flex items-center rounded-full py-1.5 pe-4 ps-1.5 stage-glass animate-fade-in">
       <span class="sr-only">{{ 'app.name' | t }}</span>
@@ -60,13 +59,6 @@
       <app-brand-wordmark
         aria-hidden="true"
         class="ms-3 h-[0.5625rem] text-brand-ink dark:text-brand-champagne"
-      />
-      <span aria-hidden="true" class="mx-3 h-3 w-px bg-foreground/15"></span>
-      <app-brand-wordmark
-        aria-hidden="true"
-        [text]="brand.descriptor"
-        [tracking]="brand.tracking.descriptor"
-        class="h-[0.4375rem] text-muted-foreground"
       />
     </p>
   </div>
@@ -149,14 +141,6 @@
     id="main-content"
     class="relative mx-auto flex w-full max-w-[26rem] flex-1 flex-col justify-center px-6 pb-10 pt-10 sm:px-8 lg:px-0 lg:py-24"
   >
-    <!-- Makes it impossible to mistake staging for production in adjacent tabs. -->
-    @if (environmentBadge) {
-      <p
-        class="mb-6 inline-flex self-start rounded-full border border-warning/30 bg-warning/10 px-2.5 py-0.5 text-[0.6875rem] font-semibold uppercase text-warning-tint ltr:tracking-[0.14em]"
-      >
-        {{ 'app.environment.' + environmentBadge | t }}
-      </p>
-    }
     <router-outlet />
   </main>
 

@@ -187,7 +187,7 @@
           variant="outline"
           [disabled]="busy() || !orderTitle().trim() || !orderCrew()"
         >
-          {{ 'pipeline.delivery.newWorkOrder' | t }}
+          <app-create-icon />{{ 'pipeline.delivery.newWorkOrder' | t }}
         </button>
       </form>
     }
@@ -349,7 +349,7 @@
             variant="outline"
             [disabled]="busy() || !changeReady()"
           >
-            {{ 'pipeline.delivery.newChangeRequest' | t }}
+            <app-create-icon />{{ 'pipeline.delivery.newChangeRequest' | t }}
           </button>
         </div>
       </form>

@@ -12,7 +12,7 @@
     >
   }
   @if (canManage()) {
-    <button type="button" appButton (click)="edit(null)">{{ 'campaigns.new' | t }}</button>
+    <button type="button" appButton (click)="edit(null)"><app-create-icon />{{ 'campaigns.new' | t }}</button>
   }
 </app-page-header>
 @if (actions.message(); as text) {
@@ -74,12 +74,25 @@
             {{
               'campaigns.empty' | t
             }}
+            <!-- The same create action as the page header (and the same permission). -->
+            @if (canManage()) {
+              <div class="mt-3"><button type="button" appButton (click)="edit(null)"><app-create-icon />{{ 'campaigns.new' | t }}</button></div>
+            }
           </tr>
         }
       }
     </tbody>
   </table>
 </app-table-wrapper>
+@if (data.hasValue()) {
+  <app-pagination
+    [loading]="data.isLoading()"
+    [page]="data.value().page"
+    [pageCount]="data.value().pageCount"
+    [total]="data.value().total"
+    [pageSize]="data.value().pageSize"
+  />
+}
 
 <app-dialog [(open)]="dialogOpen" [heading]="(editing() ? 'campaigns.edit' : 'campaigns.new') | t">
   <form class="grid gap-4 sm:grid-cols-2" (submit)="save($event)">
@@ -256,7 +269,7 @@
         class="self-start"
         (click)="addAd()"
       >
-        {{ 'campaigns.addAd' | t }}
+        <app-create-icon />{{ 'campaigns.addAd' | t }}
       </button>
     </fieldset>
     <div class="sm:col-span-2">

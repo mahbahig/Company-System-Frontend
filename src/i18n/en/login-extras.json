@@ -6,11 +6,18 @@
       "capsLock": "Caps Lock is on",
       "welcome": "Welcome back",
       "eyebrow": "Secure sign-in",
-      "restricted": "Access is restricted to authorized EcoTech personnel."
+      "restricted": "Access is restricted to authorized Ecotech personnel."
     },
     "scene": {
       "hint": "Drag to explore",
       "since": "Powering Egypt's clean-energy transition since 2018"
+    },
+    "validation": {
+      "emailRequired": "Email is required.",
+      "emailInvalid": "Please enter a valid email address.",
+      "passwordRequired": "Password is required.",
+      "passwordTooShort": "Password must be at least 6 characters long.",
+      "passwordLetterRequired": "Password must contain at least one letter."
     }
   }
 }

@@ -29,6 +29,9 @@ import { ActionRunner } from '../../../shared/utils/action-runner';
 import { userName } from '../../../shared/utils/display-name';
 import type { Person } from '../../proposals/proposals.models';
 import { ProjectsApi } from '../projects-api.service';
+import { LocalPager } from '../../../shared/crm/pagination/local-pager';
+import { PagerComponent } from '../../../shared/crm/pagination/pager.component';
+import { CreateIconComponent } from '../../../shared/ui/create-icon/create-icon.component';
 
 const PHASES = ['planning', 'procurement', 'installation', 'testing_commissioning', 'customer_acceptance', 'warranty_service'];
 
@@ -40,7 +43,7 @@ const PHASES = ['planning', 'procurement', 'installation', 'testing_commissionin
  */
 @Component({
   selector: 'app-project-detail-page',
-  imports: [BreadcrumbsComponent, FavoriteToggleComponent, DetailSkeletonComponent, ProjectWorkflowPanelComponent, RouterLink, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, CompletenessPanelComponent, DetailItemComponent, DocumentsPanelComponent, AlertComponent, BadgeComponent, ButtonDirective, PageHeaderComponent, TabsComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, ...TABLE_IMPORTS],
+  imports: [BreadcrumbsComponent, FavoriteToggleComponent, DetailSkeletonComponent, ProjectWorkflowPanelComponent, RouterLink, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, CompletenessPanelComponent, DetailItemComponent, DocumentsPanelComponent, AlertComponent, BadgeComponent, ButtonDirective, PageHeaderComponent, TabsComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, ...TABLE_IMPORTS, PagerComponent, CreateIconComponent],
   templateUrl: './project-detail.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
@@ -57,6 +60,12 @@ export class ProjectDetailPage {
   protected readonly phases = PHASES;
   protected readonly data = rxResource({ params: () => this.id(), stream: ({ params }) => this.api.get(params) });
   protected readonly project = computed(() => this.data.value()?.project);
+  /** The project's payments, paged in memory. */
+  protected readonly paymentsPager = new LocalPager(() => this.project()?.payments);
+  /** The project's procurement items, paged in memory. */
+  protected readonly procurementPager = new LocalPager(() => this.project()?.procurement);
+  /** The project's milestones, paged in memory (each row edits its own milestone). */
+  protected readonly milestonesPager = new LocalPager(() => this.project()?.milestones);
   protected readonly reload = () => this.data.reload();
 
   /** Payment milestones only reach roles with financial visibility (the API omits them otherwise). */

@@ -28,7 +28,8 @@ export class NavigationService {
         (item) =>
           this.routedPaths.has(item.path) &&
           (item.permission === null || (typeof item.permission === 'string' ? this.auth.can(item.permission) : this.auth.canAny(item.permission))) &&
-          (item.requiresAll ?? []).every((permission) => this.auth.can(permission)),
+          (item.requiresAll ?? []).every((permission) => this.auth.can(permission)) &&
+          !(item.hiddenWith && this.auth.can(item.hiddenWith)),
       ),
     })).filter((section) => section.items.length > 0);
   });

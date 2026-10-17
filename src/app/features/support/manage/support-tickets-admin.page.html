@@ -1,0 +1,120 @@
+<app-page-header [heading]="'support.desk.title' | t" [subtitle]="'support.desk.subtitle' | t" class="!mb-0">
+  @if (auth.can('support.delete', 'all')) {
+    <button type="button" appButton variant="destructive" [disabled]="actions.busy() || (result.hasValue() && !result.value().total && !filtered())" (click)="askDeleteAll()">
+      <app-icon [icon]="icons.remove" />{{ 'support.desk.deleteAll' | t }}
+    </button>
+  }
+</app-page-header>
+
+@if (notice(); as key) {
+  <app-alert variant="success">{{ key | t }}</app-alert>
+}
+@if (actions.message(); as text) {
+  <app-alert variant="success">{{ text }}</app-alert>
+}
+@if (actions.error(); as text) {
+  <app-alert variant="destructive">{{ text }}</app-alert>
+}
+
+<app-list-toolbar [searchValue]="q() ?? ''" [searchPlaceholder]="'support.desk.searchPlaceholder' | t" [filters]="filters()" />
+
+@if (result.error()) {
+  <app-alert variant="destructive">{{ i18n.errorText(result.error()) }}</app-alert>
+}
+
+@if (!result.isLoading() && !rows().length && !filtered()) {
+  <section class="flex flex-col items-center gap-3 rounded-lg border border-dashed border-border px-6 py-12 text-center">
+    <span class="flex size-12 items-center justify-center rounded-full bg-secondary text-muted-foreground">
+      <app-icon [icon]="icons.empty" svgClass="size-6" />
+    </span>
+    <h2 class="text-base font-semibold">{{ 'support.desk.empty' | t }}</h2>
+    <p class="max-w-md text-sm text-muted-foreground">{{ 'support.desk.emptyHint' | t }}</p>
+  </section>
+} @else {
+  <app-table-wrapper [label]="'support.desk.title' | t" [attr.aria-busy]="result.isLoading()">
+    <table appTable>
+      <thead appTableHeader>
+        <tr appTableRow>
+          <th appTableHead>{{ 'support.columns.ticket' | t }}</th>
+          <th appTableHead>{{ 'support.columns.title' | t }}</th>
+          <th appTableHead>{{ 'support.columns.employee' | t }}</th>
+          <th appTableHead>{{ 'support.columns.severity' | t }}</th>
+          <th appTableHead>{{ 'support.columns.status' | t }}</th>
+          <th appTableHead>{{ 'support.columns.created' | t }}</th>
+          <th appTableHead>{{ 'support.columns.lastActivity' | t }}</th>
+        </tr>
+      </thead>
+      <tbody appTableBody>
+        @for (row of rows(); track row.id) {
+          <tr appTableRow [appRowLink]="['/', i18n.locale(), 'support', row.id]">
+            <td appTableCell class="whitespace-nowrap tabular" dir="ltr">{{ row.ticketNo }}</td>
+            <td appTableCell>
+              <a [routerLink]="['/', i18n.locale(), 'support', row.id]" class="font-medium text-primary underline-offset-4 hover:underline">{{ row.title }}</a>
+              <span class="ms-2 inline-flex items-center gap-3 align-middle text-xs text-muted-foreground">
+                @if (row.commentCount) {
+                  <span class="inline-flex items-center gap-1" [attr.aria-label]="'support.columns.replies' | t">
+                    <app-icon [icon]="icons.comments" svgClass="size-3.5" />{{ row.commentCount }}
+                  </span>
+                }
+                @if (row.attachmentCount) {
+                  <span class="inline-flex items-center gap-1" [attr.aria-label]="'support.detail.attachments' | t">
+                    <app-icon [icon]="icons.attachments" svgClass="size-3.5" />{{ row.attachmentCount }}
+                  </span>
+                }
+              </span>
+            </td>
+            <td appTableCell>
+              <div class="flex items-center gap-2">
+                <app-avatar [userId]="row.requesterId" [name]="employee(row)" size="sm" />
+                <div class="min-w-0">
+                  <span class="block whitespace-nowrap">{{ employee(row) }}</span>
+                  <span class="block break-all text-xs text-muted-foreground" dir="ltr">{{ row.requesterEmail }}</span>
+                </div>
+              </div>
+            </td>
+            <td appTableCell>
+              <app-support-severity-badge [severity]="row.severity" />
+            </td>
+            <td appTableCell>
+              <app-badge [tone]="tone[row.status]">{{ 'support.status.' + row.status | t }}</app-badge>
+            </td>
+            <td appTableCell class="whitespace-nowrap tabular">{{ i18n.formatDate(row.createdAt, true) }}</td>
+            <td appTableCell class="whitespace-nowrap tabular">{{ i18n.formatDate(row.lastActivityAt, true) }}</td>
+          </tr>
+        } @empty {
+          @if (result.isLoading()) {
+            @for (i of [0, 1, 2, 3]; track i) {
+              <tr app-skeleton-row [columns]="7" [index]="i"></tr>
+            }
+          } @else {
+            <tr app-table-empty [colSpan]="7">{{ 'support.emptyFiltered' | t }}</tr>
+          }
+        }
+      </tbody>
+    </table>
+  </app-table-wrapper>
+}
+
+@if (result.hasValue() && result.value().total) {
+  <app-pagination
+    [loading]="result.isLoading()" [page]="result.value().page" [pageCount]="result.value().pageCount" [total]="result.value().total" [pageSize]="result.value().pageSize" />
+}
+
+<app-dialog [(open)]="confirming" [heading]="'support.desk.deleteAllTitle' | t">
+  <form class="flex flex-col gap-4" novalidate (submit)="deleteAll($event)">
+    <p class="text-sm">{{ 'support.desk.deleteAllBody' | t }}</p>
+    <div>
+      <label appLabel for="delete-all-phrase">{{ 'support.desk.deleteAllType' | t: { phrase: phrase } }}</label>
+      <input appInput id="delete-all-phrase" autocomplete="off" dir="ltr" [value]="typed()" (input)="typed.set($any($event.target).value)" />
+    </div>
+    @if (actions.error(); as text) {
+      <app-alert variant="destructive">{{ text }}</app-alert>
+    }
+    <div class="flex flex-wrap justify-end gap-2">
+      <button type="button" appButton variant="outline" (click)="confirming.set(false)">{{ 'support.confirm.cancel' | t }}</button>
+      <button type="submit" appButton variant="destructive" [disabled]="!phraseMatches() || actions.busy()">
+        {{ (actions.busy() ? 'support.desk.deleting' : 'support.desk.deleteAllConfirm') | t }}
+      </button>
+    </div>
+  </form>
+</app-dialog>

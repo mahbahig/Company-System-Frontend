@@ -2,7 +2,7 @@ import { AdditiveBlending, NormalBlending } from 'three';
 
 /**
  * Every tunable of the decorative three.js pieces in one place. They are
- * presentation only — nothing here knows about, or reacts to, CRM data.
+ * presentation only — nothing here knows about, or reacts to, business data.
  *
  * The view is always two world units tall (y from -1 to 1) at the focal
  * plane, whatever the canvas size, so sizes read as shares of the canvas

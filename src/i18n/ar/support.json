@@ -1,0 +1,179 @@
+{
+  "navigation": {
+    "sections": {
+      "help": "المساعدة"
+    },
+    "items": {
+      "support": "المساعدة والدعم",
+      "supportTickets": "تذاكر الدعم"
+    }
+  },
+  "support": {
+    "title": "المساعدة والدعم",
+    "subtitle": "أبلغ مدير النظام بخطأ أو مشكلة وتابع الرد هنا.",
+    "new": "تذكرة جديدة",
+    "newTitle": "الإبلاغ عن مشكلة",
+    "newSubtitle": "صِف ما حدث. يصل إشعار إلى مدير النظام ويرد على التذكرة.",
+    "myTickets": "تذاكري",
+    "searchPlaceholder": "ابحث بالعنوان أو رقم التذكرة",
+    "empty": "لم تُبلغ عن أي مشكلة بعد.",
+    "emptyHint": "هل هناك شيء لا يعمل كما ينبغي؟ أخبر مدير النظام — وسيصلك الرد هنا.",
+    "emptyFiltered": "لا توجد تذاكر تطابق عوامل التصفية.",
+    "columns": {
+      "ticket": "التذكرة",
+      "title": "العنوان",
+      "employee": "الموظف",
+      "status": "الحالة",
+      "created": "تاريخ الإنشاء",
+      "lastActivity": "آخر نشاط",
+      "replies": "الردود",
+      "severity": "الخطورة"
+    },
+    "status": {
+      "pending": "قيد الانتظار",
+      "resolved": "تم الحل"
+    },
+    "category": {
+      "bug": "خطأ في النظام",
+      "technical_problem": "مشكلة تقنية",
+      "account_access": "الحساب / الصلاحيات",
+      "feature_request": "طلب ميزة",
+      "other": "أخرى"
+    },
+    "fields": {
+      "title": "العنوان",
+      "titleHint": "ملخص قصير للمشكلة.",
+      "description": "الوصف",
+      "descriptionHint": "ما الذي حدث، وما الذي كنت تتوقعه، والخطوات التي أدت إلى المشكلة.",
+      "category": "النوع",
+      "screenshots": "لقطات الشاشة",
+      "optional": "اختياري",
+      "severity": "الخطورة"
+    },
+    "screenshots": {
+      "drop": "اسحب لقطات الشاشة وأفلتها هنا",
+      "or": "أو",
+      "browse": "اختر الملفات",
+      "hint": "{types} — حتى {count} ملفات، بحد أقصى {size} لكل ملف",
+      "remove": "إزالة {name}",
+      "unavailable": "لا يمكن إرفاق لقطات شاشة حاليًا — صِف المشكلة بالكلمات.",
+      "tooMany": "يمكنك إرفاق {count} لقطات شاشة كحد أقصى.",
+      "wrongType": "ليست صورة PNG أو JPG أو WebP.",
+      "tooLarge": "أكبر من {size}.",
+      "empty": "الملف فارغ."
+    },
+    "submit": "إرسال التذكرة",
+    "submitting": "جارٍ الإرسال…",
+    "uploading": "جارٍ رفع لقطات الشاشة… {percent}٪",
+    "creating": "جارٍ إنشاء التذكرة…",
+    "validation": {
+      "titleRequired": "أدخل عنوانًا.",
+      "descriptionRequired": "صِف المشكلة."
+    },
+    "notices": {
+      "created": "تم إرسال تذكرتك وإشعار مدير النظام.",
+      "commented": "تم إرسال رسالتك.",
+      "resolved": "تم حل التذكرة وإشعار الموظف.",
+      "reopened": "أُعيد فتح التذكرة وتم إشعار الموظف.",
+      "deleted": "تم حذف التذكرة.",
+      "attachmentDeleted": "تم حذف لقطة الشاشة.",
+      "allDeleted": "تم حذف {count} تذكرة."
+    },
+    "detail": {
+      "title": "تذكرة دعم",
+      "heading": "التذكرة {number}",
+      "description": "الوصف",
+      "attachments": "لقطات الشاشة",
+      "noAttachments": "لا توجد لقطات شاشة مرفقة.",
+      "conversation": "المحادثة",
+      "noComments": "لا توجد رسائل بعد. يرد مدير النظام هنا.",
+      "addComment": "أضف رسالة",
+      "commentPlaceholder": "اكتب رسالة…",
+      "send": "إرسال",
+      "sending": "جارٍ الإرسال…",
+      "details": "التفاصيل",
+      "category": "النوع",
+      "createdBy": "أنشأها",
+      "created": "تاريخ الإنشاء",
+      "updated": "آخر تحديث",
+      "resolved": "تاريخ الحل",
+      "resolvedBy": "حلّها",
+      "you": "أنت",
+      "support": "مدير النظام",
+      "open": "عرض لقطة الشاشة",
+      "openNewTab": "فتح في علامة تبويب جديدة",
+      "attachmentAlt": "لقطة شاشة: {name}"
+    },
+    "actions": {
+      "title": "إدارة التذكرة",
+      "note": "ملاحظة للموظف (اختياري)",
+      "resolve": "حل التذكرة",
+      "reopen": "إعادة فتح التذكرة",
+      "delete": "حذف التذكرة",
+      "deleteAttachment": "حذف لقطة الشاشة"
+    },
+    "confirm": {
+      "resolveTitle": "حل هذه التذكرة؟",
+      "resolveBody": "سيُبلَّغ الموظف بأن تذكرته قد حُلّت.",
+      "reopenTitle": "إعادة فتح هذه التذكرة؟",
+      "reopenBody": "تعود التذكرة إلى قيد الانتظار ويُبلَّغ الموظف.",
+      "deleteTitle": "حذف هذه التذكرة؟",
+      "deleteBody": "هل أنت متأكد من حذف هذه التذكرة؟ لا يمكن التراجع عن هذا الإجراء.",
+      "deleteAttachmentTitle": "حذف لقطة الشاشة هذه؟",
+      "deleteAttachmentBody": "سيُحذف {name} نهائيًا. لا يمكن التراجع عن هذا الإجراء.",
+      "cancel": "إلغاء"
+    },
+    "desk": {
+      "title": "تذاكر الدعم",
+      "subtitle": "المشكلات التي أبلغ عنها الموظفون: رُدّ عليها أو حُلّها أو احذفها.",
+      "searchPlaceholder": "ابحث بالعنوان أو رقم التذكرة أو الاسم أو البريد الإلكتروني",
+      "empty": "لا توجد تذاكر دعم بعد.",
+      "emptyHint": "عندما يُبلغ موظف عن مشكلة تظهر هنا ويصلك إشعار.",
+      "deleteAll": "حذف جميع التذاكر",
+      "deleteAllTitle": "حذف جميع تذاكر الدعم؟",
+      "deleteAllBody": "سيؤدي هذا إلى حذف جميع تذاكر الدعم وتعليقاتها ولقطات شاشتها نهائيًا. لا يمكن التراجع عن هذا الإجراء.",
+      "deleteAllType": "اكتب {phrase} للتأكيد",
+      "deleteAllConfirm": "حذف جميع التذاكر",
+      "deleting": "جارٍ الحذف…"
+    },
+    "severity": {
+      "low": "منخفضة",
+      "medium": "متوسطة",
+      "high": "عالية",
+      "critical": "حرجة"
+    },
+    "severityHint": {
+      "low": "مشكلة بسيطة — يمكنني مواصلة العمل.",
+      "medium": "تُبطئ عملي.",
+      "high": "تمنعني من إنجاز مهمة مهمة.",
+      "critical": "لا أستطيع العمل إطلاقًا، أو يتأثر بها كثيرون."
+    },
+    "overview": {
+      "title": "مكتب الدعم",
+      "subtitle": "التذاكر التي تنتظرك، محسوبة لحظيًا.",
+      "open": "فتح مكتب الدعم",
+      "newTickets": "التذاكر الجديدة",
+      "newTicketsHint": "بانتظار رد أو حل",
+      "criticalTickets": "التذاكر الحرجة",
+      "criticalTicketsHint": "جديدة وحرجة — ابدأ بها"
+    }
+  },
+  "server": {
+    "errors": {
+      "supportTicketTransitionNotAllowed": "تغيّرت حالة هذه التذكرة بالفعل. أعد تحميل الصفحة وحاول مرة أخرى.",
+      "supportDeskCannotFileTickets": "فريق الدعم يردّ على التذاكر ولا يمكنه إنشاؤها.",
+      "attachmentTypeNotAllowed": "يجب أن تكون لقطات الشاشة صورًا بصيغة PNG أو JPG أو WebP.",
+      "attachmentCorrupt": "إحدى لقطات الشاشة فارغة أو تالفة.",
+      "tooManyAttachments": "عدد لقطات الشاشة المرفقة كبير جدًا.",
+      "attachmentStorageUnavailable": "لا يمكن حفظ لقطات الشاشة حاليًا. أرسل التذكرة بدونها أو حاول لاحقًا.",
+      "attachmentUploadFailed": "تعذّر رفع لقطات الشاشة ولم يُحفظ شيء. يُرجى المحاولة مرة أخرى.",
+      "attachmentDeleteFailed": "تعذّر حذف لقطات الشاشة من التخزين ولم يُحذف شيء. يُرجى المحاولة مرة أخرى.",
+      "attachmentReadFailed": "تعذّر تحميل لقطة الشاشة."
+    },
+    "validation": {
+      "imageType": "ليست صورة PNG أو JPG أو WebP.",
+      "imageCorrupt": "الصورة فارغة أو تالفة.",
+      "tooManyFiles": "عدد الملفات كبير جدًا."
+    }
+  }
+}

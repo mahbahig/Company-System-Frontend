@@ -18,6 +18,7 @@ import { ButtonDirective } from '../../shared/ui/button/button.directive';
 import { CARD_IMPORTS } from '../../shared/ui/card/card.imports';
 import { IconComponent } from '../../shared/ui/icon/icon.component';
 import { ListSkeletonComponent } from '../../shared/ui/skeleton/skeleton.component';
+import { CreateIconComponent } from '../../shared/ui/create-icon/create-icon.component';
 
 const MAX_ITEMS = 5;
 /** Business records a role can bookmark; without any of these the panel has nothing to offer. */
@@ -31,7 +32,7 @@ const RECORD_VIEW_PERMISSIONS = ['customers.view', 'leads.view', 'opportunities.
  */
 @Component({
   selector: 'app-quick-access',
-  imports: [RouterLink, TranslatePipe, ButtonDirective, IconComponent, ListSkeletonComponent, ...CARD_IMPORTS],
+  imports: [RouterLink, TranslatePipe, ButtonDirective, IconComponent, ListSkeletonComponent, ...CARD_IMPORTS, CreateIconComponent],
   templateUrl: './quick-access.component.html',
 })
 export class QuickAccessComponent {

@@ -1,0 +1,113 @@
+{
+  "act": {
+    "calls": {
+      "new": "مكالمة جديدة"
+    },
+    "log": {
+      "new": "تفاعل جديد"
+    },
+    "meetings": {
+      "new": "اجتماع جديد"
+    },
+    "visits": {
+      "new": "زيارة جديدة"
+    },
+    "fields": {
+      "addAttendee": "إضافة حاضر"
+    }
+  },
+  "admin": {
+    "equipment": {
+      "new": "معدة جديدة"
+    },
+    "reference": {
+      "new": "عنصر جديد"
+    },
+    "roles": {
+      "new": "دور جديد"
+    },
+    "teams": {
+      "new": "فريق جديد",
+      "addMember": "إضافة عضو"
+    },
+    "users": {
+      "new": "موظف جديد"
+    },
+    "intakeForms": {
+      "addField": "إضافة حقل"
+    },
+    "rules": {
+      "add": "إضافة قاعدة"
+    }
+  },
+  "approvals": {
+    "delegations": {
+      "add": "إضافة تفويض"
+    }
+  },
+  "assess": {
+    "createVersion": "إصدار جديد"
+  },
+  "campaigns": {
+    "new": "حملة جديدة",
+    "addAd": "إضافة إعلان"
+  },
+  "contracts": {
+    "addSignatory": "إضافة موقِّع"
+  },
+  "crm": {
+    "customers": {
+      "new": "عميل جديد",
+      "detail": {
+        "newSite": "موقع جديد"
+      }
+    },
+    "leads": {
+      "new": "عميل محتمل جديد"
+    },
+    "opportunities": {
+      "new": "فرصة جديدة",
+      "risks": {
+        "add": "إضافة خطر"
+      }
+    },
+    "tasks": {
+      "new": "مهمة جديدة"
+    },
+    "contacts": {
+      "new": "جهة اتصال جديدة"
+    }
+  },
+  "oppHub": {
+    "newTask": "مهمة جديدة"
+  },
+  "pipeline": {
+    "delivery": {
+      "newWorkOrder": "أمر عمل جديد",
+      "newChangeRequest": "طلب تغيير جديد"
+    }
+  },
+  "prop": {
+    "createVersion": "إصدار جديد",
+    "costs": {
+      "add": "إضافة بند تكلفة"
+    },
+    "milestones": {
+      "add": "إضافة دفعة"
+    },
+    "financing": {
+      "add": "إضافة خيار تمويل"
+    }
+  },
+  "solar": {
+    "bom": {
+      "add": "إضافة بند"
+    },
+    "design": {
+      "add": "إضافة صف"
+    }
+  },
+  "support": {
+    "new": "تذكرة جديدة"
+  }
+}

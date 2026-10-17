@@ -7,6 +7,8 @@ import { TooltipDirective } from '../tooltip/tooltip.directive';
 /**
  * Modal dialog on the native `<dialog>` element: `showModal()` gives a real
  * focus trap, Escape-to-close and an inert background without extra code.
+ * The header (title and ✕) stays at the top while a long body scrolls inside
+ * the dialog — never the page behind it.
  * `<app-dialog [(open)]="editing" [heading]="…" [dirty]="formDirty">…form…</app-dialog>`
  *
  * `dirty` (optional) reports unsaved input: closing with Escape or ✕ then

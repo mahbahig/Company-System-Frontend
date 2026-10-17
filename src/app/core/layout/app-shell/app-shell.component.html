@@ -91,14 +91,6 @@
       <app-icon [icon]="menuIcon" />
     </button>
 
-    @if (environmentBadge) {
-      <span
-        class="max-w-24 truncate rounded-full border border-warning/40 bg-warning/10 px-2 py-0.5 text-2xs font-semibold uppercase tracking-wide text-warning-tint sm:max-w-none sm:px-2.5"
-      >
-        {{ 'app.environment.' + environmentBadge | t }}
-      </span>
-    }
-
     <div class="ms-auto flex min-w-0 items-center gap-0.5 sm:gap-1">
       <app-global-search />
       <app-notification-bell />

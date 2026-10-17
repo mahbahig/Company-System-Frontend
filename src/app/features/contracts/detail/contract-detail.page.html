@@ -87,7 +87,7 @@
               </div>
             }
             @if (perms.canEdit) {
-              <button type="button" appButton variant="outline" size="sm" (click)="addSignatory()">{{ 'contracts.addSignatory' | t }}</button>
+              <button type="button" appButton variant="outline" size="sm" (click)="addSignatory()"><app-create-icon />{{ 'contracts.addSignatory' | t }}</button>
             }
           </div>
           @if (perms.canEdit && c.status !== 'draft') {

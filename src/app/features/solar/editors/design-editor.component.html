@@ -117,7 +117,7 @@
       }
       @if (!readonly()) {
         <button type="button" appButton variant="outline" size="sm" (click)="addRow(group.key)">
-          {{ 'solar.design.add' | t }}
+          <app-create-icon />{{ 'solar.design.add' | t }}
         </button>
       }
     </div>

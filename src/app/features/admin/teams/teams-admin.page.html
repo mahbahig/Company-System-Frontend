@@ -3,7 +3,7 @@
   [subtitle]="'admin.teams.subtitle' | t"
   class="!mb-0"
 >
-  <button type="button" appButton (click)="edit(null)">{{ 'admin.teams.new' | t }}</button>
+  <button type="button" appButton (click)="edit(null)"><app-create-icon />{{ 'admin.teams.new' | t }}</button>
 </app-page-header>
 @if (actions.message(); as text) {
   <app-alert>{{ text }}</app-alert>
@@ -23,7 +23,7 @@
       </tr>
     </thead>
     <tbody appTableBody>
-      @for (team of data.value() ?? []; track team.id) {
+      @for (team of teamsPager.rows(); track team.id) {
         <tr appTableRow>
           <td appTableCell>
             <span class="font-medium">{{ i18n.pick(team.nameAr, team.nameEn) }}</span>
@@ -53,12 +53,15 @@
             {{
               'admin.empty' | t
             }}
+            <!-- The same create action as the page header (and the same permission). -->
+            <div class="mt-3"><button type="button" appButton (click)="edit(null)"><app-create-icon />{{ 'admin.teams.new' | t }}</button></div>
           </tr>
         }
       }
     </tbody>
   </table>
 </app-table-wrapper>
+<app-pager [pager]="teamsPager" />
 
 <app-dialog [(open)]="open" [heading]="(editing() ? 'admin.teams.edit' : 'admin.teams.new') | t">
   <form class="grid gap-4 sm:grid-cols-2" (submit)="save($event)">
@@ -145,7 +148,7 @@
           class="self-start"
           (click)="addMember()"
         >
-          {{ 'admin.teams.addMember' | t }}
+          <app-create-icon />{{ 'admin.teams.addMember' | t }}
         </button>
       </div>
     </fieldset>

@@ -31,6 +31,8 @@ import { asUserRef } from '../../../shared/utils/display-name';
 import { OpportunitiesApi } from '../opportunities-api.service';
 import type { Opportunity } from '../models/opportunity.interface';
 import { RowLinkDirective } from '../../../shared/ui/table/row-link.directive';
+import { DEFAULT_PAGE_SIZE, pageSizeAttribute } from '../../../shared/crm/pagination/page-size';
+import { CreateIconComponent } from '../../../shared/ui/create-icon/create-icon.component';
 
 const flag = (value: string | undefined) => value === '1' || value === 'true';
 
@@ -71,8 +73,7 @@ const OPPORTUNITY_COLUMNS: ColumnDef[] = [
     TableRowDirective,
     TableHeadDirective,
     TableCellDirective,
-    TableEmptyComponent,
-  ],
+    TableEmptyComponent, CreateIconComponent],
   templateUrl: './opportunities-list.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
@@ -99,6 +100,8 @@ export class OpportunitiesListPage {
   readonly stagnant = input<string>();
   readonly technicalGap = input<string>();
   readonly page = input(1, { transform: (value: unknown) => numberAttribute(value, 1) });
+  /** `?pageSize=` (10 / 20 / 50 / 100; default 20). */
+  readonly pageSize = input(DEFAULT_PAGE_SIZE, { transform: pageSizeAttribute });
 
   protected readonly canCreate = computed(() => this.auth.can('opportunities.create'));
 
@@ -117,7 +120,7 @@ export class OpportunitiesListPage {
       intakeIncomplete: flag(this.intakeIncomplete()) || undefined,
       stagnant: flag(this.stagnant()) || undefined,
       technicalGap: flag(this.technicalGap()) || undefined,
-      page: this.page(),
+      page: this.page(), pageSize: this.pageSize(),
     }),
     stream: ({ params }) => this.opportunities.list(params),
   });

@@ -30,7 +30,7 @@
           </tr>
         </thead>
         <tbody appTableBody>
-          @for (row of d.campaigns; track row.code) {
+          @for (row of campaignsPager.rows(); track row.code) {
             <tr appTableRow>
               <td appTableCell class="font-medium">{{ i18n.pick(row.nameAr, row.nameEn) }}</td>
               <td appTableCell class="tabular">{{ n(row.leads) }}</td>
@@ -65,6 +65,7 @@
         </tbody>
       </table>
     </app-table-wrapper>
+    <app-pager [pager]="campaignsPager" />
   </section>
 
   <div class="grid gap-6 lg:grid-cols-2">

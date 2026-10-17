@@ -99,7 +99,7 @@
           </tr>
         </thead>
         <tbody appTableBody>
-          @for (row of d.trend; track row.month) {
+          @for (row of trendPager.rows(); track row.month) {
             <tr appTableRow>
               <td appTableCell class="tabular" dir="ltr">{{ row.month }}</td>
               <td appTableCell class="tabular">{{ n(row.leads) }}</td>
@@ -112,6 +112,7 @@
         </tbody>
       </table>
     </app-table-wrapper>
+    <app-pager [pager]="trendPager" />
   </section>
 } @else if (data.isLoading()) {
   <app-dashboard-skeleton [label]="'common.labels.loading' | t" />

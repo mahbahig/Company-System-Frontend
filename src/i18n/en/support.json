@@ -1,0 +1,179 @@
+{
+  "navigation": {
+    "sections": {
+      "help": "Help"
+    },
+    "items": {
+      "support": "Help & Support",
+      "supportTickets": "Support tickets"
+    }
+  },
+  "support": {
+    "title": "Help & Support",
+    "subtitle": "Report a bug or a problem to the system administrator and follow the answer here.",
+    "new": "New ticket",
+    "newTitle": "Report a problem",
+    "newSubtitle": "Describe what went wrong. The system administrator is notified and replies on the ticket.",
+    "myTickets": "My tickets",
+    "searchPlaceholder": "Search by title or ticket number",
+    "empty": "You haven't reported any problems yet.",
+    "emptyHint": "Something not working as it should? Tell the system administrator — the answer arrives right here.",
+    "emptyFiltered": "No tickets match these filters.",
+    "columns": {
+      "ticket": "Ticket",
+      "title": "Title",
+      "employee": "Employee",
+      "status": "Status",
+      "created": "Created",
+      "lastActivity": "Last activity",
+      "replies": "Replies",
+      "severity": "Severity"
+    },
+    "status": {
+      "pending": "Pending",
+      "resolved": "Resolved"
+    },
+    "category": {
+      "bug": "Bug",
+      "technical_problem": "Technical problem",
+      "account_access": "Account / access",
+      "feature_request": "Feature request",
+      "other": "Other"
+    },
+    "fields": {
+      "title": "Title",
+      "titleHint": "A short summary of the problem.",
+      "description": "Description",
+      "descriptionHint": "What happened, what you expected, and the steps that lead to it.",
+      "category": "Type",
+      "screenshots": "Screenshots",
+      "optional": "optional",
+      "severity": "Severity"
+    },
+    "screenshots": {
+      "drop": "Drag and drop screenshots here",
+      "or": "or",
+      "browse": "Browse files",
+      "hint": "{types} — up to {count} files, max {size} each",
+      "remove": "Remove {name}",
+      "unavailable": "Screenshots can't be attached right now — describe the problem in words.",
+      "tooMany": "You can attach up to {count} screenshots.",
+      "wrongType": "Not a PNG, JPG or WebP image.",
+      "tooLarge": "Larger than {size}.",
+      "empty": "The file is empty."
+    },
+    "submit": "Submit ticket",
+    "submitting": "Submitting…",
+    "uploading": "Uploading screenshots… {percent}%",
+    "creating": "Creating your ticket…",
+    "validation": {
+      "titleRequired": "Enter a title.",
+      "descriptionRequired": "Describe the problem."
+    },
+    "notices": {
+      "created": "Your ticket was submitted. The system administrator has been notified.",
+      "commented": "Your message was sent.",
+      "resolved": "The ticket is resolved and the employee was notified.",
+      "reopened": "The ticket is open again and the employee was notified.",
+      "deleted": "The ticket was deleted.",
+      "attachmentDeleted": "The screenshot was deleted.",
+      "allDeleted": "{count} tickets were deleted."
+    },
+    "detail": {
+      "title": "Support ticket",
+      "heading": "Ticket {number}",
+      "description": "Description",
+      "attachments": "Screenshots",
+      "noAttachments": "No screenshots attached.",
+      "conversation": "Conversation",
+      "noComments": "No messages yet. The system administrator replies here.",
+      "addComment": "Add a message",
+      "commentPlaceholder": "Write a message…",
+      "send": "Send",
+      "sending": "Sending…",
+      "details": "Details",
+      "category": "Type",
+      "createdBy": "Created by",
+      "created": "Created",
+      "updated": "Last updated",
+      "resolved": "Resolved",
+      "resolvedBy": "Resolved by",
+      "you": "You",
+      "support": "System administrator",
+      "open": "Open screenshot",
+      "openNewTab": "Open in a new tab",
+      "attachmentAlt": "Screenshot: {name}"
+    },
+    "actions": {
+      "title": "Manage ticket",
+      "note": "Note to the employee (optional)",
+      "resolve": "Resolve ticket",
+      "reopen": "Reopen ticket",
+      "delete": "Delete ticket",
+      "deleteAttachment": "Delete screenshot"
+    },
+    "confirm": {
+      "resolveTitle": "Resolve this ticket?",
+      "resolveBody": "The employee will be notified that their ticket is resolved.",
+      "reopenTitle": "Reopen this ticket?",
+      "reopenBody": "The ticket goes back to pending and the employee is notified.",
+      "deleteTitle": "Delete this ticket?",
+      "deleteBody": "Are you sure you want to delete this ticket? This action cannot be undone.",
+      "deleteAttachmentTitle": "Delete this screenshot?",
+      "deleteAttachmentBody": "{name} will be deleted permanently. This action cannot be undone.",
+      "cancel": "Cancel"
+    },
+    "desk": {
+      "title": "Support tickets",
+      "subtitle": "Problems reported by employees: reply, resolve or delete them.",
+      "searchPlaceholder": "Search by title, ticket number, name or e-mail",
+      "empty": "No support tickets yet.",
+      "emptyHint": "When an employee reports a problem, it appears here and you are notified.",
+      "deleteAll": "Delete all tickets",
+      "deleteAllTitle": "Delete all support tickets?",
+      "deleteAllBody": "This will permanently delete all support tickets and their comments and screenshots. This action cannot be undone.",
+      "deleteAllType": "Type {phrase} to confirm",
+      "deleteAllConfirm": "Delete all tickets",
+      "deleting": "Deleting…"
+    },
+    "severity": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "critical": "Critical"
+    },
+    "severityHint": {
+      "low": "A minor issue — I can keep working.",
+      "medium": "It slows my work down.",
+      "high": "It blocks an important task.",
+      "critical": "I can't work at all, or many people are affected."
+    },
+    "overview": {
+      "title": "Support desk",
+      "subtitle": "Tickets waiting for you, counted live.",
+      "open": "Open the support desk",
+      "newTickets": "New tickets",
+      "newTicketsHint": "Waiting for a reply or a fix",
+      "criticalTickets": "Critical tickets",
+      "criticalTicketsHint": "New and critical — handle these first"
+    }
+  },
+  "server": {
+    "errors": {
+      "supportTicketTransitionNotAllowed": "This ticket's status has already changed. Reload the page and try again.",
+      "supportDeskCannotFileTickets": "The support desk answers tickets and can't file them.",
+      "attachmentTypeNotAllowed": "Screenshots must be PNG, JPG or WebP images.",
+      "attachmentCorrupt": "One of the screenshots is empty or damaged.",
+      "tooManyAttachments": "Too many screenshots attached.",
+      "attachmentStorageUnavailable": "Screenshots can't be stored right now. Submit the ticket without them, or try again later.",
+      "attachmentUploadFailed": "The screenshots couldn't be uploaded, so nothing was saved. Please try again.",
+      "attachmentDeleteFailed": "The screenshots couldn't be removed from storage, so nothing was deleted. Please try again.",
+      "attachmentReadFailed": "The screenshot couldn't be loaded."
+    },
+    "validation": {
+      "imageType": "Not a PNG, JPG or WebP image.",
+      "imageCorrupt": "The image is empty or damaged.",
+      "tooManyFiles": "Too many files."
+    }
+  }
+}

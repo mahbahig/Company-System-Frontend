@@ -12,11 +12,7 @@
     class="flex flex-col gap-5 rounded-xl border border-border/80 bg-card p-6 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:px-7"
   >
     <div class="flex min-w-0 items-center gap-4">
-      <span
-        class="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-primary text-xl font-semibold text-primary-foreground shadow-sm"
-        aria-hidden="true"
-        >{{ initial(p) }}</span
-      >
+      <app-avatar [userId]="p.user.id" [name]="i18n.pick(p.user.fullNameAr, p.user.fullNameEn)" size="lg" />
       <div class="min-w-0">
         <h1 class="truncate text-2xl font-semibold tracking-tight">
           {{ i18n.pick(p.user.fullNameAr, p.user.fullNameEn) }}
@@ -41,6 +37,164 @@
       }}</span>
     </div>
   </header>
+
+  @if (actions.message(); as text) {
+    <app-alert>{{ text }}</app-alert>
+  }
+  @if (secret(); as s) {
+    <app-alert variant="destructive">
+      {{ 'admin.users.temporaryPassword' | t }}
+      <code class="ms-1 rounded bg-muted px-2 py-0.5 font-mono" dir="ltr">{{ s }}</code>
+    </app-alert>
+  }
+
+  @if (isPeerAdmin() && auth.can('administration.manage_users')) {
+    <!-- Another Super Administrator: read only. Nothing here changes or inspects their account (the API refuses it all). -->
+    <app-alert data-testid="peer-admin-read-only">{{ 'employees.manage.protected' | t }}</app-alert>
+  } @else if (canManage()) {
+    <section appCard aria-labelledby="emp-manage" data-testid="employee-management">
+      <div appCardHeader class="flex flex-row flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 appCardTitle id="emp-manage">{{ 'employees.manage.title' | t }}</h2>
+          <p appCardDescription>
+            {{ (isSelf() ? 'employees.manage.ownAccount' : 'employees.manage.subtitle') | t }}
+          </p>
+        </div>
+      </div>
+      <div appCardContent class="flex flex-wrap gap-2">
+        <button
+          type="button"
+          appButton
+          variant="soft-primary"
+          [disabled]="!account.hasValue()"
+          (click)="editorOpen.set(true)"
+        >
+          <app-icon [icon]="icons.edit" />{{ 'crm.common.edit' | t }}
+        </button>
+        @if (isSelf()) {
+          <a appButton variant="soft-info" [routerLink]="['/', i18n.locale(), 'account', 'profile']">
+            <app-icon [icon]="icons.manage" />{{ 'employees.manage.openProfile' | t }}
+          </a>
+        } @else {
+          @if (p.user.isActive) {
+            <button type="button" appButton variant="soft-destructive" (click)="deactivateOpen.set(true)">
+              <app-icon [icon]="icons.deactivate" />{{ 'admin.users.deactivate' | t }}
+            </button>
+          } @else {
+            <button type="button" appButton variant="soft-success" (click)="activate()">
+              <app-icon [icon]="icons.activate" />{{ 'admin.users.activate' | t }}
+            </button>
+          }
+          <button type="button" appButton variant="soft-warning" (click)="reset()">
+            <app-icon [icon]="icons.reset" />{{ 'admin.users.resetPassword' | t }}
+          </button>
+          <button type="button" appButton variant="soft-destructive" (click)="logOutEverywhere()">
+            <app-icon [icon]="icons.logOut" />{{ 'admin.users.forceLogout' | t }}
+          </button>
+        }
+      </div>
+    </section>
+    <app-employee-editor
+      [(open)]="editorOpen"
+      [user]="account.value() ?? null"
+      [roles]="roles.value() ?? []"
+      [teams]="teams.value() ?? []"
+      (saved)="onSaved($event)"
+    />
+    <app-employee-deactivate [(open)]="deactivateOpen" [user]="p.user" (deactivated)="onDeactivated()" />
+  }
+
+  @if (showSecurity()) {
+    <section appCard aria-labelledby="emp-security" data-testid="employee-security-activity">
+      <div appCardHeader class="flex flex-row flex-wrap items-start justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <span class="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary" aria-hidden="true">
+            <app-icon [icon]="icons.security" svgClass="size-4" />
+          </span>
+          <div>
+            <h2 appCardTitle id="emp-security">{{ 'employees.security.title' | t }}</h2>
+            <p appCardDescription>{{ 'employees.security.subtitle' | t }}</p>
+          </div>
+        </div>
+        @if (canOpenAudit()) {
+          <a
+            appButton
+            variant="outline"
+            size="sm"
+            data-testid="view-audit-logs"
+            [routerLink]="['/', i18n.locale(), 'admin', 'audit']"
+            [queryParams]="{ userId: p.user.id }"
+          >
+            <app-icon [icon]="icons.audit" />{{ 'employees.security.viewAuditLogs' | t }}
+          </a>
+        }
+      </div>
+      <div appCardContent class="flex flex-col gap-6">
+        @if (security.error()) {
+          <app-alert variant="destructive">{{ i18n.errorText(security.error()) }}</app-alert>
+        } @else if (security.value(); as s) {
+          <dl class="grid grid-cols-2 gap-x-6 gap-y-5 md:grid-cols-3 xl:grid-cols-6">
+            <div>
+              <dt class="text-2xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">{{ 'employees.security.successfulLogins' | t }}</dt>
+              <dd class="tabular mt-1 text-2xl font-semibold tracking-tight" data-testid="successful-logins">{{ i18n.formatNumber(s.successfulLogins) }}</dd>
+              <dd class="mt-0.5 text-xs text-muted-foreground">{{ 'employees.security.last30' | t: { count: i18n.formatNumber(s.successfulLogins30d) } }}</dd>
+            </div>
+            <div>
+              <dt class="text-2xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">{{ 'employees.security.failedLogins' | t }}</dt>
+              <dd class="tabular mt-1 text-2xl font-semibold tracking-tight">{{ i18n.formatNumber(s.failedLogins) }}</dd>
+              <dd class="mt-0.5 text-xs text-muted-foreground">{{ 'employees.security.last30' | t: { count: i18n.formatNumber(s.failedLogins30d) } }}</dd>
+            </div>
+            <div>
+              <dt class="text-2xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">{{ 'employees.security.lockouts' | t }}</dt>
+              <dd class="tabular mt-1 text-2xl font-semibold tracking-tight">{{ i18n.formatNumber(s.lockouts) }}</dd>
+              @if (s.lockedUntil) {
+                <dd class="mt-0.5 text-xs text-destructive-tint">{{ 'employees.security.lockedUntil' | t: { time: i18n.formatDate(s.lockedUntil, true) } }}</dd>
+              }
+            </div>
+            <div>
+              <dt class="text-2xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">{{ 'employees.security.passwordChanges' | t }}</dt>
+              <dd class="tabular mt-1 text-2xl font-semibold tracking-tight">{{ i18n.formatNumber(s.passwordChanges) }}</dd>
+            </div>
+            <div>
+              <dt class="text-2xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">{{ 'employees.security.activeSessions' | t }}</dt>
+              <dd class="tabular mt-1 text-2xl font-semibold tracking-tight">{{ i18n.formatNumber(s.activeSessions) }}</dd>
+            </div>
+            <div>
+              <dt class="text-2xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">{{ 'employees.security.twoFactor' | t }}</dt>
+              <dd class="mt-1">
+                <app-badge [tone]="s.mfaEnabled ? 'success' : 'neutral'">{{ (s.mfaEnabled ? 'employees.security.on' : 'employees.security.off') | t }}</app-badge>
+              </dd>
+            </div>
+          </dl>
+          <div>
+            <h3 class="mb-3 text-sm font-semibold">{{ 'employees.security.recent' | t }}</h3>
+            @if (s.recent.length) {
+              <ul class="flex flex-col divide-y divide-border">
+                @for (event of s.recent; track event.id) {
+                  <li class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 py-2.5 text-sm">
+                    <span class="font-medium">{{ actionLabel(event) }}</span>
+                    <span class="flex flex-wrap items-center gap-x-3 text-xs text-muted-foreground">
+                      @if (event.actorName) {
+                        <span>{{ 'employees.security.by' | t: { name: event.actorName } }}</span>
+                      }
+                      @if (event.ip) {
+                        <span dir="ltr" class="font-mono">{{ event.ip }}</span>
+                      }
+                      <time class="tabular" [attr.datetime]="event.occurredAt">{{ i18n.formatDate(event.occurredAt, true) }}</time>
+                    </span>
+                  </li>
+                }
+              </ul>
+            } @else {
+              <p class="text-sm text-muted-foreground">{{ 'employees.security.empty' | t }}</p>
+            }
+          </div>
+        } @else {
+          <p class="text-sm text-muted-foreground" role="status">{{ 'common.labels.loading' | t }}</p>
+        }
+      </div>
+    </section>
+  }
 
   <div class="flex flex-wrap items-center justify-between gap-3">
     <h2 class="text-lg font-semibold tracking-tight">{{ 'ux.performance.title' | t }}</h2>
@@ -173,6 +327,10 @@
       }
     </div>
   </section>
+
+  @if (showSessions()) {
+    <app-employee-sessions [userId]="p.user.id" [name]="i18n.pick(p.user.fullNameAr, p.user.fullNameEn)" />
+  }
 } @else if (data.isLoading()) {
   <app-detail-skeleton [label]="'common.labels.loading' | t" [summary]="6" />
 }

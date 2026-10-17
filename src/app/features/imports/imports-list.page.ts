@@ -16,6 +16,7 @@ import { TABLE_IMPORTS } from '../../shared/ui/table/table.imports';
 import { ActionRunner } from '../../shared/utils/action-runner';
 import { ImportsApi } from './imports-api.service';
 import { SkeletonRowComponent } from '../../shared/ui/skeleton/skeleton.component';
+import { DEFAULT_PAGE_SIZE, pageSizeAttribute } from '../../shared/crm/pagination/page-size';
 
 /** DUP-10 bulk import of leads / customers from CSV or Excel. */
 @Component({
@@ -31,8 +32,10 @@ export class ImportsListPage {
   protected readonly actions = new ActionRunner(this.i18n);
 
   readonly page = input(1, { transform: (value: unknown) => numberAttribute(value, 1) });
+  /** `?pageSize=` (10 / 20 / 50 / 100; default 20). */
+  readonly pageSize = input(DEFAULT_PAGE_SIZE, { transform: pageSizeAttribute });
 
-  protected readonly jobs = rxResource({ params: () => ({ page: this.page() }), stream: ({ params }) => this.api.list(params) });
+  protected readonly jobs = rxResource({ params: () => ({ page: this.page(), pageSize: this.pageSize() }), stream: ({ params }) => this.api.list(params) });
   protected readonly rows = computed(() => (this.jobs.hasValue() ? this.jobs.value().rows : []));
   protected readonly entity = signal<'lead' | 'customer'>('lead');
   protected readonly file = signal<File | null>(null);

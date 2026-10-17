@@ -1,0 +1,79 @@
+<app-page-header [heading]="'support.title' | t" [subtitle]="'support.subtitle' | t" class="!mb-0">
+  <a appButton routerLink="new" appShortcut="n"><app-create-icon />{{ 'support.new' | t }}</a>
+</app-page-header>
+
+<app-list-toolbar [searchValue]="q() ?? ''" [searchPlaceholder]="'support.searchPlaceholder' | t" [filters]="filters()" />
+
+@if (result.error()) {
+  <app-alert variant="destructive">{{ i18n.errorText(result.error()) }}</app-alert>
+}
+
+@if (!result.isLoading() && !rows().length && !filtered()) {
+  <!-- First visit: say what this page is for, and offer the one thing to do. -->
+  <section class="flex flex-col items-center gap-3 rounded-lg border border-dashed border-border px-6 py-12 text-center">
+    <span class="flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+      <app-icon [icon]="icons.help" svgClass="size-6" />
+    </span>
+    <h2 class="text-base font-semibold">{{ 'support.empty' | t }}</h2>
+    <p class="max-w-md text-sm text-muted-foreground">{{ 'support.emptyHint' | t }}</p>
+    <a appButton routerLink="new"><app-create-icon />{{ 'support.new' | t }}</a>
+  </section>
+} @else {
+  <app-table-wrapper [label]="'support.myTickets' | t" [attr.aria-busy]="result.isLoading()">
+    <table appTable>
+      <thead appTableHeader>
+        <tr appTableRow>
+          <th appTableHead>{{ 'support.columns.ticket' | t }}</th>
+          <th appTableHead>{{ 'support.columns.title' | t }}</th>
+          <th appTableHead>{{ 'support.columns.severity' | t }}</th>
+          <th appTableHead>{{ 'support.columns.status' | t }}</th>
+          <th appTableHead>{{ 'support.columns.created' | t }}</th>
+          <th appTableHead>{{ 'support.columns.lastActivity' | t }}</th>
+        </tr>
+      </thead>
+      <tbody appTableBody>
+        @for (row of rows(); track row.id) {
+          <tr appTableRow [appRowLink]="row.id">
+            <td appTableCell class="whitespace-nowrap tabular" dir="ltr">{{ row.ticketNo }}</td>
+            <td appTableCell>
+              <a [routerLink]="row.id" class="font-medium text-primary underline-offset-4 hover:underline">{{ row.title }}</a>
+              <span class="ms-2 inline-flex items-center gap-3 align-middle text-xs text-muted-foreground">
+                @if (row.commentCount) {
+                  <span class="inline-flex items-center gap-1" [attr.aria-label]="'support.columns.replies' | t">
+                    <app-icon [icon]="icons.comments" svgClass="size-3.5" />{{ row.commentCount }}
+                  </span>
+                }
+                @if (row.attachmentCount) {
+                  <span class="inline-flex items-center gap-1" [attr.aria-label]="'support.detail.attachments' | t">
+                    <app-icon [icon]="icons.attachments" svgClass="size-3.5" />{{ row.attachmentCount }}
+                  </span>
+                }
+              </span>
+            </td>
+            <td appTableCell>
+              <app-support-severity-badge [severity]="row.severity" />
+            </td>
+            <td appTableCell>
+              <app-badge [tone]="tone[row.status]">{{ 'support.status.' + row.status | t }}</app-badge>
+            </td>
+            <td appTableCell class="whitespace-nowrap tabular">{{ i18n.formatDate(row.createdAt, true) }}</td>
+            <td appTableCell class="whitespace-nowrap tabular">{{ i18n.formatDate(row.lastActivityAt, true) }}</td>
+          </tr>
+        } @empty {
+          @if (result.isLoading()) {
+            @for (i of [0, 1, 2]; track i) {
+              <tr app-skeleton-row [columns]="6" [index]="i"></tr>
+            }
+          } @else {
+            <tr app-table-empty [colSpan]="6">{{ 'support.emptyFiltered' | t }}</tr>
+          }
+        }
+      </tbody>
+    </table>
+  </app-table-wrapper>
+}
+
+@if (result.hasValue() && result.value().total) {
+  <app-pagination
+    [loading]="result.isLoading()" [page]="result.value().page" [pageCount]="result.value().pageCount" [total]="result.value().total" [pageSize]="result.value().pageSize" />
+}

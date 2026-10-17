@@ -12,8 +12,10 @@ import {
   FileText,
   FolderKanban,
   Gauge,
+  Inbox,
   KanbanSquare,
   LayoutDashboard,
+  LifeBuoy,
   ListChecks,
   ListTodo,
   MapPin,
@@ -114,6 +116,13 @@ export const NAV_SECTIONS: readonly NavSection[] = [
       { labelKey: 'automation', path: '/admin/automation', icon: Workflow, permission: 'automation.manage' },
       { labelKey: 'integrations', path: '/admin/integrations', icon: Plug, permission: 'integrations.manage' },
       { labelKey: 'auditLog', path: '/admin/audit', icon: ScrollText, permission: ['audit.view', 'audit.view_security'] },
+      { labelKey: 'supportTickets', path: '/admin/support-tickets', icon: Inbox, permission: 'support.manage' },
     ],
+  },
+  {
+    labelKey: 'help',
+    // Every signed-in employee can report a problem and follow their own tickets — except the
+    // support desk, which answers them (Support tickets, above).
+    items: [{ labelKey: 'support', path: '/support', icon: LifeBuoy, permission: null, hiddenWith: 'support.manage' }],
   },
 ];

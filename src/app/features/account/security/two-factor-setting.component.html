@@ -1,0 +1,102 @@
+<div class="flex flex-col gap-4">
+  <div class="flex items-start justify-between gap-4">
+    <div class="flex min-w-0 items-start gap-3">
+      <span
+        class="flex size-9 shrink-0 items-center justify-center rounded-lg"
+        [class.bg-success/15]="isOn()"
+        [class.text-success-tint]="isOn()"
+        [class.bg-muted]="!isOn()"
+        [class.text-muted-foreground]="!isOn()"
+        aria-hidden="true"
+      >
+        <app-icon [icon]="isOn() ? icons.on : icons.off" svgClass="size-4" />
+      </span>
+      <div class="min-w-0">
+        <p id="mfa-switch-label" class="text-sm font-medium">{{ 'account.mfa.settingTitle' | t }}</p>
+        <p id="mfa-switch-state" class="mt-0.5 text-sm text-muted-foreground">
+          {{ (isOn() ? 'account.mfa.stateOn' : 'account.mfa.stateOff') | t }}
+        </p>
+        @if (mandatory()) {
+          <p class="mt-1 text-xs text-muted-foreground">{{ 'account.mfa.mandatoryNote' | t }}</p>
+        }
+      </div>
+    </div>
+    <button
+      type="button"
+      role="switch"
+      class="relative flex h-7 w-12 shrink-0 items-center rounded-full border p-0.5 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-60"
+      [class.justify-end]="isOn()"
+      [class.bg-primary]="isOn()"
+      [class.border-primary]="isOn()"
+      [class.bg-muted]="!isOn()"
+      [class.border-border]="!isOn()"
+      [attr.aria-checked]="isOn()"
+      aria-labelledby="mfa-switch-label"
+      aria-describedby="mfa-switch-state"
+      [disabled]="actions.busy() || step() !== 'idle' || (isOn() && mandatory())"
+      (click)="toggle()"
+    >
+      <span class="inline-block size-5 rounded-full bg-background shadow" aria-hidden="true"></span>
+      <span class="sr-only">{{ (isOn() ? 'account.mfa.on' : 'account.mfa.off') | t }}</span>
+    </button>
+  </div>
+
+  @if (actions.error(); as text) {
+    <app-alert variant="destructive">{{ text }}</app-alert>
+  } @else if (actions.message(); as text) {
+    <app-alert variant="success">{{ text }}</app-alert>
+  }
+
+  @if (step() === 'confirm-on' && sent(); as delivery) {
+    <form class="flex flex-col gap-3 rounded-lg border border-border/70 bg-muted/30 p-4" novalidate (submit)="confirmOn($event)">
+      <p class="text-sm">{{ 'account.mfa.codeSentTo' | t: { destination: delivery.destination } }}</p>
+      <div class="sm:max-w-xs">
+        <label appLabel for="mfa-enable-code" required>{{ 'account.mfa.code' | t }}</label>
+        <input
+          appInput
+          id="mfa-enable-code"
+          inputmode="numeric"
+          autocomplete="one-time-code"
+          maxlength="6"
+          dir="ltr"
+          class="tabular tracking-[0.3em]"
+          [value]="code()"
+          (input)="setCode($any($event.target).value)"
+        />
+      </div>
+      <div class="flex flex-wrap items-center gap-2">
+        <button type="submit" appButton size="sm" [disabled]="actions.busy() || code().length !== 6">
+          {{ 'account.mfa.turnOn' | t }}
+        </button>
+        <button type="button" appButton variant="ghost" size="sm" [disabled]="actions.busy() || resendIn() > 0" (click)="resend()">
+          {{ resendIn() > 0 ? ('account.mfa.resendIn' | t: { seconds: resendIn() }) : ('account.mfa.resend' | t) }}
+        </button>
+        <button type="button" appButton variant="ghost" size="sm" (click)="cancel()">{{ 'crm.common.cancel' | t }}</button>
+      </div>
+    </form>
+  }
+
+  @if (step() === 'confirm-off') {
+    <form class="flex flex-col gap-3 rounded-lg border border-border/70 bg-muted/30 p-4" novalidate (submit)="confirmOff($event)">
+      <p class="text-sm">{{ 'account.mfa.turnOffHint' | t }}</p>
+      <div class="sm:max-w-xs">
+        <label appLabel for="mfa-disable-password" required>{{ 'account.password.current' | t }}</label>
+        <input
+          appInput
+          id="mfa-disable-password"
+          type="password"
+          autocomplete="current-password"
+          dir="ltr"
+          [value]="password()"
+          (input)="password.set($any($event.target).value)"
+        />
+      </div>
+      <div class="flex flex-wrap items-center gap-2">
+        <button type="submit" appButton variant="destructive" size="sm" [disabled]="actions.busy() || !password()">
+          {{ 'account.mfa.turnOff' | t }}
+        </button>
+        <button type="button" appButton variant="ghost" size="sm" (click)="cancel()">{{ 'crm.common.cancel' | t }}</button>
+      </div>
+    </form>
+  }
+</div>

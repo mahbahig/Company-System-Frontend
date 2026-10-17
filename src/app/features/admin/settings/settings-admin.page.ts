@@ -17,6 +17,8 @@ import { PageHeaderComponent } from '../../../shared/ui/page-header/page-header.
 import { TABLE_IMPORTS } from '../../../shared/ui/table/table.imports';
 import { TabsComponent } from '../../../shared/ui/tabs/tabs.component';
 import { ActionRunner } from '../../../shared/utils/action-runner';
+import { LocalPager } from '../../../shared/crm/pagination/local-pager';
+import { PagerComponent } from '../../../shared/crm/pagination/pager.component';
 
 type Value = number | string | boolean | string[] | Record<string, unknown>;
 
@@ -50,7 +52,7 @@ const HIDDEN = new Set(['gates.severityOverrides', 'automation.disabled']);
  */
 @Component({
   selector: 'app-settings-admin-page',
-  imports: [TranslatePipe, EnumLabelPipe, AlertComponent, BadgeComponent, ButtonDirective, PageHeaderComponent, TabsComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, ...TABLE_IMPORTS],
+  imports: [TranslatePipe, EnumLabelPipe, AlertComponent, BadgeComponent, ButtonDirective, PageHeaderComponent, TabsComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, ...TABLE_IMPORTS, PagerComponent],
   templateUrl: './settings-admin.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
@@ -64,6 +66,8 @@ export class SettingsAdminPage {
 
   protected readonly data = rxResource({ stream: () => this.api.get<Record<string, Value>>('settings') });
   protected readonly gates = rxResource({ params: () => this.auth.canAny(['settings.view', 'settings.manage', 'settings.manage_policy']), stream: ({ params }) => (params ? this.api.get<Gate[]>('opportunities/gates/catalogue') : of([] as Gate[])) });
+  /** The stage-gate catalogue, paged in memory. */
+  protected readonly gatesPager = new LocalPager(() => this.gates.value());
   /** Which keys are business policy (approval limits, pricing, financial rules) — decided by the server. */
   protected readonly meta = rxResource({ stream: () => this.api.get<{ policyKeys: string[]; securityKeys?: string[] }>('settings/meta') });
   protected readonly canManage = computed(() => this.auth.can('settings.manage'));

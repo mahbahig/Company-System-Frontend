@@ -89,6 +89,7 @@
 </app-table-wrapper>
 @if (data.hasValue()) {
   <app-pagination
+    [loading]="data.isLoading()"
     [page]="data.value().page"
     [pageCount]="data.value().pageCount"
     [total]="data.value().total"

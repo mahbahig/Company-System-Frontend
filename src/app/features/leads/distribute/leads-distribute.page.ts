@@ -26,6 +26,10 @@ import { TableDirective } from '../../../shared/ui/table/table.directive';
 import { LeadsApi } from '../leads-api.service';
 import type { RoutingProposal } from '../models/routing-proposal.interface';
 import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.component';
+import { PagerState } from '../../../shared/crm/pagination/local-pager';
+import { PaginationComponent } from '../../../shared/crm/pagination/pagination.component';
+import { LocalPager } from '../../../shared/crm/pagination/local-pager';
+import { PagerComponent } from '../../../shared/crm/pagination/pager.component';
 
 interface AssignModel {
   ownerId: string;
@@ -55,8 +59,7 @@ interface AssignModel {
     TableRowDirective,
     TableHeadDirective,
     TableCellDirective,
-    TableEmptyComponent,
-  ],
+    TableEmptyComponent, PaginationComponent, PagerComponent],
   templateUrl: './leads-distribute.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
@@ -65,8 +68,10 @@ export class LeadsDistributePage {
   protected readonly i18n = inject(I18nService);
   protected readonly reference = inject(ReferenceDataService);
 
+  /** Unassigned leads, paged by the API (selected leads stay selected across pages). */
+  protected readonly unassignedPager = new PagerState();
   protected readonly unassigned = rxResource({
-    params: () => ({ unassigned: true, pageSize: 100 }),
+    params: () => ({ unassigned: true, page: this.unassignedPager.page(), pageSize: this.unassignedPager.pageSize() }),
     stream: ({ params }) => this.leads.bank(params),
   });
   protected readonly unassignedCount = computed(() => this.unassigned.value()?.total ?? 0);
@@ -82,6 +87,8 @@ export class LeadsDistributePage {
   });
 
   protected readonly proposals = signal<RoutingProposal[] | null>(null);
+  /** The proposed distribution, paged in memory. */
+  protected readonly proposalsPager = new LocalPager(() => this.proposals());
   protected readonly previewing = signal(false);
   protected readonly confirming = signal(false);
   protected readonly distributeError = signal<string | null>(null);
@@ -123,6 +130,7 @@ export class LeadsDistributePage {
     try {
       const { proposals } = await firstValueFrom(this.leads.previewDistribution({}));
       this.proposals.set(proposals);
+      this.proposalsPager.reset();
     } catch {
       this.distributeError.set('errors.db.unexpected');
     } finally {

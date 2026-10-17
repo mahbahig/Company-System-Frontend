@@ -3,7 +3,7 @@
   [subtitle]="'admin.equipment.subtitle' | t"
   class="!mb-0"
 >
-  <button type="button" appButton (click)="edit(null)">{{ 'admin.equipment.new' | t }}</button>
+  <button type="button" appButton (click)="edit(null)"><app-create-icon />{{ 'admin.equipment.new' | t }}</button>
 </app-page-header>
 @if (actions.message(); as text) {
   <app-alert>{{ text }}</app-alert>
@@ -76,6 +76,8 @@
             {{
               'admin.empty' | t
             }}
+            <!-- The same create action as the page header (and the same permission). -->
+            <div class="mt-3"><button type="button" appButton (click)="edit(null)"><app-create-icon />{{ 'admin.equipment.new' | t }}</button></div>
           </tr>
         }
       }
@@ -84,6 +86,7 @@
 </app-table-wrapper>
 @if (data.hasValue()) {
   <app-pagination
+    [loading]="data.isLoading()"
     [page]="data.value().page"
     [pageCount]="data.value().pageCount"
     [total]="data.value().total"

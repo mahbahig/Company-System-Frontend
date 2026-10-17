@@ -30,7 +30,7 @@
         </tr>
       </thead>
       <tbody appTableBody>
-        @for (gate of gates.value() ?? []; track gate.stage + gate.code) {
+        @for (gate of gatesPager.rows(); track gate.stage + gate.code) {
           <tr appTableRow>
             <td appTableCell>{{ reference.label('pipeline_stage', gate.stage) }}</td>
             <td appTableCell>
@@ -60,6 +60,7 @@
       </tbody>
     </table>
   </app-table-wrapper>
+  <app-pager [pager]="gatesPager" />
 } @else {
   <section appCard>
     <div appCardContent class="grid gap-5 sm:grid-cols-2">

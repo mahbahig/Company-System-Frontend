@@ -1,4 +1,4 @@
-import { Component, computed, inject, input, numberAttribute } from '@angular/core';
+import { Component, computed, effect, inject, input, numberAttribute, untracked } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 
@@ -17,6 +17,8 @@ import { ReferenceDataService } from '../../../core/reference/reference-data.ser
 import { OpportunitiesApi } from '../../opportunities/opportunities-api.service';
 import { ProposalsApi } from '../proposals-api.service';
 import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.component';
+import { DEFAULT_PAGE_SIZE, pageSizeAttribute } from '../../../shared/crm/pagination/page-size';
+import { PagerState } from '../../../shared/crm/pagination/local-pager';
 
 const STATUSES = ['draft', 'pending_approval', 'approved', 'released', 'sent', 'presented', 'under_negotiation', 'revision_requested', 'accepted', 'rejected', 'expired', 'superseded'];
 
@@ -39,14 +41,18 @@ export class ProposalsListPage {
   /** Exceptions Center: versions expiring within 7 days or recently expired. */
   readonly expiring = input<string>();
   readonly page = input(1, { transform: (value: unknown) => numberAttribute(value, 1) });
+  /** `?pageSize=` (10 / 20 / 50 / 100; default 20). */
+  readonly pageSize = input(DEFAULT_PAGE_SIZE, { transform: pageSizeAttribute });
 
   protected readonly result = rxResource({
-    params: () => ({ q: this.q(), status: this.status(), mine: this.mine() === '1' || undefined, expiring: this.expiring() === '1' || undefined, page: this.page() }),
+    params: () => ({ q: this.q(), status: this.status(), mine: this.mine() === '1' || undefined, expiring: this.expiring() === '1' || undefined, page: this.page(), pageSize: this.pageSize() }),
     stream: ({ params }) => this.api.combinedList(params),
   });
   /** Open opportunities the user can reach: where a new technical proposal is started (the workspace lives under the opportunity). */
+  /** Open opportunities to start a proposal from, paged by the API; a new search starts from page 1. */
+  protected readonly opportunitiesPager = new PagerState();
   protected readonly opportunities = rxResource({
-    params: () => ({ q: this.q(), outcome: 'open' as const, pageSize: 50 }),
+    params: () => ({ q: this.q(), outcome: 'open' as const, page: this.opportunitiesPager.page(), pageSize: this.opportunitiesPager.pageSize() }),
     stream: ({ params }) => this.opportunitiesApi.list(params as never),
   });
   protected readonly opportunityRows = computed(() => (this.opportunities.hasValue() ? this.opportunities.value().rows : []));
@@ -57,6 +63,10 @@ export class ProposalsListPage {
   protected readonly toggles = computed<ToggleDefinition[]>(() => [{ name: 'mine', label: this.i18n.t('crm.filters.onlyMine'), checked: this.mine() === '1' }]);
 
   constructor() {
+    effect(() => {
+      this.q();
+      untracked(() => this.opportunitiesPager.reset());
+    });
     void this.reference.load();
   }
 }

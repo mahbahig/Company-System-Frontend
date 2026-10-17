@@ -1,0 +1,118 @@
+{
+  "account": {
+    "profile": {
+      "title": "Profile",
+      "subtitle": "Your account, your password and the devices you are signed in on.",
+      "account": "Account",
+      "nameEn": "Name (English)",
+      "nameAr": "Name (Arabic)",
+      "email": "E-mail",
+      "jobTitle": "Job title",
+      "employeeNo": "Employee number",
+      "department": "Department",
+      "mobile": "Mobile",
+      "teams": "Teams",
+      "manager": "Manager",
+      "lastLogin": "Last sign-in"
+    },
+    "password": {
+      "changedHere": "Your password was changed. You were signed out on your other devices; you stay signed in here."
+    },
+    "picture": {
+      "title": "Profile picture",
+      "alt": "Profile picture of {name}",
+      "upload": "Upload photo",
+      "change": "Change photo",
+      "remove": "Remove photo",
+      "removeTitle": "Remove your profile picture?",
+      "removeBody": "Your initial will be shown instead, everywhere.",
+      "save": "Save photo",
+      "saving": "Saving…",
+      "previewHint": "This is how your new picture will look. Save it, or cancel to keep the current one.",
+      "rules": "PNG, JPG or WebP, up to {size} MB. Other employees see it.",
+      "tooLarge": "The picture is larger than {size} MB.",
+      "unavailable": "Profile pictures can't be stored on this server yet.",
+      "saved": "Your profile picture was updated.",
+      "removed": "Your profile picture was removed."
+    }
+  },
+  "sessions": {
+    "title": "Active sessions",
+    "ownHint": "The devices signed in to your account. This session is listed first and ends when you sign out.",
+    "employeeHint": "Where this employee is signed in. Logging a session out ends it at once.",
+    "current": "Current session",
+    "activeNow": "Active now",
+    "lastActive": "Last active",
+    "signedIn": "Signed in",
+    "ip": "IP",
+    "unknownOs": "Unknown device",
+    "unknownBrowser": "unknown browser",
+    "justNow": "just now",
+    "logOut": "Log out",
+    "logOutOf": "Log out of {device}",
+    "loggingOut": "Logging out…",
+    "logOutAll": "Log out all sessions",
+    "refresh": "Refresh",
+    "noOtherSessions": "You are not signed in anywhere else.",
+    "noneForEmployee": "This employee is not signed in anywhere.",
+    "confirm": {
+      "oneTitle": "Log out this session?",
+      "oneOwnBody": "{device} will be signed out at once and will need your password to sign in again.",
+      "oneEmployeeBody": "{name} will be signed out of {device} at once.",
+      "allTitle": "Log out all sessions?",
+      "allBody": "{name} will be signed out everywhere at once — including the session they are using now.",
+      "cancel": "Cancel"
+    },
+    "notices": {
+      "loggedOutOne": "The session was logged out.",
+      "loggedOutAll": "All sessions were logged out."
+    }
+  },
+  "admin": {
+    "users": {
+      "ownAccount": "Your profile",
+      "protectedAccount": "Super Administrator — managed by its owner",
+      "initialPassword": "Initial password",
+      "initialPasswordHint": "At least 6 characters, including at least one letter. The employee must change it at their first sign-in.",
+      "created": "Employee created. They sign in with the initial password and must choose their own right away.",
+      "confirmPassword": "Confirm password"
+    }
+  },
+  "server": {
+    "errors": {
+      "cannotRevokeCurrentSession": "This is the session you are using. To end it, sign out.",
+      "superAdministratorProtected": "A Super Administrator's account can only be managed by its owner: their sessions, lock, password and roles are out of reach.",
+      "ownSessionsOnProfile": "Manage your own sessions from your profile.",
+      "profilePictureTypeNotAllowed": "Profile pictures must be PNG, JPG or WebP images.",
+      "profilePictureCorrupt": "That image is empty or damaged.",
+      "profilePictureStorageUnavailable": "Profile pictures can't be stored right now.",
+      "profilePictureStorageFailed": "The picture couldn't be stored. Nothing was changed; please try again."
+    },
+    "validation": {
+      "mfaCodeInvalid": "That code is not right.",
+      "mfaCodeExpired": "This code has expired. Ask for a new one.",
+      "mfaTooManyAttempts": "Too many wrong codes. Ask for a new one."
+    }
+  },
+  "exceptionsCenter": {
+    "codes": {
+      "critical_support_tickets": "New critical support tickets"
+    }
+  },
+  "auth": {
+    "login": {
+      "sessionRevokedNotice": "You were signed out because this session was ended from another device or by an administrator. Please sign in again.",
+      "passwordChangedElsewhereNotice": "Your password was changed, so this device was signed out. Please sign in with the new password."
+    },
+    "errors": {
+      "mfaCodeInvalid": "That code is not right. Check the e-mail and try again.",
+      "mfaChallengeExpired": "This code has expired or was already used. Sign in again to get a new one.",
+      "mfaTooManyAttempts": "Too many wrong codes. Sign in again to get a new one.",
+      "mfaResendTooSoon": "Please wait a moment before asking for another code.",
+      "mfaTooManyCodes": "Too many codes were sent to this account. Try again later.",
+      "mfaEmailUnavailable": "E-mail can't be sent from this server, so two-factor authentication can't be turned on.",
+      "mfaAlreadyEnabled": "Two-factor authentication is already on.",
+      "mfaMandatory": "Your role requires two-factor authentication, so it can't be turned off."
+    }
+  }
+}
