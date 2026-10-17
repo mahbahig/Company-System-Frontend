@@ -3,7 +3,6 @@ import { Router } from '@angular/router';
 import { KeyRound, ShieldCheck } from 'lucide';
 
 import { AuthService } from '../../../core/auth/auth.service';
-import { I18nService } from '../../../core/i18n/i18n.service';
 import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { AlertComponent } from '../../../shared/ui/alert/alert.component';
 import { CARD_IMPORTS } from '../../../shared/ui/card/card.imports';
@@ -26,7 +25,6 @@ import { ChangePasswordFormComponent } from './change-password-form.component';
 export class ChangePasswordPage {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
-  protected readonly i18n = inject(I18nService);
 
   protected readonly keyIcon = KeyRound;
   protected readonly shieldIcon = ShieldCheck;
@@ -36,6 +34,6 @@ export class ChangePasswordPage {
   protected async changed(): Promise<void> {
     const wasForced = this.forced();
     await this.auth.loadProfile().catch(() => undefined);
-    if (wasForced) await this.router.navigate(['/', this.i18n.locale(), 'dashboard']);
+    if (wasForced) await this.router.navigate(['/', 'dashboard']);
   }
 }

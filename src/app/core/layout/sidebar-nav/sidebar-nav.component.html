@@ -25,7 +25,7 @@
         @for (item of section.items; track item.path) {
           <li>
             <a
-              [routerLink]="navigation.link(item.path)"
+              [routerLink]="item.path"
               routerLinkActive="bg-sidebar-accent/15 font-medium !text-sidebar-foreground before:opacity-100 [&_app-icon]:text-sidebar-accent"
               [routerLinkActiveOptions]="{ exact: item.path === '/dashboard' }"
               ariaCurrentWhenActive="page"
@@ -42,6 +42,18 @@
               <span class="truncate" [class.sr-only]="collapsed()">{{
                 'navigation.items.' + item.labelKey | t
               }}</span>
+              @if (item.badge === 'chatUnread' && chats.unreadTotal() > 0) {
+                <span
+                  class="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-2xs font-semibold tabular text-primary-foreground"
+                  [class.ms-auto]="!collapsed()"
+                  [class.absolute]="collapsed()"
+                  [class.-top-0.5]="collapsed()"
+                  [class.end-0.5]="collapsed()"
+                  data-testid="nav-chat-unread"
+                  [attr.aria-label]="'chat.unreadTotal' | t: { count: chats.unreadTotal() }"
+                  >{{ chats.unreadTotal() > 99 ? '99+' : chats.unreadTotal() }}</span
+                >
+              }
             </a>
           </li>
         }

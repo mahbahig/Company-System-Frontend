@@ -12,7 +12,7 @@
     <a
       appButton
       variant="outline"
-      [routerLink]="['/', i18n.locale(), 'opportunities', p.opportunityId, 'proposals']"
+      [routerLink]="['/', 'opportunities', p.opportunityId, 'proposals']"
       [queryParams]="{ tab: 'technical' }"
       >{{ 'prop.workspaceTitle' | t }}</a
     >
@@ -251,7 +251,7 @@
             <li class="flex items-center justify-between gap-2">
               <a
                 class="text-primary hover:underline"
-                [routerLink]="['/', i18n.locale(), 'proposals', 'technical', v.id]"
+                [routerLink]="['/', 'proposals', 'technical', v.id]"
                 >v{{ v.versionNo }}</a
               >
               <app-status-badge enum="technicalProposalStatus" [value]="v.status" />

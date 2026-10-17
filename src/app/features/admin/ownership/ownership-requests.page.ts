@@ -19,6 +19,7 @@ import { ActionRunner } from '../../../shared/utils/action-runner';
 import { userName } from '../../../shared/utils/display-name';
 import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.component';
 import { DEFAULT_PAGE_SIZE, pageSizeAttribute } from '../../../shared/crm/pagination/page-size';
+import { PageSizeSelectComponent } from '../../../shared/crm/pagination/page-size-select.component';
 
 type Ref = { id: string; customerNo?: string; nameAr?: string; nameEn?: string; primaryContactName?: string; fullNameAr?: string; fullNameEn?: string } | string | null | undefined;
 
@@ -43,7 +44,7 @@ interface OwnershipRequest {
  */
 @Component({
   selector: 'app-ownership-requests-page',
-  imports: [SkeletonRowComponent, RouterLink, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, AlertComponent, ButtonDirective, PageHeaderComponent, PaginationComponent, TabsComponent, ...TABLE_IMPORTS],
+  imports: [SkeletonRowComponent, RouterLink, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, AlertComponent, ButtonDirective, PageHeaderComponent, PaginationComponent, TabsComponent, ...TABLE_IMPORTS, PageSizeSelectComponent],
   templateUrl: './ownership-requests.page.html',
   host: { class: 'flex flex-col gap-6' },
 })

@@ -1,0 +1,27 @@
+<app-page-header [heading]="'securityCenter.title' | t" [subtitle]="'securityCenter.subtitle' | t" class="!mb-0">
+  <button type="button" appButton variant="outline" [disabled]="overview.isLoading()" (click)="refreshAll()" data-testid="security-refresh">
+    <app-icon [icon]="refreshIcon" [class.animate-spin]="overview.isLoading()" />{{ 'securityCenter.refresh' | t }}
+  </button>
+</app-page-header>
+
+<app-system-status-card [health]="health.hasValue() ? health.value().status : null" />
+
+@if (overview.error()) {
+  <app-alert variant="destructive">{{ i18n.errorText(overview.error()) }}</app-alert>
+} @else if (overview.hasValue()) {
+  <div class="flex flex-col gap-6" data-testid="security-overview">
+    <app-security-overview [overview]="overview.value()" />
+  </div>
+} @else {
+  <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3" aria-hidden="true">
+    @for (i of [0, 1, 2, 3, 4, 5]; track i) {
+      <div class="h-28 animate-pulse rounded-xl bg-muted"></div>
+    }
+  </div>
+}
+
+<app-security-activity />
+
+<app-security-alerts (changed)="onAlertChanged()" />
+
+<app-system-health [report]="health.hasValue() ? health.value() : null" [loading]="health.isLoading()" [error]="health.error()" (refresh)="refreshHealth()" />

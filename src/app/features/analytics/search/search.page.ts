@@ -78,7 +78,7 @@ export class SearchPage {
   /** `/customers/<id>?tab=contacts` → router commands + query params (a `?` inside commands would be encoded). */
   protected link(hit: RecordHit): { commands: string[]; queryParams: Record<string, string> } {
     const [path, query = ''] = hit.route.split('?');
-    return { commands: [`/${this.i18n.locale()}${path}`], queryParams: Object.fromEntries(new URLSearchParams(query)) };
+    return { commands: [path], queryParams: Object.fromEntries(new URLSearchParams(query)) };
   }
 
   protected subtitle(hit: RecordHit): string {

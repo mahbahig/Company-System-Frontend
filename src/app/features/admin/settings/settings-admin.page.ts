@@ -19,6 +19,8 @@ import { TabsComponent } from '../../../shared/ui/tabs/tabs.component';
 import { ActionRunner } from '../../../shared/utils/action-runner';
 import { LocalPager } from '../../../shared/crm/pagination/local-pager';
 import { PagerComponent } from '../../../shared/crm/pagination/pager.component';
+import { SystemStatusCardComponent } from '../system-status/system-status-card.component';
+import { PagerSizeComponent } from '../../../shared/crm/pagination/page-size-select.component';
 
 type Value = number | string | boolean | string[] | Record<string, unknown>;
 
@@ -52,7 +54,7 @@ const HIDDEN = new Set(['gates.severityOverrides', 'automation.disabled']);
  */
 @Component({
   selector: 'app-settings-admin-page',
-  imports: [TranslatePipe, EnumLabelPipe, AlertComponent, BadgeComponent, ButtonDirective, PageHeaderComponent, TabsComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, ...TABLE_IMPORTS, PagerComponent],
+  imports: [TranslatePipe, EnumLabelPipe, AlertComponent, BadgeComponent, ButtonDirective, PageHeaderComponent, TabsComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, ...TABLE_IMPORTS, PagerComponent, SystemStatusCardComponent, PagerSizeComponent],
   templateUrl: './settings-admin.page.html',
   host: { class: 'flex flex-col gap-6' },
 })

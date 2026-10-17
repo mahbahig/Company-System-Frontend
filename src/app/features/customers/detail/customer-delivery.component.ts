@@ -9,11 +9,12 @@ import type { Customer360 } from '../models/customer-360.interface';
 import { DetailSkeletonComponent } from '../../../shared/ui/skeleton/skeleton.component';
 import { LocalPager } from '../../../shared/crm/pagination/local-pager';
 import { PagerComponent } from '../../../shared/crm/pagination/pager.component';
+import { PagerSizeComponent } from '../../../shared/crm/pagination/page-size-select.component';
 
 /** CUST-03 the customer's leads, customer-facing proposals, contracts and projects. */
 @Component({
   selector: 'app-customer-delivery',
-  imports: [DetailSkeletonComponent, RouterLink, TranslatePipe, StatusBadgeComponent, ...TABLE_IMPORTS, PagerComponent],
+  imports: [DetailSkeletonComponent, RouterLink, TranslatePipe, StatusBadgeComponent, ...TABLE_IMPORTS, PagerComponent, PagerSizeComponent],
   templateUrl: './customer-delivery.component.html',
   host: { class: 'flex flex-col gap-6' },
 })

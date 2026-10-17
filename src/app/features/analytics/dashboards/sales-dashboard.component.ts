@@ -18,11 +18,12 @@ import { percent } from '../shared/kpi-format';
 import { DashboardSkeletonComponent } from '../../../shared/ui/skeleton/skeleton.component';
 import { LocalPager } from '../../../shared/crm/pagination/local-pager';
 import { PagerComponent } from '../../../shared/crm/pagination/pager.component';
+import { PagerSizeComponent } from '../../../shared/crm/pagination/page-size-select.component';
 
 /** DASH-02 sales dashboard: team KPIs and per-rep performance (self-sourced vs assigned, contact, qualification, pipeline, follow-ups, enrichment). */
 @Component({
   selector: 'app-sales-dashboard',
-  imports: [DashboardSkeletonComponent, TranslatePipe, AlertComponent, KpiGridComponent, BarListComponent, ...CARD_IMPORTS, ...TABLE_IMPORTS, PagerComponent],
+  imports: [DashboardSkeletonComponent, TranslatePipe, AlertComponent, KpiGridComponent, BarListComponent, ...CARD_IMPORTS, ...TABLE_IMPORTS, PagerComponent, PagerSizeComponent],
   templateUrl: './sales-dashboard.component.html',
   host: { class: 'flex flex-col gap-6' },
 })

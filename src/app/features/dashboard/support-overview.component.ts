@@ -33,6 +33,6 @@ export class SupportOverviewComponent {
   protected readonly criticalQuery = { status: AWAITING_DESK_STATUS, severity: CRUCIAL_SUPPORT_SEVERITY };
 
   protected deskLink(): string {
-    return `/${this.i18n.locale()}/admin/support-tickets`;
+    return `/admin/support-tickets`;
   }
 }

@@ -12,7 +12,7 @@
     }
     <app-favorite-toggle type="project" [id]="p.id" />
     @if (ref(p.contractId, 'id') && navigation.canOpen('/contracts/' + ref(p.contractId, 'id'))) {
-      <a appButton variant="outline" [routerLink]="['/', i18n.locale(), 'contracts', ref(p.contractId, 'id')]">{{ 'contracts.title' | t }}</a>
+      <a appButton variant="outline" [routerLink]="['/', 'contracts', ref(p.contractId, 'id')]">{{ 'contracts.title' | t }}</a>
     }
   </app-page-header>
 
@@ -55,7 +55,7 @@
             <div appDetailItem [label]="'prop.columns.preparer' | t">{{ name(p.proposalTeam.financialPreparerId) }}</div>
             <div appDetailItem [label]="'prop.columns.opportunity' | t">
               @if (ref(p.opportunityId, 'id')) {
-                <a class="text-primary hover:underline" [routerLink]="['/', i18n.locale(), 'opportunities', ref(p.opportunityId, 'id')]">{{ ref(p.opportunityId, 'opportunityNo') }}</a>
+                <a class="text-primary hover:underline" [routerLink]="['/', 'opportunities', ref(p.opportunityId, 'id')]">{{ ref(p.opportunityId, 'opportunityNo') }}</a>
               }
             </div>
             @if (p.scope) {
@@ -91,6 +91,7 @@
         </fieldset>
       </section>
 
+      <app-pager-size [pager]="milestonesPager" />
       <app-table-wrapper [label]="'projects.milestones' | t">
         <table appTable>
           <thead appTableHeader>
@@ -157,6 +158,7 @@
     }
 
     @case ('procurement') {
+      <app-pager-size [pager]="procurementPager" />
       <app-table-wrapper [label]="'projects.tabs.procurement' | t">
         <table appTable>
           <thead appTableHeader>
@@ -208,6 +210,7 @@
     }
 
     @case ('payments') {
+      <app-pager-size [pager]="paymentsPager" />
       <app-table-wrapper [label]="'projects.tabs.payments' | t">
         <table appTable>
           <thead appTableHeader>

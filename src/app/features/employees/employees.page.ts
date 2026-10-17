@@ -28,6 +28,7 @@ import { EmployeeDeactivateComponent } from './employee-deactivate.component';
 import { EmployeeEditorComponent } from './employee-editor.component';
 import { DEFAULT_PAGE_SIZE, pageSizeAttribute } from '../../shared/crm/pagination/page-size';
 import { CreateIconComponent } from '../../shared/ui/create-icon/create-icon.component';
+import { PageSizeSelectComponent } from '../../shared/crm/pagination/page-size-select.component';
 
 const idOf = (value: string | { id: string } | null | undefined): string => (!value ? '' : typeof value === 'string' ? value : value.id);
 
@@ -67,7 +68,7 @@ const ROLE_CODES = ['system_administrator', 'ceo', 'read_only_executive', 'sales
     PaginationComponent,
     EmployeeEditorComponent,
     EmployeeDeactivateComponent,
-    ...TABLE_IMPORTS, CreateIconComponent],
+    ...TABLE_IMPORTS, CreateIconComponent, PageSizeSelectComponent],
   templateUrl: './employees.page.html',
   host: { class: 'flex flex-col gap-6' },
 })

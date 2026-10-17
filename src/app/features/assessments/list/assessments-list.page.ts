@@ -16,11 +16,12 @@ import { userName } from '../../../shared/utils/display-name';
 import { AssessmentsApi, type Assessment } from '../assessments-api.service';
 import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.component';
 import { DEFAULT_PAGE_SIZE, pageSizeAttribute } from '../../../shared/crm/pagination/page-size';
+import { PageSizeSelectComponent } from '../../../shared/crm/pagination/page-size-select.component';
 
 /** §11.4/11.5 engineer assignments and the Technical Lead review queue. */
 @Component({
   selector: 'app-assessments-list-page',
-  imports: [SkeletonRowComponent, RouterLink, TranslatePipe, StatusBadgeComponent, AlertComponent, PageHeaderComponent, ListToolbarComponent, PaginationComponent, ...TABLE_IMPORTS],
+  imports: [SkeletonRowComponent, RouterLink, TranslatePipe, StatusBadgeComponent, AlertComponent, PageHeaderComponent, ListToolbarComponent, PaginationComponent, ...TABLE_IMPORTS, PageSizeSelectComponent],
   templateUrl: './assessments-list.page.html',
   host: { class: 'flex flex-col gap-6' },
 })

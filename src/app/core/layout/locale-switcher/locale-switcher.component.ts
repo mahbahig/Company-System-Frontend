@@ -1,5 +1,4 @@
 import { Component, computed, inject } from '@angular/core';
-import { Router } from '@angular/router';
 import { Languages } from 'lucide';
 
 import { ButtonDirective } from '../../../shared/ui/button/button.directive';
@@ -9,9 +8,10 @@ import { LOCALES, LOCALE_NAMES } from '../../i18n/locale';
 import { TooltipDirective } from '../../../shared/ui/tooltip/tooltip.directive';
 
 /**
- * Switches to the OTHER language, keeping the current page and query:
- * `/ar/leads?page=2` → `/en/leads?page=2`. The button shows the target
- * language in its own script.
+ * Switches to the OTHER language in place — same page, same URL, no
+ * navigation or reload (`I18nService.use` updates the text, `lang` / `dir`
+ * and the stored choice). The button shows the target language in its own
+ * script.
  */
 @Component({
   selector: 'app-locale-switcher',
@@ -20,7 +20,6 @@ import { TooltipDirective } from '../../../shared/ui/tooltip/tooltip.directive';
 })
 export class LocaleSwitcherComponent {
   private readonly i18n = inject(I18nService);
-  private readonly router = inject(Router);
 
   protected readonly languages = Languages;
   protected readonly target = computed(() => LOCALES.find((locale) => locale !== this.i18n.locale()) ?? this.i18n.locale());
@@ -28,7 +27,6 @@ export class LocaleSwitcherComponent {
   protected readonly label = computed(() => `${this.i18n.t('common.labels.language')}: ${this.targetName()}`);
 
   protected switch(): void {
-    const url = this.router.url.replace(/^\/(ar|en)(?=\/|\?|$)/, `/${this.target()}`);
-    void this.router.navigateByUrl(url);
+    void this.i18n.use(this.target());
   }
 }

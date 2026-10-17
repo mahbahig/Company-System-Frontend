@@ -41,6 +41,7 @@ import type { Lead } from '../models/lead.interface';
 import { RowLinkDirective } from '../../../shared/ui/table/row-link.directive';
 import { DEFAULT_PAGE_SIZE, pageSizeAttribute } from '../../../shared/crm/pagination/page-size';
 import { CreateIconComponent } from '../../../shared/ui/create-icon/create-icon.component';
+import { PageSizeSelectComponent } from '../../../shared/crm/pagination/page-size-select.component';
 
 const flag = (value: string | undefined) => value === '1' || value === 'true';
 const SLA_TONE: Record<string, 'success' | 'warning' | 'danger' | 'neutral'> = {
@@ -110,7 +111,7 @@ interface AssignModel {
     TableEmptyComponent,
     TableSkeletonComponent,
     ColumnPickerComponent,
-    ShortcutDirective, CreateIconComponent],
+    ShortcutDirective, CreateIconComponent, PageSizeSelectComponent],
   templateUrl: './leads-list.page.html',
   host: { class: 'flex flex-col gap-6' },
 })

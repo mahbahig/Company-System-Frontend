@@ -25,6 +25,7 @@ import { SupportSeverityBadgeComponent } from '../shared/support-severity-badge.
 import { SupportApi } from '../support-api.service';
 import { AvatarComponent } from '../../../shared/ui/avatar/avatar.component';
 import { DEFAULT_PAGE_SIZE, pageSizeAttribute } from '../../../shared/crm/pagination/page-size';
+import { PageSizeSelectComponent } from '../../../shared/crm/pagination/page-size-select.component';
 
 /** The words the API requires before it deletes every ticket. */
 export const DELETE_ALL_PHRASE = 'DELETE ALL';
@@ -38,7 +39,7 @@ export const DELETE_ALL_PHRASE = 'DELETE ALL';
  */
 @Component({
   selector: 'app-support-tickets-admin-page',
-  imports: [AvatarComponent, RouterLink, TranslatePipe, ListToolbarComponent, PaginationComponent, AlertComponent, BadgeComponent, ButtonDirective, DialogComponent, IconComponent, PageHeaderComponent, SkeletonRowComponent, SupportSeverityBadgeComponent, ...FORM_IMPORTS, ...TABLE_IMPORTS],
+  imports: [AvatarComponent, RouterLink, TranslatePipe, ListToolbarComponent, PaginationComponent, AlertComponent, BadgeComponent, ButtonDirective, DialogComponent, IconComponent, PageHeaderComponent, SkeletonRowComponent, SupportSeverityBadgeComponent, ...FORM_IMPORTS, ...TABLE_IMPORTS, PageSizeSelectComponent],
   templateUrl: './support-tickets-admin.page.html',
   host: { class: 'flex flex-col gap-6' },
 })

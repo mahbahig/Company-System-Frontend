@@ -21,7 +21,7 @@ export interface RecordHit {
   number?: string;
   title: string;
   subtitle?: string;
-  /** Path under `/:locale`, possibly with a query string (e.g. `?tab=contacts`). */
+  /** In-app path, possibly with a query string (e.g. `?tab=contacts`). */
   route: string;
 }
 

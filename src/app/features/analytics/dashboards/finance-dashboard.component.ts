@@ -17,11 +17,12 @@ import { formatKpi } from '../shared/kpi-format';
 import { DashboardSkeletonComponent } from '../../../shared/ui/skeleton/skeleton.component';
 import { LocalPager } from '../../../shared/crm/pagination/local-pager';
 import { PagerComponent } from '../../../shared/crm/pagination/pager.component';
+import { PagerSizeComponent } from '../../../shared/crm/pagination/page-size-select.component';
 
 /** DASH-05 finance dashboard: approvals, discount distribution, margins, contract values and the payment schedule. */
 @Component({
   selector: 'app-finance-dashboard',
-  imports: [DashboardSkeletonComponent, RouterLink, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, AlertComponent, BarListComponent, ...CARD_IMPORTS, ...TABLE_IMPORTS, PagerComponent],
+  imports: [DashboardSkeletonComponent, RouterLink, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, AlertComponent, BarListComponent, ...CARD_IMPORTS, ...TABLE_IMPORTS, PagerComponent, PagerSizeComponent],
   templateUrl: './finance-dashboard.component.html',
   host: { class: 'flex flex-col gap-6' },
 })

@@ -97,7 +97,7 @@ export class LeadWorkflowPanelComponent {
         void this.run(() => this.api.returnHandoff(this.lead().id, request.reason ?? ''));
         return;
       case 'convert_to_customer':
-        void this.router.navigate([this.i18n.locale(), 'leads', this.lead().id, 'convert']);
+        void this.router.navigate(['/', 'leads', this.lead().id, 'convert']);
         return;
     }
   }

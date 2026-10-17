@@ -1,7 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
-import { convertToParamMap, provideRouter, Router, withComponentInputBinding, type ActivatedRouteSnapshot, type RouterStateSnapshot, type UrlTree } from '@angular/router';
+import { provideRouter, Router, withComponentInputBinding, type ActivatedRouteSnapshot, type RouterStateSnapshot, type UrlTree } from '@angular/router';
 import { firstValueFrom, of, Subject } from 'rxjs';
 
 import { signInAs } from '../../../testing/as-role';
@@ -102,10 +102,10 @@ describe('Help & Support', () => {
     it('the support desk opening the form or its own list is sent to the desk list; a ticket still opens', () => {
       expect(SUPPORT_ROUTES.filter((route) => route.canActivate?.includes(notSupportDeskGuard)).map((route) => route.path)).toEqual(['', 'new']);
       const guard = () =>
-        TestBed.runInInjectionContext(() => notSupportDeskGuard({ paramMap: convertToParamMap({ locale: 'ar' }) } as ActivatedRouteSnapshot, {} as RouterStateSnapshot));
+        TestBed.runInInjectionContext(() => notSupportDeskGuard({} as ActivatedRouteSnapshot, {} as RouterStateSnapshot));
       configure();
       signInAs('system_administrator');
-      expect(TestBed.inject(Router).serializeUrl(guard() as UrlTree)).toBe('/ar/admin/support-tickets');
+      expect(TestBed.inject(Router).serializeUrl(guard() as UrlTree)).toBe('/admin/support-tickets');
       signInAs('ceo');
       expect(guard()).toBe(true);
     });
@@ -187,7 +187,7 @@ describe('Help & Support', () => {
       expect(root.querySelector<HTMLButtonElement>('button[type=submit]')!.disabled).toBe(true);
       progress.next({ progress: 1, result: TICKET });
       progress.complete();
-      expect(navigate).toHaveBeenCalledWith(['/', 'ar', 'support', 't1'], { state: { supportNotice: 'support.notices.created' } });
+      expect(navigate).toHaveBeenCalledWith(['/', 'support', 't1'], { state: { supportNotice: 'support.notices.created' } });
       expect(page.busy()).toBe(false);
     });
   });

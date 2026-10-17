@@ -1,6 +1,6 @@
 import type { Routes } from '@angular/router';
 
-/** `/:locale/proposals/...` (TPROP, FPROP, PROP). The per-opportunity workspace lives under the opportunity. */
+/** `/proposals/...` (TPROP, FPROP, PROP). The per-opportunity workspace lives under the opportunity. */
 export const PROPOSALS_ROUTES: Routes = [
   { path: '', title: 'prop.listTitle', data: { permission: 'combined_proposals.view' }, loadComponent: () => import('./list/proposals-list.page').then((m) => m.ProposalsListPage) },
   { path: 'compare', title: 'prop.compareTitle', data: { permission: 'combined_proposals.view' }, loadComponent: () => import('./compare/proposal-compare.page').then((m) => m.ProposalComparePage) },

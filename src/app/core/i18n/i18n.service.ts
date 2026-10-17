@@ -4,9 +4,10 @@ import { Service, computed, inject, isDevMode, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 
 import { LocalStore } from '../storage/local-store.service';
-import { DEFAULT_LOCALE, TIME_ZONE, directionFor, type Locale } from './locale';
+import { DEFAULT_LOCALE, TIME_ZONE, directionFor, isLocale, type Locale } from './locale';
 import type { MessageCatalogue } from './message-catalogue.interface';
 
+/** The one place the chosen language is kept (localStorage) — never the URL. */
 const LOCALE_KEY = 'ecotech.locale';
 const PLACEHOLDER = /\{(\w+)\}/g;
 
@@ -24,6 +25,12 @@ function serverKey(key: string): string {
 /**
  * Runtime AR/EN translations using the SAME catalogues as the Next.js app
  * (`messages/ar.json`, `messages/en.json`, served under `/i18n/`).
+ *
+ * The language is the browser's choice, kept in localStorage
+ * (`ecotech.locale`) and nowhere else — URLs never carry it, so every page has
+ * one address in both languages. `init()` (an app initializer) loads the
+ * stored language — or the default — before the first page renders;
+ * `use()` switches it in place (no navigation, no reload) and stores it.
  *
  * The active locale is a signal: templates re-render when it changes, and
  * `<html lang dir>` is kept in sync so Arabic is right-to-left everywhere.
@@ -43,7 +50,12 @@ export class I18nService {
 
   private readonly messages = computed(() => this.catalogues()[this.locale()] ?? {});
 
-  /** Loads the catalogue (once) and makes `locale` the active language. */
+  /** Start-up: the stored language when it is a supported one, otherwise the default — loaded, applied and stored. */
+  init(): Promise<void> {
+    return this.use(this.preferredLocale());
+  }
+
+  /** Loads the catalogue (once), makes `locale` the active language (text, `lang`, `dir`) and stores it. */
   async use(locale: Locale): Promise<void> {
     await this.load(locale);
     this.locale.set(locale);
@@ -53,10 +65,10 @@ export class I18nService {
     html.dir = directionFor(locale);
   }
 
-  /** Last language the user chose (for `/` → `/<locale>/…`). */
+  /** The language this browser chose last (stored), or the default. */
   preferredLocale(): Locale {
     const stored = this.store.get(LOCALE_KEY);
-    return stored === 'ar' || stored === 'en' ? stored : DEFAULT_LOCALE;
+    return isLocale(stored) ? stored : DEFAULT_LOCALE;
   }
 
   /**
@@ -127,6 +139,20 @@ export class I18nService {
     }).formatToParts(date);
     // en-GB writes "pm": the day period is always shown as AM / PM (Arabic keeps ص / م).
     return parts.map((part) => (part.type === 'dayPeriod' ? part.value.toUpperCase() : part.value)).join('');
+  }
+
+  /** The time alone (chat messages), on the same rules: Cairo time, the 12-hour clock with AM/PM ("2:45 PM"). */
+  formatTime(value: string | Date | null | undefined): string {
+    if (!value) return '';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '';
+    const parts = new Intl.DateTimeFormat(this.intlLocale(), { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: TIME_ZONE }).formatToParts(date);
+    return parts.map((part) => (part.type === 'dayPeriod' ? part.value.toUpperCase() : part.value)).join('');
+  }
+
+  /** The calendar day of a moment in Cairo time ("2026-10-17"), to group messages by day. */
+  dayKey(value: string | Date): string {
+    return new Intl.DateTimeFormat('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit', timeZone: TIME_ZONE }).format(new Date(value));
   }
 
   /** "10 seconds ago", "in 2 days" — for drafts, notifications and other recent moments. */

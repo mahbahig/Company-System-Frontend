@@ -5,7 +5,7 @@
   <!-- Built only while the dialog is open: every opening starts from a fresh form, nothing typed survives a close. -->
   @if (open()) {
     <form class="grid gap-4 sm:grid-cols-2" (submit)="save($event)">
-      @if (actions.error(); as text) {
+      @if (formError(); as text) {
         <app-alert variant="destructive" class="sm:col-span-2">{{ text }}</app-alert>
       }
       <div>
@@ -15,10 +15,19 @@
           id="u-email"
           type="email"
           dir="ltr"
+          autocomplete="off"
+          [required]="!editing()"
           [disabled]="!!editing()"
           [value]="d().email"
           (input)="set('email', $any($event.target).value)"
+          (blur)="emailTouched.set(true)"
+          [attr.aria-invalid]="emailError() ? true : null"
+          [attr.aria-describedby]="emailError() ? 'u-email-error' : null"
+          data-testid="employee-email"
         />
+        @if (emailError(); as key) {
+          <p id="u-email-error" class="mt-1.5 text-xs text-destructive" data-testid="employee-email-error">{{ key | t }}</p>
+        }
       </div>
       @if (!editing()) {
         <!-- The initial password: for the first sign-in only (the employee must then choose their own). -->

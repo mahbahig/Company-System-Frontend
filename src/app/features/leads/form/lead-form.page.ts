@@ -1,6 +1,6 @@
 import { Component, ElementRef, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
-import { FormField, form, max, min, required, submit, validate } from '@angular/forms/signals';
+import { FormField, applyWhen, form, max, min, required, submit, validate } from '@angular/forms/signals';
 import { Router, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 
@@ -126,7 +126,12 @@ const EMPTY: LeadFormModel = {
   q: { ...EMPTY_Q },
 };
 
-/** Full lead form (`LEAD-01/02`): create at `/leads/new`, edit at `/leads/:id/edit`. */
+/**
+ * Full lead form (`LEAD-01/02`): create at `/leads/new`, edit at `/leads/:id/edit`.
+ * Creating a lead has no qualification section (no inputs, no validation,
+ * nothing sent): qualification is recorded on the lead afterwards, here in
+ * edit mode.
+ */
 @Component({
   selector: 'app-lead-form-page',
   imports: [
@@ -181,7 +186,7 @@ export class LeadFormPage implements HasUnsavedChanges {
   protected readonly locked = computed(() => !this.readOnly() && this.existing.hasValue() && this.existing.value().canEdit === false);
   /** Server field errors from the last save, cleared as soon as the field is edited. */
   private readonly serverErrors = signal<Record<string, string>>({});
-  /** The qualification block is optional detail: collapsed on a new lead until opened (or until it holds values / an error). */
+  /** Edit only: the qualification block is optional detail, collapsed until opened (or until it holds values / an error). */
   protected readonly showQualification = signal(false);
   protected readonly crumbs = computed(() => [
     { label: this.i18n.t('navigation.items.leads'), path: '/leads' },
@@ -197,9 +202,16 @@ export class LeadFormPage implements HasUnsavedChanges {
     validate(path.altPhone, phoneValidator);
     validate(path.email, emailValidator);
     required(path.sourceCode, { message: 'validation.required' });
-    for (const field of [path.q.avgMonthlyConsumptionKwh, path.q.avgMonthlyBill, path.q.estimatedSizeKwp, path.q.budget]) min(field, 0, { message: 'validation.mustBePositive' });
-    min(path.q.interestLevel, 1, { message: 'validation.mustBePositive' });
-    max(path.q.interestLevel, 5, { message: 'validation.mustBePositive' });
+    // Qualification exists on an existing lead only.
+    applyWhen(
+      path.q,
+      () => this.isEdit(),
+      (q) => {
+        for (const field of [q.avgMonthlyConsumptionKwh, q.avgMonthlyBill, q.estimatedSizeKwp, q.budget]) min(field, 0, { message: 'validation.mustBePositive' });
+        min(q.interestLevel, 1, { message: 'validation.mustBePositive' });
+        max(q.interestLevel, 5, { message: 'validation.mustBePositive' });
+      },
+    );
   });
 
   /** Unsent input of a NEW lead, kept in this browser only (never sent until Save). */
@@ -231,10 +243,8 @@ export class LeadFormPage implements HasUnsavedChanges {
   }
 
   protected restoreDraft(): void {
-    this.draft.restore((value) => {
-      this.model.set({ ...EMPTY, ...value, q: { ...EMPTY_Q, ...(value.q ?? {}) } });
-      if (Object.values(value.q ?? {}).some((entry) => entry !== null && entry !== '' && entry !== false)) this.showQualification.set(true);
-    });
+    // Drafts are for new leads, which take no qualification (an older draft's values are left behind).
+    this.draft.restore((value) => this.model.set({ ...EMPTY, ...value, q: { ...EMPTY_Q } }));
   }
 
   private valueAt(field: string): unknown {
@@ -297,6 +307,7 @@ export class LeadFormPage implements HasUnsavedChanges {
 
   private toPayload(): LeadFields {
     const value = this.model();
+    const editing = this.isEdit();
     return {
       name: value.name,
       companyName: value.companyName || undefined,
@@ -319,7 +330,7 @@ export class LeadFormPage implements HasUnsavedChanges {
       nextFollowUpAt: value.nextFollowUpAt || undefined,
       nextAction: value.nextAction || undefined,
       notes: value.notes || undefined,
-      qualification: this.qualificationPayload(value.q),
+      ...(editing ? { qualification: this.qualificationPayload(value.q) } : {}),
     };
   }
 
@@ -355,7 +366,7 @@ export class LeadFormPage implements HasUnsavedChanges {
     this.leadForm().markAsTouched();
     if (this.leadForm().invalid()) {
       // Required fields show their own message; out-of-range qualification numbers are reported here.
-      if (this.leadForm.q().invalid()) {
+      if (this.isEdit() && this.leadForm.q().invalid()) {
         this.errorKey.set('validation.mustBePositive');
         this.showQualification.set(true);
       }
@@ -373,7 +384,7 @@ export class LeadFormPage implements HasUnsavedChanges {
           : await firstValueFrom(this.leads.create(this.toPayload() as CreateLeadPayload));
         this.saved = true;
         this.draft.clear();
-        await this.router.navigate(['/', this.i18n.locale(), 'leads', lead.id]);
+        await this.router.navigate(['/', 'leads', lead.id]);
       } catch (error) {
         this.errorKey.set(ApiError.is(error) && this.i18n.has(error.messageKey) ? error.messageKey : 'errors.db.unexpected');
         if (ApiError.is(error) && Object.keys(error.fieldErrors).length) {

@@ -9,10 +9,10 @@
     <app-status-badge enum="contractStatus" [value]="c.status" />
     <app-favorite-toggle type="contract" [id]="c.id" />
     @if (opportunityId() && navigation.canOpen('/opportunities/' + opportunityId())) {
-      <a appButton variant="outline" [routerLink]="['/', i18n.locale(), 'opportunities', opportunityId()]">{{ 'handoffs.backToOpportunity' | t }}</a>
+      <a appButton variant="outline" [routerLink]="['/', 'opportunities', opportunityId()]">{{ 'handoffs.backToOpportunity' | t }}</a>
     }
     @if (c.projectId && navigation.canOpen('/projects/' + c.projectId)) {
-      <a appButton [routerLink]="['/', i18n.locale(), 'projects', c.projectId]">{{ 'contracts.openProject' | t }}</a>
+      <a appButton [routerLink]="['/', 'projects', c.projectId]">{{ 'contracts.openProject' | t }}</a>
     }
   </app-page-header>
 
@@ -219,7 +219,7 @@
           <ul appCardContent class="flex flex-col gap-2 text-sm">
             @for (a of d.approvals; track a.id) {
               <li class="flex items-center justify-between gap-2">
-                <a class="text-primary hover:underline" [routerLink]="['/', i18n.locale(), 'approvals', a.id]" dir="ltr">{{ a.approvalNo }}</a>
+                <a class="text-primary hover:underline" [routerLink]="['/', 'approvals', a.id]" dir="ltr">{{ a.approvalNo }}</a>
                 <app-status-badge enum="approvalStatus" [value]="a.status" />
               </li>
             }

@@ -28,6 +28,7 @@ export type PermissionCode =
   | 'campaigns.manage'
   | 'campaigns.view'
   | 'catalog.manage'
+  | 'chat.manage_groups'
   | 'combined_proposals.assemble'
   | 'combined_proposals.present'
   | 'combined_proposals.release'
@@ -126,7 +127,8 @@ export type PermissionCode =
   | 'proposals.review_financial'
   | 'proposals.review_technical'
   | 'proposals.send'
-  | 'proposals.view'
+  | 'proposals.view'
+
   | 'records.correct'
   | 'reports.view'
   | 'reports.view_all'

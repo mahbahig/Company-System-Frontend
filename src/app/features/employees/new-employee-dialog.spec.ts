@@ -3,7 +3,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 
 import { signInAs } from '../../../testing/as-role';
 import { routes } from '../../app.routes';
@@ -163,5 +163,75 @@ describe('New Employee dialog: Save creates, Cancel discards — no drafts', () 
     expect(root.querySelector('#u-password-mismatch')).not.toBeNull();
     expect(button(root, 'crm.common.save')!.disabled).toBe(true);
     expect(api.createUser).not.toHaveBeenCalled();
+  });
+
+  describe('the e-mail field (the sign-in form\'s rule: required, then a real address)', () => {
+    const emailError = () => root.querySelector('[data-testid="employee-email-error"]')?.textContent?.trim() ?? null;
+    const leave = async () => {
+      field(root, 'u-email').dispatchEvent(new Event('blur'));
+      return settle(fixture);
+    };
+    const fillTheRest = async () => {
+      type(root, 'u-name-ar', 'موظف');
+      type(root, 'u-name-en', 'Employee');
+      type(root, 'u-password', 'welcome1');
+      type(root, 'u-password-confirm', 'welcome1');
+      root.querySelector<HTMLInputElement>('input[type="checkbox"]')!.click();
+      await settle(fixture);
+    };
+
+    it('empty → "Email is required." once the field is left', async () => {
+      await open();
+      expect(emailError()).toBeNull();
+      await leave();
+      expect(emailError()).toBe('admin.users.emailRequired');
+      expect(field(root, 'u-email').getAttribute('aria-invalid')).toBe('true');
+      expect(field(root, 'u-email').getAttribute('aria-describedby')).toBe('u-email-error');
+    });
+
+    it('each invalid value → "Invalid email address." — never the generic "correct the highlighted fields"; Save cannot send it', async () => {
+      await open();
+      await fillTheRest();
+      for (const value of ['test', 'test@', 'test.com.', '@test.com', 'test @example.com']) {
+        type(root, 'u-email', value);
+        await leave();
+        expect(emailError(), value).toBe('admin.users.emailInvalid');
+        expect(root.textContent, value).not.toContain('server.errors.validation');
+        const save = button(root, 'crm.common.save')!;
+        expect(save.disabled, value).toBe(true);
+        // Even a forced submit (Enter) sends nothing.
+        root.querySelector('form')!.dispatchEvent(new Event('submit', { cancelable: true }));
+        await settle(fixture);
+      }
+      expect(api.createUser).not.toHaveBeenCalled();
+    });
+
+    it('valid → no message, and the message follows the typing once shown', async () => {
+      await open();
+      type(root, 'u-email', 'test@');
+      await leave();
+      expect(emailError()).toBe('admin.users.emailInvalid');
+      type(root, 'u-email', 'test@example.com');
+      await settle(fixture);
+      expect(emailError()).toBeNull();
+      expect(field(root, 'u-email').hasAttribute('aria-invalid')).toBe(false);
+    });
+
+    it('an address the API refuses shows under the field, without the generic form message', async () => {
+      api.createUser.mockReturnValue(throwError(() => ({ status: 400, messageKey: 'server.errors.validation', fieldErrors: { email: 'validation.emailInvalid' } })));
+      await open();
+      await fillTheRest();
+      type(root, 'u-email', 'a..b@example.com');
+      await settle(fixture);
+      button(root, 'crm.common.save')!.click();
+      await settle(fixture);
+      expect(api.createUser).toHaveBeenCalledTimes(1);
+      expect(emailError()).toBe('admin.users.emailInvalid');
+      expect(root.querySelector('dialog app-alert')).toBeNull();
+      // Changing the address clears the API's message.
+      type(root, 'u-email', 'ab@example.com');
+      await settle(fixture);
+      expect(emailError()).toBeNull();
+    });
   });
 });

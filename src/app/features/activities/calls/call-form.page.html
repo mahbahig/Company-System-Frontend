@@ -5,40 +5,67 @@
     @if (actions.error(); as text) {
       <app-alert variant="destructive" class="sm:col-span-2">{{ text }}</app-alert>
     }
-    <div>
-      <label appLabel for="call-customer">{{ 'act.fields.customer' | t }}</label>
-      <app-record-picker kind="customer" inputId="call-customer" [(value)]="customer" />
-    </div>
-    <div>
-      <label appLabel for="call-lead" required>{{ 'act.fields.lead' | t }}</label>
-      <app-record-picker
-        kind="lead"
-        inputId="call-lead"
-        [(value)]="lead"
-        [attr.aria-invalid]="leadError() ? true : null"
-      />
-      @if (leadError(); as key) {
-        <p id="call-lead-error" class="mt-1 text-sm text-destructive">{{ key | t }}</p>
+    <fieldset class="flex flex-col gap-2 sm:col-span-2" [attr.aria-describedby]="partyError() ? 'call-party-error' : 'call-party-hint'">
+      <legend class="mb-1 text-sm font-medium leading-none text-foreground">
+        {{ 'act.calls.party.legend' | t }}<span aria-hidden="true" class="ms-1 text-destructive">*</span
+        ><span class="sr-only"> ({{ 'common.labels.required' | t }})</span>
+      </legend>
+      <div class="flex flex-wrap gap-x-6 gap-y-2" role="radiogroup">
+        <label class="flex items-center gap-2 text-sm">
+          <input type="radio" name="call-party" id="call-party-customer" value="customer" class="size-4 accent-primary" [checked]="party() === 'customer'" (change)="choose('customer')" />
+          {{ 'act.calls.party.customer' | t }}
+        </label>
+        <label class="flex items-center gap-2 text-sm">
+          <input type="radio" name="call-party" id="call-party-lead" value="lead" class="size-4 accent-primary" [checked]="party() === 'lead'" (change)="choose('lead')" />
+          {{ 'act.calls.party.lead' | t }}
+        </label>
+      </div>
+      @if (partyError(); as key) {
+        <p id="call-party-error" class="text-sm text-destructive">{{ key | t }}</p>
+      } @else {
+        <p id="call-party-hint" class="text-xs text-muted-foreground">{{ 'act.calls.party.hint' | t }}</p>
       }
-    </div>
-    <div>
-      <label appLabel for="call-opp">{{ 'act.fields.opportunity' | t }}</label>
-      <app-record-picker
-        kind="opportunity"
-        inputId="call-opp"
-        [parentId]="customer() || undefined"
-        [(value)]="opportunity"
-      />
-    </div>
-    @if (customer()) {
+    </fieldset>
+    @if (party() === 'customer') {
       <div>
-        <label appLabel for="call-contact">{{ 'act.fields.contact' | t }}</label>
+        <label appLabel for="call-customer" required>{{ 'act.fields.customer' | t }}</label>
+        <app-record-picker kind="customer" inputId="call-customer" [(value)]="customer" [attr.aria-invalid]="customerError() ? true : null" />
+        @if (customerError(); as key) {
+          <p id="call-customer-error" class="mt-1 text-sm text-destructive">{{ key | t }}</p>
+        }
+      </div>
+      <div>
+        <label appLabel for="call-opp">{{ 'act.fields.opportunity' | t }}</label>
         <app-record-picker
-          kind="contact"
-          inputId="call-contact"
-          [parentId]="customer()"
-          [(value)]="contact"
+          kind="opportunity"
+          inputId="call-opp"
+          [parentId]="customer() || undefined"
+          [(value)]="opportunity"
         />
+      </div>
+      @if (customer()) {
+        <div>
+          <label appLabel for="call-contact">{{ 'act.fields.contact' | t }}</label>
+          <app-record-picker
+            kind="contact"
+            inputId="call-contact"
+            [parentId]="customer()"
+            [(value)]="contact"
+          />
+        </div>
+      }
+    } @else if (party() === 'lead') {
+      <div>
+        <label appLabel for="call-lead" required>{{ 'act.fields.lead' | t }}</label>
+        <app-record-picker
+          kind="lead"
+          inputId="call-lead"
+          [(value)]="lead"
+          [attr.aria-invalid]="leadError() ? true : null"
+        />
+        @if (leadError(); as key) {
+          <p id="call-lead-error" class="mt-1 text-sm text-destructive">{{ key | t }}</p>
+        }
       </div>
     }
     <div>

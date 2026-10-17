@@ -9,6 +9,7 @@
 @if (actions.error(); as text) {
   <app-alert variant="destructive">{{ text }}</app-alert>
 }
+<app-pager-size [pager]="definitionsPager" />
 <app-table-wrapper
   [label]="'admin.automation.definitions' | t"
   [attr.aria-busy]="definitions.isLoading()"
@@ -52,6 +53,7 @@
 
 <h2 class="text-lg font-semibold">{{ 'admin.automation.runs' | t }}</h2>
 <app-list-toolbar [searchable]="false" [filters]="filters()" />
+<app-page-size [pageSize]="pageSize()" [total]="runs.hasValue() ? runs.value().total : null" [loading]="runs.isLoading()" />
 <app-table-wrapper [label]="'admin.automation.runs' | t" [attr.aria-busy]="runs.isLoading()">
   <table appTable>
     <thead appTableHeader>

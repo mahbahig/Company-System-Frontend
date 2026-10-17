@@ -1,5 +1,6 @@
 <section class="flex flex-col gap-3" aria-labelledby="c360-acts">
   <h2 id="c360-acts" class="text-lg font-semibold">{{ 'customer360.recentActivity' | t }}</h2>
+  <app-pager-size [pager]="activityPager" />
   <app-table-wrapper [label]="'customer360.recentActivity' | t">
     <table appTable>
       <thead appTableHeader>
@@ -53,6 +54,7 @@
 
 <section class="flex flex-col gap-3" aria-labelledby="c360-tasks">
   <h2 id="c360-tasks" class="text-lg font-semibold">{{ 'customer360.openTasks' | t }}</h2>
+  <app-pager-size [pager]="tasksPager" />
   <app-table-wrapper [label]="'customer360.openTasks' | t">
     <table appTable>
       <thead appTableHeader>
@@ -64,11 +66,11 @@
       </thead>
       <tbody appTableBody>
         @for (task of tasksPager.rows(); track task.id) {
-          <tr appTableRow [appRowLink]="['/', i18n.locale(), 'tasks', task.id]">
+          <tr appTableRow [appRowLink]="['/', 'tasks', task.id]">
             <td appTableCell>
               <a
                 class="text-primary hover:underline"
-                [routerLink]="['/', i18n.locale(), 'tasks', task.id]"
+                [routerLink]="['/', 'tasks', task.id]"
                 >{{ task.title }}</a
               >
             </td>

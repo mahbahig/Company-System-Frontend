@@ -15,15 +15,18 @@ import { ButtonDirective } from '../../../shared/ui/button/button.directive';
 import { CARD_IMPORTS } from '../../../shared/ui/card/card.imports';
 import { DetailSkeletonComponent } from '../../../shared/ui/skeleton/skeleton.component';
 import { StatusPageComponent } from '../../errors/status-page.component';
-import type { AuditEntry } from './audit-entry.interface';
+import { auditFieldLabel, auditValue } from './audit-diff';
+import type { AuditChange, AuditEntry } from './audit-entry.interface';
 import { auditAction, auditActor, auditRecord, auditTime, RECORD_PATHS } from './audit-presenter';
 
 /**
  * `/admin/audit/:id` — one audit event in full (Super Administrator only;
  * the API answers 404 for anything outside the viewer's audit log): the
  * readable action, who did it, the date and time (12-hour clock), severity,
- * source, the record (linked where the viewer can open it), where from, and
- * every changed field before and after. Read-only — an audit event is never
+ * source, the record and the employee it is about (linked where the viewer
+ * can open them), where from, and what changed — field by field, before → after
+ * in words (a secret only as "changed", never its value); the raw snapshots
+ * only in the collapsed technical details. Read-only — an audit event is never
  * edited. Critical-event notifications link here.
  */
 @Component({
@@ -54,20 +57,36 @@ export class AuditEventPage {
   protected recordLink(entry: AuditEntry): string[] | null {
     const area = RECORD_PATHS[entry.entityType];
     if (!area || !entry.entityId) return null;
-    return this.navigation.canOpen(`/${area}/${entry.entityId}`) ? ['/', this.i18n.locale(), ...area.split('/'), entry.entityId] : null;
+    return this.navigation.canOpen(`/${area}/${entry.entityId}`) ? ['/', ...area.split('/'), entry.entityId] : null;
   }
 
-  protected show(source: Record<string, unknown> | null | undefined, field: string): string {
-    const value = source?.[field];
-    if (value === undefined || value === null || value === '') return '∅';
-    const text = typeof value === 'object' ? JSON.stringify(value) : String(value);
-    return text.length > 500 ? text.slice(0, 500) + '…' : text;
-  }
-
-  /** What an event without field changes recorded (e.g. a sign-in's method), as readable pairs. */
-  protected extra(entry: AuditEntry): Array<{ key: string; value: string }> {
-    if (entry.changedFields.length) return [];
+  /** What an event without field changes recorded (a creation's snapshot, a sign-in's method), as readable pairs. */
+  protected extra(entry: AuditEntry): Array<{ key: string; label: string; value: string }> {
+    if (this.changes(entry).length) return [];
     const source = entry.after ?? entry.before ?? {};
-    return Object.keys(source).map((key) => ({ key, value: this.show(source, key) }));
+    return Object.keys(source).map((key) => ({ key, label: auditFieldLabel(this.i18n, key), value: auditValue(this.i18n, { field: key }, source[key], entry.entityType) }));
+  }
+
+  /** The API's change set (derived from the changed fields for a response without one). */
+  protected changes(entry: AuditEntry): AuditChange[] {
+    return entry.changes ?? entry.changedFields.map((field) => ({ field, before: entry.before?.[field] ?? null, after: entry.after?.[field] ?? null }));
+  }
+
+  protected fieldLabel(change: AuditChange): string {
+    return auditFieldLabel(this.i18n, change.field);
+  }
+
+  protected value(entry: AuditEntry, change: AuditChange, side: 'before' | 'after'): string {
+    return auditValue(this.i18n, change, change[side], entry.entityType);
+  }
+
+  /** The raw snapshots, for the technical details only. */
+  protected raw(entry: AuditEntry): string {
+    return JSON.stringify({ before: entry.before ?? null, after: entry.after ?? null }, null, 2);
+  }
+
+  protected targetLink(entry: AuditEntry): string[] | null {
+    const id = entry.target?.id;
+    return id && this.navigation.canOpen(`/employees/${id}`) ? ['/', 'employees', id] : null;
   }
 }

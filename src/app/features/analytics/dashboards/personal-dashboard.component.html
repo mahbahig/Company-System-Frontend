@@ -11,14 +11,14 @@
         <app-stat-card
           [label]="'analytics.personal.newLeads' | t"
           [value]="n(d.leads['new'] ?? 0)"
-          [link]="link('/leads/mine')"
+          [link]="'/leads/mine'"
           [queryParams]="{ tab: 'new' }"
         />
         <app-stat-card
           [label]="'analytics.personal.followUpsDue' | t"
           [value]="n(d.followUpsDue ?? 0)"
           [tone]="d.followUpsDue ? 'warning' : 'neutral'"
-          [link]="link('/leads/mine')"
+          [link]="'/leads/mine'"
           [queryParams]="{ tab: 'follow_ups_due' }"
         />
       }
@@ -26,14 +26,14 @@
         <app-stat-card
           [label]="'analytics.personal.tasksToday' | t"
           [value]="n(d.tasks.today)"
-          [link]="link('/tasks')"
+          [link]="'/tasks'"
           [queryParams]="{ view: 'today' }"
         />
         <app-stat-card
           [label]="'analytics.personal.tasksOverdue' | t"
           [value]="n(d.tasks.overdue)"
           [tone]="d.tasks.overdue ? 'danger' : 'neutral'"
-          [link]="link('/tasks')"
+          [link]="'/tasks'"
           [queryParams]="{ view: 'overdue' }"
         />
       }
@@ -41,13 +41,13 @@
         <app-stat-card
           [label]="'analytics.personal.openOpportunities' | t"
           [value]="n(d.opportunities.open)"
-          [link]="link('/opportunities')"
+          [link]="'/opportunities'"
         />
         <app-stat-card
           [label]="'analytics.personal.withoutNextAction' | t"
           [value]="n(d.opportunities.withoutNextAction)"
           [tone]="d.opportunities.withoutNextAction ? 'warning' : 'neutral'"
-          [link]="link('/opportunities')"
+          [link]="'/opportunities'"
         />
       }
       @if (d.approvalsPending !== null && auth.can('approvals.decide')) {
@@ -55,28 +55,28 @@
           [label]="'analytics.personal.approvals' | t"
           [value]="n(d.approvalsPending)"
           [tone]="d.approvalsPending ? 'info' : 'neutral'"
-          [link]="link('/approvals')"
+          [link]="'/approvals'"
         />
       }
       @if (d.upcomingVisits !== null && auth.can('visits.view')) {
         <app-stat-card
           [label]="'analytics.personal.upcomingVisits' | t"
           [value]="n(d.upcomingVisits)"
-          [link]="link('/visits')"
+          [link]="'/visits'"
         />
       }
       @if (d.projects && auth.can('projects.view')) {
         <app-stat-card
           [label]="'analytics.personal.activeProjects' | t"
           [value]="n(d.projects.active)"
-          [link]="link('/projects')"
+          [link]="'/projects'"
           [queryParams]="{ mine: '1' }"
         />
         <app-stat-card
           [label]="'analytics.personal.delayedProjects' | t"
           [value]="n(d.projects.delayed)"
           [tone]="d.projects.delayed ? 'danger' : 'neutral'"
-          [link]="link('/projects')"
+          [link]="'/projects'"
           [queryParams]="{ mine: '1', delayed: '1' }"
         />
         <app-stat-card

@@ -1,0 +1,135 @@
+<app-page-header [heading]="'admin.chats.title' | t" [subtitle]="'admin.chats.subtitle' | t" class="!mb-0" />
+
+<app-alert data-testid="chat-admin-privacy">{{ 'admin.chats.privacy' | t }}</app-alert>
+@if (actions.message(); as text) {
+  <app-alert variant="success">{{ text }}</app-alert>
+}
+
+<app-list-toolbar [searchValue]="q() ?? ''" [searchPlaceholder]="'admin.chats.searchPlaceholder' | t" [filters]="filters()" />
+
+@if (result.error()) {
+  <app-alert variant="destructive">{{ i18n.errorText(result.error()) }}</app-alert>
+}
+
+@if (!result.isLoading() && !rows().length && !filtered()) {
+  <section class="flex flex-col items-center gap-3 rounded-lg border border-dashed border-border px-6 py-12 text-center">
+    <span class="flex size-12 items-center justify-center rounded-full bg-secondary text-muted-foreground">
+      <app-icon [icon]="icons.empty" svgClass="size-6" />
+    </span>
+    <h2 class="text-base font-semibold">{{ 'admin.chats.empty' | t }}</h2>
+  </section>
+} @else {
+  <app-page-size [pageSize]="pageSize()" [total]="result.hasValue() ? result.value().total : null" [loading]="result.isLoading()" />
+  <app-table-wrapper [label]="'admin.chats.title' | t" [attr.aria-busy]="result.isLoading()">
+    <table appTable>
+      <thead appTableHeader>
+        <tr appTableRow>
+          <th appTableHead>{{ 'admin.chats.columns.name' | t }}</th>
+          <th appTableHead>{{ 'admin.chats.columns.type' | t }}</th>
+          <th appTableHead>{{ 'admin.chats.columns.members' | t }}</th>
+          <th appTableHead>{{ 'admin.chats.columns.status' | t }}</th>
+          <th appTableHead>{{ 'admin.chats.columns.createdBy' | t }}</th>
+          <th appTableHead>{{ 'admin.chats.columns.lastActivity' | t }}</th>
+          <th appTableHead><span class="sr-only">{{ 'admin.chats.columns.actions' | t }}</span></th>
+        </tr>
+      </thead>
+      <tbody appTableBody>
+        @for (row of rows(); track row.id) {
+          <tr appTableRow [attr.data-chat-id]="row.id">
+            <td appTableCell>
+              <button type="button" class="font-medium text-primary underline-offset-4 hover:underline" (click)="view(row)">{{ name(row) }}</button>
+            </td>
+            <td appTableCell>{{ 'chat.types.' + row.type | t }}</td>
+            <td appTableCell class="tabular">{{ row.memberCount }}</td>
+            <td appTableCell>
+              <div class="flex flex-wrap gap-1">
+                <app-badge [tone]="row.status === 'active' ? 'success' : 'neutral'">{{ 'admin.chats.status.' + row.status | t }}</app-badge>
+                @if (row.locked) {
+                  <app-badge tone="warning"><app-icon [icon]="icons.lock" svgClass="size-3" />{{ 'chat.locked' | t }}</app-badge>
+                }
+                @if (row.adminOnly) {
+                  <app-badge tone="info">{{ 'chat.adminOnlyBadge' | t }}</app-badge>
+                }
+              </div>
+            </td>
+            <td appTableCell class="whitespace-nowrap">{{ creator(row) }}</td>
+            <td appTableCell class="whitespace-nowrap tabular">{{ row.lastActivityAt ? i18n.formatDate(row.lastActivityAt, true) : '—' }}</td>
+            <td appTableCell>
+              <div class="flex justify-end gap-1">
+                @if (row.manageable) {
+                  <button type="button" appButton size="sm" [variant]="row.locked ? 'soft-success' : 'soft-warning'" [attr.data-testid]="'toggle-lock-' + row.id" (click)="setLocked(row, !row.locked)">
+                    <app-icon [icon]="row.locked ? icons.unlock : icons.lock" />{{ (row.locked ? 'admin.chats.unlock' : 'admin.chats.lock') | t }}
+                  </button>
+                  <button type="button" appButton size="sm" variant="soft-destructive" [attr.data-testid]="'delete-' + row.id" (click)="remove(row)">
+                    <app-icon [icon]="icons.remove" />{{ 'admin.chats.delete' | t }}
+                  </button>
+                } @else {
+                  <span class="text-xs text-muted-foreground">{{ 'admin.chats.notManageable' | t }}</span>
+                }
+              </div>
+            </td>
+          </tr>
+        } @empty {
+          @if (result.isLoading()) {
+            @for (i of [0, 1, 2, 3]; track i) {
+              <tr app-skeleton-row [columns]="7" [index]="i"></tr>
+            }
+          } @else {
+            <tr app-table-empty [colSpan]="7">{{ 'admin.chats.emptyFiltered' | t }}</tr>
+          }
+        }
+      </tbody>
+    </table>
+  </app-table-wrapper>
+}
+
+@if (result.hasValue() && result.value().total) {
+  <app-pagination [loading]="result.isLoading()" [page]="result.value().page" [pageCount]="result.value().pageCount" [total]="result.value().total" [pageSize]="result.value().pageSize" />
+}
+
+<app-dialog [(open)]="viewing" [heading]="details() ? name(details()!) : ('admin.chats.detailsTitle' | t)" [description]="'admin.chats.detailsHint' | t">
+  @if (detailsError()) {
+    <app-alert variant="destructive">{{ i18n.errorText(detailsError()) }}</app-alert>
+  } @else if (details(); as chat) {
+    <div class="flex flex-col gap-4" data-testid="chat-admin-details">
+      <dl class="grid grid-cols-2 gap-3 text-sm">
+        <div><dt class="text-xs text-muted-foreground">{{ 'admin.chats.columns.type' | t }}</dt><dd>{{ 'chat.types.' + chat.type | t }}</dd></div>
+        <div><dt class="text-xs text-muted-foreground">{{ 'admin.chats.columns.members' | t }}</dt><dd class="tabular">{{ chat.memberCount }}</dd></div>
+        <div><dt class="text-xs text-muted-foreground">{{ 'admin.chats.columns.status' | t }}</dt><dd>{{ 'admin.chats.status.' + chat.status | t }}{{ chat.locked ? ' · ' + ('chat.locked' | t) : '' }}</dd></div>
+        <div><dt class="text-xs text-muted-foreground">{{ 'admin.chats.whoCanSend' | t }}</dt><dd>{{ (chat.adminOnly ? 'admin.chats.adminsOnly' : 'admin.chats.everyone') | t }}</dd></div>
+        <div><dt class="text-xs text-muted-foreground">{{ 'admin.chats.columns.createdBy' | t }}</dt><dd>{{ creator(chat) }}</dd></div>
+        <div><dt class="text-xs text-muted-foreground">{{ 'admin.chats.createdAt' | t }}</dt><dd class="tabular">{{ chat.createdAt ? i18n.formatDate(chat.createdAt, true) : '—' }}</dd></div>
+      </dl>
+      <section>
+        <h3 class="mb-2 text-sm font-semibold">{{ 'admin.chats.admins' | t }} ({{ chat.admins.length }})</h3>
+        @if (chat.admins.length) {
+          <ul class="flex flex-wrap gap-2">
+            @for (member of chat.admins; track member.id) {
+              <li class="inline-flex items-center gap-1.5 rounded-full bg-secondary py-1 pe-3 ps-1 text-sm">
+                <app-avatar [userId]="member.id" [name]="person(member)" [version]="member.avatarVersion" size="xs" />{{ person(member) }}
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="text-sm text-muted-foreground">{{ 'admin.chats.noAdmins' | t }}</p>
+        }
+      </section>
+      <section>
+        <h3 class="mb-2 text-sm font-semibold">{{ 'admin.chats.members' | t }} ({{ chat.members.length }})</h3>
+        <ul class="flex max-h-72 flex-col gap-1 overflow-y-auto">
+          @for (member of chat.members; track member.id) {
+            <li class="flex items-center gap-2 rounded-md p-1.5 text-sm">
+              <app-avatar [userId]="member.id" [name]="person(member)" [version]="member.avatarVersion" size="sm" />
+              <span class="min-w-0 flex-1 truncate">{{ person(member) }}</span>
+              @if (member.role === 'admin') {
+                <app-badge tone="info"><app-icon [icon]="icons.admin" svgClass="size-3" />{{ 'chat.details.admin' | t }}</app-badge>
+              }
+            </li>
+          }
+        </ul>
+      </section>
+    </div>
+  } @else {
+    <div class="h-40 animate-pulse rounded-md bg-secondary"></div>
+  }
+</app-dialog>

@@ -5,7 +5,7 @@ import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { ButtonDirective } from '../../ui/button/button.directive';
 import { FORM_IMPORTS } from '../../ui/form/form.imports';
 
-/** What a check-in / arrival records (backend `GeoCaptureDto`). */
+/** What a visit check-in / check-out records (backend `GeoCaptureDto`). */
 export interface GeoCapture {
   latitude?: number;
   longitude?: number;
@@ -15,9 +15,10 @@ export interface GeoCapture {
 }
 
 /**
- * VISIT / MEET GPS capture: reads the device position (location is collected
+ * Site visit GPS capture: reads the device position (location is collected
  * only at this moment — NFR-011) and shows its accuracy; when GPS is denied or
- * unavailable a manual reason is required instead.
+ * unavailable a manual reason is required instead. (Meetings never fall back
+ * to a reason: they use `GeolocationService` and need a position.)
  */
 @Component({
   selector: 'app-gps-capture',

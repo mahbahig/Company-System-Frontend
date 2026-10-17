@@ -54,6 +54,7 @@ import { UsersLookupApi } from '../users-lookup-api.service';
 import { LocalPager } from '../../../shared/crm/pagination/local-pager';
 import { PagerComponent } from '../../../shared/crm/pagination/pager.component';
 import { ConfirmService } from '../../../shared/ui/confirm/confirm.service';
+import { PagerSizeComponent } from '../../../shared/crm/pagination/page-size-select.component';
 
 /**
  * Opportunity detail: the O0–O8 and D0–D7 trackers (stage, history,
@@ -100,7 +101,7 @@ import { ConfirmService } from '../../../shared/ui/confirm/confirm.service';
     OpportunityWorkflowPanelComponent,
     OpportunityDiscoveryPanelComponent,
     DeliveryHandoverPanelComponent,
-    UserSelectComponent, PagerComponent],
+    UserSelectComponent, PagerComponent, PagerSizeComponent],
   templateUrl: './opportunity-detail.page.html',
   host: { class: 'flex flex-col gap-6' },
 })

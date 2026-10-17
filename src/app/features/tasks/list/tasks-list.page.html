@@ -36,6 +36,7 @@
   <app-alert variant="destructive">{{ 'errors.db.unexpected' | t }}</app-alert>
 }
 
+<app-page-size [pageSize]="pageSize()" [total]="result.hasValue() ? result.value().total : null" [loading]="result.isLoading()" />
 <app-table-wrapper [label]="'crm.tasks.title' | t" [attr.aria-busy]="result.isLoading()">
   <table appTable>
     <thead appTableHeader>

@@ -38,8 +38,8 @@ describe('Exceptions Center cards', () => {
 
   it('each card links to the existing page with its filter and the exception code', async () => {
     const root = await render();
-    // Locale prefix stripped: the links are `/<locale>/…` in either language.
-    const links = [...root.querySelectorAll<HTMLAnchorElement>('ul a[href]')].map((a) => decodeURIComponent(a.getAttribute('href') ?? '').replace(/^\/(ar|en)/, ''));
+    // The same address in either language (the URL never carries one).
+    const links = [...root.querySelectorAll<HTMLAnchorElement>('ul a[href]')].map((a) => decodeURIComponent(a.getAttribute('href') ?? ''));
     expect(links).toContain('/leads?unassigned=1&exception=leads_unassigned');
     expect(links).toContain('/opportunities?nextActionOverdue=1&exception=opportunities_next_action_overdue');
   });

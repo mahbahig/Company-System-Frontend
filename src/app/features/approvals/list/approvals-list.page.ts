@@ -20,6 +20,7 @@ import { userName } from '../../../shared/utils/display-name';
 import { ApprovalsApi, type Approval } from '../approvals-api.service';
 import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.component';
 import { DEFAULT_PAGE_SIZE, pageSizeAttribute } from '../../../shared/crm/pagination/page-size';
+import { PageSizeSelectComponent } from '../../../shared/crm/pagination/page-size-select.component';
 
 const TYPES = ['discount', 'margin_floor', 'payment_terms', 'financial_proposal', 'combined_proposal_release', 'contract_value', 'ownership_transfer', 'ownership_collaboration', 'gate_override', 'expired_proposal_resend', 'customer_merge'];
 const STATUSES = ['pending', 'approved', 'rejected', 'returned', 'expired', 'escalated'];
@@ -27,7 +28,7 @@ const STATUSES = ['pending', 'approved', 'rejected', 'returned', 'expired', 'esc
 /** APPR-03 approval inbox: waiting for me (incl. delegated), requested by me, decided by me, all in scope. */
 @Component({
   selector: 'app-approvals-list-page',
-  imports: [SkeletonRowComponent, RouterLink, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, AlertComponent, ButtonDirective, PageHeaderComponent, TabsComponent, ListToolbarComponent, PaginationComponent, ...TABLE_IMPORTS],
+  imports: [SkeletonRowComponent, RouterLink, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, AlertComponent, ButtonDirective, PageHeaderComponent, TabsComponent, ListToolbarComponent, PaginationComponent, ...TABLE_IMPORTS, PageSizeSelectComponent],
   templateUrl: './approvals-list.page.html',
   host: { class: 'flex flex-col gap-6' },
 })

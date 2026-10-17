@@ -22,6 +22,7 @@ import { percent } from '../shared/kpi-format';
 import { ListSkeletonComponent } from '../../../shared/ui/skeleton/skeleton.component';
 import { LocalPager } from '../../../shared/crm/pagination/local-pager';
 import { PagerComponent } from '../../../shared/crm/pagination/pager.component';
+import { PagerSizeComponent } from '../../../shared/crm/pagination/page-size-select.component';
 
 /**
  * EXC-01/02 Exception / Attention Center and DQ-01 data quality. Counts come
@@ -34,7 +35,7 @@ import { PagerComponent } from '../../../shared/crm/pagination/pager.component';
  */
 @Component({
   selector: 'app-exceptions-page',
-  imports: [NgTemplateOutlet, ListSkeletonComponent, RouterLink, TranslatePipe, StatusBadgeComponent, AlertComponent, PageHeaderComponent, TabsComponent, TooltipDirective, ...CARD_IMPORTS, ...TABLE_IMPORTS, PagerComponent],
+  imports: [NgTemplateOutlet, ListSkeletonComponent, RouterLink, TranslatePipe, StatusBadgeComponent, AlertComponent, PageHeaderComponent, TabsComponent, TooltipDirective, ...CARD_IMPORTS, ...TABLE_IMPORTS, PagerComponent, PagerSizeComponent],
   templateUrl: './exceptions.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
@@ -88,7 +89,7 @@ export class ExceptionsPage {
   }
 
   protected link(route: string): string {
-    return `/${this.i18n.locale()}${route.split('?')[0]}`;
+    return route.split('?')[0];
   }
 
   protected query(route: string): Record<string, string> {

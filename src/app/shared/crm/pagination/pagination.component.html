@@ -89,25 +89,9 @@
       </ul>
     }
 
-    <div class="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-muted-foreground">
-      <p role="status" data-testid="pagination-summary">
-        {{ 'crm.pagination.showing' | t: { from: firstRow(), to: lastRow(), total: total() } }}
-      </p>
-      <label class="flex items-center gap-2" [for]="selectId">
-        {{ 'crm.pagination.perPage' | t }}
-        <select
-          [id]="selectId"
-          class="h-9 rounded-md border border-input bg-background px-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
-          data-testid="pagination-size"
-          [disabled]="loading()"
-          [value]="pageSize()"
-          (change)="changeSize($event)"
-        >
-          @for (size of sizes(); track size) {
-            <option [value]="size" [selected]="size === pageSize()">{{ size }}</option>
-          }
-        </select>
-      </label>
-    </div>
+    <!-- "Items per page" is above the table (app-page-size), not here. -->
+    <p class="text-sm text-muted-foreground" role="status" data-testid="pagination-summary">
+      {{ 'crm.pagination.showing' | t: { from: firstRow(), to: lastRow(), total: total() } }}
+    </p>
   </nav>
 }

@@ -1,7 +1,8 @@
 import { Component, computed, inject, input, numberAttribute, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
-import { ChevronRight } from 'lucide';
+import { ChevronRight, X } from 'lucide';
+import { of } from 'rxjs';
 
 import { ApiService } from '../../../core/api/api.service';
 import type { Page } from '../../../core/api/page.interface';
@@ -22,6 +23,7 @@ import { applyWhenTypingStops } from '../../../shared/utils/live-search';
 import type { AuditEntry } from './audit-entry.interface';
 import { auditAction, auditActor, auditRecord, auditTime } from './audit-presenter';
 import { DEFAULT_PAGE_SIZE, pageSizeAttribute } from '../../../shared/crm/pagination/page-size';
+import { PageSizeSelectComponent } from '../../../shared/crm/pagination/page-size-select.component';
 
 const FILTER_KEYS = ['entityType', 'entityId', 'action', 'severity', 'actorId', 'userId', 'from', 'to'] as const;
 type FilterKey = (typeof FILTER_KEYS)[number];
@@ -38,7 +40,7 @@ const filterKey = (source: Partial<Record<FilterKey, string | undefined>>): stri
  */
 @Component({
   selector: 'app-audit-log-page',
-  imports: [SkeletonRowComponent, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, UserSelectComponent, AlertComponent, ButtonDirective, IconComponent, PageHeaderComponent, PaginationComponent, ...TABLE_IMPORTS, ...FORM_IMPORTS],
+  imports: [SkeletonRowComponent, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, UserSelectComponent, AlertComponent, ButtonDirective, IconComponent, PageHeaderComponent, PaginationComponent, ...TABLE_IMPORTS, ...FORM_IMPORTS, PageSizeSelectComponent],
   templateUrl: './audit-log.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
@@ -73,7 +75,17 @@ export class AuditLogPage {
   }));
   protected readonly data = rxResource({ params: () => this.query(), stream: ({ params }) => this.api.get<Page<AuditEntry>>('audit', params) });
   protected readonly rows = computed(() => (this.data.hasValue() ? this.data.value().rows : []));
+  /** The filtered employee's name (inactive employees too — the picker lists active ones only). */
+  private readonly employee = rxResource({
+    params: () => this.userId(),
+    stream: ({ params }) => (params ? this.api.get<{ fullNameAr: string; fullNameEn: string }>(`users/${encodeURIComponent(params)}`) : of(null)),
+  });
+  protected readonly employeeName = computed(() => {
+    const person = this.employee.hasValue() ? this.employee.value() : null;
+    return person ? this.i18n.pick(person.fullNameAr, person.fullNameEn) : this.employee.isLoading() ? '…' : (this.userId() ?? '');
+  });
   protected readonly chevron = ChevronRight;
+  protected readonly closeIcon = X;
   protected readonly actionText = (entry: AuditEntry) => auditAction(this.i18n, entry);
   protected readonly actor = (entry: AuditEntry) => auditActor(this.i18n, entry);
   protected readonly time = (entry: AuditEntry) => auditTime(this.i18n, entry);
@@ -118,6 +130,12 @@ export class AuditLogPage {
     void this.router.navigate([], { queryParams: { ...queryParams, page: null }, queryParamsHandling: 'merge', replaceUrl: refining });
   }
 
+  /** Removes only the employee filter (the others stay). */
+  protected clearEmployee(): void {
+    this.f.update((f) => ({ ...f, userId: '' }));
+    void this.router.navigate([], { queryParams: { userId: null, page: null }, queryParamsHandling: 'merge' });
+  }
+
   protected clear(): void {
     this.f.set({ entityType: '', entityId: '', action: '', severity: '', actorId: '', userId: '', from: '', to: '' });
     void this.router.navigate([], { queryParams: {} });
@@ -125,6 +143,6 @@ export class AuditLogPage {
 
   /** Opens the event's details (row click, Enter). */
   protected open(entry: AuditEntry): void {
-    void this.router.navigate(['/', this.i18n.locale(), 'admin', 'audit', entry.id]);
+    void this.router.navigate(['/', 'admin', 'audit', entry.id]);
   }
 }

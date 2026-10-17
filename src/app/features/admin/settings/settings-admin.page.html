@@ -10,6 +10,10 @@
   }
 </app-page-header>
 <p class="text-sm text-muted-foreground">{{ 'admin.settings.policyHint' | t }}</p>
+<!-- The system lock and maintenance mode: the Super Administrator's alone (security.manage_settings; the API checks the role too). -->
+@if (canManageSecurity()) {
+  <app-system-status-card />
+}
 @if (actions.message(); as text) {
   <app-alert>{{ text }}</app-alert>
 }
@@ -19,6 +23,7 @@
 <app-tabs [tabs]="tabs()" [(active)]="group" [label]="'admin.settings.title' | t" />
 
 @if (group() === 'gates') {
+  <app-pager-size [pager]="gatesPager" />
   <app-table-wrapper [label]="'admin.settings.gates' | t" [attr.aria-busy]="gates.isLoading()">
     <table appTable>
       <thead appTableHeader>

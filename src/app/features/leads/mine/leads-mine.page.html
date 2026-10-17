@@ -19,6 +19,7 @@
   <app-alert variant="destructive">{{ 'errors.db.unexpected' | t }}</app-alert>
 }
 
+<app-page-size [pageSize]="pageSize()" [total]="result.hasValue() ? result.value().total : null" [loading]="result.isLoading()" />
 <app-table-wrapper [label]="'crm.leads.mineTitle' | t" [attr.aria-busy]="result.isLoading()">
   <table appTable>
     <thead appTableHeader>
@@ -34,9 +35,9 @@
     </thead>
     <tbody appTableBody>
       @for (row of rows(); track row.id) {
-        <tr appTableRow [appRowLink]="['/', i18n.locale(), 'leads', row.id]">
+        <tr appTableRow [appRowLink]="['/', 'leads', row.id]">
           <td appTableCell class="tabular whitespace-nowrap font-medium">
-            <a [routerLink]="['/', i18n.locale(), 'leads', row.id]" class="text-primary underline-offset-4 hover:underline" dir="ltr">
+            <a [routerLink]="['/', 'leads', row.id]" class="text-primary underline-offset-4 hover:underline" dir="ltr">
               {{ row.leadNo }}
             </a>
             @if (!row.openedAt) {

@@ -1,5 +1,5 @@
 <app-page-header [heading]="'prop.workspaceTitle' | t" [subtitle]="'prop.workspaceSubtitle' | t" class="!mb-0">
-  <a appButton variant="outline" [routerLink]="['/', i18n.locale(), 'opportunities', id()]">{{ 'handoffs.backToOpportunity' | t }}</a>
+  <a appButton variant="outline" [routerLink]="['/', 'opportunities', id()]">{{ 'handoffs.backToOpportunity' | t }}</a>
 </app-page-header>
 
 <app-tabs [tabs]="tabs()" [active]="active()" (activeChange)="selectTab($event)" [label]="'prop.workspaceTitle' | t" />
@@ -24,6 +24,7 @@
         </div>
       </section>
     }
+    <app-pager-size [pager]="technicalPager" />
     <app-table-wrapper [label]="'prop.tabs.technical' | t">
       <table appTable>
         <thead appTableHeader>
@@ -38,8 +39,8 @@
         </thead>
         <tbody appTableBody>
           @for (row of technicalPager.rows(); track row.id) {
-            <tr appTableRow [appRowLink]="['/', i18n.locale(), 'proposals', 'technical', row.id]">
-              <td appTableCell class="tabular whitespace-nowrap"><a class="text-primary hover:underline" [routerLink]="['/', i18n.locale(), 'proposals', 'technical', row.id]" dir="ltr">{{ row.number }}</a></td>
+            <tr appTableRow [appRowLink]="['/', 'proposals', 'technical', row.id]">
+              <td appTableCell class="tabular whitespace-nowrap"><a class="text-primary hover:underline" [routerLink]="['/', 'proposals', 'technical', row.id]" dir="ltr">{{ row.number }}</a></td>
               <td appTableCell class="tabular">v{{ row.versionNo }}</td>
               <td appTableCell><app-status-badge enum="technicalProposalStatus" [value]="row.status" /></td>
               <td appTableCell class="tabular">{{ row.capacityKwp ?? '—' }}</td>
@@ -75,6 +76,7 @@
         </div>
       </section>
     }
+    <app-pager-size [pager]="financialPager" />
     <app-table-wrapper [label]="'prop.tabs.financial' | t">
       <table appTable>
         <thead appTableHeader>
@@ -91,8 +93,8 @@
         </thead>
         <tbody appTableBody>
           @for (row of financialPager.rows(); track row.id) {
-            <tr appTableRow [appRowLink]="['/', i18n.locale(), 'proposals', 'financial', row.id]">
-              <td appTableCell class="tabular whitespace-nowrap"><a class="text-primary hover:underline" [routerLink]="['/', i18n.locale(), 'proposals', 'financial', row.id]" dir="ltr">{{ row.number }}</a></td>
+            <tr appTableRow [appRowLink]="['/', 'proposals', 'financial', row.id]">
+              <td appTableCell class="tabular whitespace-nowrap"><a class="text-primary hover:underline" [routerLink]="['/', 'proposals', 'financial', row.id]" dir="ltr">{{ row.number }}</a></td>
               <td appTableCell class="tabular">v{{ row.versionNo }}</td>
               <td appTableCell><app-status-badge enum="financialProposalStatus" [value]="row.status" /></td>
               <td appTableCell class="tabular whitespace-nowrap">{{ i18n.formatMoney(row.finalPrice) }}</td>
@@ -164,6 +166,7 @@
         </div>
       </section>
     }
+    <app-pager-size [pager]="combinedPager" />
     <app-table-wrapper [label]="'prop.tabs.combined' | t">
       <table appTable>
         <thead appTableHeader>
@@ -178,9 +181,9 @@
         </thead>
         <tbody appTableBody>
           @for (row of combinedPager.rows(); track row.id) {
-            <tr appTableRow [appRowLink]="['/', i18n.locale(), 'proposals', 'combined', row.id]">
+            <tr appTableRow [appRowLink]="['/', 'proposals', 'combined', row.id]">
               <td appTableCell class="tabular whitespace-nowrap">
-                <a class="text-primary hover:underline" [routerLink]="['/', i18n.locale(), 'proposals', 'combined', row.id]" dir="ltr">{{ row.proposalNo }}</a>
+                <a class="text-primary hover:underline" [routerLink]="['/', 'proposals', 'combined', row.id]" dir="ltr">{{ row.proposalNo }}</a>
                 @if (row.isFinal) {
                   <app-badge tone="success" class="ms-1">{{ 'prop.final' | t }}</app-badge>
                 }
@@ -205,6 +208,7 @@
       <p class="text-sm text-muted-foreground">{{ 'prop.registerHint' | t }}</p>
       <button type="button" appButton variant="outline" size="sm" [disabled]="compareIds().length !== 2" (click)="compare()">{{ 'prop.compareSelected' | t }}</button>
     </div>
+    <app-pager-size [pager]="registerPager" />
     <app-table-wrapper [label]="'prop.tabs.register' | t">
       <table appTable>
         <thead appTableHeader>
@@ -227,9 +231,9 @@
         </thead>
         <tbody appTableBody>
           @for (row of registerPager.rows(); track row.versionNo) {
-            <tr appTableRow [appRowLink]="['/', i18n.locale(), 'proposals', 'combined', rowId(row)]">
+            <tr appTableRow [appRowLink]="['/', 'proposals', 'combined', rowId(row)]">
               <td appTableCell><input type="checkbox" [attr.aria-label]="('prop.compare' | t) + ' v' + row.versionNo" [checked]="compareIds().includes(rowId(row))" (change)="toggleCompare(row)" /></td>
-              <td appTableCell class="tabular whitespace-nowrap"><a class="text-primary hover:underline" [routerLink]="['/', i18n.locale(), 'proposals', 'combined', rowId(row)]" dir="ltr">{{ row.proposalNo }} v{{ row.versionNo }}</a></td>
+              <td appTableCell class="tabular whitespace-nowrap"><a class="text-primary hover:underline" [routerLink]="['/', 'proposals', 'combined', rowId(row)]" dir="ltr">{{ row.proposalNo }} v{{ row.versionNo }}</a></td>
               <td appTableCell class="tabular whitespace-nowrap">{{ i18n.formatDate(row.firstSentAt) || '—' }}</td>
               <td appTableCell>{{ row.deliveries[0]?.channel ? (row.deliveries[0].channel | enum: 'deliveryChannel') : '—' }}</td>
               <td appTableCell>{{ name(row.presenter) }}</td>
@@ -291,6 +295,7 @@
         </form>
       </section>
     }
+    <app-pager-size [pager]="revisionsPager" />
     <app-table-wrapper [label]="'prop.tabs.revisions' | t">
       <table appTable>
         <thead appTableHeader>
@@ -305,7 +310,7 @@
         </thead>
         <tbody appTableBody>
           @for (row of revisionsPager.rows(); track row.id) {
-            <tr appTableRow [appRowLink]="row.resultingProposalId ? ['/', i18n.locale(), 'proposals', 'combined', row.resultingProposalId] : null">
+            <tr appTableRow [appRowLink]="row.resultingProposalId ? ['/', 'proposals', 'combined', row.resultingProposalId] : null">
               <td appTableCell class="tabular whitespace-nowrap">{{ i18n.formatDate(row.createdAt, true) }}</td>
               <td appTableCell>{{ row.type | enum: 'revisionType' }}</td>
               <td appTableCell class="max-w-md">{{ row.details }}</td>
@@ -315,7 +320,7 @@
                 @if (row.status === 'rejected') {
                   <span class="text-sm text-destructive">{{ row.rejectionReason }}</span>
                 } @else if (row.resultingProposalId) {
-                  <a class="text-sm text-primary hover:underline" [routerLink]="['/', i18n.locale(), 'proposals', 'combined', row.resultingProposalId]">{{ 'prop.revision.resultingVersion' | t }}</a>
+                  <a class="text-sm text-primary hover:underline" [routerLink]="['/', 'proposals', 'combined', row.resultingProposalId]">{{ 'prop.revision.resultingVersion' | t }}</a>
                 } @else if (row.status === 'open' && (auth.can('combined_proposals.assemble') || auth.can('financial_proposals.prepare'))) {
                   <div class="flex flex-col gap-2">
                     <button type="button" appButton size="sm" [disabled]="busy()" (click)="startRevision(row)">{{ 'prop.revision.start' | t }}</button>
@@ -404,6 +409,7 @@
         </form>
       </section>
     }
+    <app-pager-size [pager]="negotiationsPager" />
     <app-table-wrapper [label]="'prop.tabs.negotiations' | t">
       <table appTable>
         <thead appTableHeader>

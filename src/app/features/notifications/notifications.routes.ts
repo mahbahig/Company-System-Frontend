@@ -1,6 +1,6 @@
 import type { Routes } from '@angular/router';
 
-/** `/:locale/notifications` — the full inbox behind the shell's notification bell. */
+/** `/notifications` — the full inbox behind the shell's notification bell. */
 export const NOTIFICATIONS_ROUTES: Routes = [
   {
     path: '',

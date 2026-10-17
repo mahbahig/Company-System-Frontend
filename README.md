@@ -72,7 +72,8 @@ npm run build
 ```
 
 Open http://localhost:4200. Unauthenticated users are redirected to
-`/<locale>/login`; the locale segment (`en` / `ar`) is part of every route.
+`/login`. URLs never carry the language: it is the browser's choice, kept in
+localStorage (`ecotech.locale`).
 
 > Credentials come from the backend's seed data — ask your backend setup for the
 > demo accounts and password.
@@ -124,7 +125,9 @@ in [`FINAL_SRS_FRONTEND.md`](./FINAL_SRS_FRONTEND.md).
 │       │   ├── i18n/            translate pipe/service, locale guards, title strategy
 │       │   ├── layout/          app shell (sidebar + header), chrome widgets
 │       │   ├── navigation/      permission-filtered sidebar menu model
-│       │   ├── notifications/   in-app notification stream
+│       │   ├── chat/            conversations store, chat REST API, socket commands
+│       │   ├── notifications/   in-app notifications (live over the realtime connection)
+│       │   ├── realtime/        the one Socket.IO connection, forced logout / system lock reactions
 │       │   ├── reference/       reference-data cache + label() lookups
 │       │   ├── storage/         persistent storage wrapper
 │       │   └── theme/           light/dark theme service
@@ -144,7 +147,8 @@ in [`FINAL_SRS_FRONTEND.md`](./FINAL_SRS_FRONTEND.md).
 
 ## Routing & features
 
-Every page lives under a locale prefix (`/:locale/...`, e.g. `/en/customers`).
+Every page has one address in both languages (`/customers`, `/employees`, …) —
+the language lives in localStorage, never in the URL (see Internationalization).
 Public, sign-in, and authenticated routes are separated by guards, and each
 authenticated page declares a `data.permission` that gates it in the UI (the API
 re-checks everything server-side). Which role opens which page is documented in
@@ -152,7 +156,6 @@ re-checks everything server-side). Which role opens which page is documented in
 
 | Guard             | Purpose                                                      |
 | ----------------- | ------------------------------------------------------------ |
-| `localeGuard`     | Validates / normalises the `:locale` segment.                |
 | `authGuard`       | Requires an authenticated session for the app shell.         |
 | `guestGuard`      | Keeps signed-in users out of login / password pages.         |
 | `permissionGuard` | Enforces `data.permission` (any of) and `data.requiresAll` (every) on each route level; fails closed. |
@@ -180,8 +183,52 @@ Feature areas (all lazy-loaded under the authenticated app shell):
 - **Reports** / **Analytics** — reporting, search, and an exceptions center.
 - **Admin** — users, roles, teams, reference data, equipment, rules, automation,
   duplicates, ownership requests, intake forms, integrations, audit, settings.
-- **Tables** — every table is paged with the one centred footer (`shared/crm/pagination`: Previous / pages /
-  Next, "Showing x–y of z", Items per page 10 / 20 / 50 / 100, default 20). List pages keep `?page=` and
+- **Security Center** (`/admin/security`, Super Administrators only — `audit.view_security`; the API checks the role
+  too): System Status (Normal / Maintenance Mode / Locked with the lock and maintenance switches — the same
+  `app-system-status-card` as on Settings), the overview (real counts), recent security activity, security alerts
+  (server-paged, Acknowledge / Resolve with contextual confirmations; `/admin/security/alerts/:id`) and system health
+  (one card per component, Details, Refresh; polled every 30 s while visible).
+- **Realtime (Socket.IO)** — `core/realtime`: `RealtimeService` owns the ONE Socket.IO connection per tab
+  (`/api/v1/socket.io`, WebSocket only — no Server-Sent Events, no polling), open while signed in (past forced
+  steps, page shown, no maintenance). The in-memory access token goes in the handshake `auth` callback (refreshed
+  first when about to expire) — never the URL. Every listener is registered once by the service; components use
+  `on(type)` and unsubscribe with their lifetime, so nothing is received twice. A refused connection says why:
+  a session that is over signs out with its reason, maintenance shows its screen, an expired token is refreshed
+  and the connection retried with back-off. `SecurityEvents`: `FORCE_LOGOUT` (logged out of all sessions, this
+  session ended, the password changed elsewhere, the account deactivated) signs out at once with the matching
+  notice — idempotent, so a 401 arriving right after changes nothing; `SYSTEM_LOCKED` signs out anyone but a Super
+  Administrator — the sign-in page says "The system has been locked by {name}" (the name from the event, kept in
+  memory, never in the URL); a Super Administrator stays and gets a toast, the bell refreshes and the System Status
+  card reloads. Notifications arrive live (`NOTIFICATION_CREATED`). A missed event changes nothing for security: the
+  API already ended the session and refuses it.
+- **Meeting location verification** — `features/activities/meetings`: "Start meeting" / "End meeting" (the owner
+  only) read the device position once each through `core/geo` `GeolocationService` (`getCurrentPosition`, high
+  accuracy, `maximumAge: 0`, a timeout — never `watchPosition`) and send only latitude, longitude and accuracy;
+  denied / unavailable / timed out / unsupported each say so and nothing is started or ended. The location card
+  shows the API's verdict (verified / changed / unreliable / unavailable for older meetings) and, when the API sent
+  coordinates (`meetings.view_locations`), one Google Map (`core/maps` `GoogleMapsLoader`, key from
+  `GET /maps/config`): start (green), end (red), the radius around the start, the line between, fitted to view.
+- **Chat** — `features/chat` (`/chat`, `/chat/:chatId`) and `core/chat`: the conversation list (unread counts, live),
+  private chats, the company chat, team chats and custom groups (create with a typed name and ≥ 2 colleagues;
+  members, admins, admin-only and rename for the group's admins — controls shown from the API's `capabilities`).
+  History is never downloaded whole: `ConversationStore` opens on the latest 50 messages, loads the batch before /
+  after by position as the reader nears an edge (well before it), keeps at most 300 messages in memory and in the
+  page, and dedupes by id. `MessageListComponent` puts the first visible message back exactly where it was after
+  each batch (browser scroll anchoring off) and shows "new messages" instead of moving a reader who is scrolled up.
+  In-conversation search is the API's (debounced 350 ms, batches of 20, "load more"); a result anywhere in the
+  history opens with one context request and is highlighted. Super Administrators get `/admin/chats` (group
+  metadata, lock / unlock / delete; no message content anywhere). Your own messages offer Edit (the composer
+  switches to editing; the API allows the sender only) and show Sending → Sent → Delivered → Seen; each device
+  reports what it received (`ChatStore.reportDelivered`, gathered into one `chat:delivered:many`).
+- **Maintenance** — `maintenanceInterceptor` turns any 503 `errors.maintenance` / `auth.errors.maintenance` into the
+  full-screen maintenance page (`core/maintenance`), which polls `GET /system/availability` and reloads when it is
+  over; a Super Administrator sees a reminder banner instead.
+- **Audit detail** — changes read field by field, before → after in words (`audit-diff.ts`: field labels, Active /
+  Inactive, role and status names, 12-hour dates); a secret only as "changed"; the raw snapshots only in the collapsed
+  technical details. The audit log shows an employee filter as "Employee: <name>" (removable).
+- **Tables** — every table is paged (`shared/crm/pagination`): Items per page 10 / 20 / 50 / 100 (default 20)
+  above the table (`<app-page-size>`, or `<app-pager-size>` for a `LocalPager`), and the one centred footer under
+  it (Previous / pages / Next, "Showing x–y of z"). List pages keep `?page=` and
   `?pageSize=` in the URL and send both to the API; embedded server lists use `PagerState`; a record's bounded
   sub-lists and small configuration sets use `LocalPager` + `<app-pager>`. Search / filters reset to page 1; a
   page emptied by a deletion moves back; controls are disabled while a page loads.
@@ -237,9 +284,15 @@ Feature areas (all lazy-loaded under the authenticated app shell):
 
 ## Internationalization (i18n)
 
-The app is fully bilingual; `dir` and `lang` are set on `<html>` before first
-paint so there is no mis-directed flash, and the layout mirrors for Arabic via
-CSS logical properties (`start`/`end`, `ps`/`pe`).
+The app is fully bilingual. The chosen language is kept in **localStorage**
+(`ecotech.locale`, `ar` | `en`; the only key) and nowhere else — not in the URL,
+cookies or sessionStorage. `I18nService` owns it: `init()` runs as an app
+initializer (the stored language when valid, else Arabic; loaded and stored),
+`use()` switches in place — same URL, no navigation, no reload, no history entry —
+and keeps `<html lang dir>` in sync. A small script in `index.html` applies the
+stored language and direction before first paint so there is no mis-directed
+flash, and the layout mirrors for Arabic via CSS logical properties
+(`start`/`end`, `ps`/`pe`).
 
 Runtime catalogues are **generated**, not hand-edited. `scripts/sync-messages.mjs`
 builds `public/i18n/<locale>.json` by deep-merging, in order:
@@ -365,9 +418,11 @@ no 3D on purpose: those are work surfaces.
   `features/<domain>/models/`.
 - **Reference data** — every coded value shown to a user is resolved through the
   reference-data service's `label()`; never render raw codes.
-- **HTTP** — `app.config.ts` registers two interceptors in a deliberate order: the
+- **HTTP** — `app.config.ts` registers the interceptors in a deliberate order: the
   error normaliser is outermost so the auth interceptor still sees a raw `401` and
-  can refresh-and-retry before the error surfaces to the caller.
+  can refresh-and-retry before the error surfaces to the caller. Error bodies are
+  read with `errorBodyOf()` (`core/api/error-body.ts`), which also parses the JSON
+  envelope a text request (the realtime stream) receives as a string.
 - **Navigation** — `core/navigation` declares the sidebar menu; an item appears
   only when the user holds its permission *and* a route for its path exists, so
   registering a feature route is what adds it to the sidebar. Links built in code

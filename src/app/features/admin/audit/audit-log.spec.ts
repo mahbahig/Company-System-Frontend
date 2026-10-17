@@ -88,9 +88,9 @@ describe('Audit log', () => {
     expect(row.className).toContain('focus-visible:ring-2');
     expect(row.getAttribute('aria-label')).toBe('admin.audit.openEvent');
     row.click();
-    expect(navigate).toHaveBeenLastCalledWith(['/', 'en', 'admin', 'audit', 'a2']);
+    expect(navigate).toHaveBeenLastCalledWith(['/', 'admin', 'audit', 'a2']);
     rows[2]!.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
-    expect(navigate).toHaveBeenLastCalledWith(['/', 'en', 'admin', 'audit', 'a3']);
+    expect(navigate).toHaveBeenLastCalledWith(['/', 'admin', 'audit', 'a3']);
   });
 
   describe('the event detail', () => {
@@ -115,10 +115,56 @@ describe('Audit log', () => {
       expect(text(root)).not.toContain('support_ticket.status_change');
     });
 
+    it('changes read as a clean before → after per field — a secret only as "changed", raw JSON only in the technical details', async () => {
+      const changes = [
+        { field: 'fullNameEn', before: 'Ahmed', after: 'Ahmed Mohamed' },
+        { field: 'isActive', before: true, after: false },
+        { field: 'leadCapacity', before: 10, after: 25 },
+        { field: 'passwordHash', sensitive: true },
+      ];
+      const root = await detail(entry('a2', { action: 'user.update', actionLabel: { en: 'Updated user information', ar: 'حدّث بيانات مستخدم' }, changedFields: changes.map((change) => change.field), changes, target: { id: 'u1', name: 'Ahmed Mohamed', nameAr: 'أحمد محمد' }, before: { fullNameEn: 'Ahmed' }, after: { fullNameEn: 'Ahmed Mohamed' } }));
+      const rows = [...root.querySelectorAll('[data-testid="audit-change"]')];
+      expect(rows).toHaveLength(4);
+      expect(rows.map((row) => row.querySelector('[data-testid="audit-change-field"]')!.textContent!.trim())).toEqual(['Full name en', 'Is active', 'Lead capacity', 'Password hash']);
+      expect(rows[0]!.querySelector('[data-testid="audit-change-before"]')!.textContent).toContain('Ahmed');
+      expect(rows[0]!.querySelector('[data-testid="audit-change-after"]')!.textContent).toContain('Ahmed Mohamed');
+      // Status in words, not true / false.
+      expect(rows[1]!.querySelector('[data-testid="audit-change-before"]')!.textContent).toContain('admin.active');
+      expect(rows[1]!.querySelector('[data-testid="audit-change-after"]')!.textContent).toContain('admin.inactive');
+      // A secret: "changed", no value at all.
+      expect(rows[3]!.querySelector('[data-testid="audit-change-sensitive"]')!.textContent).toContain('admin.audit.detail.sensitiveChanged');
+      expect(rows[3]!.querySelector('[data-testid="audit-change-before"]')).toBeNull();
+      expect(root.querySelector('[data-testid="audit-target"]')!.textContent).toContain('Ahmed Mohamed');
+      // No JSON in the reading view; the stored snapshots only inside the collapsed technical section.
+      const changesCard = root.querySelector('[data-testid="audit-changes"]')!;
+      expect(changesCard.textContent).not.toMatch(/[{}"]/);
+      expect(root.querySelector('details pre')!.textContent).toContain('"fullNameEn"');
+      expect(root.querySelector('details')!.hasAttribute('open')).toBe(false);
+    });
+
     it('an event outside the viewer’s audit log (404) shows "not found", nothing of it', async () => {
       const root = await detail(null);
       expect(root.querySelector('app-status-page')).not.toBeNull();
     });
+  });
+
+  it('opened from an employee ("View Audit Logs"): the employee filter is applied and spelled out with their name, and can be removed', async () => {
+    const http = configure();
+    const i18n = TestBed.inject(I18nService);
+    const translate = i18n.t.bind(i18n);
+    vi.spyOn(i18n, 't').mockImplementation((key: string, params?: Record<string, string | number | null | undefined>) => (key === 'admin.audit.employeeFilter' ? `Employee: ${params?.['name']}` : translate(key, params)));
+    const fixture = TestBed.createComponent(AuditLogPage);
+    fixture.componentRef.setInput('userId', 'e1');
+    await settle(fixture);
+    const listCall = http.match((request) => request.url.endsWith('/audit'))[0]!;
+    expect(listCall.request.params.get('userId')).toBe('e1');
+    listCall.flush({ success: true, rows: [ROWS[0]], total: 1, page: 1, pageSize: 20, pageCount: 1 });
+    http.expectOne((request) => request.url.endsWith('/users/e1')).flush({ success: true, id: 'e1', fullNameEn: 'Ahmed Mohamed', fullNameAr: 'أحمد محمد' });
+    const root = await settle(fixture);
+    expect(root.querySelector('[data-testid="active-employee-name"]')!.textContent!.trim()).toBe('Employee: Ahmed Mohamed');
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    root.querySelector<HTMLButtonElement>('[data-testid="remove-employee-filter"]')!.click();
+    expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({ queryParams: { userId: null, page: null }, queryParamsHandling: 'merge' }));
   });
 
   it('the list and the detail are routes for the audit permissions only (critical notifications link to the detail)', () => {

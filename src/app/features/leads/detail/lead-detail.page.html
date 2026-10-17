@@ -7,10 +7,10 @@
   <app-page-header class="!mb-0" [eyebrow]="lead.leadNo" [heading]="lead.name" [subtitle]="lead.companyName ?? ''">
     <app-favorite-toggle type="lead" [id]="lead.id" />
     @if (canEdit()) {
-      <a appButton variant="outline" [routerLink]="['/', i18n.locale(), 'leads', lead.id, 'edit']">{{ 'crm.common.edit' | t }}</a>
+      <a appButton variant="outline" [routerLink]="['/', 'leads', lead.id, 'edit']">{{ 'crm.common.edit' | t }}</a>
     }
     @if (canConvert()) {
-      <a appButton [routerLink]="['/', i18n.locale(), 'leads', lead.id, 'convert']">{{ 'crm.leads.convert.title' | t }}</a>
+      <a appButton [routerLink]="['/', 'leads', lead.id, 'convert']">{{ 'crm.leads.convert.title' | t }}</a>
     }
   </app-page-header>
 
@@ -24,9 +24,9 @@
   @if (lead.conversion; as conversion) {
     <app-alert variant="default">
       {{ 'crm.leads.detail.convertedNotice' | t: { date: i18n.formatDate(conversion.convertedAt) } }}
-      <a class="ms-2 underline" [routerLink]="['/', i18n.locale(), 'customers', conversion.customerId]">{{ 'crm.leads.detail.convertedCustomer' | t }}</a>
+      <a class="ms-2 underline" [routerLink]="['/', 'customers', conversion.customerId]">{{ 'crm.leads.detail.convertedCustomer' | t }}</a>
       @if (conversion.opportunityId) {
-        <a class="ms-2 underline" [routerLink]="['/', i18n.locale(), 'opportunities', conversion.opportunityId]">{{ 'crm.leads.detail.convertedOpportunity' | t }}</a>
+        <a class="ms-2 underline" [routerLink]="['/', 'opportunities', conversion.opportunityId]">{{ 'crm.leads.detail.convertedOpportunity' | t }}</a>
       }
     </app-alert>
   }

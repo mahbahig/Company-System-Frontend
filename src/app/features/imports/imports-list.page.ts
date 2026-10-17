@@ -17,11 +17,12 @@ import { ActionRunner } from '../../shared/utils/action-runner';
 import { ImportsApi } from './imports-api.service';
 import { SkeletonRowComponent } from '../../shared/ui/skeleton/skeleton.component';
 import { DEFAULT_PAGE_SIZE, pageSizeAttribute } from '../../shared/crm/pagination/page-size';
+import { PageSizeSelectComponent } from '../../shared/crm/pagination/page-size-select.component';
 
 /** DUP-10 bulk import of leads / customers from CSV or Excel. */
 @Component({
   selector: 'app-imports-list-page',
-  imports: [SkeletonRowComponent, RouterLink, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, AlertComponent, ButtonDirective, PageHeaderComponent, PaginationComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, ...TABLE_IMPORTS],
+  imports: [SkeletonRowComponent, RouterLink, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, AlertComponent, ButtonDirective, PageHeaderComponent, PaginationComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, ...TABLE_IMPORTS, PageSizeSelectComponent],
   templateUrl: './imports-list.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
@@ -48,6 +49,6 @@ export class ImportsListPage {
     event.preventDefault();
     const file = this.file();
     if (!file) return;
-    void this.actions.run(this.api.upload(this.entity(), file), null, (job) => void this.router.navigate(['/', this.i18n.locale(), 'imports', job.id]));
+    void this.actions.run(this.api.upload(this.entity(), file), null, (job) => void this.router.navigate(['/', 'imports', job.id]));
   }
 }

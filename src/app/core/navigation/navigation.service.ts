@@ -2,7 +2,6 @@ import { Service, computed, inject } from '@angular/core';
 import { Router, type Route, type Routes } from '@angular/router';
 
 import { AuthService } from '../auth/auth.service';
-import { I18nService } from '../i18n/i18n.service';
 import type { PermissionCode } from '../auth/permission-code';
 import { NAV_SECTIONS } from './nav-sections';
 import type { NavSection } from './nav-section.interface';
@@ -16,7 +15,6 @@ import type { NavSection } from './nav-section.interface';
 @Service()
 export class NavigationService {
   private readonly auth = inject(AuthService);
-  private readonly i18n = inject(I18nService);
   private readonly routedPaths = collectPaths(inject(Router).config);
   private readonly shellRoutes = shellChildren(inject(Router).config);
 
@@ -34,14 +32,9 @@ export class NavigationService {
     })).filter((section) => section.items.length > 0);
   });
 
-  /** `/leads` → `/ar/leads` for the active language. */
-  link(path: string): string {
-    return `/${this.i18n.locale()}${path}`;
-  }
-
   /**
-   * Whether the user may open an in-app path (without locale, with or
-   * without a query string), judged level by level exactly like the route
+   * Whether the user may open an in-app path (with or without a query
+   * string), judged level by level exactly like the route
    * guard: every matched route level's `data.permission` (any of) and
    * `data.requiresAll` (all of), inherited downwards, plus a feature's landing
    * page. Used for every link the UI builds from data it did not render
@@ -118,19 +111,17 @@ function guardLevels(shell: Routes, path: string): GuardLevel[] | null {
   return levels;
 }
 
-/** The authenticated shell's child routes (`/:locale/<area>/...`). */
+/** The authenticated shell's child routes (`/<area>/...`). */
 function shellChildren(routes: Routes): Routes {
-  const locale = routes.find((route) => route.path === ':locale');
-  const shell = locale?.children?.find((route) => route.path === '' && !!route.canActivate?.length && !!route.children?.length && !route.redirectTo);
+  const shell = routes.find((route) => route.path === '' && !!route.canActivate?.length && !!route.children?.length && !route.redirectTo);
   return shell?.children ?? [];
 }
 
-/** Every static path under `/:locale`, e.g. `/leads`, `/dashboard/executive`. */
+/** Every static path, e.g. `/leads`, `/dashboard/executive`. */
 function collectPaths(routes: Routes, prefix = ''): Set<string> {
   const paths = new Set<string>();
   for (const route of routes) {
-    const path = route.path ?? '';
-    const segment = path === ':locale' ? '' : path;
+    const segment = route.path ?? '';
     if (segment.includes(':') || segment === '**') continue;
     const full = segment ? `${prefix}/${segment}` : prefix;
     if (segment) paths.add(full);

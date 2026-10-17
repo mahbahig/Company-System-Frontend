@@ -21,6 +21,7 @@ import { ActivitiesApi, refLabel, type Activity } from '../activities-api.servic
 import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.component';
 import { DEFAULT_PAGE_SIZE, pageSizeAttribute } from '../../../shared/crm/pagination/page-size';
 import { CreateIconComponent } from '../../../shared/ui/create-icon/create-icon.component';
+import { PageSizeSelectComponent } from '../../../shared/crm/pagination/page-size-select.component';
 
 const CHANNELS = ['whatsapp', 'sms', 'email', 'social', 'customer_request', 'follow_up', 'note', 'other'];
 
@@ -31,7 +32,7 @@ const CHANNELS = ['whatsapp', 'sms', 'email', 'social', 'customer_request', 'fol
  */
 @Component({
   selector: 'app-activity-log-page',
-  imports: [SkeletonRowComponent, TranslatePipe, EnumLabelPipe, RecordPickerComponent, DialogComponent, AlertComponent, ButtonDirective, PageHeaderComponent, ListToolbarComponent, PaginationComponent, ...TABLE_IMPORTS, ...FORM_IMPORTS, CreateIconComponent],
+  imports: [SkeletonRowComponent, TranslatePipe, EnumLabelPipe, RecordPickerComponent, DialogComponent, AlertComponent, ButtonDirective, PageHeaderComponent, ListToolbarComponent, PaginationComponent, ...TABLE_IMPORTS, ...FORM_IMPORTS, CreateIconComponent, PageSizeSelectComponent],
   templateUrl: './activity-log.page.html',
   host: { class: 'flex flex-col gap-6' },
 })

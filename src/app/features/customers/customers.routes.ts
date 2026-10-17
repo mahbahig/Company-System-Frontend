@@ -2,7 +2,7 @@ import type { Routes } from '@angular/router';
 
 import { unsavedChangesGuard } from '../../core/forms/unsaved-changes';
 
-/** `/:locale/customers/...` — lazy-loaded pages of the customers feature. */
+/** `/customers/...` — lazy-loaded pages of the customers feature. */
 export const CUSTOMERS_ROUTES: Routes = [
   {
     path: '',

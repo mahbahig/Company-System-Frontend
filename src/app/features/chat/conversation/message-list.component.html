@@ -1,0 +1,103 @@
+<!-- overflow-anchor: none — the list puts the reading position back itself after each batch, the browser must not move it too. -->
+<div
+  #viewport
+  class="relative min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-2 scroll-area [overflow-anchor:none] sm:px-5"
+  data-testid="message-viewport"
+  role="log"
+  aria-live="polite"
+  [attr.aria-busy]="store.loading() || store.loadingOlder()"
+  [attr.aria-label]="'chat.messages' | t"
+  (scroll)="onScroll()"
+>
+  @if (store.loading() && !store.messages().length) {
+    <div class="flex flex-col gap-3 py-4" aria-hidden="true">
+      @for (i of [0, 1, 2, 3, 4]; track i) {
+        <div class="flex" [class.justify-end]="i % 2 === 1">
+          <span class="h-10 animate-pulse rounded-2xl bg-secondary" [style.width.%]="40 + ((i * 13) % 30)"></span>
+        </div>
+      }
+    </div>
+  } @else {
+    @if (store.hasOlder()) {
+      <div class="flex justify-center py-3 text-xs text-muted-foreground" data-testid="older-indicator">
+        @if (store.loadingOlder()) {
+          <span class="inline-flex items-center gap-2"><span class="size-3 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent"></span>{{ 'chat.loadingOlder' | t }}</span>
+        } @else {
+          <span class="h-4"></span>
+        }
+      </div>
+    } @else if (store.messages().length) {
+      <p class="py-4 text-center text-xs text-muted-foreground" data-testid="history-start">{{ 'chat.historyStart' | t }}</p>
+    } @else if (!store.pending().length) {
+      <p class="py-16 text-center text-sm text-muted-foreground">{{ 'chat.emptyConversation' | t }}</p>
+    }
+
+    <ol class="flex flex-col gap-1">
+      @for (row of rows(); track row.key) {
+        @if (row.kind === 'day') {
+          <li class="sticky top-0 z-10 my-2 flex justify-center" aria-hidden="false">
+            <span class="rounded-full bg-background/90 px-3 py-0.5 text-2xs font-medium text-muted-foreground shadow-xs backdrop-blur">{{ row.label }}</span>
+          </li>
+        } @else {
+          <li [attr.data-message-id]="row.message.id" [attr.data-seq]="row.message.seq">
+            <app-message-bubble
+              [message]="row.message"
+              [mine]="mine(row.message)"
+              [showSender]="row.first"
+              [showAvatar]="showSenders()"
+              [highlighted]="store.highlightId() === row.message.id"
+              [editing]="editingId() === row.message.id"
+              [receipt]="receipt(row.message)"
+              [group]="showSenders()"
+              [canEdit]="canWrite()"
+              (edit)="editMessage.emit($event)"
+              (remove)="deleteMessage.emit($event)"
+            />
+          </li>
+        }
+      }
+      @if (store.atLatest()) {
+        @for (item of store.pending(); track item.clientMessageId) {
+          <li class="flex flex-col items-end gap-1" [attr.data-pending-id]="item.clientMessageId">
+            <div class="max-w-[min(36rem,80%)] rounded-2xl bg-primary/70 px-3 py-2 text-sm text-primary-foreground" [class.bg-destructive/20]="item.state === 'failed'" [class.text-foreground]="item.state === 'failed'">
+              <p class="whitespace-pre-wrap break-words" dir="auto">{{ item.text }}</p>
+            </div>
+            @if (item.state === 'sending') {
+              <span class="text-2xs text-muted-foreground">{{ 'chat.sending' | t }}</span>
+            } @else {
+              <span class="flex items-center gap-2 text-2xs text-destructive-tint">
+                {{ item.error }}
+                <button type="button" class="font-medium underline-offset-2 hover:underline" (click)="retry.emit(item)">{{ 'chat.retry' | t }}</button>
+                <button type="button" class="text-muted-foreground underline-offset-2 hover:underline" (click)="discard.emit(item)">{{ 'chat.discard' | t }}</button>
+              </span>
+            }
+          </li>
+        }
+      }
+    </ol>
+
+    @if (store.hasNewer()) {
+      <div class="flex justify-center py-3 text-xs text-muted-foreground">
+        @if (store.loadingNewer()) {
+          <span class="inline-flex items-center gap-2"><span class="size-3 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent"></span>{{ 'chat.loadingNewer' | t }}</span>
+        }
+      </div>
+    }
+  }
+</div>
+
+@if (!nearBottom() || !store.atLatest()) {
+  <button
+    type="button"
+    class="absolute bottom-3 end-4 z-20 inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1.5 text-xs font-medium shadow-md transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+    data-testid="jump-latest"
+    (click)="toLatest()"
+  >
+    <app-icon [icon]="icons.down" svgClass="size-3.5" />
+    @if (unseen() + store.newWhileAway() > 0) {
+      {{ 'chat.newMessages' | t: { count: unseen() + store.newWhileAway() } }}
+    } @else {
+      {{ 'chat.latest' | t }}
+    }
+  </button>
+}

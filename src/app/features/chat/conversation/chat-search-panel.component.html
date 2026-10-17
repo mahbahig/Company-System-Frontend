@@ -1,0 +1,74 @@
+<div class="flex items-center gap-2 border-b border-border p-3">
+  <label class="relative block flex-1">
+    <span class="sr-only">{{ 'chat.search.placeholder' | t }}</span>
+    <span class="pointer-events-none absolute inset-y-0 start-3 flex items-center text-muted-foreground"><app-icon [icon]="icons.search" /></span>
+    <input
+      #queryBox
+      appInput
+      type="search"
+      class="ps-9"
+      autocomplete="off"
+      data-testid="chat-search-input"
+      [placeholder]="'chat.search.placeholder' | t"
+      [value]="query()"
+      (input)="query.set($any($event.target).value)"
+      (keydown)="onKey($event)"
+    />
+  </label>
+  <button type="button" appButton variant="ghost" size="icon" [attr.aria-label]="'chat.search.close' | t" data-testid="chat-search-close" (click)="closed.emit()">
+    <app-icon [icon]="icons.close" />
+  </button>
+</div>
+
+<div class="min-h-0 flex-1 overflow-y-auto scroll-area" data-testid="chat-search-results" [attr.aria-busy]="loading()" (scroll)="onResultsScroll($any($event.target))">
+  @if (error()) {
+    <app-alert variant="destructive" class="m-3">{{ i18n.errorText(error()) }}</app-alert>
+  }
+  @if (tooShort()) {
+    <p class="px-4 py-6 text-center text-sm text-muted-foreground">{{ 'chat.search.tooShort' | t }}</p>
+  } @else if (loading()) {
+    <ul class="flex flex-col gap-2 p-3" aria-hidden="true">
+      @for (i of [0, 1, 2, 3]; track i) {
+        <li class="h-14 animate-pulse rounded-md bg-secondary"></li>
+      }
+    </ul>
+  } @else if (searched() && !results().length) {
+    <p class="px-4 py-6 text-center text-sm text-muted-foreground" data-testid="chat-search-empty">{{ 'chat.search.noResults' | t: { query: query().trim() } }}</p>
+  } @else if (!query().trim()) {
+    <p class="px-4 py-6 text-center text-sm text-muted-foreground">{{ 'chat.search.hint' | t }}</p>
+  } @else {
+    <ol class="flex flex-col p-2">
+      @for (message of results(); track message.id) {
+        <li>
+          <button
+            type="button"
+            class="flex w-full flex-col gap-0.5 rounded-md p-2 text-start transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            [attr.data-result-id]="message.id"
+            (click)="open.emit(message)"
+          >
+            <span class="flex items-center gap-2 text-xs text-muted-foreground">
+              <span class="truncate font-medium text-foreground">{{ sender(message) }}</span>
+              <time class="ms-auto shrink-0 tabular" [attr.datetime]="message.createdAt">{{ i18n.formatDate(message.createdAt, true) }}</time>
+            </span>
+            <span class="line-clamp-3 whitespace-pre-wrap break-words text-sm" dir="auto">
+              @for (piece of segments(message.text); track $index) {
+                @if (piece.match) {
+                  <mark class="rounded-sm bg-warning/30 text-foreground">{{ piece.text }}</mark>
+                } @else {
+                  {{ piece.text }}
+                }
+              }
+            </span>
+          </button>
+        </li>
+      }
+    </ol>
+    @if (hasMore()) {
+      <div class="flex justify-center p-3">
+        <button type="button" appButton variant="outline" size="sm" [disabled]="loadingMore()" data-testid="chat-search-more" (click)="more()">
+          {{ (loadingMore() ? 'chat.search.loadingMore' : 'chat.search.loadMore') | t }}
+        </button>
+      </div>
+    }
+  }
+</div>

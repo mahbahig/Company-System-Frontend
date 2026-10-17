@@ -1,0 +1,91 @@
+<section class="flex min-h-0 min-w-0 flex-1 flex-col" [attr.aria-label]="title()">
+  <header class="flex items-center gap-3 border-b border-border px-3 py-2">
+    <a appButton variant="ghost" size="icon" class="lg:hidden" [routerLink]="['/', 'chat']" [attr.aria-label]="'chat.backToList' | t">
+      <app-icon [icon]="icons.back" svgClass="size-4 rtl:-scale-x-100" />
+    </a>
+    @if (summary(); as chat) {
+      @if (chat.type === 'private' && chat.peer) {
+        <app-avatar [userId]="chat.peer.id" [name]="title()" [version]="chat.peer.avatarVersion" size="md" />
+      } @else {
+        <span class="flex size-10 shrink-0 items-center justify-center rounded-full bg-secondary text-secondary-foreground">
+          <app-icon [icon]="typeIcon[chat.type]" svgClass="size-5" />
+        </span>
+      }
+      <div class="min-w-0 flex-1">
+        <h2 class="flex items-center gap-2 truncate text-sm font-semibold" data-testid="conversation-title">
+          <span class="truncate">{{ title() }}</span>
+          @if (chat.locked) {
+            <app-icon [icon]="icons.lock" svgClass="size-3.5 shrink-0 text-warning-tint" [label]="'chat.locked' | t" />
+          }
+        </h2>
+        <p class="truncate text-xs text-muted-foreground" aria-live="polite">
+          @if (typingText()) {
+            <span class="text-primary" data-testid="typing-indicator">{{ typingText() }}</span>
+          } @else {
+            {{ subtitle() }}
+          }
+        </p>
+      </div>
+    } @else {
+      <div class="h-10 flex-1 animate-pulse rounded bg-secondary"></div>
+    }
+    <button type="button" appButton variant="ghost" size="icon" data-testid="open-chat-search" [attr.aria-pressed]="panel() === 'search'" [attr.aria-label]="'chat.search.open' | t" (click)="toggle('search')">
+      <app-icon [icon]="icons.search" />
+    </button>
+    @if (summary()?.type !== 'private') {
+      <button type="button" appButton variant="ghost" size="icon" data-testid="open-chat-details" [attr.aria-pressed]="panel() === 'details'" [attr.aria-label]="'chat.details.open' | t" (click)="toggle('details')">
+        <app-icon [icon]="icons.info" />
+      </button>
+    }
+  </header>
+
+  @if (detailsError() && !summary()) {
+    <app-alert variant="destructive" class="m-3">{{ i18n.errorText(detailsError()) }}</app-alert>
+  }
+  @if (summary(); as chat) {
+    @if (chat.locked) {
+      <p class="border-b border-warning/30 bg-warning/10 px-4 py-2 text-sm text-warning-tint" role="status" data-testid="locked-banner">{{ 'chat.lockedNotice' | t }}</p>
+    } @else if (chat.status === 'inactive') {
+      <p class="border-b border-border bg-secondary/60 px-4 py-2 text-sm text-muted-foreground" role="status">{{ 'chat.inactiveNotice' | t }}</p>
+    }
+  }
+  @if (store.error() && store.messages().length) {
+    <app-alert variant="destructive" class="mx-3 mt-2">{{ i18n.errorText(store.error()) }}</app-alert>
+  }
+
+  @if (store.error() && !store.messages().length && !store.loading()) {
+    <app-alert variant="destructive" class="m-3">{{ i18n.errorText(store.error()) }}</app-alert>
+  } @else {
+    <app-message-list
+      [showSenders]="summary()?.type !== 'private'"
+      [receipts]="details()?.receipts ?? null"
+      [editingId]="editing()?.id ?? null"
+      [canWrite]="!blockedReason()"
+      (readUpTo)="read($event)"
+      (editMessage)="startEdit($event)"
+      (deleteMessage)="deleteMessage($event)"
+      (retry)="retry($event)"
+      (discard)="discard($event)"
+    />
+  }
+
+  <app-chat-composer
+    [blockedReason]="blockedReason()"
+    [editing]="editing()"
+    [editError]="editError()"
+    (send)="send($event)"
+    (saveEdit)="saveEdit($event)"
+    (cancelEdit)="cancelEdit()"
+    (typing)="typing($event)"
+  />
+</section>
+
+@if (panel() === 'search') {
+  <aside class="absolute inset-0 z-30 flex w-full flex-col border-s border-border bg-background md:static md:z-auto md:w-80 lg:w-96" [attr.aria-label]="'chat.search.title' | t">
+    <app-chat-search-panel class="min-h-0 flex-1" [chatId]="chatId()" (open)="openResult($event)" (closed)="closeSearch()" />
+  </aside>
+} @else if (panel() === 'details' && details()) {
+  <aside class="absolute inset-0 z-30 flex w-full flex-col border-s border-border bg-background md:static md:z-auto md:w-80 lg:w-96" [attr.aria-label]="'chat.details.title' | t">
+    <app-chat-details-panel class="min-h-0 flex-1" [details]="details()!" (changed)="detailsChanged($event)" (closed)="panel.set(null)" />
+  </aside>
+}

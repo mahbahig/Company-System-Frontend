@@ -17,6 +17,7 @@
     <h2 id="workload-heading" class="text-lg font-semibold">
       {{ 'analytics.operational.workload' | t }}
     </h2>
+    <app-pager-size [pager]="workloadPager" />
     <app-table-wrapper [label]="'analytics.operational.workload' | t">
       <table appTable>
         <thead appTableHeader>

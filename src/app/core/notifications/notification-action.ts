@@ -36,10 +36,10 @@ export function notificationAction(notification: Pick<AppNotification, 'category
 }
 
 export interface NotificationTarget {
-  /** Router commands with the locale, e.g. `['/en/approvals/123']`. */
+  /** Router commands, e.g. `['/approvals/123']`. */
   commands: string[];
   queryParams: Record<string, string>;
-  /** Path without locale (for `canOpen`). */
+  /** The path (for `canOpen`). */
   path: string;
 }
 
@@ -51,7 +51,6 @@ export interface NotificationTarget {
  */
 export function notificationTarget(
   actionUrl: string | null | undefined,
-  locale: string,
   canOpen: (path: string) => boolean,
 ): NotificationTarget | null {
   if (!actionUrl || /^[a-z]+:\/\//i.test(actionUrl)) return null;
@@ -60,5 +59,5 @@ export function notificationTarget(
   if (!canOpen(path)) return null;
   const queryParams: Record<string, string> = {};
   for (const [key, value] of new URLSearchParams(query)) queryParams[key] = value;
-  return { commands: [`/${locale}${path}`], queryParams, path };
+  return { commands: [path], queryParams, path };
 }

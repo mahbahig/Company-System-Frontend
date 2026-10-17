@@ -133,7 +133,7 @@ export class LeadQuickAddPage implements HasUnsavedChanges {
       try {
         const lead = await firstValueFrom(this.leads.quickAdd(payload));
         this.saved = true;
-        await this.router.navigate(['/', this.i18n.locale(), 'leads', lead.id]);
+        await this.router.navigate(['/', 'leads', lead.id]);
       } catch (error) {
         if (ApiError.is(error) && error.status === 409) {
           this.duplicates.set((error.details as DuplicateMatches) ?? { customerMatches: [], leadMatches: [] });

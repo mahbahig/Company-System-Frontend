@@ -1,0 +1,264 @@
+{
+  "navigation": {
+    "items": {
+      "securityCenter": "مركز الأمان"
+    },
+    "descriptions": {
+      "securityCenter": "أمان تسجيل الدخول والتنبيهات وحالة النظام وسلامته."
+    }
+  },
+  "server": {
+    "auth": {
+      "maintenance": "يخضع Ecotech حاليًا لصيانة مجدولة. يُرجى المحاولة لاحقًا.",
+      "tooManyAttempts": "محاولات تسجيل دخول كثيرة جدًا من شبكتك. يُرجى الانتظار بضع دقائق ثم المحاولة مرة أخرى.",
+      "locked": "محاولات تسجيل دخول فاشلة كثيرة جدًا. يُرجى الانتظار بضع دقائق ثم المحاولة مرة أخرى."
+    },
+    "errors": {
+      "maintenance": "يخضع Ecotech حاليًا لصيانة مجدولة. يُرجى المحاولة لاحقًا.",
+      "securityAlertTransitionNotAllowed": "تغيّرت حالة هذا التنبيه بالفعل (ربما أقرّ به أو حلّه شخص آخر)."
+    }
+  },
+  "maintenance": {
+    "title": "يخضع Ecotech حاليًا لصيانة مجدولة.",
+    "back": "سنعود قريبًا.",
+    "later": "يُرجى المحاولة لاحقًا.",
+    "retry": "حاول مرة أخرى",
+    "auto": "تتحقق هذه الصفحة تلقائيًا وتعيدك إلى Ecotech عند انتهاء الصيانة.",
+    "adminBanner": "وضع الصيانة مفعّل: لا يستخدم Ecotech إلا المسؤولون الأعلى، ويرى الجميع شاشة الصيانة."
+  },
+  "systemStatus": {
+    "modes": {
+      "normal": "عادي",
+      "maintenance": "وضع الصيانة",
+      "locked": "مقفل"
+    },
+    "modeHints": {
+      "normal": "يمكن لكل صاحب حساب نشط تسجيل الدخول واستخدام Ecotech.",
+      "maintenance": "لا يستخدم Ecotech إلا المسؤولون الأعلى، ويرى الجميع شاشة الصيانة.",
+      "locked": "لا يسجّل الدخول إلا المسؤولون الأعلى، وتم تسجيل خروج الجميع غيرهم."
+    },
+    "lockTitle": "قفل النظام",
+    "maintenanceTitle": "وضع الصيانة",
+    "maintenanceEnabled": "مفعّل",
+    "maintenanceDisabled": "متوقف",
+    "maintenanceEnabledHint": "يحتفظ الموظفون بجلساتهم ويكملون عند إيقافه.",
+    "maintenanceDisabledHint": "Ecotech متاح للجميع.",
+    "maintenanceOn": "تفعيل وضع الصيانة",
+    "maintenanceOff": "إيقاف وضع الصيانة",
+    "maintenanceOnBy": "فعّله {name} في {when}",
+    "maintenanceOffBy": "أوقفه {name} في {when}",
+    "confirm": {
+      "maintenanceOnTitle": "تفعيل وضع الصيانة؟",
+      "maintenanceOnBody": "لن يتمكن من استخدام Ecotech إلا المسؤولون الأعلى، وسيرى الجميع شاشة الصيانة حتى تُوقفه.",
+      "maintenanceOnSessions": "يبقى الموظفون مسجّلين الدخول ويكملون من حيث توقفوا عند انتهاء الصيانة.",
+      "maintenanceOffTitle": "إيقاف وضع الصيانة؟",
+      "maintenanceOffBody": "سيتمكن الجميع من استخدام Ecotech مرة أخرى."
+    }
+  },
+  "securityCenter": {
+    "title": "مركز الأمان",
+    "subtitle": "أمان تسجيل الدخول والتنبيهات وحالة النظام وسلامته — من النشاط الفعلي.",
+    "refresh": "تحديث",
+    "severity": {
+      "critical": "حرج",
+      "high": "مرتفع",
+      "medium": "متوسط",
+      "low": "منخفض"
+    },
+    "overview": {
+      "authentication": "المصادقة",
+      "security": "الأمان",
+      "successfulLogins": "عمليات تسجيل دخول ناجحة (24 ساعة)",
+      "last7Days": "7 أيام: {count}",
+      "last7DaysOnly": "آخر 7 أيام",
+      "failedLogins": "محاولات دخول فاشلة (24 ساعة)",
+      "failedHint": "آخر ساعة: {hour} · 7 أيام: {week}",
+      "activeSessions": "الجلسات النشطة",
+      "activeSessionsHint": "الجلسات المسجّلة الدخول الآن",
+      "revokedSessions": "الجلسات المُنهاة (7 أيام)",
+      "revokedHint": "أنهاها صاحبها أو مسؤول",
+      "lockedAccounts": "حسابات مقفلة مؤقتًا",
+      "blockedIps": "عناوين IP محظورة: {count}",
+      "deactivatedAccounts": "حسابات موقوفة",
+      "openAlerts": "تنبيهات أمنية مفتوحة",
+      "alertsHint": "حرجة {critical} · مرتفعة {high} · جديدة {new}",
+      "criticalEvents": "أحداث تدقيق حرجة",
+      "highEvents": "أحداث تدقيق مرتفعة الخطورة",
+      "suspiciousAccounts": "حسابات ذات نشاط مريب",
+      "suspiciousHint": "موظفون لديهم تنبيه مفتوح",
+      "mfa": "اعتماد التحقق بخطوتين",
+      "mfaHint": "{enabled} من {total} حسابًا نشطًا · بدون تحقق بخطوتين: {disabled}",
+      "repeatedFailures": "موظفون فشلوا في تسجيل الدخول مرارًا (24 ساعة)",
+      "failuresCount": "{count} محاولات فاشلة",
+      "noRepeatedFailures": "لم يفشل أي موظف في تسجيل الدخول مرارًا خلال آخر 24 ساعة."
+    },
+    "activity": {
+      "title": "أحدث النشاط الأمني",
+      "subtitle": "عمليات الدخول والجلسات وحالة النظام والتنبيهات وتغييرات الحسابات، من سجل التدقيق.",
+      "viewAll": "عرض الكل في سجلات التدقيق",
+      "empty": "لا يوجد نشاط أمني بعد."
+    },
+    "alerts": {
+      "title": "التنبيهات الأمنية",
+      "subtitle": "تُجمع الأحداث الأمنية المرتبطة في تنبيه واحد؛ الأشد خطورة والأحدث أولًا.",
+      "statusFilter": "حالة التنبيه",
+      "views": {
+        "open": "مفتوحة",
+        "new": "جديدة",
+        "acknowledged": "مُقرّ بها",
+        "resolved": "محلولة",
+        "all": "الكل"
+      },
+      "statuses": {
+        "new": "جديد",
+        "acknowledged": "مُقرّ به",
+        "resolved": "محلول"
+      },
+      "severity": "الخطورة",
+      "anySeverity": "أي خطورة",
+      "alert": "التنبيه",
+      "subject": "الموظف / عنوان IP",
+      "events": "الأحداث",
+      "lastSeen": "آخر ظهور",
+      "firstSeen": "أول ظهور",
+      "status": "الحالة",
+      "acknowledge": "إقرار",
+      "resolve": "حل",
+      "empty": "لا توجد تنبيهات أمنية هنا.",
+      "notFound": "هذا التنبيه الأمني غير موجود.",
+      "back": "العودة إلى مركز الأمان",
+      "details": "التفاصيل",
+      "employee": "الموظف",
+      "ip": "عنوان IP",
+      "auditEvent": "حدث التدقيق",
+      "openAuditEvent": "فتح حدث التدقيق",
+      "acknowledged": "تم الإقرار",
+      "resolved": "تم الحل",
+      "byOn": "بواسطة {name} في {time}",
+      "findings": "الأحداث الأمنية",
+      "findingsHint": "النتائج المجمّعة في هذا التنبيه (الأحدث أولًا).",
+      "device": "الجهاز",
+      "reviewed": "تمت مراجعته",
+      "notReviewed": "لم تتم مراجعته بعد",
+      "confirm": {
+        "acknowledgeTitle": "الإقرار بـ «{title}»؟",
+        "acknowledgeBody": "يُعلَّم التنبيه على أنه رُئي ويجري النظر فيه، ويبقى مفتوحًا حتى يُحل.",
+        "acknowledgeReviewed": "تُعلَّم أحداثه الأمنية على أنها رُوجعت.",
+        "resolveTitle": "حل «{title}»؟",
+        "resolveBody": "يُغلق التنبيه، وتُحفظ أحداثه الأمنية وسجل التدقيق.",
+        "resolveReopen": "إذا تكرر الأمر نفسه، يُطلق تنبيه جديد."
+      }
+    },
+    "health": {
+      "title": "سلامة النظام",
+      "overall": {
+        "healthy": "سليم",
+        "degraded": "متراجع",
+        "critical": "حرج"
+      },
+      "status": {
+        "healthy": "سليم",
+        "degraded": "متراجع",
+        "unhealthy": "متعطل"
+      },
+      "components": {
+        "api": "واجهة البرمجة",
+        "database": "قاعدة البيانات",
+        "redis": "Redis",
+        "queues": "قوائم المهام",
+        "storage": "التخزين",
+        "email": "البريد الإلكتروني"
+      },
+      "checkedAt": "فُحص {time}",
+      "refresh": "تحديث",
+      "details": "التفاصيل",
+      "latency": "{ms} مللي ثانية",
+      "latencyLabel": "زمن الاستجابة",
+      "statusLabel": "الحالة",
+      "lastChecked": "آخر فحص",
+      "reason": "السبب",
+      "yes": "نعم",
+      "no": "لا",
+      "uptime": "{hours} ساعة {minutes} دقيقة",
+      "reasons": {
+        "unreachable": "لا يمكن الوصول إليه",
+        "timeout": "لم يستجب في الوقت المحدد",
+        "not_configured": "غير مُهيأ",
+        "failed_jobs": "فشلت بعض المهام",
+        "backlog": "المهام تتراكم",
+        "slow": "يستجيب ببطء",
+        "delivery_failures": "فشلت بعض الرسائل خلال آخر 24 ساعة",
+        "not_writable": "لا يمكن الكتابة في مجلد المستندات"
+      },
+      "facts": {
+        "uptimeSeconds": "مدة التشغيل",
+        "memoryMb": "الذاكرة (ميجابايت)",
+        "heapUsedMb": "الذاكرة المستخدمة (ميجابايت)",
+        "connected": "متصل",
+        "configured": "مُهيأ",
+        "queue": "القائمة",
+        "waiting": "مهام منتظرة",
+        "active": "مهام قيد التشغيل",
+        "delayed": "مهام مؤجلة",
+        "failed": "مهام فاشلة",
+        "documentsWritable": "يمكن الكتابة في مجلد المستندات",
+        "uploadsProvider": "مزود الرفع",
+        "uploadsAvailable": "رفع لقطات الشاشة متاح",
+        "sent24h": "أُرسلت (24 ساعة)",
+        "failed24h": "فشلت (24 ساعة)",
+        "queued24h": "في الانتظار دون مزود (24 ساعة)"
+      }
+    }
+  },
+  "admin": {
+    "audit": {
+      "activeFilter": "مُصفّى حسب",
+      "employeeFilter": "الموظف: {name}",
+      "removeEmployeeFilter": "إزالة تصفية الموظف",
+      "detail": {
+        "target": "الموظف",
+        "sensitiveChanged": "تغيّر (لا تُسجَّل القيمة أبدًا)",
+        "technical": "تفاصيل تقنية",
+        "requestId": "معرّف الطلب",
+        "yes": "نعم",
+        "no": "لا"
+      },
+      "fields": {
+        "fullNameEn": "الاسم (بالإنجليزية)",
+        "fullNameAr": "الاسم (بالعربية)",
+        "roleCodes": "الأدوار",
+        "isActive": "الحالة",
+        "deactivationReason": "سبب الإيقاف",
+        "jobTitleEn": "المسمى الوظيفي (بالإنجليزية)",
+        "jobTitleAr": "المسمى الوظيفي (بالعربية)",
+        "leadCapacity": "سعة العملاء المحتملين",
+        "teamIds": "الفرق",
+        "managerId": "المدير",
+        "employeeNo": "الرقم الوظيفي",
+        "mobile": "الجوال",
+        "department": "القسم",
+        "territories": "المناطق",
+        "specializations": "التخصصات",
+        "availability_status": "التوفر",
+        "availability_to": "متاح مرة أخرى في",
+        "availability_from": "غير متاح من",
+        "defaultLocale": "اللغة",
+        "mustChangePassword": "يجب تغيير كلمة المرور",
+        "mfaEnabled": "التحقق بخطوتين",
+        "status": "الحالة",
+        "locked": "قفل النظام",
+        "maintenanceMode": "وضع الصيانة",
+        "signedOutEmployees": "الموظفون الذين سُجّل خروجهم",
+        "signedOutSessions": "الجلسات المنتهية",
+        "reassignToId": "نُقل العمل إلى",
+        "reassigned": "العمل المنقول"
+      }
+    }
+  },
+  "employees": {
+    "security": {
+      "lastLogin": "آخر تسجيل دخول",
+      "never": "لم يسجّل الدخول بعد"
+    }
+  }
+}

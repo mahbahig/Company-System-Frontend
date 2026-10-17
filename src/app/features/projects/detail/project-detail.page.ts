@@ -32,6 +32,7 @@ import { ProjectsApi } from '../projects-api.service';
 import { LocalPager } from '../../../shared/crm/pagination/local-pager';
 import { PagerComponent } from '../../../shared/crm/pagination/pager.component';
 import { CreateIconComponent } from '../../../shared/ui/create-icon/create-icon.component';
+import { PagerSizeComponent } from '../../../shared/crm/pagination/page-size-select.component';
 
 const PHASES = ['planning', 'procurement', 'installation', 'testing_commissioning', 'customer_acceptance', 'warranty_service'];
 
@@ -43,7 +44,7 @@ const PHASES = ['planning', 'procurement', 'installation', 'testing_commissionin
  */
 @Component({
   selector: 'app-project-detail-page',
-  imports: [BreadcrumbsComponent, FavoriteToggleComponent, DetailSkeletonComponent, ProjectWorkflowPanelComponent, RouterLink, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, CompletenessPanelComponent, DetailItemComponent, DocumentsPanelComponent, AlertComponent, BadgeComponent, ButtonDirective, PageHeaderComponent, TabsComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, ...TABLE_IMPORTS, PagerComponent, CreateIconComponent],
+  imports: [BreadcrumbsComponent, FavoriteToggleComponent, DetailSkeletonComponent, ProjectWorkflowPanelComponent, RouterLink, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, CompletenessPanelComponent, DetailItemComponent, DocumentsPanelComponent, AlertComponent, BadgeComponent, ButtonDirective, PageHeaderComponent, TabsComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, ...TABLE_IMPORTS, PagerComponent, CreateIconComponent, PagerSizeComponent],
   templateUrl: './project-detail.page.html',
   host: { class: 'flex flex-col gap-6' },
 })

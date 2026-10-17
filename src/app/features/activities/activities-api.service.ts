@@ -4,6 +4,7 @@ import type { Observable } from 'rxjs';
 import { ApiService } from '../../core/api/api.service';
 import type { Page } from '../../core/api/page.interface';
 import type { UserRef } from '../../core/auth/models/user-ref.interface';
+import type { DeviceFix } from '../../core/geo/geolocation.service';
 import type { GeoCapture } from '../../shared/crm/gps-capture/gps-capture.component';
 
 type Ref = { id: string; customerNo?: string; leadNo?: string; opportunityNo?: string; nameAr?: string; nameEn?: string; name?: string; fullName?: string } | string | null | undefined;
@@ -59,9 +60,15 @@ export interface Meeting {
   decisions?: string;
   actionItems?: string;
   cancellationReason?: string;
+  /** Start position (coordinates and accuracy only for `meetings.view_locations`). */
   arrival?: GeoReading | null;
+  /** End position (same rule). */
   departure?: GeoReading | null;
   actualDurationMinutes?: number;
+  /** Computed by the API when the meeting ends: end-to-start distance, the radius, the verdict. */
+  locationDistanceM?: number | null;
+  locationRadiusM?: number | null;
+  locationVerificationStatus?: 'within_radius' | 'outside_radius' | 'location_unreliable' | null;
   followUpAt?: string | null;
 }
 
@@ -147,11 +154,13 @@ export class ActivitiesApi {
   cancelMeeting(id: string, reason: string): Observable<Meeting> {
     return this.api.post(`meetings/${id}/cancel`, { reason });
   }
-  arrive(id: string, body: GeoCapture): Observable<Meeting> {
-    return this.api.post(`meetings/${id}/arrive`, body);
+  /** Starts the meeting at this position (only the coordinates and accuracy are sent; the API decides the rest). */
+  arrive(id: string, position: DeviceFix): Observable<Meeting> {
+    return this.api.post(`meetings/${id}/arrive`, { latitude: position.latitude, longitude: position.longitude, accuracyM: position.accuracyM });
   }
-  depart(id: string, body: GeoCapture): Observable<Meeting> {
-    return this.api.post(`meetings/${id}/depart`, body);
+  /** Ends the meeting at this (fresh) position; the API measures it against the start. */
+  depart(id: string, position: DeviceFix): Observable<Meeting> {
+    return this.api.post(`meetings/${id}/depart`, { latitude: position.latitude, longitude: position.longitude, accuracyM: position.accuracyM });
   }
 
   visits(query: ListQuery): Observable<Page<Visit>> {

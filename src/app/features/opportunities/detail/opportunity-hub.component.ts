@@ -79,7 +79,7 @@ export class OpportunityHubComponent {
   readonly primaryContactId = input<string | null | undefined>();
   readonly changed = output<void>();
 
-  protected readonly base = computed(() => ['/', this.i18n.locale(), 'opportunities', this.opportunityId()]);
+  protected readonly base = computed(() => ['/', 'opportunities', this.opportunityId()]);
   protected readonly activityParams = computed(() => ({ customerId: this.customerId(), opportunityId: this.opportunityId() }));
   protected readonly canEdit = computed(() => this.auth.can('opportunities.edit'));
   protected readonly handoffAccepted = computed(() => this.handoffStatus() === 'accepted');
@@ -119,7 +119,7 @@ export class OpportunityHubComponent {
   protected startAssessment(): void {
     void this.assessmentAction.run(this.api.post<{ id: string }>(`assessments/opportunity/${this.opportunityId()}`), null, (assessment) => {
       this.assessments.reload();
-      void this.router.navigate(['/', this.i18n.locale(), 'assessments', assessment.id]);
+      void this.router.navigate(['/', 'assessments', assessment.id]);
     });
   }
 

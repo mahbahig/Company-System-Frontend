@@ -35,8 +35,9 @@
           var theme = localStorage.getItem('ecotech.theme') || 'system';
           var dark = theme === 'dark' || (theme === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
           if (dark) document.documentElement.classList.add('dark');
-          var locale = location.pathname.split('/')[1];
-          if (locale !== 'ar' && locale !== 'en') locale = localStorage.getItem('ecotech.locale') || 'ar';
+          // The language is the stored choice only — never the URL.
+          var locale = localStorage.getItem('ecotech.locale');
+          if (locale !== 'ar' && locale !== 'en') locale = 'ar';
           document.documentElement.lang = locale;
           document.documentElement.dir = locale === 'ar' ? 'rtl' : 'ltr';
         } catch (e) {}

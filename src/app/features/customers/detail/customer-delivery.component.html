@@ -1,6 +1,7 @@
 @if (data(); as d) {
   <section class="flex flex-col gap-3" aria-labelledby="c360-proposals">
     <h2 id="c360-proposals" class="text-lg font-semibold">{{ 'customer360.proposals' | t }}</h2>
+    <app-pager-size [pager]="proposalsPager" />
     <app-table-wrapper [label]="'customer360.proposals' | t">
       <table appTable>
         <thead appTableHeader>
@@ -16,14 +17,13 @@
           @for (row of proposalsPager.rows(); track row.id) {
             <tr
               appTableRow
-              [appRowLink]="['/', i18n.locale(), 'opportunities', row.opportunityId, 'proposals']"
+              [appRowLink]="['/', 'opportunities', row.opportunityId, 'proposals']"
             >
               <td appTableCell class="tabular" dir="ltr">
                 <a
                   class="text-primary hover:underline"
                   [routerLink]="[
                     '/',
-                    i18n.locale(),
                     'opportunities',
                     row.opportunityId,
                     'proposals',
@@ -55,6 +55,7 @@
 
   <section class="flex flex-col gap-3" aria-labelledby="c360-contracts">
     <h2 id="c360-contracts" class="text-lg font-semibold">{{ 'customer360.contracts' | t }}</h2>
+    <app-pager-size [pager]="contractsPager" />
     <app-table-wrapper [label]="'customer360.contracts' | t">
       <table appTable>
         <thead appTableHeader>
@@ -67,11 +68,11 @@
         </thead>
         <tbody appTableBody>
           @for (row of contractsPager.rows(); track row.id) {
-            <tr appTableRow [appRowLink]="['/', i18n.locale(), 'contracts', row.id]">
+            <tr appTableRow [appRowLink]="['/', 'contracts', row.id]">
               <td appTableCell class="tabular" dir="ltr">
                 <a
                   class="text-primary hover:underline"
-                  [routerLink]="['/', i18n.locale(), 'contracts', row.id]"
+                  [routerLink]="['/', 'contracts', row.id]"
                   >{{ row.contractNo }} v{{ row.versionNo }}</a
                 >
               </td>
@@ -96,6 +97,7 @@
 
   <section class="flex flex-col gap-3" aria-labelledby="c360-projects">
     <h2 id="c360-projects" class="text-lg font-semibold">{{ 'customer360.projects' | t }}</h2>
+    <app-pager-size [pager]="projectsPager" />
     <app-table-wrapper [label]="'customer360.projects' | t">
       <table appTable>
         <thead appTableHeader>
@@ -109,11 +111,11 @@
         </thead>
         <tbody appTableBody>
           @for (row of projectsPager.rows(); track row.id) {
-            <tr appTableRow [appRowLink]="['/', i18n.locale(), 'projects', row.id]">
+            <tr appTableRow [appRowLink]="['/', 'projects', row.id]">
               <td appTableCell class="tabular" dir="ltr">
                 <a
                   class="text-primary hover:underline"
-                  [routerLink]="['/', i18n.locale(), 'projects', row.id]"
+                  [routerLink]="['/', 'projects', row.id]"
                   >{{ row.projectNo }}</a
                 >
               </td>
@@ -146,6 +148,7 @@
 
   <section class="flex flex-col gap-3" aria-labelledby="c360-leads">
     <h2 id="c360-leads" class="text-lg font-semibold">{{ 'customer360.leads' | t }}</h2>
+    <app-pager-size [pager]="leadsPager" />
     <app-table-wrapper [label]="'customer360.leads' | t">
       <table appTable>
         <thead appTableHeader>
@@ -158,11 +161,11 @@
         </thead>
         <tbody appTableBody>
           @for (row of leadsPager.rows(); track row.id) {
-            <tr appTableRow [appRowLink]="['/', i18n.locale(), 'leads', row.id]">
+            <tr appTableRow [appRowLink]="['/', 'leads', row.id]">
               <td appTableCell class="tabular" dir="ltr">
                 <a
                   class="text-primary hover:underline"
-                  [routerLink]="['/', i18n.locale(), 'leads', row.id]"
+                  [routerLink]="['/', 'leads', row.id]"
                   >{{ row.leadNo }}</a
                 >
               </td>

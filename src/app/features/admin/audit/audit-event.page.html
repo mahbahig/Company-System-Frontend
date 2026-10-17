@@ -14,7 +14,7 @@
     </div>
     <div class="flex items-center gap-2">
       <app-status-badge enum="auditSeverity" [value]="e.severity" />
-      <a appButton variant="outline" size="sm" [routerLink]="['/', i18n.locale(), 'admin', 'audit']">{{ 'admin.audit.detail.back' | t }}</a>
+      <a appButton variant="outline" size="sm" [routerLink]="['/', 'admin', 'audit']">{{ 'admin.audit.detail.back' | t }}</a>
     </div>
   </header>
 
@@ -41,6 +41,18 @@
         <dt class="text-2xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">{{ 'admin.audit.detail.source' | t }}</dt>
         <dd class="mt-1">{{ e.source | enum: 'auditSource' }}</dd>
       </div>
+      @if (e.target; as target) {
+        <div>
+          <dt class="text-2xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">{{ 'admin.audit.detail.target' | t }}</dt>
+          <dd class="mt-1 font-medium" data-testid="audit-target">
+            @if (targetLink(e); as link) {
+              <a class="text-primary underline-offset-4 hover:underline" [routerLink]="link">{{ i18n.pick(target.nameAr, target.name) }}</a>
+            } @else {
+              {{ i18n.pick(target.nameAr, target.name) }}
+            }
+          </dd>
+        </div>
+      }
       <div>
         <dt class="text-2xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">{{ 'admin.audit.detail.record' | t }}</dt>
         <dd class="mt-1">
@@ -67,39 +79,50 @@
 
   <section appCard aria-labelledby="audit-event-changes">
     <div appCardHeader><h2 appCardTitle id="audit-event-changes">{{ 'admin.audit.detail.changes' | t }}</h2></div>
-    <div appCardContent>
-      @if (e.changedFields.length) {
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm">
-            <thead>
-              <tr class="border-b border-border text-start text-xs text-muted-foreground">
-                <th class="py-2 pe-4 text-start font-medium">{{ 'admin.audit.detail.field' | t }}</th>
-                <th class="py-2 pe-4 text-start font-medium">{{ 'admin.audit.detail.before' | t }}</th>
-                <th class="py-2 text-start font-medium">{{ 'admin.audit.detail.after' | t }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (field of e.changedFields; track field) {
-                <tr class="border-b border-border/60 align-top">
-                  <td class="py-2 pe-4 font-mono text-xs" dir="ltr">{{ field }}</td>
-                  <td class="py-2 pe-4 font-mono text-xs text-destructive-tint [overflow-wrap:anywhere]" dir="ltr">{{ show(e.before, field) }}</td>
-                  <td class="py-2 font-mono text-xs text-success-tint [overflow-wrap:anywhere]" dir="ltr">{{ show(e.after, field) }}</td>
-                </tr>
+    <div appCardContent class="flex flex-col gap-4">
+      @if (changes(e).length) {
+        <!-- One row per changed field: its name in words, then before → after (a secret only as "changed"). -->
+        <ul class="flex flex-col divide-y divide-border rounded-lg border border-border/70" data-testid="audit-changes">
+          @for (change of changes(e); track change.field) {
+            <li class="grid gap-2 px-4 py-3 sm:grid-cols-[minmax(10rem,14rem)_1fr] sm:items-center" data-testid="audit-change">
+              <span class="text-sm font-semibold" data-testid="audit-change-field">{{ fieldLabel(change) }}</span>
+              @if (change.sensitive) {
+                <span class="text-sm text-muted-foreground" data-testid="audit-change-sensitive">{{ 'admin.audit.detail.sensitiveChanged' | t }}</span>
+              } @else {
+                <span class="flex flex-wrap items-center gap-2 text-sm">
+                  <span class="rounded-md bg-destructive/10 px-2 py-0.5 text-destructive-tint line-through decoration-destructive/40 [overflow-wrap:anywhere]" data-testid="audit-change-before">
+                    <span class="sr-only">{{ 'admin.audit.detail.before' | t }}: </span>{{ value(e, change, 'before') }}
+                  </span>
+                  <span class="text-muted-foreground rtl:rotate-180" aria-hidden="true">→</span>
+                  <span class="rounded-md bg-success/10 px-2 py-0.5 font-medium text-success-tint [overflow-wrap:anywhere]" data-testid="audit-change-after">
+                    <span class="sr-only">{{ 'admin.audit.detail.after' | t }}: </span>{{ value(e, change, 'after') }}
+                  </span>
+                </span>
               }
-            </tbody>
-          </table>
-        </div>
+            </li>
+          }
+        </ul>
       } @else if (extra(e).length) {
-        <dl class="grid gap-3 sm:grid-cols-2">
+        <dl class="grid gap-3 sm:grid-cols-2" data-testid="audit-recorded">
           @for (item of extra(e); track item.key) {
             <div>
-              <dt class="font-mono text-xs text-muted-foreground" dir="ltr">{{ item.key }}</dt>
-              <dd class="font-mono text-xs [overflow-wrap:anywhere]" dir="ltr">{{ item.value }}</dd>
+              <dt class="text-xs font-semibold text-muted-foreground">{{ item.label }}</dt>
+              <dd class="text-sm [overflow-wrap:anywhere]">{{ item.value }}</dd>
             </div>
           }
         </dl>
       } @else {
         <p class="text-sm text-muted-foreground">{{ 'admin.audit.detail.noChanges' | t }}</p>
+      }
+      @if (e.before || e.after) {
+        <!-- A deliberate technical section: the stored (already redacted) snapshots. -->
+        <details class="rounded-lg border border-border/70 px-4 py-2 text-sm">
+          <summary class="cursor-pointer select-none font-medium text-muted-foreground">{{ 'admin.audit.detail.technical' | t }}</summary>
+          <pre class="mt-2 max-h-80 overflow-auto rounded-md bg-muted p-3 font-mono text-xs" dir="ltr">{{ raw(e) }}</pre>
+          @if (e.requestId) {
+            <p class="mt-2 text-xs text-muted-foreground">{{ 'admin.audit.detail.requestId' | t }}: <span class="font-mono" dir="ltr">{{ e.requestId }}</span></p>
+          }
+        </details>
       }
     </div>
   </section>

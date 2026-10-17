@@ -38,7 +38,7 @@ export class BreadcrumbsComponent {
       .filter((crumb) => !!crumb.label)
       .map((crumb) => ({
         label: crumb.label,
-        link: crumb.path && this.navigation.canOpen(crumb.path) ? this.navigation.link(crumb.path) : null,
+        link: crumb.path && this.navigation.canOpen(crumb.path) ? crumb.path : null,
       }));
   });
 }

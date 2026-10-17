@@ -1,0 +1,39 @@
+{
+  "auth": {
+    "errors": {
+      "systemLocked": "The system is currently locked. Please try again later."
+    }
+  },
+  "server": {
+    "auth": {
+      "systemLocked": "The system is currently locked. Please try again later."
+    }
+  },
+  "systemStatus": {
+    "title": "System Status",
+    "subtitle": "Who can sign in to and use Ecotech.",
+    "locked": "Locked",
+    "unlocked": "Unlocked",
+    "lockedHint": "Only Super Administrators can sign in. Everyone else was signed out.",
+    "unlockedHint": "Everyone with an active account can sign in.",
+    "lockedBy": "Locked by {name} on {when}",
+    "unlockedBy": "Unlocked by {name} on {when}",
+    "lock": "Lock System",
+    "unlock": "Unlock System",
+    "confirm": {
+      "lockTitle": "Lock the system?",
+      "lockBody": "Locking the system will prevent normal employees from logging in. Super Admins will still be able to log in.",
+      "lockSessions": "Everyone who is not a Super Administrator is signed out immediately, on every device. Super Administrators stay signed in.",
+      "lockAudit": "The change is recorded in the audit log and every Super Administrator is notified.",
+      "unlockTitle": "Unlock the system?",
+      "unlockBody": "Employees will be able to sign in to Ecotech again.",
+      "unlockAudit": "The change is recorded in the audit log and every Super Administrator is notified."
+    }
+  },
+  "admin": {
+    "users": {
+      "emailRequired": "Email is required.",
+      "emailInvalid": "Invalid email address."
+    }
+  }
+}

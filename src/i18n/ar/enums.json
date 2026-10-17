@@ -41,6 +41,7 @@
     "leadClosureReason": { "unqualified": "غير مؤهل", "invalid": "غير صالح", "duplicate": "مكرر", "nurture": "رعاية لاحقة" },
     "leadStatus": { "new": "جديد", "contacted": "تم التواصل", "qualified": "مؤهل", "nurture": "رعاية لاحقة", "converted": "تم التحويل", "closed": "مغلق" },
     "meetingMode": { "in_person": "حضوري", "online": "عن بُعد", "hybrid": "مختلط", "phone": "هاتفي" },
+    "locationVerificationStatus": { "within_radius": "ضمن النطاق", "outside_radius": "خارج النطاق", "location_unreliable": "موقع غير موثوق" },
     "meetingStatus": { "planned": "مخطط", "confirmed": "مؤكد", "completed": "منعقد", "cancelled": "ملغي", "rescheduled": "مُعاد جدولته", "no_show": "لم يحضر" },
     "milestoneStatus": { "pending": "قيد الانتظار", "in_progress": "قيد التنفيذ", "done": "منجز", "delayed": "متأخر" },
     "negotiationOutcome": { "pending": "قيد الانتظار", "accepted": "مقبول", "rejected": "مرفوض", "counter_offer": "عرض مقابل", "escalated": "مُصعَّد" },

@@ -7,7 +7,6 @@ import { map, of } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 import { CommandPalette } from '../../core/command-palette/command-palette.service';
 import { PaletteCommands } from '../../core/command-palette/palette-commands.service';
-import { I18nService } from '../../core/i18n/i18n.service';
 import { TranslatePipe } from '../../core/i18n/translate.pipe';
 import { NavigationService } from '../../core/navigation/navigation.service';
 import { FavoritesService } from '../../core/records/favorites.service';
@@ -43,7 +42,6 @@ export class QuickAccessComponent {
   protected readonly favorites = inject(FavoritesService);
   protected readonly navigation = inject(NavigationService);
   protected readonly palette = inject(CommandPalette);
-  protected readonly i18n = inject(I18nService);
 
   protected readonly icons = RECORD_ICONS;
   protected readonly starIcon = Star;
@@ -74,6 +72,6 @@ export class QuickAccessComponent {
   }
 
   protected link(hit: RecordHit): string {
-    return this.navigation.link(hit.route);
+    return hit.route;
   }
 }

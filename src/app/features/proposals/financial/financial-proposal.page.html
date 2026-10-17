@@ -8,7 +8,7 @@
     @if (tpLink(); as link) {
       <a appButton variant="outline" [routerLink]="link">{{ 'prop.tabs.technical' | t }}</a>
     }
-    <a appButton variant="outline" [routerLink]="['/', i18n.locale(), 'opportunities', p.opportunityId, 'proposals']" [queryParams]="{ tab: 'financial' }">{{ 'prop.workspaceTitle' | t }}</a>
+    <a appButton variant="outline" [routerLink]="['/', 'opportunities', p.opportunityId, 'proposals']" [queryParams]="{ tab: 'financial' }">{{ 'prop.workspaceTitle' | t }}</a>
   </app-page-header>
 
   @if (actions.message(); as text) {
@@ -214,7 +214,7 @@
           <ul appCardContent class="flex flex-col gap-2 text-sm">
             @for (a of d.approvals; track a.id) {
               <li class="flex items-center justify-between gap-2">
-                <a class="text-primary hover:underline" [routerLink]="['/', i18n.locale(), 'approvals', a.id]" dir="ltr">{{ a.approvalNo }}</a>
+                <a class="text-primary hover:underline" [routerLink]="['/', 'approvals', a.id]" dir="ltr">{{ a.approvalNo }}</a>
                 <app-status-badge enum="approvalStatus" [value]="a.status" />
               </li>
             }
@@ -226,7 +226,7 @@
         <ul appCardContent class="flex flex-col gap-2 text-sm">
           @for (v of d.versions; track v.id) {
             <li class="flex items-center justify-between gap-2">
-              <a class="text-primary hover:underline" [routerLink]="['/', i18n.locale(), 'proposals', 'financial', v.id]">v{{ v.versionNo }} · {{ i18n.formatMoney(v.finalPrice) }}</a>
+              <a class="text-primary hover:underline" [routerLink]="['/', 'proposals', 'financial', v.id]">v{{ v.versionNo }} · {{ i18n.formatMoney(v.finalPrice) }}</a>
               <app-status-badge enum="financialProposalStatus" [value]="v.status" />
             </li>
           }

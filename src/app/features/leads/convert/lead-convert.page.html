@@ -11,7 +11,7 @@
         @for (match of matches.customerMatches; track match.customerId) {
           <li class="flex flex-wrap items-center justify-between gap-3 p-3 text-sm">
             <div class="flex flex-col">
-              <a class="font-medium text-primary hover:underline" [routerLink]="['/', i18n.locale(), 'customers', match.customerId]" target="_blank">{{ i18n.pick(match.nameAr, match.nameEn) || match.customerNo }}</a>
+              <a class="font-medium text-primary hover:underline" [routerLink]="['/', 'customers', match.customerId]" target="_blank">{{ i18n.pick(match.nameAr, match.nameEn) || match.customerNo }}</a>
               <span class="text-xs text-muted-foreground">
                 {{ match.customerNo }}
                 @if (match.primaryContactName) { · {{ match.primaryContactName }} }
@@ -64,7 +64,7 @@
           }
         </ul>
         @if (auth.can('leads.edit')) {
-          <a appButton size="sm" variant="outline" class="mt-3" [routerLink]="['/', i18n.locale(), 'leads', l.id, 'edit']">{{ 'crm.leads.convert.editLead' | t }}</a>
+          <a appButton size="sm" variant="outline" class="mt-3" [routerLink]="['/', 'leads', l.id, 'edit']">{{ 'crm.leads.convert.editLead' | t }}</a>
         }
       </app-alert>
     }
@@ -76,7 +76,7 @@
           <p class="text-sm text-muted-foreground">{{ 'crm.leads.convert.fromLeadHint' | t }}</p>
         </div>
         @if (auth.can('leads.edit')) {
-          <a appButton size="sm" variant="outline" [routerLink]="['/', i18n.locale(), 'leads', l.id, 'edit']">{{ 'crm.leads.convert.editLead' | t }}</a>
+          <a appButton size="sm" variant="outline" [routerLink]="['/', 'leads', l.id, 'edit']">{{ 'crm.leads.convert.editLead' | t }}</a>
         }
       </div>
       <div appCardContent>

@@ -20,6 +20,7 @@ import { ImportsApi, type ImportRow } from './imports-api.service';
 import { SkeletonRowComponent } from '../../shared/ui/skeleton/skeleton.component';
 import { DEFAULT_PAGE_SIZE, pageSizeAttribute } from '../../shared/crm/pagination/page-size';
 import { ConfirmService } from '../../shared/ui/confirm/confirm.service';
+import { PageSizeSelectComponent } from '../../shared/crm/pagination/page-size-select.component';
 
 const ROW_FILTERS = ['', 'valid', 'duplicate', 'invalid', 'imported', 'linked', 'skipped'];
 
@@ -30,7 +31,7 @@ const ROW_FILTERS = ['', 'valid', 'duplicate', 'invalid', 'imported', 'linked', 
  */
 @Component({
   selector: 'app-import-job-page',
-  imports: [SkeletonRowComponent, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, UserSelectComponent, AlertComponent, ButtonDirective, PageHeaderComponent, PaginationComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, ...TABLE_IMPORTS],
+  imports: [SkeletonRowComponent, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, UserSelectComponent, AlertComponent, ButtonDirective, PageHeaderComponent, PaginationComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, ...TABLE_IMPORTS, PageSizeSelectComponent],
   templateUrl: './import-job.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
@@ -52,7 +53,7 @@ export class ImportJobPage {
 
   protected readonly job = rxResource({ params: () => this.id(), stream: ({ params }) => this.api.get(params) });
   protected readonly fields = rxResource({ params: () => this.job.value()?.entity, stream: ({ params }) => this.api.fields(params) });
-  protected readonly rows = rxResource({ params: () => ({ id: this.id(), status: this.status(), page: this.page(), pageSize: this.pageSize() }), stream: ({ params }) => this.api.rows(params.id, { status: params.status, page: params.page }) });
+  protected readonly rows = rxResource({ params: () => ({ id: this.id(), status: this.status(), page: this.page(), pageSize: this.pageSize() }), stream: ({ params }) => this.api.rows(params.id, { status: params.status, page: params.page, pageSize: params.pageSize }) });
   protected readonly rowList = computed(() => (this.rows.hasValue() ? this.rows.value().rows : []));
   protected readonly editable = computed(() => ['uploaded', 'review', 'failed'].includes(this.job.value()?.status ?? ''));
 

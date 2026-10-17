@@ -74,6 +74,7 @@
     <app-alert variant="destructive">{{ i18n.errorText(quality.error()) }}</app-alert>
   }
   @if (quality.value(); as q) {
+    <app-pager-size [pager]="qualityPager" />
     <app-table-wrapper [label]="'exceptionsCenter.dataQuality' | t">
       <table appTable>
         <thead appTableHeader>

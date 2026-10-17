@@ -92,7 +92,7 @@ export class MeetingFormPage implements HasUnsavedChanges {
       null,
       (meeting) => {
         this.saved = true;
-        void this.router.navigate(['/', this.i18n.locale(), 'meetings', meeting.id]);
+        void this.router.navigate(['/', 'meetings', meeting.id]);
       },
     );
   }

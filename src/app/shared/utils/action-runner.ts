@@ -18,6 +18,8 @@ export class ActionRunner {
   readonly failed = signal(false);
   /** Ids of the fields the last failed request named (see `problemIds`). */
   readonly problems = signal<ReadonlySet<string>>(new Set());
+  /** The API's validation message key per field from the last failed request (`fieldErrors`), for forms that show it under the field. */
+  readonly fieldErrors = signal<Readonly<Record<string, string>>>({});
 
   constructor(private readonly i18n: I18nService) {}
 
@@ -29,12 +31,14 @@ export class ActionRunner {
       const result = await firstValueFrom(action);
       this.failed.set(false);
       this.problems.set(new Set());
+      this.fieldErrors.set({});
       if (successKey) this.message.set(this.i18n.t(successKey));
       after?.(result);
       return result;
     } catch (error) {
       this.failed.set(true);
       this.problems.set(problemIds(error));
+      this.fieldErrors.set((error as { fieldErrors?: Record<string, string> } | null)?.fieldErrors ?? {});
       this.error.set(this.i18n.errorText(error));
       return null;
     } finally {

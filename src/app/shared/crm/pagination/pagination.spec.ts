@@ -6,6 +6,7 @@ import { Router, provideRouter } from '@angular/router';
 
 import { LocalPager, PagerState } from './local-pager';
 import { DEFAULT_PAGE_SIZE, PAGE_SIZE_OPTIONS, pageSizeAttribute } from './page-size';
+import { PageSizeSelectComponent, PagerSizeComponent } from './page-size-select.component';
 import { PaginationComponent } from './pagination.component';
 
 const tick = () => new Promise((resolve) => setTimeout(resolve));
@@ -22,10 +23,18 @@ function render(inputs: { page: number; pageCount: number; total: number; pageSi
   const fixture = TestBed.createComponent(PaginationComponent);
   for (const [key, value] of Object.entries(inputs)) fixture.componentRef.setInput(key, value);
   const pageChange = vi.fn();
-  const pageSizeChange = vi.fn();
   fixture.componentInstance.pageChange.subscribe(pageChange);
+  return { fixture, navigate, pageChange };
+}
+
+function renderSize(inputs: { pageSize: number; total?: number | null; loading?: boolean; mode?: 'url' | 'state' }) {
+  TestBed.configureTestingModule({ providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()] });
+  const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+  const fixture = TestBed.createComponent(PageSizeSelectComponent);
+  for (const [key, value] of Object.entries(inputs)) fixture.componentRef.setInput(key, value);
+  const pageSizeChange = vi.fn();
   fixture.componentInstance.pageSizeChange.subscribe(pageSizeChange);
-  return { fixture, navigate, pageChange, pageSizeChange };
+  return { fixture, navigate, pageSizeChange };
 }
 const testId = (root: HTMLElement, id: string) => root.querySelector<HTMLElement>(`[data-testid="${id}"]`)!;
 
@@ -62,25 +71,69 @@ describe('Pagination footer', () => {
     expect(testId(root, 'pagination-previous').tagName).toBe('A');
   });
 
-  it('while loading, nothing can be clicked twice: Previous / Next / pages / size are disabled', async () => {
+  it('while loading, nothing can be clicked twice: Previous / Next / pages are disabled', async () => {
     const { fixture } = render({ page: 2, pageCount: 5, total: 100, pageSize: 20, loading: true });
     const root = await settle(fixture);
     expect(testId(root, 'pagination-previous').getAttribute('aria-disabled')).toBe('true');
     expect(testId(root, 'pagination-next').getAttribute('aria-disabled')).toBe('true');
     expect(root.querySelectorAll('nav a')).toHaveLength(0);
-    expect(testId(root, 'pagination-size').hasAttribute('disabled')).toBe(true);
     expect(root.querySelector('nav')!.getAttribute('aria-busy')).toBe('true');
   });
 
-  it('changing the page size goes back to page 1 and keeps the other query params (url mode)', async () => {
-    const { fixture, navigate, pageSizeChange } = render({ page: 4, pageCount: 13, total: 243, pageSize: 20 });
+  it('the footer has no "Items per page" any more: that control sits above the table', async () => {
+    const { fixture } = render({ page: 2, pageCount: 13, total: 243, pageSize: 20 });
     const root = await settle(fixture);
+    expect(root.querySelector('select')).toBeNull();
+    expect(root.textContent).not.toContain('crm.pagination.perPage');
+  });
+});
+
+describe('Items per page (above the table)', () => {
+  it('10 / 20 / 50 / 100; changing it goes back to page 1 and keeps the other query params (url mode)', async () => {
+    const { fixture, navigate, pageSizeChange } = renderSize({ pageSize: 20, total: 243 });
+    const root = await settle(fixture);
+    expect(root.textContent).toContain('crm.pagination.perPage');
     const select = testId(root, 'pagination-size') as HTMLSelectElement;
     expect([...select.options].map((option) => option.value)).toEqual(['10', '20', '50', '100']);
     select.value = '50';
     select.dispatchEvent(new Event('change'));
     expect(pageSizeChange).toHaveBeenCalledWith(50);
     expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({ queryParams: { pageSize: 50, page: null }, queryParamsHandling: 'merge' }));
+    // Back to the default size: a bare address.
+    fixture.componentRef.setInput('pageSize', 50);
+    await settle(fixture);
+    select.value = '20';
+    select.dispatchEvent(new Event('change'));
+    expect(navigate).toHaveBeenLastCalledWith([], expect.objectContaining({ queryParams: { pageSize: null, page: null } }));
+  });
+
+  it('state mode emits the size instead of navigating; disabled while a page loads; hidden for an empty table', async () => {
+    const { fixture, navigate, pageSizeChange } = renderSize({ pageSize: 20, total: 55, mode: 'state', loading: true });
+    const root = await settle(fixture);
+    const select = testId(root, 'pagination-size') as HTMLSelectElement;
+    expect(select.disabled).toBe(true);
+    fixture.componentRef.setInput('loading', false);
+    await settle(fixture);
+    select.value = '100';
+    select.dispatchEvent(new Event('change'));
+    expect(pageSizeChange).toHaveBeenCalledWith(100);
+    expect(navigate).not.toHaveBeenCalled();
+    fixture.componentRef.setInput('total', 0);
+    await settle(fixture);
+    expect(root.style.display).toBe('none');
+  });
+
+  it('a LocalPager: <app-pager-size> sets its size and goes back to page 1', async () => {
+    TestBed.configureTestingModule({ providers: [provideRouter([])] });
+    const pager = new LocalPager(() => Array.from({ length: 45 }, (_, index) => index));
+    pager.setPage(3);
+    const fixture = TestBed.createComponent(PagerSizeComponent);
+    fixture.componentRef.setInput('pager', pager);
+    const root = await settle(fixture);
+    const select = testId(root, 'pagination-size') as HTMLSelectElement;
+    select.value = '10';
+    select.dispatchEvent(new Event('change'));
+    expect([pager.pageSize(), pager.currentPage(), pager.pageCount()]).toEqual([10, 1, 5]);
   });
 
   it('a page left empty (its last row deleted) moves to the last page that exists', async () => {

@@ -1,7 +1,6 @@
 import { inject } from '@angular/core';
 import { Router, type CanActivateFn } from '@angular/router';
 
-import { toLocale } from '../i18n/locale';
 import { AuthService } from './auth.service';
 import type { PermissionCode } from './permission-code';
 
@@ -18,19 +17,18 @@ import type { PermissionCode } from './permission-code';
 export const permissionGuard: CanActivateFn = (route, state) => {
   const auth = inject(AuthService);
   const router = inject(Router);
-  const locale = toLocale(route.paramMap.get('locale') ?? route.parent?.paramMap.get('locale') ?? null);
   const user = auth.user();
   // Fail closed: without a resolved profile nothing can be authorized.
-  if (!user) return router.createUrlTree(['/', locale, 'login'], { queryParams: { returnTo: state.url } });
-  const onAccount = /^\/[a-z]{2}\/account(\/|$|\?)/.test(state.url);
+  if (!user) return router.createUrlTree(['/login'], { queryParams: { returnTo: state.url } });
+  const onAccount = /^\/account(\/|$|\?)/.test(state.url);
   if (!onAccount) {
-    if (user.mustChangePassword) return router.createUrlTree(['/', locale, 'account', 'password']);
-    if (user.mfaRequired && !user.mfaEnabled) return router.createUrlTree(['/', locale, 'account', 'security'], { queryParams: { enroll: 1 } });
+    if (user.mustChangePassword) return router.createUrlTree(['/account', 'password']);
+    if (user.mfaRequired && !user.mfaEnabled) return router.createUrlTree(['/account', 'security'], { queryParams: { enroll: 1 } });
   }
   const required = route.data['permission'] as PermissionCode | PermissionCode[] | undefined;
   const requiresAll = (route.data['requiresAll'] as PermissionCode[] | undefined) ?? [];
   const anyOk = !required || auth.canAny(Array.isArray(required) ? required : [required]);
   const allOk = requiresAll.every((permission) => auth.can(permission));
   if (anyOk && allOk) return true;
-  return router.createUrlTree(['/', locale, 'forbidden']);
+  return router.createUrlTree(['/forbidden']);
 };

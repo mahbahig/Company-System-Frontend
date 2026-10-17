@@ -18,6 +18,7 @@ import { IconComponent } from '../../shared/ui/icon/icon.component';
 import { PageHeaderComponent } from '../../shared/ui/page-header/page-header.component';
 import { ListSkeletonComponent } from '../../shared/ui/skeleton/skeleton.component';
 import { DEFAULT_PAGE_SIZE, pageSizeAttribute } from '../../shared/crm/pagination/page-size';
+import { PageSizeSelectComponent } from '../../shared/crm/pagination/page-size-select.component';
 
 const flag = (value: string | undefined) => value === '1';
 
@@ -33,7 +34,7 @@ const flag = (value: string | undefined) => value === '1';
  */
 @Component({
   selector: 'app-notifications-list-page',
-  imports: [TooltipDirective, ListSkeletonComponent, RouterLink, FormField, TranslatePipe, PageHeaderComponent, PaginationComponent, AlertComponent, BadgeComponent, ButtonDirective, IconComponent],
+  imports: [TooltipDirective, ListSkeletonComponent, RouterLink, FormField, TranslatePipe, PageHeaderComponent, PaginationComponent, AlertComponent, BadgeComponent, ButtonDirective, IconComponent, PageSizeSelectComponent],
   templateUrl: './notifications-list.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
@@ -65,7 +66,7 @@ export class NotificationsListPage {
     this.rows().map((row) => ({
       row,
       action: notificationAction(row),
-      target: notificationTarget(row.actionUrl, this.i18n.locale(), (path) => this.navigation.canOpen(path)),
+      target: notificationTarget(row.actionUrl, (path) => this.navigation.canOpen(path)),
     })),
   );
 

@@ -14,6 +14,7 @@ import { ActionRunner } from '../../../shared/utils/action-runner';
 import { LocalPager } from '../../../shared/crm/pagination/local-pager';
 import { PagerComponent } from '../../../shared/crm/pagination/pager.component';
 import { CreateIconComponent } from '../../../shared/ui/create-icon/create-icon.component';
+import { PagerSizeComponent } from '../../../shared/crm/pagination/page-size-select.component';
 
 type Section = 'goals' | 'electricity' | 'site' | 'storage' | 'pumping' | 'constraints';
 
@@ -51,7 +52,7 @@ type Mode = 'hidden' | 'required' | 'optional' | 'default';
  */
 @Component({
   selector: 'app-intake-forms-page',
-  imports: [TranslatePipe, AlertComponent, ButtonDirective, PageHeaderComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, ...TABLE_IMPORTS, PagerComponent, CreateIconComponent],
+  imports: [TranslatePipe, AlertComponent, ButtonDirective, PageHeaderComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, ...TABLE_IMPORTS, PagerComponent, CreateIconComponent, PagerSizeComponent],
   templateUrl: './intake-forms.page.html',
   host: { class: 'flex flex-col gap-6' },
 })

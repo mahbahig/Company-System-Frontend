@@ -21,9 +21,11 @@ import {
   MapPin,
   Megaphone,
   MessageSquare,
+  MessagesSquare,
   Phone,
   Plug,
   ScrollText,
+  ShieldCheck,
   Settings,
   Shield,
   ShieldAlert,
@@ -52,6 +54,8 @@ export const NAV_SECTIONS: readonly NavSection[] = [
     labelKey: 'overview',
     items: [
       { labelKey: 'dashboard', path: '/dashboard', icon: LayoutDashboard, permission: null },
+      // Every signed-in employee: their own conversations (the API scopes everything to their memberships).
+      { labelKey: 'messages', path: '/chat', icon: MessagesSquare, permission: null, badge: 'chatUnread' },
       { labelKey: 'executiveDashboard', path: '/dashboard/executive', icon: Gauge, permission: 'dashboards.view_executive' },
       { labelKey: 'approvals', path: '/approvals', icon: CircleCheck, permission: 'approvals.view' },
       { labelKey: 'exceptions', path: '/exceptions', icon: ShieldAlert, permission: ['exceptions.view', 'data.view_quality'] },
@@ -115,8 +119,11 @@ export const NAV_SECTIONS: readonly NavSection[] = [
       { labelKey: 'settings', path: '/admin/settings', icon: Settings, permission: ['settings.view', 'settings.manage_policy'] },
       { labelKey: 'automation', path: '/admin/automation', icon: Workflow, permission: 'automation.manage' },
       { labelKey: 'integrations', path: '/admin/integrations', icon: Plug, permission: 'integrations.manage' },
+      { labelKey: 'securityCenter', path: '/admin/security', icon: ShieldCheck, permission: 'audit.view_security' },
       { labelKey: 'auditLog', path: '/admin/audit', icon: ScrollText, permission: ['audit.view', 'audit.view_security'] },
       { labelKey: 'supportTickets', path: '/admin/support-tickets', icon: Inbox, permission: 'support.manage' },
+      // Group chat management: metadata only (never a message) — Super Administrators.
+      { labelKey: 'groupChats', path: '/admin/chats', icon: MessagesSquare, permission: 'chat.manage_groups' },
     ],
   },
   {

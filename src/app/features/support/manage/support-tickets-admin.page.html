@@ -31,6 +31,7 @@
     <p class="max-w-md text-sm text-muted-foreground">{{ 'support.desk.emptyHint' | t }}</p>
   </section>
 } @else {
+  <app-page-size [pageSize]="pageSize()" [total]="result.hasValue() ? result.value().total : null" [loading]="result.isLoading()" />
   <app-table-wrapper [label]="'support.desk.title' | t" [attr.aria-busy]="result.isLoading()">
     <table appTable>
       <thead appTableHeader>
@@ -46,10 +47,10 @@
       </thead>
       <tbody appTableBody>
         @for (row of rows(); track row.id) {
-          <tr appTableRow [appRowLink]="['/', i18n.locale(), 'support', row.id]">
+          <tr appTableRow [appRowLink]="['/', 'support', row.id]">
             <td appTableCell class="whitespace-nowrap tabular" dir="ltr">{{ row.ticketNo }}</td>
             <td appTableCell>
-              <a [routerLink]="['/', i18n.locale(), 'support', row.id]" class="font-medium text-primary underline-offset-4 hover:underline">{{ row.title }}</a>
+              <a [routerLink]="['/', 'support', row.id]" class="font-medium text-primary underline-offset-4 hover:underline">{{ row.title }}</a>
               <span class="ms-2 inline-flex items-center gap-3 align-middle text-xs text-muted-foreground">
                 @if (row.commentCount) {
                   <span class="inline-flex items-center gap-1" [attr.aria-label]="'support.columns.replies' | t">

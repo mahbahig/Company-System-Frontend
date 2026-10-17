@@ -270,6 +270,7 @@
       <h2 appCardTitle id="team-heading">{{ 'crm.opportunities.collaboratorsTitle' | t }}</h2>
     </div>
     <div appCardContent class="flex flex-col gap-4">
+      <app-pager-size [pager]="collaboratorsPager" />
       <app-table-wrapper [label]="'crm.opportunities.collaboratorsTitle' | t">
         <table appTable>
           <thead appTableHeader>

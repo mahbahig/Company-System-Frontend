@@ -44,8 +44,4 @@ export class PersonalDashboardComponent {
   protected n(value: number): string {
     return this.i18n.formatNumber(value);
   }
-
-  protected link(path: string): string {
-    return `/${this.i18n.locale()}${path}`;
-  }
 }

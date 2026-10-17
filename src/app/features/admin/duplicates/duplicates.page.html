@@ -10,6 +10,7 @@
   <app-alert variant="destructive">{{ text }}</app-alert>
 }
 <app-list-toolbar [searchable]="false" [filters]="filters()" />
+<app-page-size [pageSize]="pageSize()" [total]="data.hasValue() ? data.value().total : null" [loading]="data.isLoading()" />
 <app-table-wrapper [label]="'admin.duplicates.title' | t" [attr.aria-busy]="data.isLoading()">
   <table appTable>
     <thead appTableHeader>
@@ -29,7 +30,7 @@
           <td appTableCell>
             <a
               class="text-primary hover:underline"
-              [routerLink]="['/', i18n.locale(), 'customers', s.customerAId.id]"
+              [routerLink]="['/', 'customers', s.customerAId.id]"
               >{{ name(s.customerAId) }}</a
             >
             <span class="block text-xs text-muted-foreground"
@@ -40,7 +41,7 @@
           <td appTableCell>
             <a
               class="text-primary hover:underline"
-              [routerLink]="['/', i18n.locale(), 'customers', s.customerBId.id]"
+              [routerLink]="['/', 'customers', s.customerBId.id]"
               >{{ name(s.customerBId) }}</a
             >
             <span class="block text-xs text-muted-foreground"

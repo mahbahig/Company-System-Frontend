@@ -54,8 +54,7 @@ interface Required {
 }
 
 function shell(): Routes {
-  const locale = routes.find((route) => route.path === ':locale');
-  return locale?.children?.find((route) => route.path === '' && !!route.canActivate?.length)?.children ?? [];
+  return routes.find((route) => route.path === '' && !!route.canActivate?.length)?.children ?? [];
 }
 
 /** Every route level the guard checks for a URL, each with its effective (inherited) permission; null = no route. */
@@ -138,7 +137,8 @@ describe('role-based page access (routes + navigation)', () => {
     },
     sales_representative: {
       allowed: ['/pipeline', '/customers', '/customers/new', '/customers/c1/contacts/new', '/opportunities/new', '/opportunities/o1/handoff', '/leads/l1/convert', '/proposals', '/contracts', '/reports'],
-      denied: ['/leads/distribute', '/approvals/delegations', '/approvals/limits', '/duplicates', '/employees', '/employees/u1', '/admin/settings', '/admin/audit', '/admin/roles'],
+      // No site visits at all: not the list, a visit, or scheduling one (the API refuses them too).
+      denied: ['/leads/distribute', '/approvals/delegations', '/approvals/limits', '/duplicates', '/employees', '/employees/u1', '/admin/settings', '/admin/audit', '/admin/roles', '/visits', '/visits/new', '/visits/v1'],
     },
     // The Employees page opens (team scope: the API lists only the Sales Representatives who report to them).
     sales_manager: {

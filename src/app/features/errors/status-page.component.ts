@@ -1,7 +1,6 @@
 import { Component, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-import { I18nService } from '../../core/i18n/i18n.service';
 import { TranslatePipe } from '../../core/i18n/translate.pipe';
 import { DecorComponent } from '../../shared/decor/decor.component';
 import { ButtonDirective } from '../../shared/ui/button/button.directive';
@@ -24,7 +23,6 @@ import { ButtonDirective } from '../../shared/ui/button/button.directive';
   host: { class: 'flex min-h-[60dvh] flex-col items-center justify-center px-4 text-center' },
 })
 export class StatusPageComponent {
-  protected readonly i18n = inject(I18nService);
 
   readonly code = input.required<number>();
   readonly titleKey = input.required<string>();

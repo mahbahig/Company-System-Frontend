@@ -13,6 +13,7 @@ import { CommandPaletteComponent } from '../../command-palette/command-palette.c
 import { CommandPalette } from '../../command-palette/command-palette.service';
 import { NAV_SHORTCUT_KEYS } from '../../command-palette/palette-commands.service';
 import { I18nService } from '../../i18n/i18n.service';
+import { MaintenanceService } from '../../maintenance/maintenance.service';
 import { TranslatePipe } from '../../i18n/translate.pipe';
 import { NavigationService } from '../../navigation/navigation.service';
 import { KeyboardShortcuts, type Shortcut } from '../../shortcuts/keyboard-shortcuts.service';
@@ -77,6 +78,7 @@ export class AppShellComponent {
   private readonly palette = inject(CommandPalette);
 
   protected readonly auth = inject(AuthService);
+  protected readonly maintenance = inject(MaintenanceService);
   protected readonly sidebar = inject(SidebarState);
   protected readonly menuIcon = Menu;
   protected readonly closeIcon = X;
@@ -87,6 +89,8 @@ export class AppShellComponent {
   constructor() {
     const destroyRef = inject(DestroyRef);
     const t = (key: string) => () => this.i18n.t(key);
+    // A Super Administrator keeps working during maintenance: the banner reminds them everyone else cannot.
+    if (this.auth.can('security.manage_settings')) void this.maintenance.refreshAdministratorNotice();
     const general: Shortcut[] = [
       { id: 'shell:palette', keys: 'mod+k', group: 'general', label: t('ux.shortcuts.palette'), allowInInput: true, allowInDialog: true, run: () => this.togglePalette() },
       { id: 'shell:search', keys: '/', group: 'general', label: t('ux.shortcuts.search'), run: () => this.palette.show() },
@@ -112,7 +116,7 @@ export class AppShellComponent {
             keys: target.keys,
             group: 'navigation',
             label: t(target.labelKey),
-            run: () => void this.router.navigateByUrl(this.navigation.link(target.path)),
+            run: () => void this.router.navigateByUrl(target.path),
           }),
         );
       onCleanup(() => unregister.forEach((remove) => remove()));

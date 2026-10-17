@@ -7,7 +7,7 @@
     <a
       appButton
       variant="outline"
-      [routerLink]="['/', i18n.locale(), 'reports', 'campaign_performance']"
+      [routerLink]="['/', 'reports', 'campaign_performance']"
       >{{ 'campaigns.performance' | t }}</a
     >
   }
@@ -21,6 +21,7 @@
 @if (data.error()) {
   <app-alert variant="destructive">{{ i18n.errorText(data.error()) }}</app-alert>
 }
+<app-page-size [pageSize]="pageSize()" [total]="data.hasValue() ? data.value().total : null" [loading]="data.isLoading()" />
 <app-table-wrapper [label]="'campaigns.title' | t" [attr.aria-busy]="data.isLoading()">
   <table appTable>
     <thead appTableHeader>

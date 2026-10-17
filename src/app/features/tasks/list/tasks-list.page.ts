@@ -33,6 +33,7 @@ import { RowLinkDirective } from '../../../shared/ui/table/row-link.directive';
 import { AvatarComponent } from '../../../shared/ui/avatar/avatar.component';
 import { DEFAULT_PAGE_SIZE, pageSizeAttribute } from '../../../shared/crm/pagination/page-size';
 import { CreateIconComponent } from '../../../shared/ui/create-icon/create-icon.component';
+import { PageSizeSelectComponent } from '../../../shared/crm/pagination/page-size-select.component';
 
 const VIEWS: TaskView[] = ['mine', 'team', 'overdue', 'today', 'upcoming', 'all'];
 const STATUSES: TaskStatus[] = ['open', 'in_progress', 'waiting', 'done', 'cancelled'];
@@ -70,7 +71,7 @@ const STATUS_TONE: Record<TaskStatus, BadgeTone> = {
     TableRowDirective,
     TableHeadDirective,
     TableCellDirective,
-    TableEmptyComponent, CreateIconComponent],
+    TableEmptyComponent, CreateIconComponent, PageSizeSelectComponent],
   templateUrl: './tasks-list.page.html',
   host: { class: 'flex flex-col gap-6' },
 })

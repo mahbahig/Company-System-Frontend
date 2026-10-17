@@ -18,6 +18,7 @@ import { ReportsApi, type ReportColumn, type ReportQuery } from './reports-api.s
 import { SkeletonRowComponent } from '../../shared/ui/skeleton/skeleton.component';
 import { DEFAULT_PAGE_SIZE, pageSizeAttribute } from '../../shared/crm/pagination/page-size';
 import { PaginationComponent } from '../../shared/crm/pagination/pagination.component';
+import { PageSizeSelectComponent } from '../../shared/crm/pagination/page-size-select.component';
 
 /**
  * RPT-02/03 one report: the same filters as the dashboards (from the URL),
@@ -27,7 +28,7 @@ import { PaginationComponent } from '../../shared/crm/pagination/pagination.comp
  */
 @Component({
   selector: 'app-report-viewer-page',
-  imports: [SkeletonRowComponent, RouterLink, TranslatePipe, AlertComponent, ButtonDirective, PageHeaderComponent, AnalyticsFilterBarComponent, ...TABLE_IMPORTS, PaginationComponent],
+  imports: [SkeletonRowComponent, RouterLink, TranslatePipe, AlertComponent, ButtonDirective, PageHeaderComponent, AnalyticsFilterBarComponent, ...TABLE_IMPORTS, PaginationComponent, PageSizeSelectComponent],
   templateUrl: './report-viewer.page.html',
   host: { class: 'flex flex-col gap-6' },
 })

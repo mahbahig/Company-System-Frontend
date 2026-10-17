@@ -166,14 +166,19 @@ describe('Employees: management, isolation, colours and security activity', () =
       expect(api.revokeAllUserSessions).toHaveBeenCalledWith('e1');
     });
 
-    it('Security Activity shows the API’s real counts and links to the audit log filtered to the employee', async () => {
+    it('Security Activity is a summary (real counts, last sign-in) with "View Audit Logs" — no audit table embedded', async () => {
       const { root, api } = await detail('system_administrator');
       const section = root.querySelector('[data-testid="employee-security-activity"]')!;
       expect(api.securityActivity).toHaveBeenCalledWith('e1');
       expect(section.querySelector('[data-testid="successful-logins"]')!.textContent!.trim()).toBe(TestBed.inject(I18nService).formatNumber(7));
-      // Readable action, never the raw code.
+      expect(section.querySelector('[data-testid="last-login"]')).not.toBeNull();
+      // The audit records themselves live on the Audit Logs page only: no table, no list of events here.
+      expect(root.querySelector('table[data-testid="employee-audit"], [data-testid="employee-audit-logs"]')).toBeNull();
+      expect(section.querySelector('table, ul')).toBeNull();
+      expect(text(section)).not.toContain('employees.security.recent');
       expect(text(section)).not.toContain('auth.login');
       const link = section.querySelector<HTMLAnchorElement>('[data-testid="view-audit-logs"]')!;
+      expect(link.textContent!.trim()).toContain('employees.security.viewAuditLogs');
       expect(link.getAttribute('href')).toMatch(/\/admin\/audit\?userId=e1$/);
     });
 

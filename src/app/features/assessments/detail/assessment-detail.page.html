@@ -13,14 +13,14 @@
       <a
         appButton
         variant="outline"
-        [routerLink]="['/', i18n.locale(), 'opportunities', opportunityId()]"
+        [routerLink]="['/', 'opportunities', opportunityId()]"
         >{{ 'handoffs.backToOpportunity' | t }}</a
       >
     }
     @if (a.status === 'approved' && opportunityId()) {
       <a
         appButton
-        [routerLink]="['/', i18n.locale(), 'opportunities', opportunityId(), 'proposals']"
+        [routerLink]="['/', 'opportunities', opportunityId(), 'proposals']"
         >{{ 'assess.toProposals' | t }}</a
       >
     }

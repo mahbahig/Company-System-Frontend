@@ -18,10 +18,6 @@ export function isLocale(value: unknown): value is Locale {
   return typeof value === 'string' && (LOCALES as readonly string[]).includes(value);
 }
 
-export function toLocale(value: unknown): Locale {
-  return isLocale(value) ? value : DEFAULT_LOCALE;
-}
-
 export function directionFor(locale: Locale): 'rtl' | 'ltr' {
   return locale === 'ar' ? 'rtl' : 'ltr';
 }

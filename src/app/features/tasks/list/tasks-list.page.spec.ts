@@ -25,7 +25,7 @@ const tick = () => new Promise((resolve) => setTimeout(resolve));
 @Component({ template: '<router-outlet />', imports: [RouterOutlet] })
 class RootOutlet {}
 const TASKS_AS_MOUNTED: Routes = [
-  { path: ':locale', canActivateChild: [permissionGuard], children: [{ path: 'tasks', data: { permission: 'tasks.view' }, children: TASKS_ROUTES }] },
+  { path: '', canActivateChild: [permissionGuard], children: [{ path: 'tasks', data: { permission: 'tasks.view' }, children: TASKS_ROUTES }] },
 ];
 
 describe('Tasks page: My Tasks by default, Team Tasks only for team managers', () => {
@@ -148,23 +148,23 @@ describe('Tasks page: My Tasks by default, Team Tasks only for team managers', (
 
     it('/tasks opens My Tasks', async () => {
       configure('sales_manager', ['sales-team'], TASKS_AS_MOUNTED);
-      const { url, page } = await open('/en/tasks');
+      const { url, page } = await open('/tasks');
       expect(page).not.toBeNull();
-      expect(url).toBe('/en/tasks');
+      expect(url).toBe('/tasks');
       expect(list.mock.calls.map(([query]) => (query as TaskListQuery).view)).toEqual(['mine']);
     });
 
     it('a member typing /tasks?view=team lands on My Tasks and the URL drops the view', async () => {
       configure('sales_representative', [], TASKS_AS_MOUNTED);
-      const { url } = await open('/en/tasks?view=team');
-      expect(url).toBe('/en/tasks');
+      const { url } = await open('/tasks?view=team');
+      expect(url).toBe('/tasks');
       expect(list.mock.calls.every(([query]) => (query as TaskListQuery).view === 'mine')).toBe(true);
     });
 
     it('a manager opening /tasks?view=team (a refresh of the tab) stays on Team Tasks', async () => {
       configure('technical_lead', ['technical-team'], TASKS_AS_MOUNTED);
-      const { url } = await open('/en/tasks?view=team');
-      expect(url).toBe('/en/tasks?view=team');
+      const { url } = await open('/tasks?view=team');
+      expect(url).toBe('/tasks?view=team');
       expect(list.mock.calls.map(([query]) => (query as TaskListQuery).view)).toEqual(['team']);
     });
   });

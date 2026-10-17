@@ -6,7 +6,8 @@ import { PaginationComponent } from './pagination.component';
 /**
  * The pagination footer for a list paged in memory (`LocalPager`): the same
  * controls as every other table, bound to the pager.
- * `<app-pager [pager]="contactsPager" />`
+ * `<app-pager [pager]="contactsPager" />` under the table, with
+ * `<app-pager-size [pager]="contactsPager" />` ("Items per page") above it.
  */
 @Component({
   selector: 'app-pager',
@@ -18,7 +19,6 @@ import { PaginationComponent } from './pagination.component';
     [total]="pager().total()"
     [pageSize]="pager().pageSize()"
     (pageChange)="pager().setPage($event)"
-    (pageSizeChange)="pager().setPageSize($event)"
   />`,
 })
 export class PagerComponent {

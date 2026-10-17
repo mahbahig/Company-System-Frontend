@@ -1,0 +1,264 @@
+{
+  "navigation": {
+    "items": {
+      "securityCenter": "Security Center"
+    },
+    "descriptions": {
+      "securityCenter": "Sign-in security, alerts, system state and health."
+    }
+  },
+  "server": {
+    "auth": {
+      "maintenance": "Ecotech is currently undergoing scheduled maintenance. Please try again later.",
+      "tooManyAttempts": "Too many sign-in attempts from your network. Please wait a few minutes and try again.",
+      "locked": "Too many failed sign-in attempts. Please wait a few minutes and try again."
+    },
+    "errors": {
+      "maintenance": "Ecotech is currently undergoing scheduled maintenance. Please try again later.",
+      "securityAlertTransitionNotAllowed": "This alert has already moved on (someone else may have acknowledged or resolved it)."
+    }
+  },
+  "maintenance": {
+    "title": "Ecotech is currently undergoing scheduled maintenance.",
+    "back": "We'll be back shortly.",
+    "later": "Please try again later.",
+    "retry": "Try again",
+    "auto": "This page checks automatically and returns you to Ecotech when maintenance is over.",
+    "adminBanner": "Maintenance mode is on: only Super Administrators can use Ecotech. Everyone else sees the maintenance screen."
+  },
+  "systemStatus": {
+    "modes": {
+      "normal": "Normal",
+      "maintenance": "Maintenance Mode",
+      "locked": "Locked"
+    },
+    "modeHints": {
+      "normal": "Everyone with an active account can sign in and use Ecotech.",
+      "maintenance": "Only Super Administrators can use Ecotech; everyone else sees the maintenance screen.",
+      "locked": "Only Super Administrators can sign in; everyone else was signed out."
+    },
+    "lockTitle": "System lock",
+    "maintenanceTitle": "Maintenance mode",
+    "maintenanceEnabled": "On",
+    "maintenanceDisabled": "Off",
+    "maintenanceEnabledHint": "Employees keep their sessions and continue when it is turned off.",
+    "maintenanceDisabledHint": "Ecotech is available to everyone.",
+    "maintenanceOn": "Enable Maintenance Mode",
+    "maintenanceOff": "Disable Maintenance Mode",
+    "maintenanceOnBy": "Turned on by {name} on {when}",
+    "maintenanceOffBy": "Turned off by {name} on {when}",
+    "confirm": {
+      "maintenanceOnTitle": "Turn on maintenance mode?",
+      "maintenanceOnBody": "Only Super Admins will be able to use Ecotech. Everyone else sees the maintenance screen until you turn it off.",
+      "maintenanceOnSessions": "Employees stay signed in and continue where they left off when maintenance ends.",
+      "maintenanceOffTitle": "Turn off maintenance mode?",
+      "maintenanceOffBody": "Everyone will be able to use Ecotech again."
+    }
+  },
+  "securityCenter": {
+    "title": "Security Center",
+    "subtitle": "Sign-in security, alerts, the system's state and its health — from real activity.",
+    "refresh": "Refresh",
+    "severity": {
+      "critical": "Critical",
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
+    },
+    "overview": {
+      "authentication": "Authentication",
+      "security": "Security",
+      "successfulLogins": "Successful sign-ins (24 h)",
+      "last7Days": "7 days: {count}",
+      "last7DaysOnly": "Last 7 days",
+      "failedLogins": "Failed sign-ins (24 h)",
+      "failedHint": "Last hour: {hour} · 7 days: {week}",
+      "activeSessions": "Active sessions",
+      "activeSessionsHint": "Signed-in sessions right now",
+      "revokedSessions": "Revoked sessions (7 days)",
+      "revokedHint": "Ended by a person or an administrator",
+      "lockedAccounts": "Temporarily locked accounts",
+      "blockedIps": "Blocked IP addresses: {count}",
+      "deactivatedAccounts": "Deactivated accounts",
+      "openAlerts": "Open security alerts",
+      "alertsHint": "Critical {critical} · High {high} · New {new}",
+      "criticalEvents": "Critical audit events",
+      "highEvents": "High-severity audit events",
+      "suspiciousAccounts": "Accounts with suspicious activity",
+      "suspiciousHint": "Employees with an open alert",
+      "mfa": "Two-factor adoption",
+      "mfaHint": "{enabled} of {total} active accounts · without 2FA: {disabled}",
+      "repeatedFailures": "Employees with repeated failed sign-ins (24 h)",
+      "failuresCount": "{count} failed",
+      "noRepeatedFailures": "No employee failed to sign in repeatedly in the last 24 hours."
+    },
+    "activity": {
+      "title": "Recent security activity",
+      "subtitle": "Sign-ins, sessions, the system's state, alerts and account changes, from the audit log.",
+      "viewAll": "View all in Audit Logs",
+      "empty": "No security activity yet."
+    },
+    "alerts": {
+      "title": "Security alerts",
+      "subtitle": "Related security events are grouped into one alert; the most severe and latest first.",
+      "statusFilter": "Alert status",
+      "views": {
+        "open": "Open",
+        "new": "New",
+        "acknowledged": "Acknowledged",
+        "resolved": "Resolved",
+        "all": "All"
+      },
+      "statuses": {
+        "new": "New",
+        "acknowledged": "Acknowledged",
+        "resolved": "Resolved"
+      },
+      "severity": "Severity",
+      "anySeverity": "Any severity",
+      "alert": "Alert",
+      "subject": "Employee / IP",
+      "events": "Events",
+      "lastSeen": "Last seen",
+      "firstSeen": "First seen",
+      "status": "Status",
+      "acknowledge": "Acknowledge",
+      "resolve": "Resolve",
+      "empty": "No security alerts here.",
+      "notFound": "This security alert does not exist.",
+      "back": "Back to Security Center",
+      "details": "Details",
+      "employee": "Employee",
+      "ip": "IP address",
+      "auditEvent": "Audit event",
+      "openAuditEvent": "Open the audit event",
+      "acknowledged": "Acknowledged",
+      "resolved": "Resolved",
+      "byOn": "By {name} on {time}",
+      "findings": "Security events",
+      "findingsHint": "The findings grouped into this alert (latest first).",
+      "device": "Device",
+      "reviewed": "Reviewed",
+      "notReviewed": "Not reviewed yet",
+      "confirm": {
+        "acknowledgeTitle": "Acknowledge “{title}”?",
+        "acknowledgeBody": "The alert is marked as seen and being looked into. It stays open until it is resolved.",
+        "acknowledgeReviewed": "Its security events are marked as reviewed.",
+        "resolveTitle": "Resolve “{title}”?",
+        "resolveBody": "The alert is closed. Its security events and the audit trail are kept.",
+        "resolveReopen": "If the same thing happens again, a new alert is raised."
+      }
+    },
+    "health": {
+      "title": "System health",
+      "overall": {
+        "healthy": "Healthy",
+        "degraded": "Degraded",
+        "critical": "Critical"
+      },
+      "status": {
+        "healthy": "Healthy",
+        "degraded": "Degraded",
+        "unhealthy": "Unhealthy"
+      },
+      "components": {
+        "api": "API",
+        "database": "Database",
+        "redis": "Redis",
+        "queues": "Queues",
+        "storage": "Storage",
+        "email": "Email"
+      },
+      "checkedAt": "Checked {time}",
+      "refresh": "Refresh",
+      "details": "Details",
+      "latency": "{ms} ms",
+      "latencyLabel": "Latency",
+      "statusLabel": "Status",
+      "lastChecked": "Last checked",
+      "reason": "Why",
+      "yes": "Yes",
+      "no": "No",
+      "uptime": "{hours} h {minutes} min",
+      "reasons": {
+        "unreachable": "Not reachable",
+        "timeout": "Did not answer in time",
+        "not_configured": "Not configured",
+        "failed_jobs": "Some jobs failed",
+        "backlog": "Jobs are piling up",
+        "slow": "Answering slowly",
+        "delivery_failures": "Some e-mails failed in the last 24 hours",
+        "not_writable": "The documents folder cannot be written"
+      },
+      "facts": {
+        "uptimeSeconds": "Uptime",
+        "memoryMb": "Memory (MB)",
+        "heapUsedMb": "Heap used (MB)",
+        "connected": "Connected",
+        "configured": "Configured",
+        "queue": "Queue",
+        "waiting": "Waiting jobs",
+        "active": "Running jobs",
+        "delayed": "Delayed jobs",
+        "failed": "Failed jobs",
+        "documentsWritable": "Documents folder writable",
+        "uploadsProvider": "Upload provider",
+        "uploadsAvailable": "Screenshot uploads available",
+        "sent24h": "Sent (24 h)",
+        "failed24h": "Failed (24 h)",
+        "queued24h": "Queued without a provider (24 h)"
+      }
+    }
+  },
+  "admin": {
+    "audit": {
+      "activeFilter": "Filtered by",
+      "employeeFilter": "Employee: {name}",
+      "removeEmployeeFilter": "Remove the employee filter",
+      "detail": {
+        "target": "Employee",
+        "sensitiveChanged": "Changed (the value is never recorded)",
+        "technical": "Technical details",
+        "requestId": "Request ID",
+        "yes": "Yes",
+        "no": "No"
+      },
+      "fields": {
+        "fullNameEn": "Name (English)",
+        "fullNameAr": "Name (Arabic)",
+        "roleCodes": "Roles",
+        "isActive": "Status",
+        "deactivationReason": "Deactivation reason",
+        "jobTitleEn": "Job title (English)",
+        "jobTitleAr": "Job title (Arabic)",
+        "leadCapacity": "Lead capacity",
+        "teamIds": "Teams",
+        "managerId": "Manager",
+        "employeeNo": "Employee number",
+        "mobile": "Mobile",
+        "department": "Department",
+        "territories": "Territories",
+        "specializations": "Specializations",
+        "availability_status": "Availability",
+        "availability_to": "Available again on",
+        "availability_from": "Unavailable from",
+        "defaultLocale": "Language",
+        "mustChangePassword": "Must change password",
+        "mfaEnabled": "Two-factor sign-in",
+        "status": "Status",
+        "locked": "System lock",
+        "maintenanceMode": "Maintenance mode",
+        "signedOutEmployees": "Employees signed out",
+        "signedOutSessions": "Sessions ended",
+        "reassignToId": "Work reassigned to",
+        "reassigned": "Work reassigned"
+      }
+    }
+  },
+  "employees": {
+    "security": {
+      "lastLogin": "Last sign-in",
+      "never": "Never"
+    }
+  }
+}

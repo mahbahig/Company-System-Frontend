@@ -105,7 +105,9 @@
       "phone": "Enter a valid phone number, e.g. 01012345678 or 0223456789.",
       "email": "Enter a valid e-mail address, e.g. name@company.com.",
       "duration": "Enter the duration in minutes as a number (e.g. 5 or 2.5), up to 1440.",
-      "leadRequired": "Lead is required."
+      "leadRequired": "Lead is required.",
+      "customerRequired": "Customer is required.",
+      "partyRequired": "Choose a customer or a lead."
     },
     "forms": {
       "requiredHint": "Fields marked * are required.",
@@ -120,7 +122,9 @@
       "visitNeeds": "Choose the customer and set the date and time to save the visit.",
       "durationHint": "Minutes, e.g. 5 or 2.5.",
       "callNeedsLead": "Choose the lead this call was about.",
-      "callNeedsOutcome": "Choose the call outcome."
+      "callNeedsOutcome": "Choose the call outcome.",
+      "callNeedsParty": "Choose whether this call was about a customer or a lead.",
+      "callNeedsCustomer": "Choose the customer this call was about."
     },
     "notifications": {
       "unread": "Unread",

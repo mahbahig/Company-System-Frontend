@@ -43,7 +43,7 @@
                 appButton
                 variant="outline"
                 size="sm"
-                [routerLink]="['/', i18n.locale(), 'customers', match.customerId]"
+                [routerLink]="['/', 'customers', match.customerId]"
                 >{{ 'customerForm.openExisting' | t }}</a
               >
             } @else if (auth.can('ownership.request')) {
@@ -549,7 +549,7 @@
         appButton
         variant="ghost"
         [routerLink]="
-          id() ? ['/', i18n.locale(), 'customers', id()] : ['/', i18n.locale(), 'customers']
+          id() ? ['/', 'customers', id()] : ['/', 'customers']
         "
         >{{ 'crm.common.cancel' | t }}</a
       >

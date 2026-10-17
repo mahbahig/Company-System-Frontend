@@ -15,6 +15,7 @@
   (activeChange)="pickBox($event)"
   [label]="'admin.ownership.title' | t"
 />
+<app-page-size [pageSize]="pageSize()" [total]="data.hasValue() ? data.value().total : null" [loading]="data.isLoading()" />
 <app-table-wrapper [label]="'admin.ownership.title' | t" [attr.aria-busy]="data.isLoading()">
   <table appTable>
     <thead appTableHeader>
@@ -52,7 +53,7 @@
                   appButton
                   variant="outline"
                   size="sm"
-                  [routerLink]="['/', i18n.locale(), 'approvals', r.approvalId]"
+                  [routerLink]="['/', 'approvals', r.approvalId]"
                   >{{ 'admin.ownership.openApproval' | t }}</a
                 >
               }

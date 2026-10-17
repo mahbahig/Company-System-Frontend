@@ -25,7 +25,7 @@ describe('expired sessions: the browser signs out when the API says the session 
       providers: [
         provideHttpClient(withInterceptors([authInterceptor])),
         provideHttpClientTesting(),
-        { provide: Router, useValue: { url: '/en/leads', navigate, createUrlTree: (commands: unknown[], extras: unknown) => ({ commands, extras }) } },
+        { provide: Router, useValue: { url: '/leads', navigate, createUrlTree: (commands: unknown[], extras: unknown) => ({ commands, extras }) } },
       ],
     });
     http = TestBed.inject(HttpTestingController);
@@ -41,7 +41,7 @@ describe('expired sessions: the browser signs out when the API says the session 
     const tokens = TestBed.inject(TokenStore);
     return auth.user() === null && tokens.accessToken() === null && !tokens.wasSignedIn();
   };
-  const loginNavigations = () => navigate.mock.calls.filter(([commands]) => (commands as string[]).includes('login'));
+  const loginNavigations = () => navigate.mock.calls.filter(([commands]) => (commands as string[]).includes('/login'));
 
   it('an expired access token is refreshed and the request replayed — the user stays signed in', async () => {
     const result = get('leads');
@@ -71,7 +71,7 @@ describe('expired sessions: the browser signs out when the API says the session 
     await Promise.all(results);
     expect(signedOut()).toBe(true);
     expect(loginNavigations()).toHaveLength(1);
-    expect(loginNavigations()[0]![1]).toMatchObject({ queryParams: { reason: 'session_expired', returnTo: '/en/leads' } });
+    expect(loginNavigations()[0]![1]).toMatchObject({ queryParams: { reason: 'session_expired', returnTo: '/leads' } });
   });
 
   it('a session ended from another device or by an administrator: signed out at once (no refresh can help), with that reason', async () => {
@@ -176,12 +176,12 @@ describe('expired sessions: the browser signs out when the API says the session 
     const auth = TestBed.inject(AuthService);
     auth.endSession();
     const guard = TestBed.runInInjectionContext(() =>
-      authGuard({ paramMap: { get: () => 'en' } } as unknown as ActivatedRouteSnapshot, { url: '/en/tasks' } as RouterStateSnapshot),
+      authGuard({} as ActivatedRouteSnapshot, { url: '/tasks' } as RouterStateSnapshot),
     ) as Promise<UrlTree>;
     await tick();
     http.expectOne(`${API}/auth/refresh`).flush({ message: 'auth.errors.invalidRefreshToken' }, { status: 401, statusText: 'Unauthorized' });
     const tree = (await guard) as unknown as { extras: { queryParams: Record<string, string> } };
-    expect(tree.extras.queryParams).toEqual({ returnTo: '/en/tasks' });
+    expect(tree.extras.queryParams).toEqual({ returnTo: '/tasks' });
   });
 
   it('a reload with a live session cookie resumes the session through one refresh', async () => {
@@ -189,7 +189,7 @@ describe('expired sessions: the browser signs out when the API says the session 
     auth.user.set(null);
     TestBed.inject(TokenStore).accessToken.set(null);
     const guard = TestBed.runInInjectionContext(() =>
-      authGuard({ paramMap: { get: () => 'en' } } as unknown as ActivatedRouteSnapshot, { url: '/en/tasks' } as RouterStateSnapshot),
+      authGuard({} as ActivatedRouteSnapshot, { url: '/tasks' } as RouterStateSnapshot),
     ) as Promise<boolean>;
     await tick();
     http.expectOne(`${API}/auth/refresh`).flush({ success: true, accessToken: 'access-r' });
@@ -206,13 +206,13 @@ describe('expired sessions: the browser signs out when the API says the session 
     // Signed in earlier in this browser; the access token is gone with the reload.
     TestBed.inject(TokenStore).accessToken.set(null);
     const guard = TestBed.runInInjectionContext(() =>
-      authGuard({ paramMap: { get: () => 'en' } } as unknown as ActivatedRouteSnapshot, { url: '/en/tasks' } as RouterStateSnapshot),
+      authGuard({} as ActivatedRouteSnapshot, { url: '/tasks' } as RouterStateSnapshot),
     ) as Promise<UrlTree>;
     await tick();
     http.expectOne(`${API}/auth/refresh`).flush({ message: 'auth.errors.invalidRefreshToken' }, { status: 401, statusText: 'Unauthorized' });
     const tree = (await guard) as unknown as { commands: string[]; extras: { queryParams: Record<string, string> } };
-    expect(tree.commands).toEqual(['/', 'en', 'login']);
-    expect(tree.extras.queryParams).toEqual({ returnTo: '/en/tasks', reason: 'session_expired' });
+    expect(tree.commands).toEqual(['/login']);
+    expect(tree.extras.queryParams).toEqual({ returnTo: '/tasks', reason: 'session_expired' });
     expect(signedOut()).toBe(true);
   });
 });

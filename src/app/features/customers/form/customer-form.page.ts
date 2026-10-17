@@ -270,7 +270,7 @@ export class CustomerFormPage implements HasUnsavedChanges {
       const savedId = id ?? result.customer?.id ?? result.id;
       this.saved = true;
       this.draft.clear();
-      await this.router.navigate(['/', this.i18n.locale(), 'customers', savedId]);
+      await this.router.navigate(['/', 'customers', savedId]);
     } catch (error) {
       if (ApiError.is(error) && error.status === 409 && error.messageKey === 'errors.possibleDuplicates') {
         const details = error.details as { matches?: DuplicateMatch[] } | undefined;

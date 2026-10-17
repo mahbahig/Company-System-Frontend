@@ -72,7 +72,7 @@
           <app-icon [icon]="icons.edit" />{{ 'crm.common.edit' | t }}
         </button>
         @if (isSelf()) {
-          <a appButton variant="soft-info" [routerLink]="['/', i18n.locale(), 'account', 'profile']">
+          <a appButton variant="soft-info" [routerLink]="['/', 'account', 'profile']">
             <app-icon [icon]="icons.manage" />{{ 'employees.manage.openProfile' | t }}
           </a>
         } @else {
@@ -122,7 +122,7 @@
             variant="outline"
             size="sm"
             data-testid="view-audit-logs"
-            [routerLink]="['/', i18n.locale(), 'admin', 'audit']"
+            [routerLink]="['/', 'admin', 'audit']"
             [queryParams]="{ userId: p.user.id }"
           >
             <app-icon [icon]="icons.audit" />{{ 'employees.security.viewAuditLogs' | t }}
@@ -133,7 +133,12 @@
         @if (security.error()) {
           <app-alert variant="destructive">{{ i18n.errorText(security.error()) }}</app-alert>
         } @else if (security.value(); as s) {
-          <dl class="grid grid-cols-2 gap-x-6 gap-y-5 md:grid-cols-3 xl:grid-cols-6">
+          <!-- A summary only: the audit records themselves are on the Audit Logs page ("View Audit Logs", filtered to this employee). -->
+          <dl class="grid grid-cols-2 gap-x-6 gap-y-5 md:grid-cols-4 xl:grid-cols-7">
+            <div>
+              <dt class="text-2xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">{{ 'employees.security.lastLogin' | t }}</dt>
+              <dd class="tabular mt-1 text-base font-semibold tracking-tight" data-testid="last-login">{{ s.lastLoginAt ? i18n.formatDate(s.lastLoginAt, true) : ('employees.security.never' | t) }}</dd>
+            </div>
             <div>
               <dt class="text-2xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">{{ 'employees.security.successfulLogins' | t }}</dt>
               <dd class="tabular mt-1 text-2xl font-semibold tracking-tight" data-testid="successful-logins">{{ i18n.formatNumber(s.successfulLogins) }}</dd>
@@ -166,29 +171,6 @@
               </dd>
             </div>
           </dl>
-          <div>
-            <h3 class="mb-3 text-sm font-semibold">{{ 'employees.security.recent' | t }}</h3>
-            @if (s.recent.length) {
-              <ul class="flex flex-col divide-y divide-border">
-                @for (event of s.recent; track event.id) {
-                  <li class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 py-2.5 text-sm">
-                    <span class="font-medium">{{ actionLabel(event) }}</span>
-                    <span class="flex flex-wrap items-center gap-x-3 text-xs text-muted-foreground">
-                      @if (event.actorName) {
-                        <span>{{ 'employees.security.by' | t: { name: event.actorName } }}</span>
-                      }
-                      @if (event.ip) {
-                        <span dir="ltr" class="font-mono">{{ event.ip }}</span>
-                      }
-                      <time class="tabular" [attr.datetime]="event.occurredAt">{{ i18n.formatDate(event.occurredAt, true) }}</time>
-                    </span>
-                  </li>
-                }
-              </ul>
-            } @else {
-              <p class="text-sm text-muted-foreground">{{ 'employees.security.empty' | t }}</p>
-            }
-          </div>
         } @else {
           <p class="text-sm text-muted-foreground" role="status">{{ 'common.labels.loading' | t }}</p>
         }

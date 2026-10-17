@@ -1,0 +1,22 @@
+{
+  "auth": {
+    "login": {
+      "systemLockedNotice": "The system has been locked by a Super Administrator. You have been signed out.",
+      "systemLockedByNotice": "The system has been locked by {name}. You have been signed out."
+    }
+  },
+  "realtime": {
+    "systemLocked": {
+      "title": "System locked",
+      "body": "{name} has locked the system. All employees have been signed out."
+    },
+    "systemUnlocked": {
+      "title": "System unlocked",
+      "body": "{name} has unlocked the system. Employees can sign in again."
+    }
+  },
+  "toast": {
+    "region": "Notifications",
+    "dismiss": "Dismiss"
+  }
+}

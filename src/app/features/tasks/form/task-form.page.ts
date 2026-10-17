@@ -14,6 +14,7 @@ import { I18nService } from '../../../core/i18n/i18n.service';
 import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { ReferenceDataService } from '../../../core/reference/reference-data.service';
 import { RecordPickerComponent } from '../../../shared/crm/record-picker/record-picker.component';
+import { UserSelectComponent } from '../../../shared/crm/user-select/user-select.component';
 import { AlertComponent } from '../../../shared/ui/alert/alert.component';
 import { ButtonDirective } from '../../../shared/ui/button/button.directive';
 import { CardContentDirective } from '../../../shared/ui/card/card-content.directive';
@@ -48,6 +49,7 @@ const EMPTY_MODEL: TaskFormModel = {
     SaveShortcutDirective,
     BreadcrumbsComponent,
     RecordPickerComponent,
+    UserSelectComponent,
     FormField,
     TranslatePipe,
     PageHeaderComponent,
@@ -200,7 +202,7 @@ export class TaskFormPage implements HasUnsavedChanges {
 
   private async navigateToDetail(id: string): Promise<void> {
     this.saved = true;
-    await this.router.navigate(['/', this.i18n.locale(), 'tasks', id]);
+    await this.router.navigate(['/', 'tasks', id]);
   }
 
   private messageFor(error: unknown): string {

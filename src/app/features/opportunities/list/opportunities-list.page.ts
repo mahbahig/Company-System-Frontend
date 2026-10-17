@@ -33,6 +33,7 @@ import type { Opportunity } from '../models/opportunity.interface';
 import { RowLinkDirective } from '../../../shared/ui/table/row-link.directive';
 import { DEFAULT_PAGE_SIZE, pageSizeAttribute } from '../../../shared/crm/pagination/page-size';
 import { CreateIconComponent } from '../../../shared/ui/create-icon/create-icon.component';
+import { PageSizeSelectComponent } from '../../../shared/crm/pagination/page-size-select.component';
 
 const flag = (value: string | undefined) => value === '1' || value === 'true';
 
@@ -73,7 +74,7 @@ const OPPORTUNITY_COLUMNS: ColumnDef[] = [
     TableRowDirective,
     TableHeadDirective,
     TableCellDirective,
-    TableEmptyComponent, CreateIconComponent],
+    TableEmptyComponent, CreateIconComponent, PageSizeSelectComponent],
   templateUrl: './opportunities-list.page.html',
   host: { class: 'flex flex-col gap-6' },
 })

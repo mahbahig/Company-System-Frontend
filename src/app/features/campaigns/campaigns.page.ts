@@ -20,6 +20,7 @@ import type { Page } from '../../core/api/page.interface';
 import { DEFAULT_PAGE_SIZE, pageSizeAttribute } from '../../shared/crm/pagination/page-size';
 import { PaginationComponent } from '../../shared/crm/pagination/pagination.component';
 import { CreateIconComponent } from '../../shared/ui/create-icon/create-icon.component';
+import { PageSizeSelectComponent } from '../../shared/crm/pagination/page-size-select.component';
 
 interface CampaignAd {
   code: string;
@@ -67,7 +68,7 @@ interface Draft {
  */
 @Component({
   selector: 'app-campaigns-page',
-  imports: [SkeletonRowComponent, RouterLink, TranslatePipe, AlertComponent, ButtonDirective, DialogComponent, PageHeaderComponent, PaginationComponent, ...TABLE_IMPORTS, ...FORM_IMPORTS, CreateIconComponent],
+  imports: [SkeletonRowComponent, RouterLink, TranslatePipe, AlertComponent, ButtonDirective, DialogComponent, PageHeaderComponent, PaginationComponent, ...TABLE_IMPORTS, ...FORM_IMPORTS, CreateIconComponent, PageSizeSelectComponent],
   templateUrl: './campaigns.page.html',
   host: { class: 'flex flex-col gap-6' },
 })

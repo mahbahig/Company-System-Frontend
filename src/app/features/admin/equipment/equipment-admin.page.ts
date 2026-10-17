@@ -22,6 +22,7 @@ import { EQUIPMENT_CATEGORIES, type EquipmentItem } from '../../solar/solar.mode
 import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.component';
 import { DEFAULT_PAGE_SIZE, pageSizeAttribute } from '../../../shared/crm/pagination/page-size';
 import { CreateIconComponent } from '../../../shared/ui/create-icon/create-icon.component';
+import { PageSizeSelectComponent } from '../../../shared/crm/pagination/page-size-select.component';
 
 /**
  * §10 equipment catalog: panels, inverters, batteries, mounting, cabling,
@@ -30,7 +31,7 @@ import { CreateIconComponent } from '../../../shared/ui/create-icon/create-icon.
  */
 @Component({
   selector: 'app-equipment-admin-page',
-  imports: [SkeletonRowComponent, TranslatePipe, EnumLabelPipe, AlertComponent, BadgeComponent, ButtonDirective, DialogComponent, PageHeaderComponent, ListToolbarComponent, PaginationComponent, ...TABLE_IMPORTS, ...FORM_IMPORTS, CreateIconComponent],
+  imports: [SkeletonRowComponent, TranslatePipe, EnumLabelPipe, AlertComponent, BadgeComponent, ButtonDirective, DialogComponent, PageHeaderComponent, ListToolbarComponent, PaginationComponent, ...TABLE_IMPORTS, ...FORM_IMPORTS, CreateIconComponent, PageSizeSelectComponent],
   templateUrl: './equipment-admin.page.html',
   host: { class: 'flex flex-col gap-6' },
 })

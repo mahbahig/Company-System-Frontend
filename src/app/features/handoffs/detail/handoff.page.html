@@ -9,7 +9,7 @@
     [subtitle]="'handoffs.subtitle' | t"
   >
     <app-status-badge enum="handoffStatus" [value]="h.status" />
-    <a appButton variant="outline" [routerLink]="['/', i18n.locale(), 'opportunities', id()]">{{
+    <a appButton variant="outline" [routerLink]="['/', 'opportunities', id()]">{{
       'handoffs.backToOpportunity' | t
     }}</a>
   </app-page-header>
@@ -92,6 +92,7 @@
       @if (h.versions.length) {
         <section class="flex flex-col gap-3" aria-labelledby="versions-heading">
           <h2 id="versions-heading" class="text-lg font-semibold">{{ 'handoffs.versions' | t }}</h2>
+          <app-pager-size [pager]="versionsPager" />
           <app-table-wrapper [label]="'handoffs.versions' | t">
             <table appTable>
               <thead appTableHeader>

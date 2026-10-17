@@ -16,6 +16,7 @@ import { AdminApi, type Role } from '../admin-api.service';
 import { LocalPager } from '../../../shared/crm/pagination/local-pager';
 import { PagerComponent } from '../../../shared/crm/pagination/pager.component';
 import { CreateIconComponent } from '../../../shared/ui/create-icon/create-icon.component';
+import { PagerSizeComponent } from '../../../shared/crm/pagination/page-size-select.component';
 
 type ScopeValue = '' | 'own' | 'team' | 'all';
 
@@ -30,7 +31,7 @@ const FIXED_ROLES = new Set(['system_administrator', 'ceo']);
 
 @Component({
   selector: 'app-roles-admin-page',
-  imports: [TranslatePipe, AlertComponent, BadgeComponent, ButtonDirective, DialogComponent, PageHeaderComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, ...TABLE_IMPORTS, PagerComponent, CreateIconComponent],
+  imports: [TranslatePipe, AlertComponent, BadgeComponent, ButtonDirective, DialogComponent, PageHeaderComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, ...TABLE_IMPORTS, PagerComponent, CreateIconComponent, PagerSizeComponent],
   templateUrl: './roles-admin.page.html',
   host: { class: 'flex flex-col gap-6' },
 })

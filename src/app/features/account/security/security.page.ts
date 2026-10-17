@@ -3,7 +3,6 @@ import { Router } from '@angular/router';
 import { ShieldCheck } from 'lucide';
 
 import { AuthService } from '../../../core/auth/auth.service';
-import { I18nService } from '../../../core/i18n/i18n.service';
 import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { AlertComponent } from '../../../shared/ui/alert/alert.component';
 import { CARD_IMPORTS } from '../../../shared/ui/card/card.imports';
@@ -26,13 +25,12 @@ import { TwoFactorSettingComponent } from './two-factor-setting.component';
 export class SecurityPage {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
-  protected readonly i18n = inject(I18nService);
 
   protected readonly icon = ShieldCheck;
   protected readonly mustEnroll = computed(() => !!this.auth.user()?.mfaRequired && !this.auth.user()?.mfaEnabled);
 
   /** Once switched on, someone who had to enrol carries on to their work. */
   protected async enabled(): Promise<void> {
-    if (this.auth.user()?.mfaRequired) await this.router.navigate(['/', this.i18n.locale(), 'dashboard']);
+    if (this.auth.user()?.mfaRequired) await this.router.navigate(['/', 'dashboard']);
   }
 }

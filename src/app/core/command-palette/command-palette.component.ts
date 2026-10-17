@@ -251,7 +251,7 @@ export class CommandPaletteComponent {
   /** Every navigation re-checks the route guard logic first (fail closed). */
   private go(path: string): void {
     if (!this.navigation.canOpen(path)) return;
-    void this.router.navigateByUrl(this.navigation.link(path.startsWith('/') ? path : `/${path}`));
+    void this.router.navigateByUrl(path.startsWith('/') ? path : `/${path}`);
   }
 }
 

@@ -26,10 +26,12 @@ import { TableDirective } from '../../../shared/ui/table/table.directive';
 import { LeadsApi } from '../leads-api.service';
 import type { RoutingProposal } from '../models/routing-proposal.interface';
 import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.component';
+import { UserSelectComponent } from '../../../shared/crm/user-select/user-select.component';
 import { PagerState } from '../../../shared/crm/pagination/local-pager';
 import { PaginationComponent } from '../../../shared/crm/pagination/pagination.component';
 import { LocalPager } from '../../../shared/crm/pagination/local-pager';
 import { PagerComponent } from '../../../shared/crm/pagination/pager.component';
+import { PageSizeSelectComponent, PagerSizeComponent } from '../../../shared/crm/pagination/page-size-select.component';
 
 interface AssignModel {
   ownerId: string;
@@ -41,6 +43,7 @@ interface AssignModel {
   selector: 'app-leads-distribute-page',
   imports: [
     SkeletonRowComponent,
+    UserSelectComponent,
     FormField,
     TranslatePipe,
     PageHeaderComponent,
@@ -59,7 +62,7 @@ interface AssignModel {
     TableRowDirective,
     TableHeadDirective,
     TableCellDirective,
-    TableEmptyComponent, PaginationComponent, PagerComponent],
+    TableEmptyComponent, PaginationComponent, PagerComponent, PageSizeSelectComponent, PagerSizeComponent],
   templateUrl: './leads-distribute.page.html',
   host: { class: 'flex flex-col gap-6' },
 })

@@ -12,6 +12,7 @@ interface EvidenceDocument {
   id: string;
   fileName: string;
   category: string;
+  mimeType: string;
   version: number;
   isCurrent: boolean;
 }
@@ -37,6 +38,8 @@ export class EvidenceSelectComponent {
   readonly entityId = input.required<string>();
   /** Accepted categories (any when empty). */
   readonly categories = input<string[]>([]);
+  /** Accepted file types (any when empty), e.g. `['application/pdf']`. */
+  readonly mimeTypes = input<string[]>([]);
   readonly inputId = input<string>();
   /** Reloads the list when it changes (e.g. after an upload). */
   readonly version = input<unknown>();
@@ -49,7 +52,8 @@ export class EvidenceSelectComponent {
   protected readonly documents = computed(() => {
     const rows = this.list.hasValue() ? this.list.value().rows : [];
     const allowed = this.categories();
-    return rows.filter((row) => row.isCurrent && (!allowed.length || allowed.includes(row.category)));
+    const types = this.mimeTypes();
+    return rows.filter((row) => row.isCurrent && (!allowed.length || allowed.includes(row.category)) && (!types.length || types.includes(row.mimeType)));
   });
 
   constructor() {

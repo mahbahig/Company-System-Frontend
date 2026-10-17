@@ -15,11 +15,12 @@ import { userName } from '../../../shared/utils/display-name';
 import { HandoffsApi, type Handoff, type HandoffOpportunityRef } from '../handoffs-api.service';
 import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.component';
 import { DEFAULT_PAGE_SIZE, pageSizeAttribute } from '../../../shared/crm/pagination/page-size';
+import { PageSizeSelectComponent } from '../../../shared/crm/pagination/page-size-select.component';
 
 /** §11.3 PM / Technical Lead handoff inbox (Accept / Return / Clarify), with SLA highlighting (HAND-08). */
 @Component({
   selector: 'app-handoffs-inbox-page',
-  imports: [SkeletonRowComponent, RouterLink, TranslatePipe, StatusBadgeComponent, AlertComponent, PageHeaderComponent, TabsComponent, PaginationComponent, ...TABLE_IMPORTS],
+  imports: [SkeletonRowComponent, RouterLink, TranslatePipe, StatusBadgeComponent, AlertComponent, PageHeaderComponent, TabsComponent, PaginationComponent, ...TABLE_IMPORTS, PageSizeSelectComponent],
   templateUrl: './handoffs-inbox.page.html',
   host: { class: 'flex flex-col gap-6' },
 })

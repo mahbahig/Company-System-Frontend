@@ -22,7 +22,7 @@
             @if (refId(m.customerId)) {
               <a
                 class="text-primary hover:underline"
-                [routerLink]="['/', i18n.locale(), 'customers', refId(m.customerId)]"
+                [routerLink]="['/', 'customers', refId(m.customerId)]"
                 >{{ label(m.customerId) }}</a
               >
             }
@@ -31,7 +31,7 @@
             @if (refId(m.opportunityId)) {
               <a
                 class="text-primary hover:underline"
-                [routerLink]="['/', i18n.locale(), 'opportunities', refId(m.opportunityId)]"
+                [routerLink]="['/', 'opportunities', refId(m.opportunityId)]"
                 >{{ label(m.opportunityId) }}</a
               >
             } @else {
@@ -57,14 +57,10 @@
               <p class="whitespace-pre-line">{{ m.agenda }}</p>
             </div>
           }
-          <div appDetailItem [label]="'act.fields.arrival' | t">
-            <app-geo-reading [reading]="m.arrival" />
-          </div>
-          <div appDetailItem [label]="'act.fields.departure' | t">
-            <app-geo-reading [reading]="m.departure" />
-          </div>
         </dl>
       </section>
+
+      <app-meeting-location [meeting]="m" />
 
       <form appCard aria-labelledby="mt-outcome" (submit)="saveOutcome($event)">
         <div appCardHeader>
@@ -119,35 +115,34 @@
     </div>
 
     <div class="flex flex-col gap-6">
-      @if (canEdit() && !m.arrival && open(m.status)) {
-        <section appCard aria-labelledby="mt-arrive">
-          <div appCardHeader>
-            <h2 appCardTitle id="mt-arrive">{{ 'act.fields.arrival' | t }}</h2>
-          </div>
-          <div appCardContent>
-            <app-gps-capture
-              idPrefix="arrive"
-              [confirmLabel]="'act.meetings.arrive' | t"
-              [busy]="actions.busy()"
-              (captured)="arrive($event)"
-            />
-          </div>
-        </section>
-      }
-      @if (canEdit() && m.arrival && !m.departure && open(m.status)) {
-        <section appCard aria-labelledby="mt-depart">
-          <div appCardHeader>
-            <h2 appCardTitle id="mt-depart">{{ 'act.fields.departure' | t }}</h2>
-          </div>
-          <div appCardContent>
-            <app-gps-capture
-              idPrefix="depart"
-              [confirmLabel]="'act.meetings.depart' | t"
-              [busy]="actions.busy()"
-              (captured)="depart($event)"
-            />
-          </div>
-        </section>
+      @for (kind of ['start', 'end']; track kind) {
+        @if (kind === 'start' ? canStart(m) : canEnd(m)) {
+          <section appCard [attr.aria-labelledby]="'mt-' + kind">
+            <div appCardHeader>
+              <h2 appCardTitle [id]="'mt-' + kind">{{ (kind === 'start' ? 'act.meetings.start' : 'act.meetings.end') | t }}</h2>
+            </div>
+            <div appCardContent class="flex flex-col gap-3">
+              <p class="text-sm text-muted-foreground">{{ (kind === 'start' ? 'act.meetings.startHint' : 'act.meetings.endHint') | t }}</p>
+              @if (locationError(); as message) {
+                <app-alert variant="destructive" [attr.data-testid]="'location-error'">{{ message }}</app-alert>
+              }
+              <button
+                type="button"
+                appButton
+                class="self-start"
+                [attr.data-testid]="kind + '-meeting'"
+                [disabled]="!!capture() || actions.busy()"
+                [attr.aria-busy]="capture()?.kind === kind ? true : null"
+                (click)="record($any(kind))"
+              >
+                @if (capture()?.kind === kind) {
+                  <span class="size-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden="true"></span>
+                }
+                {{ captureLabel($any(kind)) }}
+              </button>
+            </div>
+          </section>
+        }
       }
       @if (canEdit() && open(m.status)) {
         <section appCard aria-labelledby="mt-cancel">

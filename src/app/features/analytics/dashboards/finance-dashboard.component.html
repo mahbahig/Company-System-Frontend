@@ -56,6 +56,7 @@
     <h2 id="margins-heading" class="text-lg font-semibold">
       {{ 'analytics.finance.margins' | t }}
     </h2>
+    <app-pager-size [pager]="marginsPager" />
     <app-table-wrapper [label]="'analytics.finance.margins' | t">
       <table appTable>
         <thead appTableHeader>
@@ -74,13 +75,13 @@
           @for (row of marginsPager.rows(); track $index) {
             <tr
               appTableRow
-              [appRowLink]="row.id ? ['/', i18n.locale(), 'proposals', 'financial', row.id] : null"
+              [appRowLink]="row.id ? ['/', 'proposals', 'financial', row.id] : null"
             >
               <td appTableCell class="tabular whitespace-nowrap" dir="ltr">
                 @if (row.id) {
                   <a
                     class="text-primary hover:underline"
-                    [routerLink]="['/', i18n.locale(), 'proposals', 'financial', row.id]"
+                    [routerLink]="['/', 'proposals', 'financial', row.id]"
                     >{{ row.number }} v{{ row.versionNo }}</a
                   >
                 } @else {
@@ -156,6 +157,7 @@
             </div>
           </dl>
         }
+        <app-pager-size [pager]="schedulePager" />
         <app-table-wrapper [label]="'analytics.finance.paymentSchedule' | t">
           <table appTable>
             <thead appTableHeader>

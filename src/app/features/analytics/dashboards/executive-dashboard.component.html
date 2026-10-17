@@ -86,6 +86,7 @@
 
   <section class="flex flex-col gap-3" aria-labelledby="trend-heading">
     <h2 id="trend-heading" class="text-lg font-semibold">{{ 'analytics.executive.trend' | t }}</h2>
+    <app-pager-size [pager]="trendPager" />
     <app-table-wrapper [label]="'analytics.executive.trend' | t">
       <table appTable>
         <thead appTableHeader>

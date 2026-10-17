@@ -19,11 +19,12 @@ import { percent } from '../shared/kpi-format';
 import { DashboardSkeletonComponent } from '../../../shared/ui/skeleton/skeleton.component';
 import { LocalPager } from '../../../shared/crm/pagination/local-pager';
 import { PagerComponent } from '../../../shared/crm/pagination/pager.component';
+import { PagerSizeComponent } from '../../../shared/crm/pagination/page-size-select.component';
 
 /** DASH-01 executive dashboard. */
 @Component({
   selector: 'app-executive-dashboard',
-  imports: [DashboardSkeletonComponent, TranslatePipe, AlertComponent, StatCardComponent, KpiGridComponent, BarListComponent, ...CARD_IMPORTS, ...TABLE_IMPORTS, PagerComponent],
+  imports: [DashboardSkeletonComponent, TranslatePipe, AlertComponent, StatCardComponent, KpiGridComponent, BarListComponent, ...CARD_IMPORTS, ...TABLE_IMPORTS, PagerComponent, PagerSizeComponent],
   templateUrl: './executive-dashboard.component.html',
   host: { class: 'flex flex-col gap-6' },
 })
@@ -72,10 +73,6 @@ export class ExecutiveDashboardComponent {
 
   /** A drill-down link only into an area the role can open (same rule as the route guard). */
   protected openable(path: string): string | undefined {
-    return this.navigation.canOpen(path) ? this.link(path.split('?')[0]) : undefined;
-  }
-
-  protected link(path: string): string {
-    return `/${this.i18n.locale()}${path}`;
+    return this.navigation.canOpen(path) ? path.split('?')[0] : undefined;
   }
 }

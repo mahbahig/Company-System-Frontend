@@ -20,6 +20,7 @@ import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.compo
 import { DEFAULT_PAGE_SIZE, pageSizeAttribute } from '../../../shared/crm/pagination/page-size';
 import { LocalPager } from '../../../shared/crm/pagination/local-pager';
 import { PagerComponent } from '../../../shared/crm/pagination/pager.component';
+import { PageSizeSelectComponent, PagerSizeComponent } from '../../../shared/crm/pagination/page-size-select.component';
 
 interface IntegrationKey {
   id: string;
@@ -56,7 +57,7 @@ interface Status {
  */
 @Component({
   selector: 'app-integrations-admin-page',
-  imports: [SkeletonRowComponent, RouterLink, TranslatePipe, AlertComponent, BadgeComponent, ButtonDirective, PageHeaderComponent, PaginationComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, ...TABLE_IMPORTS, PagerComponent],
+  imports: [SkeletonRowComponent, RouterLink, TranslatePipe, AlertComponent, BadgeComponent, ButtonDirective, PageHeaderComponent, PaginationComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, ...TABLE_IMPORTS, PagerComponent, PageSizeSelectComponent, PagerSizeComponent],
   templateUrl: './integrations-admin.page.html',
   host: { class: 'flex flex-col gap-6' },
 })

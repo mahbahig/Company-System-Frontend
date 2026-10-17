@@ -2,7 +2,7 @@ import type { Routes } from '@angular/router';
 
 import { unsavedChangesGuard } from '../../core/forms/unsaved-changes';
 
-/** `/:locale/approvals/...` (APPR-01..04, USER-06). */
+/** `/approvals/...` (APPR-01..04, USER-06). */
 export const APPROVALS_ROUTES: Routes = [
   { path: '', title: 'approvals.title', loadComponent: () => import('./list/approvals-list.page').then((m) => m.ApprovalsListPage) },
   {

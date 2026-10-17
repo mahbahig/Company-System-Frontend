@@ -13,6 +13,7 @@
 @if (result.error()) {
   <app-alert variant="destructive">{{ i18n.errorText(result.error()) }}</app-alert>
 }
+<app-page-size [pageSize]="pageSize()" [total]="result.hasValue() ? result.value().total : null" [loading]="result.isLoading()" />
 <app-table-wrapper [label]="'handoffs.inboxTitle' | t" [attr.aria-busy]="result.isLoading()">
   <table appTable>
     <thead appTableHeader>
@@ -32,13 +33,13 @@
         <tr
           appTableRow
           [appRowLink]="
-            opp(row) ? ['/', i18n.locale(), 'opportunities', opp(row)!.id, 'handoff'] : null
+            opp(row) ? ['/', 'opportunities', opp(row)!.id, 'handoff'] : null
           "
         >
           <td appTableCell class="tabular whitespace-nowrap font-medium">
             @if (opp(row); as o) {
               <a
-                [routerLink]="['/', i18n.locale(), 'opportunities', o.id, 'handoff']"
+                [routerLink]="['/', 'opportunities', o.id, 'handoff']"
                 class="text-primary hover:underline"
                 dir="ltr"
                 >{{ row.handoffNo }}</a

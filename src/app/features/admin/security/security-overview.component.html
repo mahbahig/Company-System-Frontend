@@ -1,0 +1,91 @@
+@let o = overview();
+<section aria-labelledby="sc-auth" class="flex flex-col gap-3" data-testid="security-overview-auth">
+  <h2 id="sc-auth" class="text-sm font-semibold uppercase tracking-[0.08em] text-muted-foreground">{{ 'securityCenter.overview.authentication' | t }}</h2>
+  <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+    <app-stat-card
+      [label]="'securityCenter.overview.successfulLogins' | t"
+      [value]="n(o.authentication.successfulLogins24h)"
+      [hint]="'securityCenter.overview.last7Days' | t: { count: n(o.authentication.successfulLogins7d) }"
+      tone="success"
+      [link]="auditLink()"
+      [queryParams]="{ action: 'auth.login' }"
+    />
+    <app-stat-card
+      [label]="'securityCenter.overview.failedLogins' | t"
+      [value]="n(o.authentication.failedLogins24h)"
+      [hint]="'securityCenter.overview.failedHint' | t: { hour: n(o.authentication.failedLoginsLastHour), week: n(o.authentication.failedLogins7d) }"
+      [tone]="o.authentication.failedLoginsLastHour ? 'warning' : 'neutral'"
+      [link]="auditLink()"
+      [queryParams]="{ action: 'auth.login_failed' }"
+    />
+    <app-stat-card [label]="'securityCenter.overview.activeSessions' | t" [value]="n(o.authentication.activeSessions)" [hint]="'securityCenter.overview.activeSessionsHint' | t" tone="info" />
+    <app-stat-card
+      [label]="'securityCenter.overview.revokedSessions' | t"
+      [value]="n(o.authentication.revokedSessions7d)"
+      [hint]="'securityCenter.overview.revokedHint' | t"
+      [link]="auditLink()"
+      [queryParams]="{ action: 'auth.session_revoked' }"
+    />
+    <app-stat-card
+      [label]="'securityCenter.overview.lockedAccounts' | t"
+      [value]="n(o.authentication.lockedAccounts)"
+      [hint]="'securityCenter.overview.blockedIps' | t: { count: n(o.authentication.blockedIps) }"
+      [tone]="o.authentication.lockedAccounts || o.authentication.blockedIps ? 'warning' : 'neutral'"
+    />
+    <app-stat-card [label]="'securityCenter.overview.deactivatedAccounts' | t" [value]="n(o.authentication.deactivatedAccounts)" [link]="['/', 'employees']" [queryParams]="{ active: 'false' }" />
+  </div>
+</section>
+
+<section aria-labelledby="sc-security" class="flex flex-col gap-3" data-testid="security-overview-security">
+  <h2 id="sc-security" class="text-sm font-semibold uppercase tracking-[0.08em] text-muted-foreground">{{ 'securityCenter.overview.security' | t }}</h2>
+  <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+    <app-stat-card
+      [label]="'securityCenter.overview.openAlerts' | t"
+      [value]="n(o.security.openAlerts)"
+      [hint]="'securityCenter.overview.alertsHint' | t: { critical: n(o.security.criticalAlerts), high: n(o.security.highAlerts), new: n(o.security.newAlerts) }"
+      [tone]="alertTone()"
+    />
+    <app-stat-card
+      [label]="'securityCenter.overview.criticalEvents' | t"
+      [value]="n(o.security.criticalEvents7d)"
+      [hint]="'securityCenter.overview.last7DaysOnly' | t"
+      [tone]="o.security.criticalEvents7d ? 'danger' : 'neutral'"
+      [link]="auditLink()"
+      [queryParams]="{ severity: 'critical' }"
+    />
+    <app-stat-card
+      [label]="'securityCenter.overview.highEvents' | t"
+      [value]="n(o.security.highEvents7d)"
+      [hint]="'securityCenter.overview.last7DaysOnly' | t"
+      [link]="auditLink()"
+      [queryParams]="{ severity: 'warning' }"
+    />
+    <app-stat-card
+      [label]="'securityCenter.overview.suspiciousAccounts' | t"
+      [value]="n(o.security.suspiciousAccounts)"
+      [hint]="'securityCenter.overview.suspiciousHint' | t"
+      [tone]="o.security.suspiciousAccounts ? 'warning' : 'neutral'"
+    />
+    <app-stat-card
+      [label]="'securityCenter.overview.mfa' | t"
+      [value]="mfaPercent() + '%'"
+      [hint]="'securityCenter.overview.mfaHint' | t: { enabled: n(o.security.mfa.enabled), total: n(o.security.mfa.activeAccounts), disabled: n(o.security.mfa.disabled) }"
+      [tone]="mfaPercent() >= 80 ? 'success' : 'warning'"
+    />
+    <section class="flex h-full flex-col gap-2 rounded-xl border border-border/80 bg-card p-5 shadow-sm" aria-labelledby="sc-repeated" data-testid="repeated-failures">
+      <h3 id="sc-repeated" class="text-2xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">{{ 'securityCenter.overview.repeatedFailures' | t }}</h3>
+      @if (o.security.repeatedFailures.length) {
+        <ul class="flex flex-col divide-y divide-border text-sm">
+          @for (row of o.security.repeatedFailures; track row.userId) {
+            <li class="flex items-baseline justify-between gap-3 py-1.5">
+              <a [routerLink]="['/', 'employees', row.userId]" class="min-w-0 truncate font-medium text-primary underline-offset-4 hover:underline">{{ i18n.pick(row.nameAr, row.name) || '—' }}</a>
+              <span class="shrink-0 text-xs text-muted-foreground">{{ 'securityCenter.overview.failuresCount' | t: { count: n(row.failures) } }} · <time [attr.datetime]="row.lastAt">{{ i18n.formatDate(row.lastAt, true) }}</time></span>
+            </li>
+          }
+        </ul>
+      } @else {
+        <p class="text-sm text-muted-foreground">{{ 'securityCenter.overview.noRepeatedFailures' | t }}</p>
+      }
+    </section>
+  </div>
+</section>

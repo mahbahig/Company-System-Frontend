@@ -15,7 +15,7 @@
       <a appButton variant="outline" size="sm" [routerLink]="['edit']">{{ 'crm.common.edit' | t }}</a>
     }
     @if (auth.can('opportunities.create')) {
-      <a appButton size="sm" [routerLink]="['/', i18n.locale(), 'opportunities', 'new']" [queryParams]="{ customerId: id() }"><app-create-icon />{{ 'crm.opportunities.new' | t }}</a>
+      <a appButton size="sm" [routerLink]="['/', 'opportunities', 'new']" [queryParams]="{ customerId: id() }"><app-create-icon />{{ 'crm.opportunities.new' | t }}</a>
     }
   </app-page-header>
 
@@ -23,13 +23,13 @@
 
   <div class="flex flex-wrap gap-2" role="group" [attr.aria-label]="'customer360.quickActions' | t">
     @if (auth.can('calls.create')) {
-      <a appButton variant="outline" size="sm" [routerLink]="['/', i18n.locale(), 'calls', 'new']" [queryParams]="{ customerId: id() }"><app-create-icon />{{ 'act.calls.new' | t }}</a>
+      <a appButton variant="outline" size="sm" [routerLink]="['/', 'calls', 'new']" [queryParams]="{ customerId: id() }"><app-create-icon />{{ 'act.calls.new' | t }}</a>
     }
     @if (auth.can('meetings.create')) {
-      <a appButton variant="outline" size="sm" [routerLink]="['/', i18n.locale(), 'meetings', 'new']" [queryParams]="{ customerId: id() }"><app-create-icon />{{ 'act.meetings.new' | t }}</a>
+      <a appButton variant="outline" size="sm" [routerLink]="['/', 'meetings', 'new']" [queryParams]="{ customerId: id() }"><app-create-icon />{{ 'act.meetings.new' | t }}</a>
     }
     @if (auth.can('visits.create')) {
-      <a appButton variant="outline" size="sm" [routerLink]="['/', i18n.locale(), 'visits', 'new']" [queryParams]="{ customerId: id() }"><app-create-icon />{{ 'act.visits.new' | t }}</a>
+      <a appButton variant="outline" size="sm" [routerLink]="['/', 'visits', 'new']" [queryParams]="{ customerId: id() }"><app-create-icon />{{ 'act.visits.new' | t }}</a>
     }
     @if (canChangeStatus()) {
       <button type="button" appButton variant="ghost" size="sm" (click)="statusOpen.set(true)">{{ 'customer360.changeStatus' | t }}</button>
@@ -178,6 +178,7 @@
               <a appButton variant="outline" size="sm" [routerLink]="['contacts', 'new']"><app-create-icon />{{ 'crm.contacts.new' | t }}</a>
             }
           </div>
+          <app-pager-size [pager]="contactsPager" />
           <app-table-wrapper [label]="'crm.customers.detail.contactsTitle' | t">
             <table appTable>
               <thead appTableHeader>
@@ -234,6 +235,7 @@
               <a appButton variant="outline" size="sm" [routerLink]="['sites', 'new']"><app-create-icon />{{ 'crm.customers.detail.newSite' | t }}</a>
             }
           </div>
+          <app-pager-size [pager]="sitesPager" />
           <app-table-wrapper [label]="'crm.customers.detail.sitesTitle' | t">
             <table appTable>
               <thead appTableHeader>
@@ -285,6 +287,7 @@
       @if (canViewOpportunities()) {
         <div class="flex flex-col gap-3">
           <h2 id="opportunities-heading" class="text-lg font-semibold">{{ 'crm.customers.detail.opportunitiesTitle' | t }}</h2>
+          <app-page-size mode="state" [pageSize]="opportunitiesPager.pageSize()" [total]="opportunities.hasValue() ? opportunities.value().total : null" [loading]="opportunities.isLoading()" (pageSizeChange)="opportunitiesPager.setPageSize($event)" />
           <app-table-wrapper [label]="'crm.customers.detail.opportunitiesTitle' | t">
             <table appTable>
               <thead appTableHeader>
@@ -299,8 +302,8 @@
               </thead>
               <tbody appTableBody>
                 @for (opportunity of opportunities.value()?.rows ?? []; track opportunity.id) {
-                  <tr appTableRow [appRowLink]="['/', i18n.locale(), 'opportunities', opportunity.id]">
-                    <td appTableCell class="tabular whitespace-nowrap font-medium" dir="ltr"><a class="text-primary hover:underline" [routerLink]="['/', i18n.locale(), 'opportunities', opportunity.id]">{{ opportunity.opportunityNo }}</a></td>
+                  <tr appTableRow [appRowLink]="['/', 'opportunities', opportunity.id]">
+                    <td appTableCell class="tabular whitespace-nowrap font-medium" dir="ltr"><a class="text-primary hover:underline" [routerLink]="['/', 'opportunities', opportunity.id]">{{ opportunity.opportunityNo }}</a></td>
                     <td appTableCell>{{ opportunity.name }}</td>
                     <td appTableCell>
                       <app-badge [tone]="reference.tone('pipeline_stage', opportunity.stage)">{{ reference.label('pipeline_stage', opportunity.stage) }}</app-badge>
@@ -330,7 +333,6 @@
               [total]="pageOfOpportunitiesPager.total"
               [pageSize]="pageOfOpportunitiesPager.pageSize"
               (pageChange)="opportunitiesPager.setPage($event)"
-              (pageSizeChange)="opportunitiesPager.setPageSize($event)"
             />
           }
         </div>

@@ -41,6 +41,7 @@
     "leadClosureReason": { "unqualified": "Unqualified", "invalid": "Invalid", "duplicate": "Duplicate", "nurture": "Nurture" },
     "leadStatus": { "new": "New", "contacted": "Contacted", "qualified": "Qualified", "nurture": "Nurture", "converted": "Converted", "closed": "Closed" },
     "meetingMode": { "in_person": "In person", "online": "Online", "hybrid": "Hybrid", "phone": "Phone" },
+    "locationVerificationStatus": { "within_radius": "Within radius", "outside_radius": "Outside radius", "location_unreliable": "Location unreliable" },
     "meetingStatus": { "planned": "Planned", "confirmed": "Confirmed", "completed": "Completed", "cancelled": "Cancelled", "rescheduled": "Rescheduled", "no_show": "No show" },
     "milestoneStatus": { "pending": "Pending", "in_progress": "In progress", "done": "Done", "delayed": "Delayed" },
     "negotiationOutcome": { "pending": "Pending", "accepted": "Accepted", "rejected": "Rejected", "counter_offer": "Counter-offer", "escalated": "Escalated" },

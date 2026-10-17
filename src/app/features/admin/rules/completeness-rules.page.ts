@@ -22,6 +22,7 @@ import { PagerComponent } from '../../../shared/crm/pagination/pager.component';
 import { ConfirmService } from '../../../shared/ui/confirm/confirm.service';
 import { tap } from 'rxjs';
 import { CreateIconComponent } from '../../../shared/ui/create-icon/create-icon.component';
+import { PagerSizeComponent } from '../../../shared/crm/pagination/page-size-select.component';
 
 interface Rule {
   id: string;
@@ -50,7 +51,7 @@ const ROLES = ['sales_representative', 'sales_manager', 'telesales', 'marketing'
  */
 @Component({
   selector: 'app-completeness-rules-page',
-  imports: [TranslatePipe, EnumLabelPipe, AlertComponent, BadgeComponent, ButtonDirective, PageHeaderComponent, TabsComponent, ...CARD_IMPORTS, ...TABLE_IMPORTS, ...FORM_IMPORTS, PagerComponent, CreateIconComponent],
+  imports: [TranslatePipe, EnumLabelPipe, AlertComponent, BadgeComponent, ButtonDirective, PageHeaderComponent, TabsComponent, ...CARD_IMPORTS, ...TABLE_IMPORTS, ...FORM_IMPORTS, PagerComponent, CreateIconComponent, PagerSizeComponent],
   templateUrl: './completeness-rules.page.html',
   host: { class: 'flex flex-col gap-6' },
 })

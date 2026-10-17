@@ -151,7 +151,7 @@ export class DeliveryHandoverPanelComponent {
   protected async accept(): Promise<void> {
     const result = await this.run(() => this.api.acceptHandover(this.opportunityId()));
     const projectId = (result as { project?: { id?: string } } | undefined)?.project?.id;
-    if (projectId) void this.router.navigate([this.i18n.locale(), 'projects', projectId]);
+    if (projectId) void this.router.navigate(['/', 'projects', projectId]);
   }
 
   protected returnHandover(event: Event): void {

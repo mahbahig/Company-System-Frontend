@@ -1,6 +1,5 @@
 import { CdkMenu, CdkMenuItem, CdkMenuTrigger } from '@angular/cdk/menu';
-import { DOCUMENT } from '@angular/common';
-import { Component, DestroyRef, computed, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { ArrowRight, Bell, CheckCheck } from 'lucide';
 
@@ -13,9 +12,6 @@ import { notificationAction, notificationTarget, type NotificationTarget } from 
 import type { AppNotification } from '../../notifications/notification.interface';
 import { NotificationsService } from '../../notifications/notifications.service';
 import { END_ALIGNED_BELOW } from '../menu-positions';
-
-/** Refresh the badge while the tab is visible (notifications are generated server-side, per recipient). */
-const REFRESH_MS = 90_000;
 
 /**
  * Bell with an unread badge. The panel lists the latest notifications, each
@@ -45,7 +41,7 @@ export class NotificationBellComponent {
     this.items().map((item) => ({
       item,
       action: notificationAction(item),
-      target: notificationTarget(item.actionUrl, this.i18n.locale(), (path) => this.navigation.canOpen(path)),
+      target: notificationTarget(item.actionUrl, (path) => this.navigation.canOpen(path)),
     })),
   );
   protected readonly label = computed(() =>
@@ -53,13 +49,8 @@ export class NotificationBellComponent {
   );
 
   constructor() {
-    const refresh = () => void this.notifications.refresh().catch(() => undefined);
-    refresh();
-    const document = inject(DOCUMENT);
-    const timer = setInterval(() => {
-      if (document.visibilityState === 'visible') refresh();
-    }, REFRESH_MS);
-    inject(DestroyRef).onDestroy(() => clearInterval(timer));
+    // Loaded once; new notifications then arrive live over the realtime connection (`NotificationsService.listen`).
+    void this.notifications.refresh().catch(() => undefined);
   }
 
   protected onOpen(): void {
@@ -74,9 +65,5 @@ export class NotificationBellComponent {
   protected open(item: AppNotification, target: NotificationTarget | null): void {
     if (!item.readAt) void this.notifications.markRead([item.id]);
     if (target && this.navigation.canOpen(target.path)) void this.router.navigate(target.commands, { queryParams: target.queryParams });
-  }
-
-  protected link(path: string): string {
-    return `/${this.i18n.locale()}${path}`;
   }
 }

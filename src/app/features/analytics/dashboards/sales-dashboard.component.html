@@ -6,6 +6,7 @@
 
   <section class="flex flex-col gap-3" aria-labelledby="reps-heading">
     <h2 id="reps-heading" class="text-lg font-semibold">{{ 'analytics.sales.byRep' | t }}</h2>
+    <app-pager-size [pager]="repsPager" />
     <app-table-wrapper [label]="'analytics.sales.byRep' | t">
       <table appTable>
         <thead appTableHeader>

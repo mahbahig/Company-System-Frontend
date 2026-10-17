@@ -136,7 +136,7 @@ export class FinancialProposalPage {
 
   protected tpLink(): string[] | null {
     const tp = this.proposal()?.technicalProposalId;
-    return tp && typeof tp === 'object' ? ['/', this.i18n.locale(), 'proposals', 'technical', tp.id] : null;
+    return tp && typeof tp === 'object' ? ['/', 'proposals', 'technical', tp.id] : null;
   }
 
   protected save(event: Event): void {

@@ -15,4 +15,6 @@ export interface NavItem {
   requiresAll?: readonly PermissionCode[];
   /** Hidden from whoever holds this permission: a page with nothing for them (filing support tickets, for the support desk). */
   hiddenWith?: PermissionCode;
+  /** A live count shown beside the label (unread messages). */
+  badge?: 'chatUnread';
 }

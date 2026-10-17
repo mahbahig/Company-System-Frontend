@@ -18,6 +18,7 @@ import { PageHeaderComponent } from '../../../shared/ui/page-header/page-header.
 import { TABLE_IMPORTS } from '../../../shared/ui/table/table.imports';
 import { ContractsApi, type Contract } from '../contracts-api.service';
 import { DEFAULT_PAGE_SIZE, pageSizeAttribute } from '../../../shared/crm/pagination/page-size';
+import { PageSizeSelectComponent } from '../../../shared/crm/pagination/page-size-select.component';
 
 const STATUSES = ['draft', 'under_review', 'approved', 'sent_for_signature', 'signed_by_customer', 'fully_executed', 'active', 'completed', 'terminated', 'expired'];
 
@@ -48,8 +49,7 @@ const CONTRACT_COLUMNS: ColumnDef[] = [
     SavedViewsBarComponent,
     ColumnPickerComponent,
     TableSkeletonComponent,
-    ...TABLE_IMPORTS,
-  ],
+    ...TABLE_IMPORTS, PageSizeSelectComponent],
   templateUrl: './contracts-list.page.html',
   host: { class: 'flex flex-col gap-6' },
 })

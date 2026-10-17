@@ -8,6 +8,7 @@
 @if (actions.message(); as text) {
   <app-alert>{{ text }}</app-alert>
 }
+<app-pager-size [pager]="teamsPager" />
 <app-table-wrapper [label]="'admin.teams.title' | t" [attr.aria-busy]="data.isLoading()">
   <table appTable>
     <thead appTableHeader>

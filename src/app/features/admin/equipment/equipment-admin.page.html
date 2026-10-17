@@ -9,6 +9,7 @@
   <app-alert>{{ text }}</app-alert>
 }
 <app-list-toolbar [searchValue]="q() ?? ''" [filters]="filters()" />
+<app-page-size [pageSize]="pageSize()" [total]="data.hasValue() ? data.value().total : null" [loading]="data.isLoading()" />
 <app-table-wrapper [label]="'admin.equipment.title' | t" [attr.aria-busy]="data.isLoading()">
   <table appTable>
     <thead appTableHeader>

@@ -45,6 +45,7 @@
 @if (jobs.error()) {
   <app-alert variant="destructive">{{ i18n.errorText(jobs.error()) }}</app-alert>
 }
+<app-page-size [pageSize]="pageSize()" [total]="jobs.hasValue() ? jobs.value().total : null" [loading]="jobs.isLoading()" />
 <app-table-wrapper [label]="'imports.history' | t" [attr.aria-busy]="jobs.isLoading()">
   <table appTable>
     <thead appTableHeader>

@@ -43,7 +43,7 @@
           @for (card of column.cards; track card.id) {
             <li cdkDrag [cdkDragData]="card.id" [cdkDragDisabled]="!canChangeStage()">
               <a
-                [routerLink]="['/', i18n.locale(), 'opportunities', card.id]"
+                [routerLink]="['/', 'opportunities', card.id]"
                 class="block rounded-md border border-border bg-card p-3 transition-colors hover:border-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <p class="tabular text-2xs text-muted-foreground" dir="ltr">{{ card.opportunityNo }}</p>

@@ -5,6 +5,7 @@ import { IconComponent } from '../../../shared/ui/icon/icon.component';
 import { TooltipDirective } from '../../../shared/ui/tooltip/tooltip.directive';
 import { I18nService } from '../../i18n/i18n.service';
 import { TranslatePipe } from '../../i18n/translate.pipe';
+import { ChatStore } from '../../chat/chat-store.service';
 import { NavigationService } from '../../navigation/navigation.service';
 
 /**
@@ -24,6 +25,8 @@ import { NavigationService } from '../../navigation/navigation.service';
 export class SidebarNavComponent {
   protected readonly navigation = inject(NavigationService);
   private readonly i18n = inject(I18nService);
+  /** The unread-messages badge (live: `ChatStore` follows the realtime events). */
+  protected readonly chats = inject(ChatStore);
 
   /** Icon-only rail (desktop); the mobile drawer is always expanded. */
   readonly collapsed = input(false, { transform: booleanAttribute });

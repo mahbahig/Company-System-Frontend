@@ -3,7 +3,7 @@ import type { Routes } from '@angular/router';
 import { unsavedChangesGuard } from '../../core/forms/unsaved-changes';
 
 /**
- * `/:locale/leads/...` — lazy-loaded pages of the leads feature. Static
+ * `/leads/...` — lazy-loaded pages of the leads feature. Static
  * segments (`quick-add`, `mine`, `distribute`, `new`) and the `:id/...`
  * variants are declared before the bare `:id` so the router does not treat
  * them as a lead id.

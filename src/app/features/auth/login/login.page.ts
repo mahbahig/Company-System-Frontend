@@ -15,7 +15,9 @@ import { LockKeyhole, Mail, ShieldCheck, TriangleAlert } from 'lucide';
 
 import { ApiError } from '../../../core/api/api-error';
 import { AuthService } from '../../../core/auth/auth.service';
+import { EMAIL_PATTERN } from '../../../core/auth/email-format';
 import { PASSWORD_LETTER, PASSWORD_MIN_LENGTH } from '../../../core/auth/password-policy';
+import { SessionExpiry } from '../../../core/auth/session-expiry.service';
 import type { CurrentUser } from '../../../core/auth/models/current-user.interface';
 import { I18nService } from '../../../core/i18n/i18n.service';
 import { TranslatePipe } from '../../../core/i18n/translate.pipe';
@@ -43,10 +45,8 @@ const NOTICES: Record<string, LoginNotice> = {
     variant: 'default',
   },
   account_inactive: { key: 'auth.errors.accountInactive', variant: 'destructive' },
+  system_locked: { key: 'auth.login.systemLockedNotice', variant: 'warning' },
 };
-
-/** A real e-mail address: something@domain.tld with no spaces (the API checks again). */
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 /** The API's sign-in field errors, as this form's own messages. */
 const SERVER_FIELD_MESSAGES: Readonly<Record<string, string>> = {
@@ -85,6 +85,7 @@ const MFA_FIELD_ID = 'mfa-code';
 })
 export class LoginPage {
   private readonly auth = inject(AuthService);
+  private readonly expiry = inject(SessionExpiry);
   protected readonly i18n = inject(I18nService);
   private readonly router = inject(Router);
   private readonly document = inject(DOCUMENT);
@@ -117,6 +118,14 @@ export class LoginPage {
   protected readonly resentNotice = signal(false);
   protected readonly verifying = signal(false);
   protected readonly notice = computed(() => NOTICES[this.reason() ?? ''] ?? null);
+  /** The notice's words — naming the Super Administrator who locked the system when this browser heard it from the realtime event (never from the URL). */
+  protected readonly noticeText = computed(() => {
+    const notice = this.notice();
+    if (!notice) return '';
+    const ended = this.expiry.lastNotice();
+    if (this.reason() === 'system_locked' && ended?.reason === 'system_locked' && ended.actorName) return this.i18n.t('auth.login.systemLockedByNotice', { name: ended.actorName });
+    return this.i18n.t(notice.key);
+  });
 
   private readonly model = signal<LoginModel>({ email: '', password: '' });
   /**
@@ -238,14 +247,13 @@ export class LoginPage {
   }
 
   private destination(user: CurrentUser): string {
-    const locale = this.i18n.locale();
-    if (user.mustChangePassword) return `/${locale}/account/password`;
-    if (user.mfaRequired && !user.mfaEnabled) return `/${locale}/account/security?enroll=1`;
+    if (user.mustChangePassword) return '/account/password';
+    if (user.mfaRequired && !user.mfaEnabled) return '/account/security?enroll=1';
     const target = this.returnTo();
     // Only same-app paths: never an absolute or protocol-relative URL (open redirect).
     return target && target.startsWith('/') && !target.startsWith('//')
       ? target
-      : `/${locale}/dashboard`;
+      : '/dashboard';
   }
 
   /** The API's validation errors for the e-mail / password, as this form's messages (never raw server text). */

@@ -56,9 +56,7 @@
   />
 
   @if (notice(); as notice) {
-    <app-auth-notice class="mt-6 animate-fade-in" [variant]="notice.variant">{{
-      notice.key | t
-    }}</app-auth-notice>
+    <app-auth-notice class="mt-6 animate-fade-in" [variant]="notice.variant" data-testid="login-notice">{{ noticeText() }}</app-auth-notice>
   }
 
   <form class="mt-8 space-y-5" novalidate (submit)="onSubmit($event)">
@@ -129,7 +127,7 @@
         </p>
       }
       <div class="mt-3 flex justify-end">
-        <a appAuthLink [routerLink]="['/', i18n.locale(), 'forgot-password']">{{
+        <a appAuthLink [routerLink]="['/', 'forgot-password']">{{
           'account.forgot.link' | t
         }}</a>
       </div>

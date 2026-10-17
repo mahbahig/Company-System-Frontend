@@ -23,6 +23,7 @@
     "class-variance-authority": "^0.7.1",
     "lucide": "^1.48.0",
     "rxjs": "~7.8.0",
+    "socket.io-client": "^4.8.4",
     "three": "^0.186.1",
     "tslib": "^2.3.0"
   },

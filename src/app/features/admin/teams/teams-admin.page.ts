@@ -19,13 +19,14 @@ import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.compo
 import { LocalPager } from '../../../shared/crm/pagination/local-pager';
 import { PagerComponent } from '../../../shared/crm/pagination/pager.component';
 import { CreateIconComponent } from '../../../shared/ui/create-icon/create-icon.component';
+import { PagerSizeComponent } from '../../../shared/crm/pagination/page-size-select.component';
 
 const idOf = (value: string | { id: string } | null | undefined): string => (!value ? '' : typeof value === 'string' ? value : value.id);
 
 /** USER-02 sales / delivery teams: manager, members and region (team scope for RBAC and dashboards). */
 @Component({
   selector: 'app-teams-admin-page',
-  imports: [SkeletonRowComponent, TranslatePipe, UserSelectComponent, AlertComponent, BadgeComponent, ButtonDirective, DialogComponent, PageHeaderComponent, ...TABLE_IMPORTS, ...FORM_IMPORTS, PagerComponent, CreateIconComponent],
+  imports: [SkeletonRowComponent, TranslatePipe, UserSelectComponent, AlertComponent, BadgeComponent, ButtonDirective, DialogComponent, PageHeaderComponent, ...TABLE_IMPORTS, ...FORM_IMPORTS, PagerComponent, CreateIconComponent, PagerSizeComponent],
   templateUrl: './teams-admin.page.html',
   host: { class: 'flex flex-col gap-6' },
 })

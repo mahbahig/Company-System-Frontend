@@ -217,7 +217,7 @@ export class LeadConvertPage {
     this.submitting.set(true);
     try {
       const result = await firstValueFrom(this.leads.convert(this.id(), this.toPayload(confirmDuplicate)));
-      await this.router.navigate(['/', this.i18n.locale(), 'customers', result.customerId]);
+      await this.router.navigate(['/', 'customers', result.customerId]);
     } catch (error) {
       if (ApiError.is(error) && error.status === 409 && error.messageKey !== 'errors.ownershipConflict') {
         // The lead check returns `customerMatches`; the customer check (during conversion) returns `matches`.

@@ -3,6 +3,7 @@ import { Eye, EyeOff } from 'lucide';
 import type { Observable } from 'rxjs';
 
 import { AuthService } from '../../core/auth/auth.service';
+import { emailFormatProblem } from '../../core/auth/email-format';
 import { passwordPolicyProblem } from '../../core/auth/password-policy';
 import { I18nService } from '../../core/i18n/i18n.service';
 import { TranslatePipe } from '../../core/i18n/translate.pipe';
@@ -104,9 +105,36 @@ export class EmployeeEditorComponent {
   protected readonly passwordProblem = computed(() => (this.password() ? passwordPolicyProblem(this.password()) : null));
   protected readonly passwordMismatch = computed(() => !!this.confirmPassword() && this.confirmPassword() !== this.password());
   protected readonly passwordReady = computed(() => !!this.editing() || (!!this.password() && !this.passwordProblem() && this.password() === this.confirmPassword()));
+  /**
+   * The e-mail, checked like the sign-in form's (the same rule): required,
+   * then a real address. Its message shows once the field was left (or Save
+   * tried) and follows the typing from then on. Only a new employee's address
+   * is typed; an existing one cannot be changed here.
+   */
+  private readonly emailProblem = computed(() => (this.editing() ? null : emailFormatProblem(this.d().email)));
+  protected readonly emailTouched = signal(false);
+  /** What the API said about the address on the last Save (a duplicate, or a format it refused), while it is unchanged. */
+  private readonly submittedEmail = signal<string | null>(null);
+  private readonly serverEmailError = computed(() => {
+    const key = this.actions.fieldErrors()['email'];
+    if (!key || this.submittedEmail() !== this.d().email.trim()) return null;
+    if (key === 'validation.emailInvalid') return 'admin.users.emailInvalid';
+    if (key === 'validation.required') return 'admin.users.emailRequired';
+    return this.i18n.has(`server.${key}`) ? `server.${key}` : 'admin.users.emailInvalid';
+  });
+  protected readonly emailError = computed(() => {
+    const problem = this.emailTouched() ? this.emailProblem() : null;
+    if (problem) return problem === 'required' ? 'admin.users.emailRequired' : 'admin.users.emailInvalid';
+    return this.serverEmailError();
+  });
+  /** The form-level message — not when the API only objected to the e-mail, which its field already says. */
+  protected readonly formError = computed(() => {
+    const fields = Object.keys(this.actions.fieldErrors());
+    return fields.length === 1 && fields[0] === 'email' && this.serverEmailError() ? null : this.actions.error();
+  });
   protected readonly valid = computed(() => {
     const d = this.d();
-    return d.email.includes('@') && !!d.fullNameAr.trim() && !!d.fullNameEn.trim() && d.roleCodes.length > 0 && this.passwordReady();
+    return !this.emailProblem() && !!d.fullNameAr.trim() && !!d.fullNameEn.trim() && d.roleCodes.length > 0 && this.passwordReady();
   });
 
   constructor() {
@@ -140,6 +168,11 @@ export class EmployeeEditorComponent {
   protected save(event: Event): void {
     event.preventDefault();
     if (this.actions.busy()) return;
+    // An invalid form sends nothing: its messages show instead.
+    if (!this.valid()) {
+      this.emailTouched.set(true);
+      return;
+    }
     const d = this.d();
     const body: Record<string, unknown> = {
       fullNameAr: d.fullNameAr.trim(),
@@ -159,6 +192,7 @@ export class EmployeeEditorComponent {
       defaultLocale: d.defaultLocale,
     };
     const id = this.editing();
+    if (!id) this.submittedEmail.set(d.email.trim());
     const request: Observable<unknown> = id
       ? this.api.updateUser(id, body)
       : this.api.createUser({ ...body, email: d.email.trim(), password: this.password(), confirmPassword: this.confirmPassword() });
@@ -198,7 +232,10 @@ export class EmployeeEditorComponent {
     this.password.set('');
     this.confirmPassword.set('');
     this.showPassword.set(false);
+    this.emailTouched.set(false);
+    this.submittedEmail.set(null);
     this.editing.set(null);
     this.actions.error.set(null);
+    this.actions.fieldErrors.set({});
   }
 }

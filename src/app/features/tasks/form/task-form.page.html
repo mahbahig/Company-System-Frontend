@@ -42,7 +42,7 @@
       @if (canAssign()) {
         <div>
           <label appLabel for="assignee">{{ 'crm.tasks.fields.ownerId' | t }}</label>
-          <input appInput id="assignee" dir="ltr" [formField]="taskForm.assigneeId" [placeholder]="'crm.common.unassigned' | t" />
+          <app-user-select inputId="assignee" [formField]="taskForm.assigneeId" [placeholder]="'crm.common.unassigned' | t" />
         </div>
       }
     </div>
@@ -86,7 +86,7 @@
           {{ 'crm.common.save' | t }}
         }
       </button>
-      <a appButton variant="ghost" [routerLink]="editing() ? ['/', i18n.locale(), 'tasks', id()] : ['/', i18n.locale(), 'tasks']">{{ 'crm.common.cancel' | t }}</a>
+      <a appButton variant="ghost" [routerLink]="editing() ? ['/', 'tasks', id()] : ['/', 'tasks']">{{ 'crm.common.cancel' | t }}</a>
       <span class="hidden text-xs text-muted-foreground sm:inline" aria-hidden="true">{{ 'ux.forms.saveHint' | t }}</span>
     </div>
   </form>

@@ -33,6 +33,13 @@ export interface AdminUser {
   lastLoginAt?: string | null;
 }
 
+/** The system lock (`GET /settings/system-lock`): while it is on, only Super Administrators can sign in. */
+export interface SystemLockState {
+  locked: boolean;
+  changedAt: string | null;
+  changedBy: { id: string; fullNameEn: string; fullNameAr: string } | null;
+}
+
 /** `GET /users/:id/performance`. */
 export interface EmployeePerformance {
   user: { id: string; fullNameAr: string; fullNameEn: string; email: string; roleCodes: string[]; isActive: boolean; lastLoginAt: string | null };
@@ -142,6 +149,16 @@ export class AdminApi {
   /** Logs the employee out everywhere, the session they are using included. */
   revokeAllUserSessions(id: string): Observable<{ revokedSessions: number }> {
     return this.api.delete(`users/${id}/sessions`);
+  }
+  /** The system lock — Super Administrators only (the API refuses everyone else). */
+  systemLock(): Observable<SystemLockState> {
+    return this.api.get('settings/system-lock');
+  }
+  lockSystem(): Observable<SystemLockState> {
+    return this.api.post('settings/system-lock/lock');
+  }
+  unlockSystem(): Observable<SystemLockState> {
+    return this.api.post('settings/system-lock/unlock');
   }
 
   roles(): Observable<Role[]> {

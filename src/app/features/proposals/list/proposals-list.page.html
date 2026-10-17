@@ -15,6 +15,7 @@
   @if (opportunities.error()) {
     <app-alert variant="destructive">{{ i18n.errorText(opportunities.error()) }}</app-alert>
   }
+  <app-page-size mode="state" [pageSize]="opportunitiesPager.pageSize()" [total]="opportunities.hasValue() ? opportunities.value().total : null" [loading]="opportunities.isLoading()" (pageSizeChange)="opportunitiesPager.setPageSize($event)" />
   <app-table-wrapper
     [label]="'prop.pickOpportunity' | t"
     [attr.aria-busy]="opportunities.isLoading()"
@@ -32,14 +33,14 @@
       </thead>
       <tbody appTableBody>
         @for (row of opportunityRows(); track row.id) {
-          <tr appTableRow [appRowLink]="['/', i18n.locale(), 'opportunities', row.id, 'proposals']">
+          <tr appTableRow [appRowLink]="['/', 'opportunities', row.id, 'proposals']">
             <td appTableCell>
               <span class="tabular me-2 text-muted-foreground" dir="ltr">{{
                 row.opportunityNo
               }}</span>
               <a
                 class="font-medium text-primary hover:underline"
-                [routerLink]="['/', i18n.locale(), 'opportunities', row.id, 'proposals']"
+                [routerLink]="['/', 'opportunities', row.id, 'proposals']"
                 >{{ row.name }}</a
               >
             </td>
@@ -54,7 +55,7 @@
             <td appTableCell class="text-end">
               <a
                 class="text-sm text-primary hover:underline"
-                [routerLink]="['/', i18n.locale(), 'opportunities', row.id, 'proposals']"
+                [routerLink]="['/', 'opportunities', row.id, 'proposals']"
                 >{{ 'prop.workspaceTitle' | t }}</a
               >
             </td>
@@ -84,12 +85,12 @@
       [total]="pageOfOpportunitiesPager.total"
       [pageSize]="pageOfOpportunitiesPager.pageSize"
       (pageChange)="opportunitiesPager.setPage($event)"
-      (pageSizeChange)="opportunitiesPager.setPageSize($event)"
     />
   }
 </section>
 
 <h2 class="text-lg font-semibold">{{ 'prop.listTitle' | t }}</h2>
+<app-page-size [pageSize]="pageSize()" [total]="result.hasValue() ? result.value().total : null" [loading]="result.isLoading()" />
 <app-table-wrapper [label]="'prop.listTitle' | t" [attr.aria-busy]="result.isLoading()">
   <table appTable>
     <thead appTableHeader>

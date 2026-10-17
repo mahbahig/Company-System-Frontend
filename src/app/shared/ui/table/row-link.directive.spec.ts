@@ -9,7 +9,7 @@ import { RowLinkDirective } from './row-link.directive';
   template: `
     <table>
       <tbody>
-        <tr [appRowLink]="['/en', 'leads', 'l1']" data-testid="row">
+        <tr [appRowLink]="['/', 'leads', 'l1']" data-testid="row">
           <td data-testid="cell">Lead L-1</td>
           <td><button type="button" data-testid="action" (click)="acted = true">Assign</button></td>
           <td><a href="/elsewhere" data-testid="link" (click)="$event.preventDefault()">Customer</a></td>
@@ -43,7 +43,7 @@ describe('RowLinkDirective (whole row opens the record)', () => {
   it('a click anywhere on the row opens the record', () => {
     el('cell').click();
     expect(navigate).toHaveBeenCalledTimes(1);
-    expect(String(navigate.mock.calls[0][0])).toBe('/en/leads/l1');
+    expect(String(navigate.mock.calls[0][0])).toBe('/leads/l1');
     expect(el('row').classList).toContain('cursor-pointer');
   });
 
@@ -58,7 +58,7 @@ describe('RowLinkDirective (whole row opens the record)', () => {
   it('Ctrl / ⌘ click opens the record in a new tab instead', () => {
     const open = vi.spyOn(window, 'open').mockReturnValue(null);
     el('cell').dispatchEvent(new MouseEvent('click', { bubbles: true, ctrlKey: true }));
-    expect(open).toHaveBeenCalledWith('/en/leads/l1', '_blank', 'noopener');
+    expect(open).toHaveBeenCalledWith('/leads/l1', '_blank', 'noopener');
     expect(navigate).not.toHaveBeenCalled();
     open.mockRestore();
   });

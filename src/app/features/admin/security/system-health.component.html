@@ -1,0 +1,82 @@
+<section class="flex flex-col gap-3" aria-labelledby="sc-health" data-testid="system-health">
+  <div class="flex flex-wrap items-end justify-between gap-3">
+    <div>
+      <h2 id="sc-health" class="text-lg font-semibold tracking-tight">{{ 'securityCenter.health.title' | t }}</h2>
+      @if (report(); as r) {
+        <p class="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+          <span class="flex items-center gap-2 font-semibold text-foreground" role="status" data-testid="system-health-overall">
+            <span class="size-2.5 rounded-full" [class]="overallTone[r.status].dot" aria-hidden="true"></span>
+            {{ 'securityCenter.health.overall.' + r.status | t }}
+          </span>
+          <span>· {{ 'securityCenter.health.checkedAt' | t: { time: i18n.formatDate(r.checkedAt, true) } }}</span>
+        </p>
+      }
+    </div>
+    <button type="button" appButton variant="outline" size="sm" [disabled]="loading()" (click)="refresh.emit()" data-testid="system-health-refresh">
+      <app-icon [icon]="refreshIcon" [class.animate-spin]="loading()" />{{ 'securityCenter.health.refresh' | t }}
+    </button>
+  </div>
+
+  @if (error()) {
+    <app-alert variant="destructive">{{ i18n.errorText(error()) }}</app-alert>
+  } @else if (report(); as r) {
+    <ul class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      @for (component of r.components; track component.key) {
+        <li class="flex flex-col gap-2 rounded-xl border border-border/80 bg-card p-4 shadow-sm" [attr.data-testid]="'health-' + component.key">
+          <div class="flex items-start justify-between gap-2">
+            <h3 class="font-semibold">{{ 'securityCenter.health.components.' + component.key | t }}</h3>
+            <app-badge [tone]="componentTone[component.status].badge">
+              <span class="size-1.5 rounded-full" [class]="componentTone[component.status].dot" aria-hidden="true"></span>
+              {{ 'securityCenter.health.status.' + component.status | t }}
+            </app-badge>
+          </div>
+          @if (component.latencyMs !== null) {
+            <p class="tabular text-sm text-muted-foreground" dir="ltr">{{ 'securityCenter.health.latency' | t: { ms: i18n.formatNumber(component.latencyMs) } }}</p>
+          }
+          @if (reasonText(component); as reason) {
+            <p class="text-sm" [class.text-warning-tint]="component.status === 'degraded'" [class.text-destructive-tint]="component.status === 'unhealthy'">{{ reason }}</p>
+          }
+          @for (item of headline(component); track item[0]) {
+            <p class="text-xs text-muted-foreground">{{ factLabel(item[0]) }}: <span class="font-medium text-foreground">{{ fact(item[0], item[1]) }}</span></p>
+          }
+          <div class="mt-auto pt-1">
+            <button type="button" appButton variant="ghost" size="sm" (click)="showDetails(component)">{{ 'securityCenter.health.details' | t }}</button>
+          </div>
+        </li>
+      }
+    </ul>
+  } @else {
+    <p class="text-sm text-muted-foreground" role="status">{{ 'common.labels.loading' | t }}</p>
+  }
+</section>
+
+<app-dialog [(open)]="detailsOpen" [heading]="selected() ? ('securityCenter.health.components.' + selected()!.key | t) : ''">
+  @if (selected(); as c) {
+    <dl class="grid gap-3 text-sm sm:grid-cols-2" data-testid="health-details">
+      <div>
+        <dt class="text-2xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">{{ 'securityCenter.health.statusLabel' | t }}</dt>
+        <dd class="mt-1"><app-badge [tone]="componentTone[c.status].badge">{{ 'securityCenter.health.status.' + c.status | t }}</app-badge></dd>
+      </div>
+      <div>
+        <dt class="text-2xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">{{ 'securityCenter.health.latencyLabel' | t }}</dt>
+        <dd class="tabular mt-1" dir="ltr">{{ c.latencyMs !== null ? ('securityCenter.health.latency' | t: { ms: i18n.formatNumber(c.latencyMs) }) : '—' }}</dd>
+      </div>
+      <div>
+        <dt class="text-2xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">{{ 'securityCenter.health.lastChecked' | t }}</dt>
+        <dd class="tabular mt-1">{{ i18n.formatDate(c.checkedAt, true) }}</dd>
+      </div>
+      @if (reasonText(c); as reason) {
+        <div>
+          <dt class="text-2xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">{{ 'securityCenter.health.reason' | t }}</dt>
+          <dd class="mt-1">{{ reason }}</dd>
+        </div>
+      }
+      @for (item of selectedFacts(); track item[0]) {
+        <div>
+          <dt class="text-2xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">{{ factLabel(item[0]) }}</dt>
+          <dd class="mt-1">{{ fact(item[0], item[1]) }}</dd>
+        </div>
+      }
+    </dl>
+  }
+</app-dialog>

@@ -1,0 +1,115 @@
+@if (notFound()) {
+  <app-status-page [code]="404" titleKey="errors.notFound.title" bodyKey="securityCenter.alerts.notFound" />
+} @else if (alert.error()) {
+  <app-alert variant="destructive">{{ i18n.errorText(alert.error()) }}</app-alert>
+} @else if (alert.value(); as a) {
+  <app-breadcrumbs [items]="crumbs()" />
+  <header class="flex flex-col gap-4 rounded-xl border border-border/80 bg-card p-6 shadow-sm sm:flex-row sm:items-start sm:justify-between">
+    <div class="min-w-0">
+      <p class="text-2xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">{{ 'securityCenter.alerts.alert' | t }}</p>
+      <h1 class="mt-1 text-2xl font-semibold tracking-tight [overflow-wrap:anywhere]" data-testid="alert-title">{{ i18n.pick(a.title.ar, a.title.en) }}</h1>
+      <p class="mt-1 text-sm text-muted-foreground">{{ i18n.pick(a.description.ar, a.description.en) }}</p>
+      <div class="mt-3 flex flex-wrap gap-2">
+        <app-badge [tone]="severityTone[a.severity]">{{ 'securityCenter.severity.' + a.severity | t }}</app-badge>
+        <app-badge [tone]="statusTone[a.status]" data-testid="alert-status">{{ 'securityCenter.alerts.statuses.' + a.status | t }}</app-badge>
+      </div>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      @if (a.status === 'new') {
+        <button type="button" appButton variant="soft-info" (click)="acknowledge()" data-testid="alert-acknowledge"><app-icon [icon]="icons.acknowledge" />{{ 'securityCenter.alerts.acknowledge' | t }}</button>
+      }
+      @if (a.status !== 'resolved') {
+        <button type="button" appButton variant="soft-success" (click)="resolve()" data-testid="alert-resolve"><app-icon [icon]="icons.resolve" />{{ 'securityCenter.alerts.resolve' | t }}</button>
+      }
+      <a appButton variant="outline" [routerLink]="['/', 'admin', 'security']">{{ 'securityCenter.alerts.back' | t }}</a>
+    </div>
+  </header>
+
+  <section appCard aria-labelledby="alert-facts">
+    <div appCardHeader><h2 appCardTitle id="alert-facts">{{ 'securityCenter.alerts.details' | t }}</h2></div>
+    <dl appCardContent class="grid gap-x-8 gap-y-5 sm:grid-cols-2 lg:grid-cols-3">
+      <div>
+        <dt class="text-2xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">{{ 'securityCenter.alerts.employee' | t }}</dt>
+        <dd class="mt-1 font-medium">
+          @if (a.user; as user) {
+            <a [routerLink]="['/', 'employees', user.id]" class="text-primary underline-offset-4 hover:underline" data-testid="alert-employee">{{ i18n.pick(user.nameAr, user.name) }}</a>
+          } @else {
+            —
+          }
+        </dd>
+      </div>
+      <div>
+        <dt class="text-2xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">{{ 'securityCenter.alerts.ip' | t }}</dt>
+        <dd class="mt-1 font-mono text-sm" dir="ltr">{{ a.ip || '—' }}</dd>
+      </div>
+      <div>
+        <dt class="text-2xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">{{ 'securityCenter.alerts.events' | t }}</dt>
+        <dd class="tabular mt-1 font-medium">{{ i18n.formatNumber(a.eventCount) }}</dd>
+      </div>
+      <div>
+        <dt class="text-2xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">{{ 'securityCenter.alerts.firstSeen' | t }}</dt>
+        <dd class="tabular mt-1">{{ i18n.formatDate(a.firstSeenAt, true) }}</dd>
+      </div>
+      <div>
+        <dt class="text-2xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">{{ 'securityCenter.alerts.lastSeen' | t }}</dt>
+        <dd class="tabular mt-1">{{ i18n.formatDate(a.lastSeenAt, true) }}</dd>
+      </div>
+      @if (a.relatedAuditEventId) {
+        <div>
+          <dt class="text-2xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">{{ 'securityCenter.alerts.auditEvent' | t }}</dt>
+          <dd class="mt-1"><a [routerLink]="['/', 'admin', 'audit', a.relatedAuditEventId]" class="text-primary underline-offset-4 hover:underline" data-testid="alert-audit-link">{{ 'securityCenter.alerts.openAuditEvent' | t }}</a></dd>
+        </div>
+      }
+      @if (a.acknowledgedAt) {
+        <div>
+          <dt class="text-2xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">{{ 'securityCenter.alerts.acknowledged' | t }}</dt>
+          <dd class="mt-1">{{ 'securityCenter.alerts.byOn' | t: { name: a.acknowledgedByName || '—', time: i18n.formatDate(a.acknowledgedAt, true) } }}</dd>
+        </div>
+      }
+      @if (a.resolvedAt) {
+        <div>
+          <dt class="text-2xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">{{ 'securityCenter.alerts.resolved' | t }}</dt>
+          <dd class="mt-1">{{ 'securityCenter.alerts.byOn' | t: { name: a.resolvedByName || '—', time: i18n.formatDate(a.resolvedAt, true) } }}</dd>
+          @if (a.resolutionNote) {
+            <dd class="mt-1 text-sm text-muted-foreground">{{ a.resolutionNote }}</dd>
+          }
+        </div>
+      }
+    </dl>
+  </section>
+
+  <section appCard aria-labelledby="alert-events">
+    <div appCardHeader>
+      <h2 appCardTitle id="alert-events">{{ 'securityCenter.alerts.findings' | t }}</h2>
+      <p appCardDescription>{{ 'securityCenter.alerts.findingsHint' | t }}</p>
+    </div>
+    <div appCardContent>
+      <ul class="flex flex-col divide-y divide-border" data-testid="alert-events">
+        @for (event of a.events; track event.id) {
+          <li class="flex flex-col gap-1 py-3 text-sm">
+            <div class="flex flex-wrap items-baseline justify-between gap-2">
+              <span class="font-medium">{{ i18n.pick(event.title.ar, event.title.en) }}</span>
+              <time class="tabular text-xs text-muted-foreground" [attr.datetime]="event.occurredAt">{{ i18n.formatDate(event.occurredAt, true) }}</time>
+            </div>
+            <p class="text-muted-foreground">{{ i18n.pick(event.description.ar, event.description.en) }}</p>
+            <p class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+              <app-badge [tone]="severityTone[event.severity]">{{ 'securityCenter.severity.' + event.severity | t }}</app-badge>
+              @if (event.ip) {
+                <span dir="ltr" class="font-mono">{{ event.ip }}</span>
+              }
+              @if (event.device) {
+                <span>{{ 'securityCenter.alerts.device' | t }}: {{ device(event) }}</span>
+              }
+              <span>{{ (event.reviewed ? 'securityCenter.alerts.reviewed' : 'securityCenter.alerts.notReviewed') | t }}</span>
+              @if (event.auditEventId) {
+                <a [routerLink]="['/', 'admin', 'audit', event.auditEventId]" class="text-primary underline-offset-4 hover:underline">{{ 'securityCenter.alerts.openAuditEvent' | t }}</a>
+              }
+            </p>
+          </li>
+        }
+      </ul>
+    </div>
+  </section>
+} @else {
+  <app-detail-skeleton [label]="'common.labels.loading' | t" />
+}

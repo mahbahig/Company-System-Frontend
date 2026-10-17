@@ -10,6 +10,7 @@ import type { Customer360 } from '../models/customer-360.interface';
 import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.component';
 import { LocalPager } from '../../../shared/crm/pagination/local-pager';
 import { PagerComponent } from '../../../shared/crm/pagination/pager.component';
+import { PagerSizeComponent } from '../../../shared/crm/pagination/page-size-select.component';
 
 interface Row {
   id: string;
@@ -24,7 +25,7 @@ interface Row {
 /** CUST-03 recent calls, meetings, visits and logged interactions, plus open tasks. */
 @Component({
   selector: 'app-customer-activities',
-  imports: [SkeletonRowComponent, RouterLink, TranslatePipe, StatusBadgeComponent, ...TABLE_IMPORTS, PagerComponent],
+  imports: [SkeletonRowComponent, RouterLink, TranslatePipe, StatusBadgeComponent, ...TABLE_IMPORTS, PagerComponent, PagerSizeComponent],
   templateUrl: './customer-activities.component.html',
   host: { class: 'flex flex-col gap-6' },
 })
@@ -38,11 +39,10 @@ export class CustomerActivitiesComponent {
   protected readonly rows = computed<Row[]>(() => {
     const d = this.data();
     if (!d) return [];
-    const locale = this.i18n.locale();
     const rows: Row[] = [
-      ...d.activities.calls.map((c): Row => ({ id: c.id, at: c.occurredAt, kind: 'call', title: c.summary || this.reference.label('call_outcome', c.outcomeCode), link: ['/', locale, 'calls', c.id] })),
-      ...d.activities.meetings.map((m): Row => ({ id: m.id, at: m.scheduledAt, kind: 'meeting', title: m.subject, status: m.status, statusEnum: 'meetingStatus', link: ['/', locale, 'meetings', m.id] })),
-      ...d.activities.visits.map((v): Row => ({ id: v.id, at: v.scheduledAt, kind: 'visit', title: `${v.visitNo} · ${this.i18n.t('enums.visitPurpose.' + v.purpose)}`, status: v.status, statusEnum: 'visitStatus', link: ['/', locale, 'visits', v.id] })),
+      ...d.activities.calls.map((c): Row => ({ id: c.id, at: c.occurredAt, kind: 'call', title: c.summary || this.reference.label('call_outcome', c.outcomeCode), link: ['/', 'calls', c.id] })),
+      ...d.activities.meetings.map((m): Row => ({ id: m.id, at: m.scheduledAt, kind: 'meeting', title: m.subject, status: m.status, statusEnum: 'meetingStatus', link: ['/', 'meetings', m.id] })),
+      ...d.activities.visits.map((v): Row => ({ id: v.id, at: v.scheduledAt, kind: 'visit', title: `${v.visitNo} · ${this.i18n.t('enums.visitPurpose.' + v.purpose)}`, status: v.status, statusEnum: 'visitStatus', link: ['/', 'visits', v.id] })),
       ...d.activities.activities.map((a): Row => ({ id: a.id, at: a.occurredAt, kind: 'activity', title: a.subject || a.body || this.i18n.t('enums.activityChannel.' + a.channel) })),
     ];
     return rows.sort((a, b) => (a.at < b.at ? 1 : -1));

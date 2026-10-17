@@ -34,7 +34,7 @@ export class UserMenuComponent {
   ];
 
   protected go(path: string): void {
-    void this.router.navigate(['/', this.i18n.locale(), 'account', path]);
+    void this.router.navigate(['/', 'account', path]);
   }
 
   protected readonly name = computed(() => {
@@ -51,6 +51,6 @@ export class UserMenuComponent {
   protected async signOut(): Promise<void> {
     await this.auth.logout();
     // Straight to the sign-in page — the user knows they just signed out.
-    await this.router.navigate(['/', this.i18n.locale(), 'login']);
+    await this.router.navigate(['/', 'login']);
   }
 }

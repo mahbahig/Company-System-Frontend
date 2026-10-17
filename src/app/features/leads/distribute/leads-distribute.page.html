@@ -12,6 +12,7 @@
       <app-alert variant="default">{{ 'crm.leads.distribute.assigned' | t }}</app-alert>
     }
 
+    <app-page-size mode="state" [pageSize]="unassignedPager.pageSize()" [total]="unassigned.hasValue() ? unassigned.value().total : null" [loading]="unassigned.isLoading()" (pageSizeChange)="unassignedPager.setPageSize($event)" />
     <app-table-wrapper [label]="'crm.leads.distribute.manualTitle' | t" [attr.aria-busy]="unassigned.isLoading()">
       <table appTable>
         <thead appTableHeader>
@@ -61,14 +62,13 @@
         [total]="pageOfUnassignedPager.total"
         [pageSize]="pageOfUnassignedPager.pageSize"
         (pageChange)="unassignedPager.setPage($event)"
-        (pageSizeChange)="unassignedPager.setPageSize($event)"
       />
     }
 
     <form class="flex flex-wrap items-end gap-3" novalidate (submit)="onAssignSubmit($event)">
       <div>
         <label appLabel for="dm-owner" class="mb-1.5 block" required>{{ 'crm.leads.distribute.manualOwner' | t }}</label>
-        <input appInput id="dm-owner" dir="ltr" class="w-48" [formField]="assignForm.ownerId" />
+        <app-user-select inputId="dm-owner" class="w-56" roles="sales_representative,telesales" [formField]="assignForm.ownerId" />
       </div>
       <div>
         <label appLabel for="dm-reason" class="mb-1.5 block" required>{{ 'crm.leads.distribute.manualReason' | t }}</label>
@@ -103,6 +103,7 @@
     </div>
 
     @if (proposals(); as rows) {
+      <app-pager-size [pager]="proposalsPager" />
       <app-table-wrapper [label]="'crm.leads.distribute.title' | t">
         <table appTable>
           <thead appTableHeader>

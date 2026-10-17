@@ -35,7 +35,7 @@
           </div>
           @if (task.customerId) {
             <div appDetailItem [label]="'crm.tasks.fields.customerId' | t">
-              <a class="text-primary hover:underline" [routerLink]="['/', i18n.locale(), 'customers', task.customerId]">{{ 'crm.common.view' | t }}</a>
+              <a class="text-primary hover:underline" [routerLink]="['/', 'customers', task.customerId]">{{ 'crm.common.view' | t }}</a>
             </div>
           }
           @if (task.leadId) {

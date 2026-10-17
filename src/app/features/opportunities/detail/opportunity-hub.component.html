@@ -22,7 +22,7 @@
       }
       @if (auth.can('assessments.view')) {
         @for (a of assessments.value() ?? []; track a.id) {
-          <a class="hub-link" [routerLink]="['/', i18n.locale(), 'assessments', a.id]">
+          <a class="hub-link" [routerLink]="['/', 'assessments', a.id]">
             <span class="font-medium"
               >{{ 'oppHub.assessment' | t }}
               <span class="tabular text-xs" dir="ltr">{{ a.assessmentNo }}</span></span
@@ -63,7 +63,7 @@
       }
       @if (auth.can('contracts.view')) {
         @for (c of contracts.value() ?? []; track c.id) {
-          <a class="hub-link" [routerLink]="['/', i18n.locale(), 'contracts', c.id]">
+          <a class="hub-link" [routerLink]="['/', 'contracts', c.id]">
             <span class="font-medium"
               >{{ 'oppHub.contract' | t }}
               <span class="tabular text-xs" dir="ltr"
@@ -80,7 +80,7 @@
       }
       @if (auth.can('projects.view')) {
         @for (p of projects.value() ?? []; track p.id) {
-          <a class="hub-link" [routerLink]="['/', i18n.locale(), 'projects', p.id]">
+          <a class="hub-link" [routerLink]="['/', 'projects', p.id]">
             <span class="font-medium"
               >{{ 'oppHub.project' | t }}
               <span class="tabular text-xs" dir="ltr">{{ p.projectNo }}</span></span
@@ -110,7 +110,7 @@
           appButton
           variant="outline"
           size="sm"
-          [routerLink]="['/', i18n.locale(), 'calls', 'new']"
+          [routerLink]="['/', 'calls', 'new']"
           [queryParams]="activityParams()"
           ><app-create-icon />{{ 'act.calls.new' | t }}</a
         >
@@ -120,7 +120,7 @@
           appButton
           variant="outline"
           size="sm"
-          [routerLink]="['/', i18n.locale(), 'meetings', 'new']"
+          [routerLink]="['/', 'meetings', 'new']"
           [queryParams]="activityParams()"
           ><app-create-icon />{{ 'act.meetings.new' | t }}</a
         >
@@ -130,7 +130,7 @@
           appButton
           variant="outline"
           size="sm"
-          [routerLink]="['/', i18n.locale(), 'visits', 'new']"
+          [routerLink]="['/', 'visits', 'new']"
           [queryParams]="activityParams()"
           ><app-create-icon />{{ 'act.visits.new' | t }}</a
         >
@@ -140,7 +140,7 @@
           appButton
           variant="outline"
           size="sm"
-          [routerLink]="['/', i18n.locale(), 'tasks', 'new']"
+          [routerLink]="['/', 'tasks', 'new']"
           [queryParams]="{ opportunityId: opportunityId() }"
           ><app-create-icon />{{ 'oppHub.newTask' | t }}</a
         >

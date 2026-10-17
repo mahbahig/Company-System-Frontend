@@ -60,6 +60,7 @@ import { PagerComponent } from '../../../shared/crm/pagination/pager.component';
 import { PagerState } from '../../../shared/crm/pagination/local-pager';
 import { PaginationComponent } from '../../../shared/crm/pagination/pagination.component';
 import { CreateIconComponent } from '../../../shared/ui/create-icon/create-icon.component';
+import { PageSizeSelectComponent, PagerSizeComponent } from '../../../shared/crm/pagination/page-size-select.component';
 
 /**
  * Customer 360 (first slice): details, assignment, completeness, contacts
@@ -105,7 +106,7 @@ import { CreateIconComponent } from '../../../shared/ui/create-icon/create-icon.
     TabsComponent,
     CustomerActivitiesComponent,
     CustomerDeliveryComponent,
-    ...FORM_IMPORTS, PagerComponent, PaginationComponent, CreateIconComponent],
+    ...FORM_IMPORTS, PagerComponent, PaginationComponent, CreateIconComponent, PageSizeSelectComponent, PagerSizeComponent],
   templateUrl: './customer-detail.page.html',
   host: { class: 'flex flex-col gap-6' },
 })

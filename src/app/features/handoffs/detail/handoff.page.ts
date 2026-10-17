@@ -21,6 +21,7 @@ import { HandoffsApi } from '../handoffs-api.service';
 import { DetailSkeletonComponent } from '../../../shared/ui/skeleton/skeleton.component';
 import { LocalPager } from '../../../shared/crm/pagination/local-pager';
 import { PagerComponent } from '../../../shared/crm/pagination/pager.component';
+import { PagerSizeComponent } from '../../../shared/crm/pagination/page-size-select.component';
 
 const SUBMITTABLE = ['draft', 'returned', 'withdrawn'];
 const DECIDABLE = ['submitted', 'under_review', 'resubmitted', 'clarification_requested'];
@@ -33,7 +34,7 @@ const DECIDABLE = ['submitted', 'under_review', 'resubmitted', 'clarification_re
  */
 @Component({
   selector: 'app-handoff-page',
-  imports: [DetailSkeletonComponent, RouterLink, TranslatePipe, StatusBadgeComponent, CompletenessPanelComponent, DocumentsPanelComponent, UserSelectComponent, AlertComponent, ButtonDirective, PageHeaderComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, ...TABLE_IMPORTS, PagerComponent],
+  imports: [DetailSkeletonComponent, RouterLink, TranslatePipe, StatusBadgeComponent, CompletenessPanelComponent, DocumentsPanelComponent, UserSelectComponent, AlertComponent, ButtonDirective, PageHeaderComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, ...TABLE_IMPORTS, PagerComponent, PagerSizeComponent],
   templateUrl: './handoff.page.html',
   host: { class: 'flex flex-col gap-6' },
 })

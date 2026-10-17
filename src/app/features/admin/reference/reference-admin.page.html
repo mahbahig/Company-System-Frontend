@@ -23,6 +23,7 @@
     </select>
   </app-select>
 </div>
+<app-pager-size [pager]="itemsPager" />
 <app-table-wrapper
   [label]="'admin.reference.types.' + activeType() | t"
   [attr.aria-busy]="items.isLoading()"

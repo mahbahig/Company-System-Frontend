@@ -1,7 +1,7 @@
 import type { Routes } from '@angular/router';
 
 /**
- * `/:locale/employees/...` — the Employees page and each employee's
+ * `/employees/...` — the Employees page and each employee's
  * performance. Who appears, and whose page opens, is decided by the API
  * (a Sales Manager: only the Sales Representatives who report to them).
  */

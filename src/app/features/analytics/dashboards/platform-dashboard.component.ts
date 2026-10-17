@@ -33,6 +33,6 @@ export class PlatformDashboardComponent {
 
   /** A card links only to a screen the user may open. */
   protected adminLink(path: string, permission: Parameters<AuthService['can']>[0]): string | undefined {
-    return this.auth.can(permission) ? `/${this.i18n.locale()}${path}` : undefined;
+    return this.auth.can(permission) ? path : undefined;
   }
 }

@@ -1,0 +1,80 @@
+<section appCard aria-labelledby="system-status-heading" data-testid="system-status">
+  <div appCardHeader class="flex flex-row flex-wrap items-start justify-between gap-3">
+    <div class="min-w-0">
+      <h2 appCardTitle id="system-status-heading">{{ 'systemStatus.title' | t }}</h2>
+      <p appCardDescription>{{ 'systemStatus.subtitle' | t }}</p>
+    </div>
+    @if (state.hasValue()) {
+      @let s = state.value();
+      <div class="flex flex-wrap gap-2">
+        @if (s.lock.locked) {
+          <button type="button" appButton variant="soft-success" data-testid="system-unlock" (click)="unlock()">
+            <app-icon [icon]="icons.unlock" />{{ 'systemStatus.unlock' | t }}
+          </button>
+        } @else {
+          <button type="button" appButton variant="destructive" data-testid="system-lock-action" (click)="lock()">
+            <app-icon [icon]="icons.lock" />{{ 'systemStatus.lock' | t }}
+          </button>
+        }
+        @if (s.maintenance.enabled) {
+          <button type="button" appButton variant="soft-success" data-testid="maintenance-off" (click)="disableMaintenance()">
+            <app-icon [icon]="icons.power" />{{ 'systemStatus.maintenanceOff' | t }}
+          </button>
+        } @else {
+          <button type="button" appButton variant="warning" data-testid="maintenance-on" (click)="enableMaintenance()">
+            <app-icon [icon]="icons.maintenance" />{{ 'systemStatus.maintenanceOn' | t }}
+          </button>
+        }
+      </div>
+    }
+  </div>
+  <div appCardContent class="flex flex-col gap-4">
+    @if (state.error()) {
+      <app-alert variant="destructive">{{ i18n.errorText(state.error()) }}</app-alert>
+    } @else if (state.hasValue()) {
+      @let s = state.value();
+      <div class="flex flex-wrap items-center gap-x-8 gap-y-2">
+        <p class="flex items-center gap-2 text-lg font-semibold" role="status" data-testid="system-mode">
+          <!-- The state is in the words; the dot only repeats it. -->
+          <span class="size-2.5 shrink-0 rounded-full" [class]="tone(s.mode).dot" aria-hidden="true"></span>
+          <span [class]="tone(s.mode).text">{{ 'systemStatus.modes.' + s.mode | t }}</span>
+        </p>
+        @if (health(); as h) {
+          <p class="flex items-center gap-2 text-sm font-medium" data-testid="system-health-summary">
+            <span class="text-muted-foreground">{{ 'securityCenter.health.title' | t }}:</span>
+            <span class="size-2 rounded-full" [class.bg-success]="h === 'healthy'" [class.bg-warning]="h === 'degraded'" [class.bg-destructive]="h === 'critical'" aria-hidden="true"></span>
+            <span>{{ 'securityCenter.health.overall.' + h | t }}</span>
+          </p>
+        }
+      </div>
+      <p class="text-sm text-muted-foreground">{{ 'systemStatus.modeHints.' + s.mode | t }}</p>
+      <dl class="grid gap-3 sm:grid-cols-2">
+        <div class="rounded-lg border border-border/70 p-3">
+          <dt class="text-2xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">{{ 'systemStatus.lockTitle' | t }}</dt>
+          <dd class="mt-1 flex items-center gap-2 font-medium" data-testid="system-lock-state">
+            <span class="size-2 rounded-full" [class.bg-destructive]="s.lock.locked" [class.bg-success]="!s.lock.locked" aria-hidden="true"></span>
+            {{ (s.lock.locked ? 'systemStatus.locked' : 'systemStatus.unlocked') | t }}
+          </dd>
+          <dd class="mt-0.5 text-xs text-muted-foreground">{{ (s.lock.locked ? 'systemStatus.lockedHint' : 'systemStatus.unlockedHint') | t }}</dd>
+          @if (lockChange(); as text) {
+            <dd class="mt-0.5 text-xs text-muted-foreground" data-testid="system-lock-changed">{{ text }}</dd>
+          }
+        </div>
+        <div class="rounded-lg border border-border/70 p-3">
+          <dt class="text-2xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">{{ 'systemStatus.maintenanceTitle' | t }}</dt>
+          <dd class="mt-1 flex items-center gap-2 font-medium" data-testid="maintenance-state">
+            <span class="size-2 rounded-full" [class.bg-warning]="s.maintenance.enabled" [class.bg-success]="!s.maintenance.enabled" aria-hidden="true"></span>
+            {{ (s.maintenance.enabled ? 'systemStatus.maintenanceEnabled' : 'systemStatus.maintenanceDisabled') | t }}
+          </dd>
+          <dd class="mt-0.5 text-xs text-muted-foreground">{{ (s.maintenance.enabled ? 'systemStatus.maintenanceEnabledHint' : 'systemStatus.maintenanceDisabledHint') | t }}</dd>
+          @if (maintenanceChange(); as text) {
+            <dd class="mt-0.5 text-xs text-muted-foreground" data-testid="maintenance-changed">{{ text }}</dd>
+          }
+        </div>
+      </dl>
+    } @else {
+      <div class="h-6 w-40 animate-pulse rounded bg-muted" aria-hidden="true"></div>
+      <div class="h-4 w-72 animate-pulse rounded bg-muted" aria-hidden="true"></div>
+    }
+  </div>
+</section>

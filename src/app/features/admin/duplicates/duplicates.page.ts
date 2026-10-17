@@ -23,6 +23,7 @@ import { userName } from '../../../shared/utils/display-name';
 import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.component';
 import { DEFAULT_PAGE_SIZE, pageSizeAttribute } from '../../../shared/crm/pagination/page-size';
 import { ConfirmService } from '../../../shared/ui/confirm/confirm.service';
+import { PageSizeSelectComponent } from '../../../shared/crm/pagination/page-size-select.component';
 
 interface CustomerSide {
   id: string;
@@ -62,7 +63,7 @@ interface Comparison {
  */
 @Component({
   selector: 'app-duplicates-page',
-  imports: [SkeletonRowComponent, RouterLink, TranslatePipe, StatusBadgeComponent, AlertComponent, ButtonDirective, PageHeaderComponent, ListToolbarComponent, PaginationComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, ...TABLE_IMPORTS],
+  imports: [SkeletonRowComponent, RouterLink, TranslatePipe, StatusBadgeComponent, AlertComponent, ButtonDirective, PageHeaderComponent, ListToolbarComponent, PaginationComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, ...TABLE_IMPORTS, PageSizeSelectComponent],
   templateUrl: './duplicates.page.html',
   host: { class: 'flex flex-col gap-6' },
 })

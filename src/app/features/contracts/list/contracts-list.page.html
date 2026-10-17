@@ -11,6 +11,7 @@
 @if (result.error()) {
   <app-alert variant="destructive">{{ i18n.errorText(result.error()) }}</app-alert>
 }
+<app-page-size [pageSize]="pageSize()" [total]="result.hasValue() ? result.value().total : null" [loading]="result.isLoading()" />
 <app-table-wrapper [label]="'contracts.title' | t" [attr.aria-busy]="result.isLoading()">
   <table appTable>
     <thead appTableHeader>

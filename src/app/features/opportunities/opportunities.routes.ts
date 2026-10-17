@@ -2,7 +2,7 @@ import type { Routes } from '@angular/router';
 
 import { unsavedChangesGuard } from '../../core/forms/unsaved-changes';
 
-/** `/:locale/opportunities/...` — lazy-loaded pages of the opportunities feature. */
+/** `/opportunities/...` — lazy-loaded pages of the opportunities feature. */
 export const OPPORTUNITIES_ROUTES: Routes = [
   {
     path: '',

@@ -265,7 +265,7 @@ export class OpportunityFormPage implements HasUnsavedChanges {
           );
       this.saved = true;
       this.draft.clear();
-      await this.router.navigateByUrl(`/${this.i18n.locale()}/opportunities/${saved.id}`);
+      await this.router.navigateByUrl(`/opportunities/${saved.id}`);
     } catch (error: unknown) {
       if (ApiError.is(error)) {
         const matches = (error.details as { matches?: DuplicateMatch[] } | undefined)?.matches;

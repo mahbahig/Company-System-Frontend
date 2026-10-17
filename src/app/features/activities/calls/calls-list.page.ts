@@ -22,11 +22,12 @@ import { ShortcutDirective } from '../../../core/shortcuts/shortcut.directive';
 import { AvatarComponent } from '../../../shared/ui/avatar/avatar.component';
 import { DEFAULT_PAGE_SIZE, pageSizeAttribute } from '../../../shared/crm/pagination/page-size';
 import { CreateIconComponent } from '../../../shared/ui/create-icon/create-icon.component';
+import { PageSizeSelectComponent } from '../../../shared/crm/pagination/page-size-select.component';
 
 /** E11 call log. */
 @Component({
   selector: 'app-calls-list-page',
-  imports: [AvatarComponent, ShortcutDirective, SkeletonRowComponent, RouterLink, TranslatePipe, EnumLabelPipe, AlertComponent, ButtonDirective, PageHeaderComponent, ListToolbarComponent, PaginationComponent, ...TABLE_IMPORTS, CreateIconComponent],
+  imports: [AvatarComponent, ShortcutDirective, SkeletonRowComponent, RouterLink, TranslatePipe, EnumLabelPipe, AlertComponent, ButtonDirective, PageHeaderComponent, ListToolbarComponent, PaginationComponent, ...TABLE_IMPORTS, CreateIconComponent, PageSizeSelectComponent],
   templateUrl: './calls-list.page.html',
   host: { class: 'flex flex-col gap-6' },
 })

@@ -132,7 +132,7 @@ export class PaletteCommands {
         label: this.i18n.t('ux.palette.actions.language', { language: LOCALE_NAMES[target] }),
         icon: Languages,
         keywords: 'language arabic english عربي',
-        run: () => void this.router.navigateByUrl(this.router.url.replace(/^\/(ar|en)(?=\/|\?|$)/, `/${target}`)),
+        run: () => void this.i18n.use(target),
       },
       {
         id: 'action:sidebar',
@@ -170,6 +170,6 @@ export class PaletteCommands {
 
   private async signOut(): Promise<void> {
     await this.auth.logout();
-    await this.router.navigate(['/', this.i18n.locale(), 'login']);
+    await this.router.navigate(['/', 'login']);
   }
 }

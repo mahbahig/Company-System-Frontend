@@ -204,6 +204,7 @@
     }
   </div>
 
+  <app-page-size [pageSize]="pageSize()" [total]="rows.hasValue() ? rows.value().total : null" [loading]="rows.isLoading()" />
   <app-table-wrapper [label]="'imports.rows' | t" [attr.aria-busy]="rows.isLoading()">
     <table appTable>
       <thead appTableHeader>

@@ -20,13 +20,14 @@ import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.compo
 import { ShortcutDirective } from '../../../core/shortcuts/shortcut.directive';
 import { DEFAULT_PAGE_SIZE, pageSizeAttribute } from '../../../shared/crm/pagination/page-size';
 import { CreateIconComponent } from '../../../shared/ui/create-icon/create-icon.component';
+import { PageSizeSelectComponent } from '../../../shared/crm/pagination/page-size-select.component';
 
 const STATUSES = ['planned', 'confirmed', 'completed', 'cancelled', 'rescheduled', 'no_show'];
 
 /** E12 meetings. */
 @Component({
   selector: 'app-meetings-list-page',
-  imports: [ShortcutDirective, SkeletonRowComponent, RouterLink, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, AlertComponent, ButtonDirective, PageHeaderComponent, ListToolbarComponent, PaginationComponent, ...TABLE_IMPORTS, CreateIconComponent],
+  imports: [ShortcutDirective, SkeletonRowComponent, RouterLink, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, AlertComponent, ButtonDirective, PageHeaderComponent, ListToolbarComponent, PaginationComponent, ...TABLE_IMPORTS, CreateIconComponent, PageSizeSelectComponent],
   templateUrl: './meetings-list.page.html',
   host: { class: 'flex flex-col gap-6' },
 })

@@ -207,7 +207,7 @@ export class SupportTicketDetailPage {
       action: () => this.api.remove(this.id()),
     });
     if (!done) return;
-    const back = this.manages() ? ['/', this.i18n.locale(), 'admin', 'support-tickets'] : ['/', this.i18n.locale(), 'support'];
+    const back = this.manages() ? ['/', 'admin', 'support-tickets'] : ['/', 'support'];
     void this.router.navigate(back, { state: { supportNotice: 'support.notices.deleted' } });
   }
 

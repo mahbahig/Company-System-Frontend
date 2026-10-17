@@ -22,6 +22,7 @@ import { SupportSeverityBadgeComponent } from '../shared/support-severity-badge.
 import { SupportApi } from '../support-api.service';
 import { DEFAULT_PAGE_SIZE, pageSizeAttribute } from '../../../shared/crm/pagination/page-size';
 import { CreateIconComponent } from '../../../shared/ui/create-icon/create-icon.component';
+import { PageSizeSelectComponent } from '../../../shared/crm/pagination/page-size-select.component';
 
 /**
  * Help & Support for every employee: their own tickets (the API never returns
@@ -30,7 +31,7 @@ import { CreateIconComponent } from '../../../shared/ui/create-icon/create-icon.
  */
 @Component({
   selector: 'app-support-tickets-page',
-  imports: [RouterLink, TranslatePipe, ShortcutDirective, ListToolbarComponent, PaginationComponent, AlertComponent, BadgeComponent, ButtonDirective, IconComponent, PageHeaderComponent, SkeletonRowComponent, SupportSeverityBadgeComponent, ...TABLE_IMPORTS, CreateIconComponent],
+  imports: [RouterLink, TranslatePipe, ShortcutDirective, ListToolbarComponent, PaginationComponent, AlertComponent, BadgeComponent, ButtonDirective, IconComponent, PageHeaderComponent, SkeletonRowComponent, SupportSeverityBadgeComponent, ...TABLE_IMPORTS, CreateIconComponent, PageSizeSelectComponent],
   templateUrl: './support-tickets.page.html',
   host: { class: 'flex flex-col gap-6' },
 })

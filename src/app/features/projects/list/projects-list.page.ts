@@ -20,6 +20,7 @@ import { TABLE_IMPORTS } from '../../../shared/ui/table/table.imports';
 import { userName } from '../../../shared/utils/display-name';
 import { ProjectsApi, type Project } from '../projects-api.service';
 import { DEFAULT_PAGE_SIZE, pageSizeAttribute } from '../../../shared/crm/pagination/page-size';
+import { PageSizeSelectComponent } from '../../../shared/crm/pagination/page-size-select.component';
 
 /** The delivery pipeline (backend `ProjectStatus`). */
 const STATUSES = ['planning', 'procurement', 'installation', 'testing_commissioning', 'customer_acceptance', 'warranty_service', 'closed', 'on_hold', 'cancelled'];
@@ -50,8 +51,7 @@ const PROJECT_COLUMNS: ColumnDef[] = [
     SavedViewsBarComponent,
     ColumnPickerComponent,
     TableSkeletonComponent,
-    ...TABLE_IMPORTS,
-  ],
+    ...TABLE_IMPORTS, PageSizeSelectComponent],
   templateUrl: './projects-list.page.html',
   host: { class: 'flex flex-col gap-6' },
 })

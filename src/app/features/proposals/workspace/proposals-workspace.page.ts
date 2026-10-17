@@ -24,6 +24,7 @@ import { ProposalsApi } from '../proposals-api.service';
 import { LocalPager } from '../../../shared/crm/pagination/local-pager';
 import { PagerComponent } from '../../../shared/crm/pagination/pager.component';
 import { CreateIconComponent } from '../../../shared/ui/create-icon/create-icon.component';
+import { PagerSizeComponent } from '../../../shared/crm/pagination/page-size-select.component';
 
 /**
  * One opportunity's commercial workspace: technical, financial and combined
@@ -33,7 +34,7 @@ import { CreateIconComponent } from '../../../shared/ui/create-icon/create-icon.
  */
 @Component({
   selector: 'app-proposals-workspace-page',
-  imports: [RouterLink, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, AlertComponent, BadgeComponent, ButtonDirective, PageHeaderComponent, TabsComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, ...TABLE_IMPORTS, PagerComponent, CreateIconComponent],
+  imports: [RouterLink, TranslatePipe, EnumLabelPipe, StatusBadgeComponent, AlertComponent, BadgeComponent, ButtonDirective, PageHeaderComponent, TabsComponent, ...CARD_IMPORTS, ...FORM_IMPORTS, ...TABLE_IMPORTS, PagerComponent, CreateIconComponent, PagerSizeComponent],
   templateUrl: './proposals-workspace.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
@@ -121,7 +122,7 @@ export class ProposalsWorkspacePage {
 
   protected compare(): void {
     const [a, b] = this.compareIds();
-    void this.router.navigate(['/', this.i18n.locale(), 'proposals', 'compare'], { queryParams: { a, b } });
+    void this.router.navigate(['/', 'proposals', 'compare'], { queryParams: { a, b } });
   }
 
   protected patchRevision(key: 'combinedProposalId' | 'type' | 'details', value: string): void {
@@ -134,12 +135,12 @@ export class ProposalsWorkspacePage {
 
   protected async newTechnical(): Promise<void> {
     const created = await this.act(this.api.createTechnical({ opportunityId: this.id(), changeReason: this.changeReason().trim() || undefined }), 'prop.created');
-    if (created) void this.router.navigate(['/', this.i18n.locale(), 'proposals', 'technical', created.id]);
+    if (created) void this.router.navigate(['/', 'proposals', 'technical', created.id]);
   }
 
   protected async newFinancial(): Promise<void> {
     const created = await this.act(this.api.createFinancial({ technicalProposalId: this.selectedTp(), changeReason: this.changeReason().trim() || undefined }), 'prop.created');
-    if (created) void this.router.navigate(['/', this.i18n.locale(), 'proposals', 'financial', created.id]);
+    if (created) void this.router.navigate(['/', 'proposals', 'financial', created.id]);
   }
 
   protected async newCombined(): Promise<void> {
@@ -147,7 +148,7 @@ export class ProposalsWorkspacePage {
       this.api.createCombined({ technicalProposalId: this.selectedTp(), financialProposalId: this.selectedFp(), templateCode: this.templateCode(), language: this.language(), changeReason: this.changeReason().trim() || undefined }),
       'prop.created',
     );
-    if (created) void this.router.navigate(['/', this.i18n.locale(), 'proposals', 'combined', created.id]);
+    if (created) void this.router.navigate(['/', 'proposals', 'combined', created.id]);
   }
 
   protected async requestRevision(event: Event): Promise<void> {

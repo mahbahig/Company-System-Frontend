@@ -7,7 +7,7 @@
     [subtitle]="reference.label('solution_type', v.solutionTypeCode)"
   >
     <app-status-badge enum="intakeStatus" [value]="v.status" />
-    <a appButton variant="outline" [routerLink]="['/', i18n.locale(), 'opportunities', id()]">{{
+    <a appButton variant="outline" [routerLink]="['/', 'opportunities', id()]">{{
       'handoffs.backToOpportunity' | t
     }}</a>
   </app-page-header>

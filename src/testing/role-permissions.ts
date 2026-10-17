@@ -46,6 +46,7 @@ export const ROLE_PERMISSIONS: Record<RoleKey, Partial<Record<PermissionCode, Sc
     'campaigns.manage': 'all',
     'campaigns.view': 'all',
     'catalog.manage': 'all',
+    'chat.manage_groups': 'all',
     'combined_proposals.assemble': 'all',
     'combined_proposals.present': 'all',
     'combined_proposals.release': 'all',
@@ -465,9 +466,6 @@ export const ROLE_PERMISSIONS: Record<RoleKey, Partial<Record<PermissionCode, Sc
     'tasks.view': 'own',
     'technical_proposals.view': 'own',
     'users.view': 'all',
-    'visits.create': 'own',
-    'visits.edit': 'own',
-    'visits.view': 'own',
   },
   telesales: {
     'activities.create': 'own',

@@ -4,7 +4,6 @@ import { Router, RouterLink } from '@angular/router';
 import { CalendarClock, ClipboardCheck, History, KeyRound, LogOut, MapPin, Pencil, PhoneCall, ShieldCheck, Target, UserCheck, UserRound, UserX, type IconNode } from 'lucide';
 import { of } from 'rxjs';
 
-import { auditActionLabel } from '../../core/audit/audit-action-label';
 
 import { ApiError } from '../../core/api/api-error';
 import { AuthService } from '../../core/auth/auth.service';
@@ -57,10 +56,11 @@ interface MetricGroup {
  *
  * For the Super Administrator the page also manages the account — Edit,
  * Deactivate / Activate, Reset Password, Log Out All Sessions
- * (`administration.manage_users`) — and shows its Security Activity (sign-ins,
- * lockouts, password changes, recent security events from the audit trail,
- * with a link to the audit log filtered to the employee) and its active
- * sessions (`security.view_sessions`). Another Super Administrator's account
+ * (`administration.manage_users`) — and shows its Security Activity summary
+ * (last sign-in, sign-ins, failed attempts, lockouts, password changes,
+ * sessions, two-factor) with "View Audit Logs" — the audit log filtered to the
+ * employee, the one place for the audit records themselves (no audit table is
+ * embedded here) — and its active sessions (`security.view_sessions`). Another Super Administrator's account
  * is read only: none of that is offered (the API refuses it all too).
  */
 @Component({
@@ -211,11 +211,6 @@ export class EmployeeDetailPage {
     void this.reference.load();
   }
 
-  /** Human-readable audit action (never the raw code). */
-  protected actionLabel(event: { action: string; actionLabel?: { en: string; ar: string } }): string {
-    return auditActionLabel(this.i18n, event.action, event.actionLabel);
-  }
-
   protected onSaved(messageKey: string): void {
     this.actions.message.set(this.i18n.t(messageKey));
     this.refresh();
@@ -272,7 +267,7 @@ export class EmployeeDetailPage {
       [event.customerId, 'customers', 'ux.performance.openCustomer'],
     ];
     for (const [id, area, label] of candidates) {
-      if (id && this.navigation.canOpen(`/${area}/${id}`)) return { commands: ['/', this.i18n.locale(), area, id], label };
+      if (id && this.navigation.canOpen(`/${area}/${id}`)) return { commands: ['/', area, id], label };
     }
     return null;
   }

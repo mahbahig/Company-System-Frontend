@@ -19,13 +19,14 @@ import { ProposalsApi } from '../proposals-api.service';
 import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.component';
 import { DEFAULT_PAGE_SIZE, pageSizeAttribute } from '../../../shared/crm/pagination/page-size';
 import { PagerState } from '../../../shared/crm/pagination/local-pager';
+import { PageSizeSelectComponent } from '../../../shared/crm/pagination/page-size-select.component';
 
 const STATUSES = ['draft', 'pending_approval', 'approved', 'released', 'sent', 'presented', 'under_negotiation', 'revision_requested', 'accepted', 'rejected', 'expired', 'superseded'];
 
 /** All combined proposals in the user's scope — the PM's assembly queue, Finance's approvals and Sales' released inbox. */
 @Component({
   selector: 'app-proposals-list-page',
-  imports: [SkeletonRowComponent, RouterLink, TranslatePipe, StatusBadgeComponent, AlertComponent, BadgeComponent, PageHeaderComponent, ListToolbarComponent, PaginationComponent, ...TABLE_IMPORTS],
+  imports: [SkeletonRowComponent, RouterLink, TranslatePipe, StatusBadgeComponent, AlertComponent, BadgeComponent, PageHeaderComponent, ListToolbarComponent, PaginationComponent, ...TABLE_IMPORTS, PageSizeSelectComponent],
   templateUrl: './proposals-list.page.html',
   host: { class: 'flex flex-col gap-6' },
 })

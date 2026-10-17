@@ -19,6 +19,7 @@ import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.compo
 import { DEFAULT_PAGE_SIZE, pageSizeAttribute } from '../../../shared/crm/pagination/page-size';
 import { LocalPager } from '../../../shared/crm/pagination/local-pager';
 import { PagerComponent } from '../../../shared/crm/pagination/pager.component';
+import { PageSizeSelectComponent, PagerSizeComponent } from '../../../shared/crm/pagination/page-size-select.component';
 
 interface Definition {
   code: string;
@@ -49,7 +50,7 @@ interface Run {
  */
 @Component({
   selector: 'app-automation-admin-page',
-  imports: [SkeletonRowComponent, TranslatePipe, StatusBadgeComponent, AlertComponent, ButtonDirective, PageHeaderComponent, ListToolbarComponent, PaginationComponent, ...TABLE_IMPORTS, PagerComponent],
+  imports: [SkeletonRowComponent, TranslatePipe, StatusBadgeComponent, AlertComponent, ButtonDirective, PageHeaderComponent, ListToolbarComponent, PaginationComponent, ...TABLE_IMPORTS, PagerComponent, PageSizeSelectComponent, PagerSizeComponent],
   templateUrl: './automation-admin.page.html',
   host: { class: 'flex flex-col gap-6' },
 })

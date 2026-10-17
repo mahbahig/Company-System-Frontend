@@ -23,6 +23,7 @@ import type { MyLeadsQuery } from '../models/my-leads-query.interface';
 import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.component';
 import { RowLinkDirective } from '../../../shared/ui/table/row-link.directive';
 import { DEFAULT_PAGE_SIZE, pageSizeAttribute } from '../../../shared/crm/pagination/page-size';
+import { PageSizeSelectComponent } from '../../../shared/crm/pagination/page-size-select.component';
 
 const TABS = ['new', 'assigned', 'self_sourced', 'follow_ups_due', 'nurture'] as const;
 type Tab = (typeof TABS)[number];
@@ -60,8 +61,7 @@ const PRIORITY_TONE: Record<string, 'neutral' | 'info' | 'warning' | 'danger'> =
     TableRowDirective,
     TableHeadDirective,
     TableCellDirective,
-    TableEmptyComponent,
-  ],
+    TableEmptyComponent, PageSizeSelectComponent],
   templateUrl: './leads-mine.page.html',
   host: { class: 'flex flex-col gap-6' },
 })

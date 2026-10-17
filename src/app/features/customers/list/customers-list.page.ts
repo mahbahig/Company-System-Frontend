@@ -34,6 +34,7 @@ import type { Customer } from '../models/customer.interface';
 import { RowLinkDirective } from '../../../shared/ui/table/row-link.directive';
 import { DEFAULT_PAGE_SIZE, pageSizeAttribute } from '../../../shared/crm/pagination/page-size';
 import { CreateIconComponent } from '../../../shared/ui/create-icon/create-icon.component';
+import { PageSizeSelectComponent } from '../../../shared/crm/pagination/page-size-select.component';
 
 const flag = (value: string | undefined) => value === '1' || value === 'true';
 
@@ -74,7 +75,7 @@ const CUSTOMER_COLUMNS: ColumnDef[] = [
     TableEmptyComponent,
     TableSkeletonComponent,
     ColumnPickerComponent,
-    ShortcutDirective, CreateIconComponent],
+    ShortcutDirective, CreateIconComponent, PageSizeSelectComponent],
   templateUrl: './customers-list.page.html',
   host: { class: 'flex flex-col gap-6' },
 })

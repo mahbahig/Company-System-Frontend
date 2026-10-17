@@ -7,15 +7,19 @@
   }
 </app-page-header>
 
-<label class="flex w-fit cursor-pointer items-center gap-2 text-sm">
-  <input
-    type="checkbox"
-    [formField]="toggleForm.unreadOnly"
-    (change)="onToggleUnreadOnly()"
-    class="size-4 rounded border-input accent-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-  />
-  {{ 'notifications.filters.unreadOnly' | t }}
-</label>
+<!-- The filter and "Items per page", above the list. -->
+<div class="flex flex-wrap items-center justify-between gap-3">
+  <label class="flex w-fit cursor-pointer items-center gap-2 text-sm">
+    <input
+      type="checkbox"
+      [formField]="toggleForm.unreadOnly"
+      (change)="onToggleUnreadOnly()"
+      class="size-4 rounded border-input accent-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+    />
+    {{ 'notifications.filters.unreadOnly' | t }}
+  </label>
+  <app-page-size [pageSize]="pageSize()" [total]="result.hasValue() ? result.value().total : null" [loading]="result.isLoading()" />
+</div>
 
 @if (result.error()) {
   <app-alert variant="destructive">{{ 'errors.db.unexpected' | t }}</app-alert>

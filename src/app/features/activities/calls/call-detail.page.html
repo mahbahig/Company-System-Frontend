@@ -104,7 +104,7 @@
               @if (canOpen('/leads/' + refId(c.leadId))) {
                 <a
                   class="text-primary hover:underline"
-                  [routerLink]="['/', i18n.locale(), 'leads', refId(c.leadId)]"
+                  [routerLink]="['/', 'leads', refId(c.leadId)]"
                   >{{ label(c.leadId) }}</a
                 >
               } @else {
@@ -117,7 +117,7 @@
               @if (canOpen('/customers/' + refId(c.customerId))) {
                 <a
                   class="text-primary hover:underline"
-                  [routerLink]="['/', i18n.locale(), 'customers', refId(c.customerId)]"
+                  [routerLink]="['/', 'customers', refId(c.customerId)]"
                   >{{ label(c.customerId) }}</a
                 >
               } @else {
@@ -130,7 +130,7 @@
               @if (canOpen('/opportunities/' + refId(c.opportunityId))) {
                 <a
                   class="text-primary hover:underline"
-                  [routerLink]="['/', i18n.locale(), 'opportunities', refId(c.opportunityId)]"
+                  [routerLink]="['/', 'opportunities', refId(c.opportunityId)]"
                   >{{ label(c.opportunityId) }}</a
                 >
               } @else {

@@ -19,6 +19,7 @@
     <a appButton routerLink="new"><app-create-icon />{{ 'support.new' | t }}</a>
   </section>
 } @else {
+  <app-page-size [pageSize]="pageSize()" [total]="result.hasValue() ? result.value().total : null" [loading]="result.isLoading()" />
   <app-table-wrapper [label]="'support.myTickets' | t" [attr.aria-busy]="result.isLoading()">
     <table appTable>
       <thead appTableHeader>

@@ -193,12 +193,12 @@ describe('UX features never widen access', () => {
       signInAs('installation_crew');
       const navigation = TestBed.inject(NavigationService);
       const canOpen = (path: string) => navigation.canOpen(path);
-      expect(notificationTarget('/contracts/1', 'en', canOpen)).toBeNull();
-      expect(notificationTarget('/projects/p1', 'en', canOpen)?.commands).toEqual(['/en/projects/p1']);
+      expect(notificationTarget('/contracts/1', canOpen)).toBeNull();
+      expect(notificationTarget('/projects/p1', canOpen)?.commands).toEqual(['/projects/p1']);
       signInAs('sales_manager');
-      expect(notificationTarget('/ownership-requests?box=all', 'ar', canOpen)).toEqual({ commands: ['/ar/ownership-requests'], queryParams: { box: 'all' }, path: '/ownership-requests' });
-      expect(notificationTarget('https://evil.example/x', 'en', canOpen)).toBeNull();
-      expect(notificationTarget(undefined, 'en', canOpen)).toBeNull();
+      expect(notificationTarget('/ownership-requests?box=all', canOpen)).toEqual({ commands: ['/ownership-requests'], queryParams: { box: 'all' }, path: '/ownership-requests' });
+      expect(notificationTarget('https://evil.example/x', canOpen)).toBeNull();
+      expect(notificationTarget(undefined, canOpen)).toBeNull();
     });
 
     it('name the next step from the category', () => {

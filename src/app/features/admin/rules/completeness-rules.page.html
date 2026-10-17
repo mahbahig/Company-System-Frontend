@@ -11,6 +11,7 @@
 }
 <app-tabs [tabs]="tabs()" [(active)]="entity" [label]="'admin.rules.title' | t" />
 
+<app-pager-size [pager]="rulesPager" />
 <app-table-wrapper [label]="'admin.rules.title' | t" [attr.aria-busy]="data.isLoading()">
   <table appTable>
     <thead appTableHeader>

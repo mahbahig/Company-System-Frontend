@@ -158,7 +158,7 @@ export class SupportTicketFormPage implements HasUnsavedChanges {
           this.progress.set(progress);
           if (!result) return;
           this.saved = true;
-          void this.router.navigate(['/', this.i18n.locale(), 'support', result.id], { state: { supportNotice: 'support.notices.created' } });
+          void this.router.navigate(['/', 'support', result.id], { state: { supportNotice: 'support.notices.created' } });
         },
         error: (error: unknown) => {
           this.error.set(this.i18n.errorText(error));

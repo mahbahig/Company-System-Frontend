@@ -10,7 +10,7 @@
   >
     <app-status-badge enum="approvalStatus" [value]="a.status" />
     @if (a.actionUrl) {
-      <a appButton variant="outline" [routerLink]="'/' + i18n.locale() + a.actionUrl">{{
+      <a appButton variant="outline" [routerLink]="a.actionUrl">{{
         'approvals.openRecord' | t
       }}</a>
     }

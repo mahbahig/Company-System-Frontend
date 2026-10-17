@@ -1,0 +1,134 @@
+<div class="flex items-center justify-between gap-2 border-b border-border p-3">
+  <h2 class="text-sm font-semibold">{{ 'chat.details.title' | t }}</h2>
+  <button type="button" appButton variant="ghost" size="icon" [attr.aria-label]="'chat.details.close' | t" (click)="closed.emit()">
+    <app-icon [icon]="icons.close" />
+  </button>
+</div>
+
+<div class="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4 scroll-area">
+  @if (actions.message(); as text) {
+    <app-alert variant="success">{{ text }}</app-alert>
+  }
+  @if (actions.error(); as text) {
+    <app-alert variant="destructive">{{ text }}</app-alert>
+  }
+
+  <section class="flex flex-col gap-2">
+    @if (renaming()) {
+      <form class="flex flex-col gap-2" novalidate (submit)="saveName($event)">
+        <label appLabel for="chat-rename">{{ 'chat.groupName' | t }}</label>
+        <input appInput id="chat-rename" autocomplete="off" [maxLength]="nameMax" [value]="newName()" (input)="newName.set($any($event.target).value)" />
+        <div class="flex justify-end gap-2">
+          <button type="button" appButton variant="outline" size="sm" (click)="renaming.set(false)">{{ 'common.actions.cancel' | t }}</button>
+          <button type="submit" appButton size="sm" [disabled]="!newName().trim() || actions.busy()">{{ 'chat.details.saveName' | t }}</button>
+        </div>
+      </form>
+    } @else {
+      <div class="flex items-start justify-between gap-2">
+        <div class="min-w-0">
+          <p class="truncate text-base font-semibold">{{ title() }}</p>
+          <p class="text-xs text-muted-foreground">{{ 'chat.types.' + details().type | t }} · {{ 'chat.memberCount' | t: { count: details().memberCount } }}</p>
+        </div>
+        @if (details().capabilities.rename) {
+          <button type="button" appButton variant="ghost" size="sm" (click)="startRename()">{{ 'chat.details.rename' | t }}</button>
+        }
+      </div>
+    }
+    <div class="flex flex-wrap gap-2">
+      @if (details().locked) {
+        <app-badge tone="warning"><app-icon [icon]="icons.lock" svgClass="size-3" />{{ 'chat.locked' | t }}</app-badge>
+      }
+      @if (details().adminOnly) {
+        <app-badge tone="info">{{ 'chat.adminOnlyBadge' | t }}</app-badge>
+      }
+      @if (details().status === 'inactive') {
+        <app-badge>{{ 'chat.inactiveBadge' | t }}</app-badge>
+      }
+    </div>
+  </section>
+
+  @if (details().capabilities.changeAdminMode) {
+    <section class="flex items-center justify-between gap-3 rounded-md border border-border p-3">
+      <div>
+        <p class="text-sm font-medium">{{ 'chat.details.adminOnly' | t }}</p>
+        <p class="text-xs text-muted-foreground">{{ 'chat.details.adminOnlyHint' | t }}</p>
+      </div>
+      <button
+        type="button"
+        role="switch"
+        class="relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        [class.bg-primary]="details().adminOnly"
+        [class.bg-input]="!details().adminOnly"
+        [attr.aria-checked]="details().adminOnly"
+        [attr.aria-label]="'chat.details.adminOnly' | t"
+        data-testid="admin-only-switch"
+        (click)="toggleAdminOnly()"
+      >
+        <span class="inline-block size-5 rounded-full bg-background shadow transition-transform" [class]="details().adminOnly ? 'translate-x-5 rtl:-translate-x-5' : 'translate-x-0.5 rtl:-translate-x-0.5'"></span>
+      </button>
+    </section>
+  }
+
+  @if (details().type !== 'private') {
+    <section class="flex flex-col gap-2">
+      <div class="flex items-center justify-between gap-2">
+        <h3 class="text-sm font-semibold">{{ 'chat.details.members' | t }}</h3>
+        @if (details().capabilities.manageMembers) {
+          <button type="button" appButton variant="outline" size="sm" data-testid="add-members" (click)="adding.set(true)">
+            <app-create-icon />{{ 'chat.details.addMembers' | t }}
+          </button>
+        }
+      </div>
+      @if (details().type === 'team') {
+        <p class="text-xs text-muted-foreground">{{ 'chat.details.teamMembersHint' | t }}</p>
+      }
+      @if (details().capabilities.manageMembers && atMinimum()) {
+        <p class="text-xs text-muted-foreground">{{ 'chat.details.minimumHint' | t }}</p>
+      }
+      <ul class="flex flex-col gap-1" data-testid="chat-members">
+        @for (member of sortedMembers(); track member.id) {
+          <li class="flex items-center gap-2 rounded-md p-1.5">
+            <app-avatar [userId]="member.id" [name]="name(member)" [version]="member.avatarVersion" size="sm" />
+            <span class="min-w-0 flex-1">
+              <span class="block truncate text-sm">{{ name(member) }}@if (member.id === me()) { <span class="text-muted-foreground"> {{ 'chat.details.you' | t }}</span> }</span>
+              <span class="block truncate text-xs text-muted-foreground">{{ i18n.pick(member.jobTitleAr, member.jobTitleEn) }}</span>
+            </span>
+            @if (member.role === 'admin') {
+              <app-badge tone="info"><app-icon [icon]="icons.admin" svgClass="size-3" />{{ 'chat.details.admin' | t }}</app-badge>
+            }
+            @if (details().capabilities.manageMembers && member.id !== me()) {
+              <button type="button" appButton variant="ghost" size="sm" class="shrink-0" (click)="setRole(member, member.role === 'admin' ? 'member' : 'admin')">
+                {{ (member.role === 'admin' ? 'chat.details.removeAdmin' : 'chat.details.makeAdmin') | t }}
+              </button>
+              <button
+                type="button"
+                appButton
+                variant="ghost"
+                size="icon"
+                class="size-8 shrink-0 text-destructive"
+                [disabled]="atMinimum()"
+                [attr.aria-label]="'chat.details.removeNamed' | t: { name: name(member) }"
+                (click)="remove(member)"
+              >
+                <app-icon [icon]="icons.remove" />
+              </button>
+            }
+          </li>
+        }
+      </ul>
+    </section>
+  }
+</div>
+
+<app-dialog [(open)]="adding" [heading]="'chat.details.addMembers' | t" [description]="'chat.details.addMembersHint' | t">
+  <form class="flex flex-col gap-4" novalidate (submit)="addPeople($event)">
+    <app-people-picker [multiple]="true" [groupsOnly]="true" [exclude]="memberIds()" [(selected)]="toAdd" />
+    @if (actions.error(); as text) {
+      <app-alert variant="destructive">{{ text }}</app-alert>
+    }
+    <div class="flex justify-end gap-2">
+      <button type="button" appButton variant="outline" (click)="adding.set(false)">{{ 'common.actions.cancel' | t }}</button>
+      <button type="submit" appButton [disabled]="!toAdd().length || actions.busy()"><app-create-icon />{{ 'chat.details.addSelected' | t: { count: toAdd().length } }}</button>
+    </div>
+  </form>
+</app-dialog>

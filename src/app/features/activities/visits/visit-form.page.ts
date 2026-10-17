@@ -87,7 +87,7 @@ export class VisitFormPage implements HasUnsavedChanges {
       null,
       (visit) => {
         this.saved = true;
-        void this.router.navigate(['/', this.i18n.locale(), 'visits', visit.id]);
+        void this.router.navigate(['/', 'visits', visit.id]);
       },
     );
   }

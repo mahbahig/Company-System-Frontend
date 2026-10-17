@@ -145,7 +145,7 @@ export class ContactCreatePage implements HasUnsavedChanges {
       try {
         await this.save(body);
         this.saved = true;
-        await this.router.navigateByUrl(`/${this.i18n.locale()}/customers/${this.customerId()}`);
+        await this.router.navigateByUrl(`/customers/${this.customerId()}`);
       } catch (error) {
         this.errorKey.set(this.messageFor(error));
       }

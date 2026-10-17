@@ -2,7 +2,7 @@ import type { Routes } from '@angular/router';
 
 import { unsavedChangesGuard } from '../../core/forms/unsaved-changes';
 
-/** `/:locale/tasks/...` — lazy-loaded pages of the tasks feature. */
+/** `/tasks/...` — lazy-loaded pages of the tasks feature. */
 export const TASKS_ROUTES: Routes = [
   {
     path: '',

@@ -79,7 +79,7 @@ export class ImportsApi {
   validate(id: string): Observable<ImportJob> {
     return this.api.post(`imports/${id}/validate`);
   }
-  rows(id: string, query: { page?: number; status?: string; decision?: string }): Observable<Page<ImportRow>> {
+  rows(id: string, query: { page?: number; pageSize?: number; status?: string; decision?: string }): Observable<Page<ImportRow>> {
     return this.api.get(`imports/${id}/rows`, query);
   }
   decide(id: string, rowId: string, body: { decision?: 'create' | 'skip' | 'link'; linkedId?: string; overrides?: Record<string, unknown> }): Observable<ImportRow> {

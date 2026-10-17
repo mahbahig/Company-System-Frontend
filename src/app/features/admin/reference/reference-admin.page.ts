@@ -20,6 +20,7 @@ import { SkeletonRowComponent } from '../../../shared/ui/skeleton/skeleton.compo
 import { LocalPager } from '../../../shared/crm/pagination/local-pager';
 import { PagerComponent } from '../../../shared/crm/pagination/pager.component';
 import { CreateIconComponent } from '../../../shared/ui/create-icon/create-icon.component';
+import { PagerSizeComponent } from '../../../shared/crm/pagination/page-size-select.component';
 
 /** Lists editable here; campaigns have their own page (they carry budgets and ads). */
 const TYPES = [
@@ -59,7 +60,7 @@ const TYPES = [
  */
 @Component({
   selector: 'app-reference-admin-page',
-  imports: [SkeletonRowComponent, TranslatePipe, AlertComponent, BadgeComponent, ButtonDirective, DialogComponent, PageHeaderComponent, ...TABLE_IMPORTS, ...FORM_IMPORTS, PagerComponent, CreateIconComponent],
+  imports: [SkeletonRowComponent, TranslatePipe, AlertComponent, BadgeComponent, ButtonDirective, DialogComponent, PageHeaderComponent, ...TABLE_IMPORTS, ...FORM_IMPORTS, PagerComponent, CreateIconComponent, PagerSizeComponent],
   templateUrl: './reference-admin.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
