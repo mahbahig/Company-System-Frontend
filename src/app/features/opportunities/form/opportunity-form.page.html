@@ -106,7 +106,7 @@
         }
       </div>
       <div>
-        <label appLabel for="solutionTypeCode" required>{{ 'crm.opportunities.fields.solutionTypeCode' | t }}</label>
+        <label appLabel for="solutionTypeCode">{{ 'crm.opportunities.fields.solutionTypeCode' | t }}</label>
         <app-select class="mt-1.5">
           <select appSelect id="solutionTypeCode" [formField]="opportunityForm.solutionTypeCode" [attr.aria-invalid]="fieldError('solutionTypeCode') ? true : null">
             <option value="">{{ 'crm.common.selectPlaceholder' | t }}</option>

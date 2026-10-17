@@ -37,7 +37,7 @@
 
     <div>
       <label appLabel for="assign-owner" class="mb-1.5 block" required>{{ 'crm.leads.distribute.manualOwner' | t }}</label>
-      <app-user-select inputId="assign-owner" roles="sales_representative,telesales,sales_manager" [formField]="assignForm.ownerId" class="w-56" />
+      <app-user-select inputId="assign-owner" source="leads/assignees" [formField]="assignForm.ownerId" class="w-56" />
     </div>
     <div>
       <label appLabel for="assign-reason" class="mb-1.5 block" required>{{ 'crm.leads.distribute.manualReason' | t }}</label>

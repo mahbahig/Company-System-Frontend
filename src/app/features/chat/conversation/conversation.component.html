@@ -61,6 +61,7 @@
       [receipts]="details()?.receipts ?? null"
       [editingId]="editing()?.id ?? null"
       [canWrite]="!blockedReason()"
+      [canDelete]="!summary()?.locked"
       (readUpTo)="read($event)"
       (editMessage)="startEdit($event)"
       (deleteMessage)="deleteMessage($event)"

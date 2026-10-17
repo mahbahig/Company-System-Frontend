@@ -5,6 +5,7 @@ import { Router, RouterOutlet } from '@angular/router';
 import { Menu, PanelLeftClose, PanelLeftOpen, X } from 'lucide';
 
 import { ConfirmHostComponent } from '../../../shared/ui/confirm/confirm-host.component';
+import { ContextMenuHostComponent } from '../../../shared/ui/context-menu/context-menu-host.component';
 import { ButtonDirective } from '../../../shared/ui/button/button.directive';
 import { IconComponent } from '../../../shared/ui/icon/icon.component';
 import { TooltipDirective } from '../../../shared/ui/tooltip/tooltip.directive';
@@ -56,6 +57,7 @@ import { UserMenuComponent } from '../user-menu/user-menu.component';
     CommandPaletteComponent,
     ShortcutsHelpComponent,
     ConfirmHostComponent,
+    ContextMenuHostComponent,
   ],
   templateUrl: './app-shell.component.html',
   host: {

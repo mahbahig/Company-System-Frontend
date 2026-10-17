@@ -62,6 +62,8 @@ export class MessageListComponent {
   readonly editingId = input<string | null>(null);
   /** The member may write here now (edit offered on their own messages). */
   readonly canWrite = input(true);
+  /** Their own messages may be deleted now (not while the conversation is locked). */
+  readonly canDelete = input(true);
   /** The reader is at the latest message with the page visible: everything shown is read. */
   readonly readUpTo = output<number>();
   readonly deleteMessage = output<ChatMessage>();

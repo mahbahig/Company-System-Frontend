@@ -41,6 +41,8 @@ export interface ChatCapabilities {
   manageMembers: boolean;
   rename: boolean;
   changeAdminMode: boolean;
+  /** Archive it in your own list (members never delete a conversation — Super Administrators delete groups in Chat management). */
+  archive: boolean;
 }
 
 /** One conversation in the list. */
@@ -60,6 +62,8 @@ export interface ChatSummary {
   lastReadSeq: number;
   /** How far this user's devices have received (the rest is reported delivered once the list is loaded). */
   lastDeliveredSeq: number;
+  /** In this user's archive: out of the active list, history and unread count unchanged. */
+  archived: boolean;
   lastMessage: { id: string; seq: number; senderId: string; preview: string | null; deleted: boolean; unavailable: boolean; createdAt: string } | null;
   lastMessageAt: string | null;
   capabilities: ChatCapabilities;
@@ -148,6 +152,8 @@ export const CHAT_EVENTS = {
   locked: 'chat:locked',
   deleted: 'chat:deleted',
   adminModeChanged: 'chat:admin-mode-changed',
+  /** This user archived / unarchived a conversation (on another of their devices too). */
+  archived: 'chat:archived',
 } as const;
 
 /** Commands a client sends (backend `ChatCommand`). */

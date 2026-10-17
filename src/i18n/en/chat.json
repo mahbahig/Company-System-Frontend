@@ -135,7 +135,13 @@
       "removeNamed": "Remove {name}",
       "removeTitle": "Remove {name} from {group}?",
       "removeBody": "They lose access to the group and its messages."
-    }
+    },
+    "archive": "Archive",
+    "unarchive": "Unarchive",
+    "archivedChats": "Archived",
+    "noArchivedConversations": "No archived conversations",
+    "conversationActions": "Actions for {name}",
+    "messageActions": "Message actions"
   },
   "admin": {
     "audit": {

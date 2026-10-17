@@ -9,7 +9,7 @@
   >
     <option value="">{{ placeholder() || i18n.t('crm.common.selectPlaceholder') }}</option>
     @for (user of users(); track user.id) {
-      <option [value]="user.id">{{ i18n.pick(user.fullNameAr, user.fullNameEn) }}</option>
+      <option [value]="user.id">{{ i18n.pick(user.fullNameAr, user.fullNameEn) }}{{ user.id === meId() ? ' ' + i18n.t('crm.common.you') : '' }}</option>
     }
   </select>
 </app-select>

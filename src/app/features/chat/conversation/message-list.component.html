@@ -50,6 +50,7 @@
               [receipt]="receipt(row.message)"
               [group]="showSenders()"
               [canEdit]="canWrite()"
+              [canDelete]="canDelete()"
               (edit)="editMessage.emit($event)"
               (remove)="deleteMessage.emit($event)"
             />

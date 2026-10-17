@@ -217,9 +217,15 @@ Feature areas (all lazy-loaded under the authenticated app shell):
   each batch (browser scroll anchoring off) and shows "new messages" instead of moving a reader who is scrolled up.
   In-conversation search is the API's (debounced 350 ms, batches of 20, "load more"); a result anywhere in the
   history opens with one context request and is highlighted. Super Administrators get `/admin/chats` (group
-  metadata, lock / unlock / delete; no message content anywhere). Your own messages offer Edit (the composer
-  switches to editing; the API allows the sender only) and show Sending → Sent → Delivered → Seen; each device
-  reports what it received (`ChatStore.reportDelivered`, gathered into one `chat:delivered:many`).
+  metadata, lock / unlock / delete — Delete also on a row's right-click, for custom groups and team chats only;
+  no message content anywhere). Only your own messages have actions — Edit (the composer switches to editing) and
+  Delete (confirmed) — by right-click, long press or their "⋯" button; anyone else's message keeps the browser's
+  menu (the API allows the sender only). Ticks: Sending → Sent → Delivered → Seen, Seen in `text-chat-seen` (the
+  success hue tuned per theme to read on your own bubble) with a bolder stroke; each device reports what it received
+  (`ChatStore.reportDelivered`, gathered into one `chat:delivered:many`). A conversation's menu (right-click, long
+  press, "⋯") offers Archive / Unarchive (`capabilities.archive`; stored on the server, `chat:archived` to your
+  other devices); archived conversations sit in their own "Archived" view. The Create Group name is required (red
+  asterisk, trimmed). Members never delete a conversation.
 - **Maintenance** — `maintenanceInterceptor` turns any 503 `errors.maintenance` / `auth.errors.maintenance` into the
   full-screen maintenance page (`core/maintenance`), which polls `GET /system/availability` and reloads when it is
   over; a Super Administrator sees a reminder banner instead.
@@ -237,6 +243,12 @@ Feature areas (all lazy-loaded under the authenticated app shell):
   record, the consequence, a button named after the action — never "Are you sure?" / "OK"); with `action` the
   request runs inside the dialog (busy, no double submit, closes only on success, shows the error otherwise).
   The API authorizes every action; the dialog is UX only.
+- **Context menus** — one menu for the app (`shared/ui/context-menu`): `[appContextMenu]="() => actions"` opens it on
+  right-click, a long press (touch) and the keyboard's menu key / Shift+F10; an overflow "⋯" button calls
+  `ContextMenuService.toggleFrom(...)`. The shell's `<app-context-menu-host>` renders it at the pointer, kept inside
+  the viewport (flipped as needed, RTL-aware), focus on the first action, arrows / Home / End, Escape / Tab / a click
+  elsewhere / scroll / resize to close. List only the actions the API allows; with none, nothing opens and the
+  browser keeps its own menu.
 - **Create actions** — `<app-create-icon />` before the label of every create / add action ("+ New Employee",
   "+ Add Milestone"), also in list empty states, shown only with the permission the API requires.
 - **Audit log** (Super Administrator) — date and time on the 12-hour clock, who did it ("System" for jobs,

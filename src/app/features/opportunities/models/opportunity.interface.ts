@@ -39,7 +39,7 @@ export interface Opportunity {
   lostReason?: { code: string; competitorCode?: string; competitorName?: string; comment?: string } | null;
   closedAt?: string | null;
   probability: number;
-  solutionTypeCode?: string;
+  solutionTypeCode?: string | null;
   serviceTypeCode?: string;
   priority?: 'low' | 'normal' | 'high' | 'urgent';
   currency?: string;

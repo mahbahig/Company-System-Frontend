@@ -208,7 +208,8 @@
       "deleting": "جارٍ الحذف…",
       "capacityUnit": "ك.و.ذ",
       "openInMaps": "فتح في خرائط جوجل",
-      "recordNo": "الرقم المرجعي"
+      "recordNo": "الرقم المرجعي",
+      "you": "(أنت)"
     },
     "pagination": {
       "label": "تنقل بين الصفحات",

@@ -127,7 +127,7 @@
             <form class="mt-4 flex flex-col gap-3 border-t pt-4" novalidate (submit)="assign($event)">
               <div>
                 <label appLabel for="lead-assign-owner" required>{{ (lead.ownerId ? 'crm.leads.reassignTo' : 'crm.leads.assignTo') | t }}</label>
-                <app-user-select class="mt-1.5" inputId="lead-assign-owner" roles="sales_representative,telesales,sales_manager" [value]="assignOwner()" (valueChange)="assignOwner.set($event)" />
+                <app-user-select class="mt-1.5" inputId="lead-assign-owner" source="leads/assignees" [value]="assignOwner()" (valueChange)="assignOwner.set($event)" />
               </div>
               <div>
                 <label appLabel for="lead-assign-reason" required>{{ 'crm.leads.distribute.manualReason' | t }}</label>

@@ -128,7 +128,6 @@ export class OpportunityFormPage implements HasUnsavedChanges {
     required(path.name, { message: 'validation.required' });
     maxLength(path.name, 200, { message: 'validation.tooLong' });
     required(path.customerId, { message: 'validation.required' });
-    required(path.solutionTypeCode, { message: 'validation.required' });
     min(path.estimatedValue, 0, { message: 'validation.mustBePositive' });
     min(path.estimatedKwp, 0, { message: 'validation.mustBePositive' });
     min(path.storageKwh, 0, { message: 'validation.mustBePositive' });
@@ -288,7 +287,8 @@ export class OpportunityFormPage implements HasUnsavedChanges {
       customerId: value.customerId,
       primaryContactId: value.primaryContactId || undefined,
       siteId: value.siteId || undefined,
-      solutionTypeCode: value.solutionTypeCode,
+      // Optional: no choice is sent as null (and clears it on edit).
+      solutionTypeCode: value.solutionTypeCode || null,
       serviceTypeCode: value.serviceTypeCode || undefined,
       estimatedValue: value.estimatedValue ?? undefined,
       estimatedKwp: value.estimatedKwp ?? undefined,

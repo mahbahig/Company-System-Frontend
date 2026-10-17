@@ -87,6 +87,11 @@ export class ChatApi {
     return this.api.get<ChatSearchPage>(`chats/${chatId}/messages/search`, { q, ...(before ? { before } : {}) });
   }
 
+  /** Archive (`true`) / unarchive the conversation in your own list. */
+  setArchived(chatId: string, archived: boolean): Observable<ChatDetails> {
+    return archived ? this.api.put<ChatDetails>(`chats/${chatId}/archive`) : this.api.delete<ChatDetails>(`chats/${chatId}/archive`);
+  }
+
   deleteMessage(chatId: string, messageId: string): Observable<void> {
     return this.api.delete<void>(`chats/${chatId}/messages/${messageId}`);
   }

@@ -118,7 +118,8 @@
       "unknownRole": "Unknown role.",
       "visitNotOpen": "This visit is no longer open.",
       "adminRolePermissionsFixed": "The System Administrator role always holds every permission; its permissions cannot be edited.",
-      "ceoRolePermissionsFixed": "The CEO role always holds every business permission; its permissions cannot be edited."
+      "ceoRolePermissionsFixed": "The CEO role always holds every business permission; its permissions cannot be edited.",
+      "leadAssigneeNotSalesRep": "Leads can only be assigned to Sales Representatives (a Sales Manager may also take a lead themself)."
     },
     "validation": {
       "required": "This field is required.",
@@ -192,7 +193,9 @@
       "callLeadHasNoCustomerLinks": "A call about a lead cannot be linked to an opportunity, contact or site.",
       "outOfRange": "This value is outside the allowed range.",
       "discountLimitsOrder": "The Sales Manager discount ceiling cannot be higher than the CFO ceiling.",
-      "notNegative": "Enter 0 or more — negative numbers are not allowed."
+      "notNegative": "Enter 0 or more — negative numbers are not allowed.",
+      "leadAssigneeNotSalesRep": "Choose a Sales Representative (or assign the lead to yourself as a Sales Manager).",
+      "intakeNeedsSolutionType": "Choose the opportunity's solution type first."
     }
   }
 }

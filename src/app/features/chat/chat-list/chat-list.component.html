@@ -12,6 +12,30 @@
       </button>
     }
   </div>
+  @if (showArchived()) {
+    <button
+      type="button"
+      class="-mx-1 inline-flex items-center gap-2 self-start rounded-md px-1 py-0.5 text-sm font-medium hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      data-testid="chat-archive-back"
+      (click)="showArchived.set(false)"
+    >
+      <app-icon [icon]="icons.back" svgClass="size-4 rtl:rotate-180" />{{ 'chat.archivedChats' | t }}
+    </button>
+  } @else if (store.archivedChats().length) {
+    <button
+      type="button"
+      class="flex items-center gap-3 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      data-testid="chat-archive-open"
+      (click)="showArchived.set(true)"
+    >
+      <app-icon [icon]="icons.archive" svgClass="size-4" />
+      <span class="flex-1 text-start">{{ 'chat.archivedChats' | t }}</span>
+      <span class="text-xs tabular">{{ store.archivedChats().length }}</span>
+      @if (archivedUnread() > 0) {
+        <span class="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-2xs font-semibold tabular text-primary-foreground" [attr.aria-label]="'chat.unreadCount' | t: { count: archivedUnread() }">{{ archivedUnread() > 99 ? '99+' : archivedUnread() }}</span>
+      }
+    </button>
+  }
   <label class="relative block">
     <span class="sr-only">{{ 'chat.filterConversations' | t }}</span>
     <span class="pointer-events-none absolute inset-y-0 start-3 flex items-center text-muted-foreground">
@@ -23,6 +47,9 @@
 
 @if (store.error() && !store.loaded()) {
   <app-alert variant="destructive" class="m-3">{{ i18n.errorText(store.error()) }}</app-alert>
+}
+@if (actions.error(); as text) {
+  <app-alert variant="destructive" class="m-3" data-testid="chat-list-action-error">{{ text }}</app-alert>
 }
 
 <nav class="min-h-0 flex-1 overflow-y-auto scroll-area" [attr.aria-label]="'chat.conversations' | t">
@@ -43,18 +70,18 @@
       <span class="flex size-12 items-center justify-center rounded-full bg-secondary text-muted-foreground">
         <app-icon [icon]="icons.empty" svgClass="size-6" />
       </span>
-      <p class="text-sm font-medium">{{ (filter() ? 'chat.noConversationMatches' : 'chat.noConversations') | t }}</p>
-      @if (!filter()) {
+      <p class="text-sm font-medium">{{ (filter() ? 'chat.noConversationMatches' : showArchived() ? 'chat.noArchivedConversations' : 'chat.noConversations') | t }}</p>
+      @if (!filter() && !showArchived()) {
         <p class="text-xs text-muted-foreground">{{ 'chat.noConversationsHint' | t }}</p>
       }
     </div>
   } @else {
-    <ul class="flex flex-col gap-0.5 p-2" data-testid="chat-list">
+    <ul class="flex flex-col gap-0.5 p-2" data-testid="chat-list" [attr.data-view]="showArchived() ? 'archived' : 'active'">
       @for (chat of visible(); track chat.id) {
-        <li>
+        <li class="group relative" [appContextMenu]="() => chatActions(chat)" [contextMenuLabel]="'chat.conversationActions' | t: { name: title(chat) }">
           <a
             [routerLink]="['/', 'chat', chat.id]"
-            class="flex items-center gap-3 rounded-md p-2 transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            class="flex items-center gap-3 rounded-md p-2 transition-colors [-webkit-touch-callout:none] hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring pointer-coarse:pe-11"
             [class.bg-primary/10]="chat.id === activeId()"
             [attr.aria-current]="chat.id === activeId() ? 'page' : null"
             [attr.data-chat-id]="chat.id"
@@ -72,7 +99,8 @@
                 @if (chat.locked) {
                   <app-icon [icon]="icons.lock" svgClass="size-3.5 shrink-0 text-muted-foreground" [label]="'chat.locked' | t" />
                 }
-                <span class="ms-auto shrink-0 text-xs tabular text-muted-foreground">{{ when(chat) }}</span>
+                <!-- On hover the "⋯" button takes the time's place (touch screens keep room for both). -->
+                <span class="ms-auto shrink-0 text-xs tabular text-muted-foreground pointer-fine:group-focus-within:invisible pointer-fine:group-hover:invisible">{{ when(chat) }}</span>
               </span>
               <span class="flex items-center gap-2">
                 <span class="truncate text-xs text-muted-foreground" [class.text-foreground]="chat.unreadCount > 0">{{ preview(chat) }}</span>
@@ -87,6 +115,18 @@
               </span>
             </span>
           </a>
+          @if (chatActions(chat).length) {
+            <button
+              type="button"
+              class="invisible absolute end-1.5 top-1.5 inline-flex size-7 items-center justify-center rounded-md bg-secondary text-muted-foreground shadow-xs transition-colors hover:text-foreground focus-visible:visible focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring group-hover:visible group-focus-within:visible pointer-coarse:visible pointer-coarse:bg-transparent pointer-coarse:shadow-none"
+              aria-haspopup="menu"
+              data-testid="chat-actions"
+              [attr.aria-label]="'chat.conversationActions' | t: { name: title(chat) }"
+              (click)="openActions(chat, $event)"
+            >
+              <app-icon [icon]="icons.more" svgClass="size-4" />
+            </button>
+          }
         </li>
       }
     </ul>

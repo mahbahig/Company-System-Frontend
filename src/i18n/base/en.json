@@ -208,7 +208,8 @@
       "deleting": "Deleting…",
       "capacityUnit": "kWp",
       "openInMaps": "Open in Google Maps",
-      "recordNo": "Reference"
+      "recordNo": "Reference",
+      "you": "(you)"
     },
     "pagination": {
       "label": "Pagination",

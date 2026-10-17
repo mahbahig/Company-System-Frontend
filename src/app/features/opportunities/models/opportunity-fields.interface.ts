@@ -4,7 +4,7 @@ export interface OpportunityFields {
   customerId: string;
   primaryContactId?: string;
   siteId?: string;
-  solutionTypeCode: string;
+  solutionTypeCode?: string | null;
   serviceTypeCode?: string;
   estimatedValue?: number;
   estimatedKwp?: number;

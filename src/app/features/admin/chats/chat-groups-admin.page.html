@@ -35,7 +35,7 @@
       </thead>
       <tbody appTableBody>
         @for (row of rows(); track row.id) {
-          <tr appTableRow [attr.data-chat-id]="row.id">
+          <tr appTableRow [attr.data-chat-id]="row.id" [appContextMenu]="() => rowActions(row)" [contextMenuLabel]="name(row)">
             <td appTableCell>
               <button type="button" class="font-medium text-primary underline-offset-4 hover:underline" (click)="view(row)">{{ name(row) }}</button>
             </td>

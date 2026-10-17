@@ -135,7 +135,13 @@
       "removeNamed": "إزالة {name}",
       "removeTitle": "إزالة {name} من {group}؟",
       "removeBody": "سيفقد الوصول إلى المجموعة ورسائلها."
-    }
+    },
+    "archive": "أرشفة",
+    "unarchive": "إلغاء الأرشفة",
+    "archivedChats": "المؤرشفة",
+    "noArchivedConversations": "لا توجد محادثات مؤرشفة",
+    "conversationActions": "إجراءات {name}",
+    "messageActions": "إجراءات الرسالة"
   },
   "admin": {
     "audit": {

@@ -40,6 +40,7 @@
   --color-info: hsl(var(--info));
   --color-info-foreground: hsl(var(--info-foreground));
   --color-info-tint: hsl(var(--info-tint-foreground));
+  --color-chat-seen: hsl(var(--chat-seen));
   --color-muted: hsl(var(--muted));
   --color-muted-foreground: hsl(var(--muted-foreground));
   --color-accent: hsl(var(--accent));
@@ -148,6 +149,11 @@
     --warning-tint-foreground: 32 90% 32%;
     --info-tint-foreground: 205 78% 37%;
     --destructive-tint-foreground: 0 72% 44%;
+
+    /* Chat "seen" ticks: the success (read) hue, tuned to sit ON your own
+       message bubble (--primary): 5.6:1 against it here, so seen reads apart
+       from sent / delivered (white) at a glance. */
+    --chat-seen: 152 72% 74%;
 
     --border: 214 22% 89%;
     --input: 214 22% 83%;
@@ -312,6 +318,9 @@
     --warning-tint-foreground: 32 82% 49%;
     --info-tint-foreground: 205 70% 57%;
     --destructive-tint-foreground: 0 62% 65%;
+
+    /* The same success hue, deep enough for the lighter dark-theme bubble (4.5:1). */
+    --chat-seen: 152 85% 14%;
 
     --border: 210 20% 19%;
     --input: 210 20% 24%;

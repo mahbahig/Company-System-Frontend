@@ -56,16 +56,29 @@ describe('Entity fields are selects fed by the API, never free text', () => {
     expect(create).toHaveBeenCalledWith(expect.objectContaining({ title: 'Call the site manager', assigneeId: 'u-rep' }));
   });
 
-  it('lead distribution: the owner is a select limited to Sales Representatives and Telesales (the API checks scope)', async () => {
+  it('lead distribution: the owner select lists exactly whom the server accepts as a lead owner (GET /leads/assignees), the manager marked "(you)"', async () => {
     const http = configure('sales_manager', [{ provide: LeadsApi, useValue: { bank: vi.fn(() => of(EMPTY_PAGE)), assign: vi.fn(), preview: vi.fn(), distribute: vi.fn() } }]);
+    const me = TestBed.inject(AuthService).user()!.id;
     const fixture = TestBed.createComponent(LeadsDistributePage);
     fixture.detectChanges();
     await tick();
-    const lookup = http.expectOne((request) => request.url === `${API}/users/lookup`);
-    expect(lookup.request.params.get('role')).toBe('sales_representative,telesales');
-    lookup.flush({ success: true, data: [] });
+    http.expectNone((request) => request.url === `${API}/users/lookup`);
+    const options = http.expectOne((request) => request.url === `${API}/leads/assignees`);
+    expect(options.request.params.keys()).toEqual([]);
+    options.flush({
+      success: true,
+      data: [
+        { id: me, fullNameAr: 'مدير', fullNameEn: 'Manager' },
+        { id: 'u-rep', fullNameAr: 'مندوب', fullNameEn: 'Rep One' },
+      ],
+    });
+    await tick();
     fixture.detectChanges();
-    expect((fixture.nativeElement as HTMLElement).querySelector('#dm-owner')!.tagName).toBe('SELECT');
+    const select = (fixture.nativeElement as HTMLElement).querySelector<HTMLSelectElement>('#dm-owner')!;
+    expect(select.tagName).toBe('SELECT');
+    expect([...select.options].map((option) => option.value)).toEqual(['', me, 'u-rep']);
+    expect(select.options[1]!.textContent).toContain('crm.common.you');
+    expect(select.options[2]!.textContent).not.toContain('crm.common.you');
   });
 
   it('combined proposal PDF: chosen among the proposal\'s own PDF documents (no id to type)', async () => {

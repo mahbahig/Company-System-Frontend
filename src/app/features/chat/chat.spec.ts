@@ -354,7 +354,7 @@ describe('ChatStore — unread counts follow the realtime events', () => {
     const store = TestBed.inject(ChatStore);
     const chat: ChatSummary = {
       id: 'c1', type: 'private', name: null, nameAr: null, peer: null, status: 'active', locked: false, adminOnly: false, memberCount: 2, myRole: 'member',
-      unreadCount: 0, lastSeq: 2, lastReadSeq: 2, lastDeliveredSeq: 2, lastMessage: null, lastMessageAt: null, capabilities: { send: true, manageMembers: false, rename: false, changeAdminMode: false },
+      unreadCount: 0, lastSeq: 2, lastReadSeq: 2, lastDeliveredSeq: 2, lastMessage: null, lastMessageAt: null, archived: false, capabilities: { send: true, manageMembers: false, rename: false, changeAdminMode: false, archive: true },
     };
     store.chats.set([chat]);
     store.loaded.set(true);

@@ -63,6 +63,9 @@ export class ChatStore {
   /** The conversation on screen — its new messages count as read while the page is visible. */
   readonly activeChatId = signal<string | null>(null);
   private readonly countedUnread = signal(0);
+  /** The active list and the archive (each most recent first). */
+  readonly activeChats = computed(() => this.chats().filter((chat) => !chat.archived));
+  readonly archivedChats = computed(() => this.chats().filter((chat) => chat.archived));
   /** Unread messages over every conversation (the navigation badge). */
   readonly unreadTotal = computed(() => (this.loaded() ? this.chats().reduce((sum, chat) => sum + chat.unreadCount, 0) : this.countedUnread()));
   /** A conversation this user lost (removed from it, or deleted) — the open conversation closes. */
@@ -85,6 +88,8 @@ export class ChatStore {
           if (event.userId === this.auth.user()?.id) void this.refreshChat(event.chatId);
         }),
         this.commands.on<{ chatId: string }>(CHAT_EVENTS.deleted).subscribe((event) => this.remove(event.chatId)),
+        // Archived / unarchived on another of this user's devices.
+        this.commands.on<{ chatId: string; archived: boolean }>(CHAT_EVENTS.archived).subscribe((event) => this.patch(event.chatId, { archived: event.archived })),
       ];
       inject(DestroyRef).onDestroy(() => subscriptions.forEach((subscription) => subscription.unsubscribe()));
       // Signed in: the badge's count; signed out: nothing kept. Each reconnection reads everything again.
@@ -140,6 +145,11 @@ export class ChatStore {
       lastMessageAt: newer ? known.lastMessageAt : summary.lastMessageAt,
     };
     this.chats.update((chats) => sortByActivity([merged, ...chats.filter((chat) => chat.id !== summary.id)]));
+  }
+
+  /** Archives / unarchives in this user's list: stored on the server first, then shown (its answer is the truth). */
+  async setArchived(chatId: string, archived: boolean): Promise<void> {
+    this.upsert(summaryOf(await firstValueFrom(this.api.setArchived(chatId, archived))));
   }
 
   /** Reads one conversation again (a new one, a changed lock, role or mode). */

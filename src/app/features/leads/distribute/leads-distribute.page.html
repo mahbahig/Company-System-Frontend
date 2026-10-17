@@ -68,7 +68,7 @@
     <form class="flex flex-wrap items-end gap-3" novalidate (submit)="onAssignSubmit($event)">
       <div>
         <label appLabel for="dm-owner" class="mb-1.5 block" required>{{ 'crm.leads.distribute.manualOwner' | t }}</label>
-        <app-user-select inputId="dm-owner" class="w-56" roles="sales_representative,telesales" [formField]="assignForm.ownerId" />
+        <app-user-select inputId="dm-owner" class="w-56" source="leads/assignees" [formField]="assignForm.ownerId" />
       </div>
       <div>
         <label appLabel for="dm-reason" class="mb-1.5 block" required>{{ 'crm.leads.distribute.manualReason' | t }}</label>

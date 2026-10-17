@@ -13,6 +13,7 @@ import { ChatStore } from '../../core/chat/chat-store.service';
 import type { ChatMessage, ChatReceipt, ChatSummary } from '../../core/chat/chat.models';
 import { I18nService } from '../../core/i18n/i18n.service';
 import { SOCKET_FACTORY } from '../../core/realtime/realtime.service';
+import { ContextMenuHostComponent } from '../../shared/ui/context-menu/context-menu-host.component';
 import { ChatComposerComponent } from './conversation/composer.component';
 import { ConversationStore } from './conversation/conversation.store';
 import { MessageBubbleComponent, type MessageReceipt } from './conversation/message-bubble.component';
@@ -55,7 +56,8 @@ function summary(id: string, overrides: Partial<ChatSummary> = {}): ChatSummary 
     lastDeliveredSeq: 5,
     lastMessage: null,
     lastMessageAt: null,
-    capabilities: { send: true, manageMembers: false, rename: false, changeAdminMode: false },
+    archived: false,
+    capabilities: { send: true, manageMembers: false, rename: false, changeAdminMode: false, archive: true },
     ...overrides,
   };
 }
@@ -96,8 +98,9 @@ function configure(api: Partial<Record<keyof ChatApi, unknown>> = {}) {
 
 @Component({
   selector: 'app-bubble-host',
-  imports: [MessageBubbleComponent],
-  template: `<app-message-bubble [message]="message()" [mine]="mine()" [receipt]="receipt()" [group]="group()" (edit)="edited.push($event)" />`,
+  imports: [MessageBubbleComponent, ContextMenuHostComponent],
+  template: `<app-message-bubble [message]="message()" [mine]="mine()" [receipt]="receipt()" [group]="group()" (edit)="edited.push($event)" (remove)="removed.push($event)" />
+    <app-context-menu-host />`,
 })
 class BubbleHost {
   readonly message = signal(message(1));
@@ -105,33 +108,49 @@ class BubbleHost {
   readonly receipt = signal<MessageReceipt | null>(null);
   readonly group = signal(false);
   readonly edited: ChatMessage[] = [];
+  readonly removed: ChatMessage[] = [];
+}
+
+/** Opens the message's action menu through its "⋯" button; the menu's action ids, or null when the message offers none. */
+function openActions(fixture: { detectChanges(): void; nativeElement: HTMLElement }): string[] | null {
+  const button = fixture.nativeElement.querySelector<HTMLButtonElement>('[data-testid="message-actions"]');
+  if (!button) return null;
+  button.click();
+  fixture.detectChanges();
+  return [...fixture.nativeElement.querySelectorAll('[data-testid^="menu-item-"]')].map((item) => item.getAttribute('data-testid')!.replace('menu-item-', ''));
 }
 
 describe('Editing: offered on your own messages only (the API is the authority)', () => {
-  it('your own message: Edit is offered and emits the message; someone else\'s: no Edit at all', async () => {
+  it('your own message: its menu offers Edit and Delete and emits the message; someone else\'s: no actions at all', async () => {
     configure();
     const fixture = TestBed.createComponent(BubbleHost);
     fixture.detectChanges();
     const root = fixture.nativeElement as HTMLElement;
-    root.querySelector<HTMLButtonElement>('[data-testid="edit-message"]')!.click();
+    expect(openActions(fixture)).toEqual(['edit', 'delete']);
+    root.querySelector<HTMLButtonElement>('[data-testid="menu-item-edit"]')!.click();
+    fixture.detectChanges();
     expect(fixture.componentInstance.edited.map((item) => item.id)).toEqual(['m1']);
+    expect(root.querySelector('[data-testid="context-menu"]')).toBeNull();
+    expect(openActions(fixture)).toEqual(['edit', 'delete']);
+    root.querySelector<HTMLButtonElement>('[data-testid="menu-item-delete"]')!.click();
+    expect(fixture.componentInstance.removed.map((item) => item.id)).toEqual(['m1']);
 
     fixture.componentInstance.mine.set(false);
     fixture.componentInstance.message.set(message(2, 'u-other'));
     fixture.detectChanges();
-    expect(root.querySelector('[data-testid="edit-message"]')).toBeNull();
+    expect(openActions(fixture)).toBeNull();
   });
 
-  it('a deleted or unreadable message offers no Edit; an edited one says "edited"', async () => {
+  it('a deleted message offers nothing, an unreadable one only Delete; an edited one says "edited"', async () => {
     configure();
     const fixture = TestBed.createComponent(BubbleHost);
     const root = fixture.nativeElement as HTMLElement;
     fixture.componentInstance.message.set(message(1, ME, { deleted: true, text: null }));
     fixture.detectChanges();
-    expect(root.querySelector('[data-testid="edit-message"]')).toBeNull();
+    expect(openActions(fixture)).toBeNull();
     fixture.componentInstance.message.set(message(1, ME, { unavailable: true, text: null }));
     fixture.detectChanges();
-    expect(root.querySelector('[data-testid="edit-message"]')).toBeNull();
+    expect(openActions(fixture)).toEqual(['delete']);
     fixture.componentInstance.message.set(message(1, ME, { text: 'fixed', editedAt: new Date().toISOString() }));
     fixture.detectChanges();
     expect(root.querySelector('[data-testid="message-edited"]')?.textContent?.trim()).toBe('chat.edited');

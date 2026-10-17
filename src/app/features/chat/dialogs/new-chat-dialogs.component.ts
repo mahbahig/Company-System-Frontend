@@ -46,9 +46,11 @@ export class NewChatDialogComponent {
 }
 
 /**
- * "+ New group": the name the creator types (required — nothing generated)
- * and at least two colleagues, so the group has three members with its
- * creator, who becomes its admin. The API checks it all again.
+ * "+ New group": the name the creator types (required, marked with the red
+ * asterisk; trimmed, so blank is empty — nothing generated) and at least two
+ * colleagues, so the group has three members with its creator, who becomes
+ * its admin. The API checks it all again (the same rules: required, trimmed,
+ * at most 80 characters).
  */
 @Component({
   selector: 'app-new-group-dialog',
@@ -57,17 +59,20 @@ export class NewChatDialogComponent {
     <app-dialog [(open)]="open" [heading]="'chat.newGroup' | t" [description]="'chat.newGroupHint' | t" [dirty]="dirty">
       <form class="flex flex-col gap-4" novalidate (submit)="create($event)">
         <div>
-          <label appLabel for="group-name">{{ 'chat.groupName' | t }}</label>
+          <label appLabel for="group-name" required>{{ 'chat.groupName' | t }}</label>
           <input
             appInput
             id="group-name"
             data-testid="group-name"
             autocomplete="off"
+            required
+            aria-required="true"
             [maxLength]="nameMax"
             [value]="name()"
             [attr.aria-invalid]="!!nameError()"
             [attr.aria-describedby]="nameError() ? 'group-name-error' : null"
             (input)="name.set($any($event.target).value)"
+            (blur)="touched.set(true)"
           />
           @if (nameError(); as key) {
             <p id="group-name-error" class="mt-1 text-xs text-destructive-tint">{{ key | t }}</p>
@@ -104,7 +109,8 @@ export class NewGroupDialogComponent {
   protected readonly minimum = MIN_GROUP_MEMBERS;
   protected readonly name = signal('');
   protected readonly members = signal<ChatDirectoryPerson[]>([]);
-  private readonly touched = signal(false);
+  /** Left the name field (or tried to create): an empty or blank name is then reported. */
+  protected readonly touched = signal(false);
   protected readonly enough = computed(() => this.members().length + 1 >= MIN_GROUP_MEMBERS);
   protected readonly nameError = computed(() => (this.touched() && !this.name().trim() ? 'chat.groupNameRequired' : (this.actions.fieldErrors()['name'] ?? null)));
   protected readonly valid = computed(() => !!this.name().trim() && this.enough());

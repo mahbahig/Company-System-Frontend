@@ -17,6 +17,8 @@ import { AvatarComponent } from '../../../shared/ui/avatar/avatar.component';
 import { BadgeComponent } from '../../../shared/ui/badge/badge.component';
 import { ButtonDirective } from '../../../shared/ui/button/button.directive';
 import { ConfirmService } from '../../../shared/ui/confirm/confirm.service';
+import { ContextMenuDirective } from '../../../shared/ui/context-menu/context-menu.directive';
+import type { ContextMenuItem } from '../../../shared/ui/context-menu/context-menu.service';
 import { DialogComponent } from '../../../shared/ui/dialog/dialog.component';
 import { IconComponent } from '../../../shared/ui/icon/icon.component';
 import { PageHeaderComponent } from '../../../shared/ui/page-header/page-header.component';
@@ -38,7 +40,7 @@ const STATUSES: readonly ChatStatus[] = ['active', 'inactive'];
  */
 @Component({
   selector: 'app-chat-groups-admin-page',
-  imports: [TranslatePipe, ListToolbarComponent, PageSizeSelectComponent, PaginationComponent, AlertComponent, AvatarComponent, BadgeComponent, ButtonDirective, DialogComponent, IconComponent, PageHeaderComponent, SkeletonRowComponent, ...TABLE_IMPORTS],
+  imports: [TranslatePipe, ListToolbarComponent, PageSizeSelectComponent, PaginationComponent, AlertComponent, AvatarComponent, BadgeComponent, ButtonDirective, ContextMenuDirective, DialogComponent, IconComponent, PageHeaderComponent, SkeletonRowComponent, ...TABLE_IMPORTS],
   templateUrl: './chat-groups-admin.page.html',
   host: { class: 'flex flex-col gap-6' },
 })
@@ -97,6 +99,11 @@ export class ChatGroupsAdminPage {
     } catch (error) {
       this.detailsError.set(error);
     }
+  }
+
+  /** Right-click on a row: Delete, for custom groups and team chats only (`manageable`, from the server) — never private chats or the company chat. */
+  protected rowActions(chat: ManagedChat): ContextMenuItem[] {
+    return chat.manageable ? [{ id: 'delete', label: this.i18n.t('admin.chats.delete'), icon: Trash2, destructive: true, run: () => void this.remove(chat) }] : [];
   }
 
   protected async setLocked(chat: ManagedChat, locked: boolean): Promise<void> {
